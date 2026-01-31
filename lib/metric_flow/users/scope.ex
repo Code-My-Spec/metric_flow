@@ -17,8 +17,13 @@ defmodule MetricFlow.Users.Scope do
   """
 
   alias MetricFlow.Users.User
+  alias MetricFlow.UserPreferences
 
-  defstruct user: nil
+  defstruct user: nil,
+            active_account: nil,
+            active_account_id: nil,
+            active_project: nil,
+            active_project_id: nil
 
   @doc """
   Creates a scope for the given user.
@@ -26,7 +31,21 @@ defmodule MetricFlow.Users.Scope do
   Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
-    %__MODULE__{user: user}
+    scope = %__MODULE__{user: user}
+
+    case UserPreferences.get_user_preference(scope) do
+      {:ok, preferences} ->
+        %__MODULE__{
+          user: user,
+          active_account: preferences.active_account,
+          active_account_id: preferences.active_account_id,
+          active_project: preferences.active_project,
+          active_project_id: preferences.active_project_id
+        }
+
+      {:error, :not_found} ->
+        scope
+    end
   end
 
   def for_user(nil), do: nil
