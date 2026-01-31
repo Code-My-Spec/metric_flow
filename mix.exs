@@ -40,6 +40,7 @@ defmodule MetricFlow.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
@@ -65,7 +66,13 @@ defmodule MetricFlow.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      # CodeMySpec dependencies
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:client_utils, "~> 0.1"},
+      {:mix_machine, git: "https://github.com/johns10/mix_machine"},
+      {:sexy_spex, "~> 0.1.0"}
     ]
   end
 
