@@ -1,4 +1,4 @@
-defmodule CodeMySpec.Repo.Migrations.CreateAccountsTable do
+defmodule MetricFlow.Repo.Migrations.CreateAccountsTable do
   use Ecto.Migration
 
   def change do

@@ -10,9 +10,7 @@ defmodule MetricFlow.Invitations do
   alias MetricFlow.Authorization
   alias MetricFlow.Users
   alias MetricFlow.Users.Scope
-  alias MetricFlow.Users.User
-  alias MetricFlow.Accounts.Member
-  alias MetricFlow.Invitations.{Invitation, InvitationRepository, InvitationNotifier}
+  alias MetricFlow.Invitations.{InvitationRepository, InvitationNotifier}
 
   @doc """
   Subscribes to scoped notifications about invitation changes.
@@ -77,9 +75,6 @@ defmodule MetricFlow.Invitations do
       {:error, :invalid_token}
 
   """
-  @spec accept_invitation(token :: String.t(), user_attrs :: map()) ::
-          {:ok, {User.t(), Member.t()}}
-          | {:error, :invalid_token | :expired_token | :email_mismatch | Ecto.Changeset.t()}
   def accept_invitation(token, user_attrs) when is_binary(token) and is_map(user_attrs) do
     with {:ok, invitation} <- get_valid_invitation(token),
          {:ok, user} <- resolve_or_create_user(invitation, user_attrs),
@@ -99,7 +94,6 @@ defmodule MetricFlow.Invitations do
       [%Invitation{}, ...]
 
   """
-  @spec list_pending_invitations(scope :: Scope.t(), account_id :: integer()) :: [Invitation.t()]
   def list_pending_invitations(scope, account_id)
       when not is_nil(account_id) do
     with :ok <- validate_read_account_permission(scope, account_id) do
@@ -134,8 +128,6 @@ defmodule MetricFlow.Invitations do
       {:error, :not_found}
 
   """
-  @spec cancel_invitation(scope :: Scope.t(), account_id :: integer(), invitation_id :: integer()) ::
-          {:ok, Invitation.t()} | {:error, :not_found | :not_authorized | :no_active_account}
   def cancel_invitation(scope, account_id, invitation_id)
       when is_integer(invitation_id) and not is_nil(account_id) do
     with :ok <- validate_manage_members_permission(scope, account_id),
@@ -147,7 +139,6 @@ defmodule MetricFlow.Invitations do
     end
   end
 
-  @spec cancel_invitation(MetricFlow.Users.Scope.t(), any()) :: {:error, :no_active_account}
   def cancel_invitation(%Scope{active_account_id: nil}, _invitation_id) do
     {:error, :no_active_account}
   end
@@ -164,7 +155,6 @@ defmodule MetricFlow.Invitations do
       nil
 
   """
-  @spec get_invitation_by_token(token :: String.t()) :: Invitation.t() | nil
   def get_invitation_by_token(token) when is_binary(token) do
     InvitationRepository.get_invitation_by_token(token)
   end
@@ -178,7 +168,6 @@ defmodule MetricFlow.Invitations do
       :ok
 
   """
-  @spec cleanup_expired_invitations() :: :ok
   def cleanup_expired_invitations do
     InvitationRepository.cleanup_expired_invitations(30)
     :ok

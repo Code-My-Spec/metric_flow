@@ -3,6 +3,13 @@ import Config
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
+# OAuth provider configuration for tests
+config :metric_flow, :github_client_id, "test_github_client_id"
+config :metric_flow, :github_client_secret, "test_github_client_secret"
+config :metric_flow, :google_client_id, "test_google_client_id"
+config :metric_flow, :google_client_secret, "test_google_client_secret"
+config :metric_flow, :oauth_base_url, "http://localhost:4002"
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

@@ -10,6 +10,7 @@ defmodule MetricFlow.Application do
     children = [
       MetricFlowWeb.Telemetry,
       MetricFlow.Repo,
+      MetricFlow.Vault,
       {DNSCluster, query: Application.get_env(:metric_flow, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MetricFlow.PubSub},
       # Start a worker by calling: MetricFlow.Worker.start_link(arg)

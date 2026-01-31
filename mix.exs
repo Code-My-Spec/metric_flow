@@ -67,6 +67,8 @@ defmodule MetricFlow.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      {:cloak_ecto, "~> 1.3.0"},
+      {:assent, "~> 0.2"},
       # MetricFlow dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},

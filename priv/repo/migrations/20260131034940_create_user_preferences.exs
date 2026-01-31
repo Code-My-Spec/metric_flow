@@ -1,4 +1,4 @@
-defmodule CodeMySpec.Repo.Migrations.CreateUserPreferences do
+defmodule MetricFlow.Repo.Migrations.CreateUserPreferences do
   use Ecto.Migration
 
   def change do
