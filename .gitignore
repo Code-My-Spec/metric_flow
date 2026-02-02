@@ -35,3 +35,4 @@ metric_flow-*.tar
 npm-debug.log
 /assets/node_modules/
 
+.code_my_spec/internal/

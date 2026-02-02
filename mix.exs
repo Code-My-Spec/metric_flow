@@ -27,7 +27,7 @@ defmodule MetricFlow.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, spex: :test]
     ]
   end
 
@@ -74,7 +74,7 @@ defmodule MetricFlow.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
       {:mix_machine, git: "https://github.com/johns10/mix_machine"},
-      {:sexy_spex, "~> 0.1.0"}
+      {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"}
     ]
   end
 
