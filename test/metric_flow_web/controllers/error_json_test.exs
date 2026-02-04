@@ -1,5 +1,5 @@
 defmodule MetricFlowWeb.ErrorJSONTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   test "renders 404" do
     assert MetricFlowWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}

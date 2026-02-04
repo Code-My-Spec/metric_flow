@@ -1,9 +1,9 @@
 defmodule MetricFlow.UsersTest do
-  use MetricFlow.DataCase
+  use MetricFlowTest.DataCase
 
   alias MetricFlow.Users
 
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
   alias MetricFlow.Users.{User, UserToken}
 
   describe "get_user_by_email/1" do

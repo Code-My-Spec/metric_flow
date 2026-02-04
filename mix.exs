@@ -10,8 +10,9 @@ defmodule MetricFlow.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      compilers: [:boundary, :phoenix_live_view] ++ Mix.compilers(),
+      listeners: [Phoenix.CodeReloader],
+      boundary: []
     ]
   end
 
@@ -32,7 +33,7 @@ defmodule MetricFlow.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/spex"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -74,7 +75,8 @@ defmodule MetricFlow.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
       {:mix_machine, git: "https://github.com/johns10/mix_machine"},
-      {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"}
+      {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
+      {:boundary, "~> 0.10"}
     ]
   end
 

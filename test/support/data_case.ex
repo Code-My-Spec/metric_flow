@@ -1,4 +1,4 @@
-defmodule MetricFlow.DataCase do
+defmodule MetricFlowTest.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -23,12 +23,12 @@ defmodule MetricFlow.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import MetricFlow.DataCase
+      import MetricFlowTest.DataCase
     end
   end
 
   setup tags do
-    MetricFlow.DataCase.setup_sandbox(tags)
+    MetricFlowTest.DataCase.setup_sandbox(tags)
     :ok
   end
 

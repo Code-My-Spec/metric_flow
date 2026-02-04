@@ -16,7 +16,7 @@ config :metric_flow, :scopes,
     schema_key: :user_id,
     schema_type: :id,
     schema_table: :users,
-    test_data_fixture: MetricFlow.UsersFixtures,
+    test_data_fixture: MetricFlowTest.UsersFixtures,
     test_setup_helper: :register_and_log_in_user
   ]
 

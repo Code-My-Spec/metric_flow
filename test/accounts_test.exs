@@ -1,9 +1,9 @@
 defmodule MetricFlow.AccountsTest do
-  use MetricFlow.DataCase
+  use MetricFlowTest.DataCase
   alias MetricFlow.Accounts
 
-  import MetricFlow.AccountsFixtures
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.AccountsFixtures
+  import MetricFlowTest.UsersFixtures
 
   describe "subscribe_account/1" do
     test "subscribes to account notifications for user" do

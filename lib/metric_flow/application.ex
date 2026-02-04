@@ -3,6 +3,7 @@ defmodule MetricFlow.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  use Boundary, top_level?: true, deps: [MetricFlow, MetricFlowWeb]
   use Application
 
   @impl true

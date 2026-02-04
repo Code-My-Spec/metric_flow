@@ -1,7 +1,7 @@
 defmodule MetricFlow.IntegrationsTest do
-  use MetricFlow.DataCase, async: true
+  use MetricFlowTest.DataCase, async: true
 
-  import MetricFlow.{UsersFixtures}
+  import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Integrations
   alias MetricFlow.Integrations.Integration

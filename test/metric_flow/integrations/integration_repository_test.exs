@@ -1,8 +1,8 @@
 defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
-  use MetricFlow.DataCase, async: true
+  use MetricFlowTest.DataCase, async: true
 
-  import MetricFlow.UsersFixtures
-  import MetricFlow.IntegrationsFixtures
+  import MetricFlowTest.UsersFixtures
+  import MetricFlowTest.IntegrationsFixtures
 
   alias MetricFlow.Integrations.{Integration, IntegrationRepository}
   alias MetricFlow.Repo

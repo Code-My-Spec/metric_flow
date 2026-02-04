@@ -35,28 +35,33 @@ defmodule MetricFlow.Invitations do
   @doc """
   Invites a user to join an account with the specified role.
 
+  The `url_fun` parameter is a function that takes an invitation token and returns
+  the full acceptance URL. This keeps the context layer decoupled from the web layer.
+
   ## Examples
 
-      iex> invite_user(scope, "user@example.com", :member)
+      iex> url_fun = fn token -> "https://example.com/invitations/accept/\#{token}" end
+      iex> invite_user(scope, account_id, "user@example.com", :member, url_fun)
       {:ok, %Invitation{}}
 
-      iex> invite_user(scope, "invalid-email", :member)
+      iex> invite_user(scope, account_id, "invalid-email", :member, url_fun)
       {:error, %Ecto.Changeset{}}
 
   """
-  def invite_user(scope, account_id, email, role)
-      when is_binary(email) and role in [:owner, :admin, :member] and not is_nil(account_id) do
+  def invite_user(scope, account_id, email, role, url_fun)
+      when is_binary(email) and role in [:owner, :admin, :member] and not is_nil(account_id) and
+             is_function(url_fun, 1) do
     with :ok <- validate_manage_members_permission(scope, account_id),
          :ok <- validate_user_not_already_member(email, account_id),
          :ok <- validate_user_limit(account_id),
          {:ok, invitation} <- create_invitation(scope, account_id, email, role),
-         :ok <- send_invitation_email(invitation) do
+         :ok <- send_invitation_email(invitation, url_fun.(invitation.token)) do
       broadcast_invitation(scope, {:created, invitation})
       {:ok, invitation}
     end
   end
 
-  def invite_user(%Scope{active_account_id: nil}, _account_id, _email, _role) do
+  def invite_user(%Scope{active_account_id: nil}, _account_id, _email, _role, _url_fun) do
     {:error, :no_active_account}
   end
 
@@ -223,10 +228,7 @@ defmodule MetricFlow.Invitations do
     InvitationRepository.create_invitation(scope, attrs)
   end
 
-  defp send_invitation_email(invitation) do
-    # In a real implementation, you would generate the proper URL
-    url = "#{MetricFlowWeb.Endpoint.url()}/invitations/accept/#{invitation.token}"
-
+  defp send_invitation_email(invitation, url) do
     case InvitationNotifier.deliver_invitation_email(invitation, url) do
       {:ok, _} -> :ok
       {:error, _} -> {:error, :email_delivery_failed}

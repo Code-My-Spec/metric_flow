@@ -1,12 +1,12 @@
 defmodule MetricFlow.Invitations.InvitationRepositoryTest do
-  use MetricFlow.DataCase, async: true
+  use MetricFlowTest.DataCase, async: true
 
   alias MetricFlow.Invitations.{Invitation, InvitationRepository}
   alias MetricFlow.Users.Scope
 
-  import MetricFlow.InvitationsFixtures
-  import MetricFlow.UsersFixtures
-  import MetricFlow.AccountsFixtures
+  import MetricFlowTest.InvitationsFixtures
+  import MetricFlowTest.UsersFixtures
+  import MetricFlowTest.AccountsFixtures
 
   describe "create_invitation/2" do
     setup do

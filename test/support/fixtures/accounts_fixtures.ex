@@ -1,4 +1,4 @@
-defmodule MetricFlow.AccountsFixtures do
+defmodule MetricFlowTest.AccountsFixtures do
   @moduledoc """
   This module defines test helpers for creating
   entities via the `MetricFlow.Accounts` context.

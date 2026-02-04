@@ -1,5 +1,5 @@
 defmodule MetricFlowWeb.PageControllerTest do
-  use MetricFlowWeb.ConnCase
+  use MetricFlowTest.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")

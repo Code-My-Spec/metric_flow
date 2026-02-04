@@ -1,8 +1,8 @@
 defmodule MetricFlowWeb.UserLive.RegistrationTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do

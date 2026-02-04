@@ -1,10 +1,10 @@
-defmodule MetricFlow.UserPreferencesFixtures do
+defmodule MetricFlowTest.UserPreferencesFixtures do
   @moduledoc """
   This module defines test helpers for creating
   entities via the `MetricFlow.UserPreferences` context.
   """
 
-  import MetricFlow.AccountsFixtures
+  import MetricFlowTest.AccountsFixtures
 
   @doc """
   Generate a user_preference.

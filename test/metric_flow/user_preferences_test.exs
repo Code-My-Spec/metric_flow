@@ -1,14 +1,14 @@
 defmodule MetricFlow.UserPreferencesTest do
-  use MetricFlow.DataCase
+  use MetricFlowTest.DataCase
 
   alias MetricFlow.UserPreferences
 
   describe "user_preferences" do
     alias MetricFlow.UserPreferences.UserPreference
 
-    import MetricFlow.UsersFixtures, only: [user_scope_fixture: 0]
-    import MetricFlow.UserPreferencesFixtures
-    import MetricFlow.AccountsFixtures
+    import MetricFlowTest.UsersFixtures, only: [user_scope_fixture: 0]
+    import MetricFlowTest.UserPreferencesFixtures
+    import MetricFlowTest.AccountsFixtures
 
     @invalid_attrs %{token: nil, active_account_id: nil}
 

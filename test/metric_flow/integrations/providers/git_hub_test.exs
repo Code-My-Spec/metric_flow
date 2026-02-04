@@ -1,7 +1,7 @@
 defmodule MetricFlow.Integrations.Providers.GitHubTest do
   use ExUnit.Case, async: true
 
-  import MetricFlow.ProvidersFixtures
+  import MetricFlowTest.ProvidersFixtures
 
   alias MetricFlow.Integrations.Providers.GitHub
 

@@ -1,14 +1,14 @@
 defmodule MetricFlow.InvitationsTest do
-  use MetricFlow.DataCase
+  use MetricFlowTest.DataCase
 
   alias MetricFlow.Invitations
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Accounts.Member
   alias MetricFlow.Users.User
 
-  import MetricFlow.AccountsFixtures
-  import MetricFlow.UsersFixtures
-  import MetricFlow.InvitationsFixtures
+  import MetricFlowTest.AccountsFixtures
+  import MetricFlowTest.UsersFixtures
+  import MetricFlowTest.InvitationsFixtures
 
   describe "subscribe_invitations/1" do
     test "subscribes to invitation notifications for user" do
@@ -19,7 +19,10 @@ defmodule MetricFlow.InvitationsTest do
     end
   end
 
-  describe "invite_user/4" do
+  # Test URL builder - in production this would be provided by the web layer
+  defp test_url_fun(token), do: "http://test.com/invitations/accept/#{token}"
+
+  describe "invite_user/5" do
     setup do
       owner = user_fixture()
       account = account_with_owner_fixture(owner)
@@ -33,7 +36,7 @@ defmodule MetricFlow.InvitationsTest do
       role = :member
 
       assert {:ok, %Invitation{} = invitation} =
-               Invitations.invite_user(scope, scope.active_account_id, email, role)
+               Invitations.invite_user(scope, scope.active_account_id, email, role, &test_url_fun/1)
 
       assert invitation.email == email
       assert invitation.role == role
@@ -50,7 +53,7 @@ defmodule MetricFlow.InvitationsTest do
       add_member_to_account(member, scope.active_account_id, :member)
 
       assert {:error, :user_already_member} =
-               Invitations.invite_user(scope, scope.active_account_id, member.email, :member)
+               Invitations.invite_user(scope, scope.active_account_id, member.email, :member, &test_url_fun/1)
     end
 
     test "returns error when user lacks manage_members permission" do
@@ -63,7 +66,7 @@ defmodule MetricFlow.InvitationsTest do
       member_scope = user_scope_fixture(member, account)
 
       assert {:error, :not_authorized} =
-               Invitations.invite_user(member_scope, account.id, "test@example.com", :member)
+               Invitations.invite_user(member_scope, account.id, "test@example.com", :member, &test_url_fun/1)
     end
 
     test "returns error when scope has no active account" do
@@ -72,17 +75,17 @@ defmodule MetricFlow.InvitationsTest do
       scope = user_scope_fixture(user)
 
       assert {:error, :no_active_account} =
-               Invitations.invite_user(scope, nil, "test@example.com", :member)
+               Invitations.invite_user(scope, nil, "test@example.com", :member, &test_url_fun/1)
     end
 
     test "returns error with invalid email format", %{scope: scope} do
       assert {:error, %Ecto.Changeset{}} =
-               Invitations.invite_user(scope, scope.active_account_id, "invalid-email", :member)
+               Invitations.invite_user(scope, scope.active_account_id, "invalid-email", :member, &test_url_fun/1)
     end
 
     test "returns error with invalid role", %{scope: scope} do
       assert_raise FunctionClauseError, fn ->
-        Invitations.invite_user(scope, scope.active_account_id, "test@example.com", :invalid_role)
+        Invitations.invite_user(scope, scope.active_account_id, "test@example.com", :invalid_role, &test_url_fun/1)
       end
     end
 
@@ -92,7 +95,7 @@ defmodule MetricFlow.InvitationsTest do
       admin_scope = user_scope_fixture(admin, account)
 
       assert {:ok, %Invitation{}} =
-               Invitations.invite_user(admin_scope, account.id, "test@example.com", :member)
+               Invitations.invite_user(admin_scope, account.id, "test@example.com", :member, &test_url_fun/1)
     end
   end
 

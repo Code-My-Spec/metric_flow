@@ -1,4 +1,4 @@
-defmodule MetricFlow.ProvidersFixtures do
+defmodule MetricFlowTest.ProvidersFixtures do
   @moduledoc """
   Test helpers for OAuth provider data structures.
   """

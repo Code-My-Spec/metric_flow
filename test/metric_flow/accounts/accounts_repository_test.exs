@@ -1,8 +1,8 @@
 defmodule MetricFlow.Accounts.AccountsRepositoryTest do
-  use MetricFlow.DataCase, async: true
+  use MetricFlowTest.DataCase, async: true
 
-  import MetricFlow.AccountsFixtures
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.AccountsFixtures
+  import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Accounts.{Account, AccountsRepository, Member}
   alias MetricFlow.Repo

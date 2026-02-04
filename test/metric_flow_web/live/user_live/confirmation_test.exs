@@ -1,8 +1,8 @@
 defmodule MetricFlowWeb.UserLive.ConfirmationTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Users
 

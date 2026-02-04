@@ -1,11 +1,11 @@
-defmodule MetricFlow.InvitationsFixtures do
+defmodule MetricFlowTest.InvitationsFixtures do
   @moduledoc """
   This module defines test helpers for creating
   entities via the `MetricFlow.Invitations` context.
   """
 
-  import MetricFlow.AccountsFixtures
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.AccountsFixtures
+  import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Repo
