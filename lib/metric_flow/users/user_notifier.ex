@@ -1,7 +1,7 @@
 defmodule MetricFlow.Users.UserNotifier do
   import Swoosh.Email
 
-  alias MetricFlow.Mailer
+  alias MetricFlow.Infrastructure.Mailer
   alias MetricFlow.Users.User
 
   # Delivers the email using the application mailer.

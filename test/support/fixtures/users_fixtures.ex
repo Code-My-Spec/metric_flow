@@ -64,7 +64,7 @@ defmodule MetricFlowTest.UsersFixtures do
   end
 
   def override_token_authenticated_at(token, authenticated_at) when is_binary(token) do
-    MetricFlow.Repo.update_all(
+    MetricFlow.Infrastructure.Repo.update_all(
       from(t in Users.UserToken,
         where: t.token == ^token
       ),
@@ -74,14 +74,14 @@ defmodule MetricFlowTest.UsersFixtures do
 
   def generate_user_magic_link_token(user) do
     {encoded_token, user_token} = Users.UserToken.build_email_token(user, "login")
-    MetricFlow.Repo.insert!(user_token)
+    MetricFlow.Infrastructure.Repo.insert!(user_token)
     {encoded_token, user_token.token}
   end
 
   def offset_user_token(token, amount_to_add, unit) do
     dt = DateTime.add(DateTime.utc_now(:second), amount_to_add, unit)
 
-    MetricFlow.Repo.update_all(
+    MetricFlow.Infrastructure.Repo.update_all(
       from(ut in Users.UserToken, where: ut.token == ^token),
       set: [inserted_at: dt, authenticated_at: dt]
     )

@@ -21,7 +21,7 @@ config :metric_flow, :scopes,
   ]
 
 config :metric_flow,
-  ecto_repos: [MetricFlow.Repo],
+  ecto_repos: [MetricFlow.Infrastructure.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint

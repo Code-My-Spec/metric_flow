@@ -5,7 +5,7 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
   import MetricFlowTest.IntegrationsFixtures
 
   alias MetricFlow.Integrations.{Integration, IntegrationRepository}
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   describe "get_integration/2" do
     test "returns integration when it exists for scoped user and provider" do

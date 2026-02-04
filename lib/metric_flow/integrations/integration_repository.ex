@@ -8,7 +8,7 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   """
 
   import Ecto.Query
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
   alias MetricFlow.Users.Scope
   alias MetricFlow.Integrations.Integration
 

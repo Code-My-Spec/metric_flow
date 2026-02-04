@@ -6,8 +6,10 @@ defmodule MetricFlow.Invitations do
   email delivery, expiration handling, and invitation acceptance.
   """
 
+  use Boundary, deps: [MetricFlow.Users, MetricFlow.Accounts, MetricFlow.Infrastructure], exports: [Invitation]
+
   alias MetricFlow.Accounts
-  alias MetricFlow.Authorization
+  alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Users
   alias MetricFlow.Users.Scope
   alias MetricFlow.Invitations.{InvitationRepository, InvitationNotifier}

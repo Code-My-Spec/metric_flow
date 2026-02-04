@@ -5,7 +5,7 @@ defmodule MetricFlow.Accounts.AccountsRepository do
   """
 
   import Ecto.Query, warn: false
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
   alias MetricFlow.Accounts.{Account, Member}
   alias MetricFlow.Users.User
 

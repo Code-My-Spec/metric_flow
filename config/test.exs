@@ -15,7 +15,7 @@ config :metric_flow, :oauth_base_url, "http://localhost:4002"
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :metric_flow, MetricFlow.Repo,
+config :metric_flow, MetricFlow.Infrastructure.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",

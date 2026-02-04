@@ -5,7 +5,7 @@ defmodule MetricFlow.Accounts.AccountsRepositoryTest do
   import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Accounts.{Account, AccountsRepository, Member}
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   describe "create_account/1" do
     test "creates an account with valid attributes" do

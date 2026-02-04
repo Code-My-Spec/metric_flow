@@ -8,7 +8,7 @@ defmodule MetricFlowTest.InvitationsFixtures do
   import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Invitations.Invitation
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   def valid_invitation_attributes(account, inviter, attrs \\ %{}) do
     unique_id = System.unique_integer([:positive])

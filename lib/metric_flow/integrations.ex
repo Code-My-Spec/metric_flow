@@ -27,6 +27,8 @@ defmodule MetricFlow.Integrations do
   - `normalize_user/1` - Transforms provider user data to domain model
   """
 
+  use Boundary, deps: [MetricFlow.Users, MetricFlow.Infrastructure], exports: [Integration]
+
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Users.Scope
 

@@ -40,7 +40,7 @@ defmodule MetricFlow.Users.User do
 
     if Keyword.get(opts, :validate_unique, true) do
       changeset
-      |> unsafe_validate_unique(:email, MetricFlow.Repo)
+      |> unsafe_validate_unique(:email, MetricFlow.Infrastructure.Repo)
       |> unique_constraint(:email)
       |> validate_email_changed()
     else

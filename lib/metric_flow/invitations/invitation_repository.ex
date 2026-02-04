@@ -5,7 +5,7 @@ defmodule MetricFlow.Invitations.InvitationRepository do
   """
 
   import Ecto.Query, warn: false
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
   alias MetricFlow.Invitations.Invitation
 
   # Basic CRUD Operations

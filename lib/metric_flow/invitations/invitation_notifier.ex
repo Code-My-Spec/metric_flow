@@ -1,7 +1,7 @@
 defmodule MetricFlow.Invitations.InvitationNotifier do
   import Swoosh.Email
 
-  alias MetricFlow.Mailer
+  alias MetricFlow.Infrastructure.Mailer
   alias MetricFlow.Invitations.Invitation
 
   def deliver_invitation_email(%Invitation{} = invitation, url) do

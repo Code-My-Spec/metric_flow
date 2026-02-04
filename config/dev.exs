@@ -1,7 +1,7 @@
 import Config
 
 # Configure your database
-config :metric_flow, MetricFlow.Repo,
+config :metric_flow, MetricFlow.Infrastructure.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",

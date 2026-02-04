@@ -3,8 +3,10 @@ defmodule MetricFlow.UserPreferences do
   The UserPreferences context.
   """
 
+  use Boundary, deps: [MetricFlow.Users, MetricFlow.Infrastructure], exports: [UserPreference]
+
   import Ecto.Query, warn: false
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   alias MetricFlow.UserPreferences.UserPreference
   alias MetricFlow.Users.Scope
@@ -29,6 +31,19 @@ defmodule MetricFlow.UserPreferences do
     key = scope.user.id
 
     Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{key}:user_preferences", message)
+  end
+
+  @doc """
+  Loads user preferences into the scope.
+
+  This should be called from the web layer when building a user's scope.
+  Returns the scope with active_account and active_project populated.
+  """
+  def load_into_scope(%Scope{} = scope) do
+    case get_user_preference(scope) do
+      {:ok, preferences} -> Scope.with_preferences(scope, preferences)
+      {:error, :not_found} -> scope
+    end
   end
 
   @doc """

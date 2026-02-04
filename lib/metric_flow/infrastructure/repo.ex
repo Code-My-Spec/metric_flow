@@ -1,4 +1,4 @@
-defmodule MetricFlow.Repo do
+defmodule MetricFlow.Infrastructure.Repo do
   use Ecto.Repo,
     otp_app: :metric_flow,
     adapter: Ecto.Adapters.Postgres

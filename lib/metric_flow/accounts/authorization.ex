@@ -1,4 +1,4 @@
-defmodule MetricFlow.Authorization do
+defmodule MetricFlow.Accounts.Authorization do
   alias MetricFlow.Accounts.MembersRepository
   alias MetricFlow.Users.Scope
 

@@ -27,7 +27,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
 
       assert html =~ "If your email is in our system"
 
-      assert MetricFlow.Repo.get_by!(MetricFlow.Users.UserToken, user_id: user.id).context ==
+      assert MetricFlow.Infrastructure.Repo.get_by!(MetricFlow.Users.UserToken, user_id: user.id).context ==
                "login"
     end
 

@@ -3,8 +3,10 @@ defmodule MetricFlow.Users do
   The Users context.
   """
 
+  use Boundary, deps: [MetricFlow.Infrastructure], exports: [User, Scope]
+
   import Ecto.Query, warn: false
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   alias MetricFlow.Users.{User, UserToken, UserNotifier}
 

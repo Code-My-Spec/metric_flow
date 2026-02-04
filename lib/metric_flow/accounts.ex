@@ -3,8 +3,10 @@ defmodule MetricFlow.Accounts do
   The Accounts context.
   """
 
+  use Boundary, deps: [MetricFlow.Users, MetricFlow.Infrastructure], exports: [Account, Member, Authorization, MembersRepository]
+
   alias MetricFlow.Accounts.{Account, AccountsRepository, MembersRepository}
-  alias MetricFlow.Authorization
+  alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Users.Scope
 
   @doc """

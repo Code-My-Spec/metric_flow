@@ -17,7 +17,6 @@ defmodule MetricFlow.Users.Scope do
   """
 
   alias MetricFlow.Users.User
-  alias MetricFlow.UserPreferences
 
   defstruct user: nil,
             active_account: nil,
@@ -25,28 +24,40 @@ defmodule MetricFlow.Users.Scope do
             active_project: nil,
             active_project_id: nil
 
+  @type t :: %__MODULE__{
+          user: User.t() | nil,
+          active_account: any(),
+          active_account_id: String.t() | nil,
+          active_project: any(),
+          active_project_id: String.t() | nil
+        }
+
   @doc """
-  Creates a scope for the given user.
+  Creates a basic scope for the given user.
+
+  To load user preferences (active account, project), use
+  `MetricFlow.UserPreferences.load_into_scope/1` from the web layer.
 
   Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
-    scope = %__MODULE__{user: user}
-
-    case UserPreferences.get_user_preference(scope) do
-      {:ok, preferences} ->
-        %__MODULE__{
-          user: user,
-          active_account: preferences.active_account,
-          active_account_id: preferences.active_account_id,
-          active_project: preferences.active_project,
-          active_project_id: preferences.active_project_id
-        }
-
-      {:error, :not_found} ->
-        scope
-    end
+    %__MODULE__{user: user}
   end
 
   def for_user(nil), do: nil
+
+  @doc """
+  Updates the scope with preference data.
+  """
+  def with_preferences(%__MODULE__{} = scope, nil), do: scope
+
+  def with_preferences(%__MODULE__{} = scope, preferences) do
+    %__MODULE__{
+      scope
+      | active_account: preferences.active_account,
+        active_account_id: preferences.active_account_id,
+        active_project: preferences.active_project,
+        active_project_id: preferences.active_project_id
+    }
+  end
 end

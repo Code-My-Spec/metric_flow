@@ -5,7 +5,7 @@ defmodule MetricFlowTest.AccountsFixtures do
   """
 
   alias MetricFlow.Accounts.{Account, Member}
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   def valid_account_attributes(attrs \\ %{}) do
     unique_id = System.unique_integer([:positive])

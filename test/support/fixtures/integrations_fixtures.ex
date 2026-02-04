@@ -5,7 +5,7 @@ defmodule MetricFlowTest.IntegrationsFixtures do
   """
 
   alias MetricFlow.Integrations.Integration
-  alias MetricFlow.Repo
+  alias MetricFlow.Infrastructure.Repo
 
   def valid_integration_attributes(user, attrs \\ %{}) do
     Enum.into(attrs, %{
