@@ -99,6 +99,7 @@ defmodule MetricFlow.MixProject do
         "esbuild metric_flow --minify",
         "phx.digest"
       ],
+      spex: ["spex --pattern test/spex/**/*_spex.ex --quiet"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

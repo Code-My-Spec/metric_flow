@@ -42,7 +42,7 @@ config :metric_flow, MetricFlowWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :metric_flow, MetricFlow.Mailer, adapter: Swoosh.Adapters.Local
+config :metric_flow, MetricFlow.Infrastructure.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -74,7 +74,7 @@ config :logger, :default_formatter,
 config :phoenix, :json_library, Jason
 
 # Cloak encryption vault configuration
-config :metric_flow, MetricFlow.Vault,
+config :metric_flow, MetricFlow.Infrastructure.Vault,
   ciphers: [
     default: {
       Cloak.Ciphers.AES.GCM,

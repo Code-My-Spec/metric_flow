@@ -251,9 +251,12 @@ defmodule MetricFlow.Accounts.AccountsRepositoryTest do
   describe "with_preloads/1" do
     test "returns query with specified preloads" do
       user = user_fixture()
-      _account = account_with_owner_fixture(user)
+      account = account_with_owner_fixture(user)
 
-      query = AccountsRepository.with_preloads([:members])
+      query =
+        AccountsRepository.with_preloads([:members])
+        |> where([a], a.id == ^account.id)
+
       [fetched_account] = Repo.all(query)
 
       assert Ecto.assoc_loaded?(fetched_account.members)
@@ -262,9 +265,12 @@ defmodule MetricFlow.Accounts.AccountsRepositoryTest do
 
     test "handles multiple preloads" do
       user = user_fixture()
-      _account = account_with_owner_fixture(user)
+      account = account_with_owner_fixture(user)
 
-      query = AccountsRepository.with_preloads([:members, :users])
+      query =
+        AccountsRepository.with_preloads([:members, :users])
+        |> where([a], a.id == ^account.id)
+
       [fetched_account] = Repo.all(query)
 
       assert Ecto.assoc_loaded?(fetched_account.members)
@@ -288,7 +294,7 @@ defmodule MetricFlow.Accounts.AccountsRepositoryTest do
 
     test "uses individual query builders correctly" do
       user = user_fixture()
-      _account = account_with_owner_fixture(user, %{slug: "test-slug", type: :team})
+      account = account_with_owner_fixture(user, %{slug: "test-slug", type: :team})
 
       # Test by_slug query
       slug_query = AccountsRepository.by_slug("test-slug")
@@ -300,8 +306,11 @@ defmodule MetricFlow.Accounts.AccountsRepositoryTest do
       type_results = Repo.all(type_query)
       assert length(type_results) >= 1
 
-      # Test with_preloads query
-      preload_query = AccountsRepository.with_preloads([:members])
+      # Test with_preloads query - scope to our account
+      preload_query =
+        AccountsRepository.with_preloads([:members])
+        |> where([a], a.id == ^account.id)
+
       [preload_result] = Repo.all(preload_query)
       assert Ecto.assoc_loaded?(preload_result.members)
     end

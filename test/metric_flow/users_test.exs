@@ -3,6 +3,7 @@ defmodule MetricFlow.UsersTest do
 
   alias MetricFlow.Users
 
+  import Ecto.Query
   import MetricFlowTest.UsersFixtures
   alias MetricFlow.Users.{User, UserToken}
 
@@ -170,7 +171,10 @@ defmodule MetricFlow.UsersTest do
     end
 
     test "does not update email if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      {1, nil} =
+        UserToken
+        |> where(user_id: ^user.id)
+        |> Repo.update_all(set: [inserted_at: ~N[2020-01-01 00:00:00]])
 
       assert Users.update_user_email(user, token) ==
                {:error, :transaction_aborted}
@@ -300,9 +304,14 @@ defmodule MetricFlow.UsersTest do
       refute Users.get_user_by_session_token("oops")
     end
 
-    test "does not return user for expired token", %{token: token} do
+    test "does not return user for expired token", %{user: user, token: token} do
       dt = ~N[2020-01-01 00:00:00]
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: dt, authenticated_at: dt])
+
+      {1, nil} =
+        UserToken
+        |> where(user_id: ^user.id)
+        |> Repo.update_all(set: [inserted_at: dt, authenticated_at: dt])
+
       refute Users.get_user_by_session_token(token)
     end
   end
@@ -323,8 +332,12 @@ defmodule MetricFlow.UsersTest do
       refute Users.get_user_by_magic_link_token("oops")
     end
 
-    test "does not return user for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+    test "does not return user for expired token", %{user: user, token: token} do
+      {1, nil} =
+        UserToken
+        |> where(user_id: ^user.id)
+        |> Repo.update_all(set: [inserted_at: ~N[2020-01-01 00:00:00]])
+
       refute Users.get_user_by_magic_link_token(token)
     end
   end
@@ -352,7 +365,12 @@ defmodule MetricFlow.UsersTest do
 
     test "raises when unconfirmed user has password set" do
       user = unconfirmed_user_fixture()
-      {1, nil} = Repo.update_all(User, set: [hashed_password: "hashed"])
+
+      {1, nil} =
+        User
+        |> where(id: ^user.id)
+        |> Repo.update_all(set: [hashed_password: "hashed"])
+
       {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
 
       assert_raise RuntimeError, ~r/magic link log in is not allowed/, fn ->
