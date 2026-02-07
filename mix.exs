@@ -74,7 +74,7 @@ defmodule MetricFlow.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
-      {:mix_machine, git: "https://github.com/johns10/mix_machine"},
+      {:mix_machine, path: "/Users/johndavenport/Documents/github/mix_machine"},
       {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
       {:boundary, "~> 0.10"}
     ]
@@ -99,8 +99,9 @@ defmodule MetricFlow.MixProject do
         "esbuild metric_flow --minify",
         "phx.digest"
       ],
-      spex: ["spex --pattern test/spex/**/*_spex.ex --quiet"],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      spex: ["spex --quiet"],
+      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
+      "compile.machine": ["compile.machine --exs-pattern test/spex/**/*_spex.exs"]
     ]
   end
 end
