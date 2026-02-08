@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Upon deletion, all account data is removed (metrics, reports, integrations)" do
     scenario "authentication system is available" do

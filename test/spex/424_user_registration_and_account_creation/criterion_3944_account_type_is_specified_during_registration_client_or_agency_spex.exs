@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Account type is specified during registration (Client or Agency)" do
     scenario "registration page is accessible" do

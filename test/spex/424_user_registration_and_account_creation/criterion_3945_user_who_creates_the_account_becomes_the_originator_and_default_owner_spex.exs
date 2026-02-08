@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.UserBecomesOriginatorAndOwnerSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "User who creates the account becomes the originator and default owner" do
     scenario "user can complete registration process" do

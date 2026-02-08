@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "All users on an account see the same data with account-level isolation" do
     scenario "authentication system supports account-based access" do

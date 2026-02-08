@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AccessLevelsFollowHierarchySpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Access levels follow hierarchy: only owners can add owners, only admins can add admins, etc." do
     scenario "authentication system is available" do

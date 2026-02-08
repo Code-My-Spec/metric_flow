@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "User receives confirmation email after deletion" do
     scenario "email system is integrated with registration" do

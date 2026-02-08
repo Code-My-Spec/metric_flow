@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Users can have different access levels: owner, admin, account manager, read-only" do
     scenario "authentication system supports user management" do

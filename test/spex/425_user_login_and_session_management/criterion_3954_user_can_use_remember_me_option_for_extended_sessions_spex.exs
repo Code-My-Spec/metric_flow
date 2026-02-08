@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "User can use Remember me option for extended sessions" do
     scenario "login form includes remember me option" do

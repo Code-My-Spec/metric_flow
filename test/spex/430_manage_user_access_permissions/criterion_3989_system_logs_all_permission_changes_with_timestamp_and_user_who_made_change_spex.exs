@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "System logs all permission changes with timestamp and user who made change" do
     scenario "authentication system is available" do

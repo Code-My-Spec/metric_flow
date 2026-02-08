@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.RegistrationValidatesEmailAndPasswordSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Registration form validates email format and password strength" do
     scenario "invalid email format is rejected" do

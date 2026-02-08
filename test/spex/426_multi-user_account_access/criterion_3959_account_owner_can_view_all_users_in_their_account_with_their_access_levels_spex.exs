@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Account owner can view all users in their account with their access levels" do
     scenario "authentication pages are accessible" do

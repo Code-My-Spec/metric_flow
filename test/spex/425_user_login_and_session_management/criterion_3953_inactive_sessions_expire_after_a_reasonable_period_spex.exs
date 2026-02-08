@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Inactive sessions expire after a reasonable period" do
     scenario "login page offers session duration options" do

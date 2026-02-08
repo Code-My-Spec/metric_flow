@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Failed login attempts show clear error messages" do
     scenario "magic link login shows generic message for security" do

@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserLosesAbilitySpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "When access is revoked, user immediately loses ability to view client data" do
     scenario "authentication system enforces access control" do

@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.ClientCanModifyUserAccessLevelSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Client can modify a user access level to upgrade or downgrade permissions" do
     scenario "authentication supports role-based access" do

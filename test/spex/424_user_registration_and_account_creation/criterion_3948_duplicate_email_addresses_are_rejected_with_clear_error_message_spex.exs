@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Duplicate email addresses are rejected with clear error message" do
     scenario "attempting to register with an already registered email" do

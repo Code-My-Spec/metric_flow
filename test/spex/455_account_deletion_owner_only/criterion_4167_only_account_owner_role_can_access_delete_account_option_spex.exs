@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.OnlyAccountOwnerCanAccessDeleteOptionSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Only account owner role can access delete account option" do
     scenario "authentication system supports role-based access" do

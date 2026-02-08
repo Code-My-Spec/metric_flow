@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.ClientCanRevokeUserAccessSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Client can revoke a user access at any time" do
     scenario "authentication system supports access control" do

@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.WarningExplainsDeletionIsPermanentSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Warning explains that deletion is permanent and irreversible" do
     scenario "authentication pages load without errors" do

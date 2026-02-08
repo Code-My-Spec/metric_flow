@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AllUserAccessGrantsAreRevokedSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "All user access grants to this account are revoked" do
     scenario "authentication system supports access control" do

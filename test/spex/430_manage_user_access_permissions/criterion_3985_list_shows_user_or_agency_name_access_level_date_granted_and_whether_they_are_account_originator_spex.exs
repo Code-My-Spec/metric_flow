@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.ListShowsUserInfoAndAccessLevelSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "List shows user or agency name, access level, date granted, and whether they are account originator" do
     scenario "authentication system is available" do

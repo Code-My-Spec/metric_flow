@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Admin and other roles cannot delete account" do
     scenario "authentication supports role-based access" do

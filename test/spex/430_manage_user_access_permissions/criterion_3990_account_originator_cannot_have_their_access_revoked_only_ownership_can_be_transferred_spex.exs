@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveAccessRevokedSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Account originator cannot have their access revoked, only ownership can be transferred" do
     scenario "registration creates account originator" do

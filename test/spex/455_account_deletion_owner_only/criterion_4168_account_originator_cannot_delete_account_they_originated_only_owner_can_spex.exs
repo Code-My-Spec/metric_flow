@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Account originator cannot delete account they originated (only owner can)" do
     scenario "authentication system is available" do

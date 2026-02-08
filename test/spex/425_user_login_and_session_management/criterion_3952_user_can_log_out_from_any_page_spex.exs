@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "User can log out from any page" do
     scenario "login page is accessible for unauthenticated users" do

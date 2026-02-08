@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Delete requires confirmation with account name typed in" do
     scenario "authentication system supports secure actions" do

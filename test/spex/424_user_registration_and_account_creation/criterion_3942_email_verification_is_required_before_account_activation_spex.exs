@@ -5,19 +5,10 @@ defmodule MetricFlowSpex.EmailVerificationRequiredBeforeAccountActivationSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
-
-  setup do
-    MetricFlowTest.DataCase.setup_sandbox(%{async: false})
-    :ok
-  end
 
   spex "Email verification is required before account activation" do
     scenario "newly registered user receives email verification message" do

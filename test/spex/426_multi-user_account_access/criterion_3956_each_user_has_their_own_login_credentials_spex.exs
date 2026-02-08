@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Each user has their own login credentials" do
     scenario "each user registers with unique email" do

@@ -8,14 +8,10 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanInviteUsersViaEmailSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "Account owner or admin can invite users to their account via email" do
     scenario "registration page is available for invited users" do

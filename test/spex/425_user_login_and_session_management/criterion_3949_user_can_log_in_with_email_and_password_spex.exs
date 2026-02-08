@@ -5,14 +5,10 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
   """
 
   use SexySpex
+  use MetricFlowTest.ConnCase
 
   import_givens MetricFlowSpex.SharedGivens
   import Phoenix.LiveViewTest
-  import Phoenix.ConnTest
-
-  use MetricFlowWeb, :verified_routes
-
-  @endpoint MetricFlowWeb.Endpoint
 
   spex "User can log in with email and password" do
     scenario "login page displays email and password form" do
