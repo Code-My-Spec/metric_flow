@@ -10,7 +10,8 @@ defmodule MetricFlow.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers(),
+      compilers: compilers(Mix.env()),
+      spex: [pattern: "test/spex/**/*_spex.exs"],
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -27,12 +28,18 @@ defmodule MetricFlow.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, spex: :test]
     ]
   end
 
+  # :spex compiler only needed in test (compiles BDD spec files for Boundary)
+  defp compilers(:test),
+    do: [:boundary, :phoenix_live_view, :erlang, :elixir, :app]
+
+  defp compilers(_), do: [:boundary, :phoenix_live_view, :erlang, :elixir, :app]
+
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/spex"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -99,7 +106,8 @@ defmodule MetricFlow.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
       {:mix_machine, git: "https://github.com/johns10/mix_machine"},
-      {:sexy_spex, "~> 0.1.0"}
+      {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
+      {:boundary, "~> 0.10.4", runtime: false}
     ]
   end
 
@@ -122,6 +130,7 @@ defmodule MetricFlow.MixProject do
         "esbuild metric_flow --minify",
         "phx.digest"
       ],
+      spex: ["spex --quiet"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end
