@@ -67,6 +67,33 @@ defmodule MetricFlow.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      # Encryption (ADR: deployment)
+      {:cloak_ecto, "~> 1.3.0"},
+      # OAuth (ADR: data_provider_apis)
+      {:assent, "~> 0.2"},
+      # Caching (ADR: caching_strategy)
+      {:cachex, "~> 4.1"},
+      # Monitoring (ADR: monitoring_observability)
+      {:sentry, "~> 11.0"},
+      {:prom_ex, "~> 1.11"},
+      # Charting (ADR: charting_library)
+      {:vega_lite, "~> 0.1.11"},
+      # File storage (ADR: file_storage)
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:sweet_xml, "~> 0.7"},
+      # LLM integration (ADR: llm_provider)
+      {:req_llm, "~> 1.6"},
+      # Data providers (ADR: data_provider_apis)
+      {:google_api_analytics_data, "~> 0.17"},
+      # Environment variables (ADR: dotenvy)
+      {:dotenvy, "~> 1.1"},
+      # Background jobs (ADR: background_job_processing)
+      {:oban, "~> 2.17"},
+      # HTML parsing
+      {:floki, "~> 0.38.0"},
+      # Testing (ADR: e2e_testing)
+      {:req_cassette, "~> 0.4", only: :test},
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},

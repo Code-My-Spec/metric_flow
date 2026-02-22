@@ -73,6 +73,35 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Cloak encryption vault configuration
+config :metric_flow, MetricFlow.Vault,
+  ciphers: [
+    default: {
+      Cloak.Ciphers.AES.GCM,
+      tag: "AES.GCM.V1",
+      key: Base.decode64!("w09FSTq2MKlGVsfejph/sQiw6j9PSrqmgpCccRNG33s="),
+      iv_length: 12
+    }
+  ]
+
+# Oban job processing (ADR: background_job_processing)
+config :metric_flow, Oban,
+  repo: MetricFlow.Repo,
+  queues: [default: 10, sync: 5, correlations: 3],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 604_800},
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
+  ]
+
+# Sentry error tracking (ADR: monitoring_observability) — use Finch HTTP client (no Hackney)
+config :sentry, client: Sentry.FinchHTTPClient
+
+# ExAws for Tigris file storage (ADR: file_storage)
+# Use Req as the HTTP adapter to avoid adding Hackney as a dependency
+config :ex_aws,
+  json_codec: Jason,
+  http_client: ExAws.Request.Req
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

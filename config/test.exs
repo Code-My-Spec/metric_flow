@@ -29,6 +29,12 @@ config :metric_flow, MetricFlow.Mailer, adapter: Swoosh.Adapters.Test
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
+# Oban testing mode — jobs are not executed, but can be asserted on
+config :metric_flow, Oban, testing: :manual
+
+# Disable Sentry in test
+config :sentry, dsn: nil
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

@@ -16,6 +16,11 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
+# Load .env files in dev and test via Dotenvy (ADR: dotenvy)
+if config_env() in [:dev, :test] do
+  Dotenvy.source([".env", ".env.#{config_env()}"])
+end
+
 if System.get_env("PHX_SERVER") do
   config :metric_flow, MetricFlowWeb.Endpoint, server: true
 end
@@ -67,53 +72,57 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # ## SSL Support
-  #
-  # To get SSL working, you will need to add the `https` key
-  # to your endpoint configuration:
-  #
-  #     config :metric_flow, MetricFlowWeb.Endpoint,
-  #       https: [
-  #         ...,
-  #         port: 443,
-  #         cipher_suite: :strong,
-  #         keyfile: System.get_env("SOME_APP_SSL_KEY_PATH"),
-  #         certfile: System.get_env("SOME_APP_SSL_CERT_PATH")
-  #       ]
-  #
-  # The `cipher_suite` is set to `:strong` to support only the
-  # latest and more secure SSL ciphers. This means old browsers
-  # and clients may not be supported. You can set it to
-  # `:compatible` for wider support.
-  #
-  # `:keyfile` and `:certfile` expect an absolute path to the key
-  # and cert in disk or a relative path inside priv, for example
-  # "priv/ssl/server.key". For all supported SSL configuration
-  # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
-  #
-  # We also recommend setting `force_ssl` in your config/prod.exs,
-  # ensuring no data is ever sent via http, always redirecting to https:
-  #
-  #     config :metric_flow, MetricFlowWeb.Endpoint,
-  #       force_ssl: [hsts: true]
-  #
-  # Check `Plug.SSL` for all available options in `force_ssl`.
+  # Postmark for production email delivery (ADR: email_provider)
+  config :metric_flow, MetricFlow.Mailer,
+    adapter: Swoosh.Adapters.Postmark,
+    api_key: System.fetch_env!("POSTMARK_API_KEY")
 
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Here is an example configuration for Mailgun:
-  #
-  #     config :metric_flow, MetricFlow.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
-  #
-  # Most non-SMTP adapters require an API client. Swoosh supports Req, Hackney,
-  # and Finch out-of-the-box. This configuration is typically done at
-  # compile-time in your config/prod.exs:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Req
-  #
-  # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+  config :swoosh, :api_client, Swoosh.ApiClient.Req
+
+  # Cloak vault key from environment (ADR: deployment)
+  if cloak_key = System.get_env("CLOAK_KEY") do
+    config :metric_flow, MetricFlow.Vault,
+      ciphers: [
+        default: {
+          Cloak.Ciphers.AES.GCM,
+          tag: "AES.GCM.V1", key: Base.decode64!(cloak_key), iv_length: 12
+        }
+      ]
+  end
+
+  # Sentry error tracking (ADR: monitoring_observability)
+  config :sentry,
+    dsn: System.get_env("SENTRY_DSN"),
+    environment_name: :prod,
+    enable_source_code_context: true,
+    root_source_code_paths: [File.cwd!()],
+    integrations: [
+      oban: [capture_errors: true]
+    ]
+
+  # Tigris file storage (ADR: file_storage)
+  config :ex_aws,
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+
+  config :ex_aws, :s3,
+    scheme: "https://",
+    host: "fly.storage.tigris.dev",
+    region: "auto"
+
+  # Oban cron scheduling in production (ADR: background_job_processing)
+  config :metric_flow, Oban,
+    plugins: [
+      {Oban.Plugins.Pruner, max_age: 604_800},
+      {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)},
+      {Oban.Plugins.Cron,
+       crontab: [
+         {"0 2 * * *", MetricFlow.DataSync.Scheduler, queue: :sync, max_attempts: 1}
+       ]}
+    ]
+end
+
+# LLM API key — available in all environments for development testing (ADR: llm_provider)
+if anthropic_key = System.get_env("ANTHROPIC_API_KEY") do
+  config :req_llm, :anthropic_api_key, anthropic_key
 end
