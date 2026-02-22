@@ -9,11 +9,13 @@ defmodule MetricFlow.Application do
   def start(_type, _args) do
     children = [
       MetricFlowWeb.Telemetry,
+      MetricFlowWeb.PromEx,
       MetricFlow.Repo,
       {DNSCluster, query: Application.get_env(:metric_flow, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MetricFlow.PubSub},
-      # Start a worker by calling: MetricFlow.Worker.start_link(arg)
-      # {MetricFlow.Worker, arg},
+      MetricFlow.Vault,
+      {Oban, Application.fetch_env!(:metric_flow, Oban)},
+      {Cachex, name: :metric_cache},
       # Start to serve requests, typically the last entry
       MetricFlowWeb.Endpoint
     ]

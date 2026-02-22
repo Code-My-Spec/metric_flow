@@ -9,12 +9,17 @@ defmodule MetricFlowWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {MetricFlowWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug :put_secure_browser_headers, %{"content-security-policy" => "default-src 'self'"}
     plug :fetch_current_scope_for_user
   end
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  # Prometheus metrics endpoint (ADR: monitoring_observability)
+  scope "/" do
+    get "/metrics", PromEx.Plug, prom_ex_module: MetricFlowWeb.PromEx
   end
 
   scope "/", MetricFlowWeb do
