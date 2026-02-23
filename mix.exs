@@ -21,7 +21,7 @@ defmodule MetricFlow.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {MetricFlow.Application, []},
+      mod: {MetricFlowWeb.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -34,7 +34,7 @@ defmodule MetricFlow.MixProject do
 
   # :spex compiler only needed in test (compiles BDD spec files for Boundary)
   defp compilers(:test),
-    do: [:boundary, :phoenix_live_view, :erlang, :elixir, :app]
+    do: [:diagnostics, :boundary, :phoenix_live_view, :erlang, :elixir, :app]
 
   defp compilers(_), do: [:boundary, :phoenix_live_view, :erlang, :elixir, :app]
 
