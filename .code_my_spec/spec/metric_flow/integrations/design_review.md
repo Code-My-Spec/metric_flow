@@ -2,12 +2,12 @@
 
 ## Overview
 
-Reviewed the Integrations context and its 5 child components (Integration schema, IntegrationRepository, Providers.Behaviour, Providers.GitHub, Providers.Google). The architecture is sound with clean separation of concerns, no circular dependencies, and a well-structured provider abstraction using Assent. One significant gap exists: the context spec documents no functions despite the implementation exposing a full public API.
+Reviewed the Integrations context and its 4 child components (Integration schema, IntegrationRepository, Providers.Behaviour, Providers.Google). The architecture is sound with clean separation of concerns, no circular dependencies, and a well-structured provider abstraction using Assent. One significant gap exists: the context spec documents no functions despite the implementation exposing a full public API.
 
 ## Architecture
 
 - **Separation of concerns is clean**: Schema handles data structure and validation, Repository handles scoped CRUD, Behaviour defines the provider contract, and concrete providers implement it. The context facade orchestrates OAuth flows and delegates data access.
-- **Component types are appropriate**: Schema for `Integration`, repository pattern for `IntegrationRepository`, behaviour for the provider contract, and module implementations for GitHub/Google.
+- **Component types are appropriate**: Schema for `Integration`, repository pattern for `IntegrationRepository`, behaviour for the provider contract, and module implementation for Google.
 - **Dependency graph is valid**: No circular dependencies detected. Context depends on `Users` (for Scope) and `Infrastructure` (for Repo) — both appropriate cross-boundary dependencies declared via `use Boundary`.
 - **Provider abstraction is well-designed**: The three-callback behaviour (`config/0`, `strategy/0`, `normalize_user/1`) keeps providers minimal while Assent handles OAuth complexity. Adding new providers requires only implementing the behaviour.
 - **Multi-tenant isolation is consistent**: All repository operations are scoped via `Users.Scope`, preventing cross-user data access to OAuth credentials.

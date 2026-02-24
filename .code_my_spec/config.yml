@@ -9,9 +9,15 @@ current_user_email: "johns10@gmail.com"
 account_id: 1cf53ab2-14ea-4e5f-9560-f16c1ed310fa
 ignored_components:
   - MetricFlow.Repo
+  - MetricFlow.Mailer
+  - MetricFlowWeb.Application
   - MetricFlowWeb.Endpoint
   - MetricFlowWeb.Router
-  - MetricFlow.Mailer
   - MetricFlowWeb.Telemetry
-  - MetricFlow.Application
   - MetricFlowWeb.Gettext
+  - MetricFlowWeb.CoreComponents
+  - MetricFlowWeb.ErrorHTML
+  - MetricFlowWeb.ErrorJSON
+  - MetricFlowWeb.Layouts
+  - MetricFlowWeb.PageController
+  - MetricFlowWeb.PageHTML

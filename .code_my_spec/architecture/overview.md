@@ -8,7 +8,7 @@
 ### Accounts
 **context**
 
-Business accounts and membership management.
+Business accounts and membership management. Manages the full lifecycle of accounts (personal and team), account membership, role-based authorization, and PubSub notifications for real-time UI updates. All public functions accept a `%Scope{}` as the first parameter for multi-tenant isolation.
 
 ### Agencies
 **context**
@@ -28,6 +28,9 @@ Dependencies:
 - MetricFlow.Metrics
 - MetricFlow.Correlations
 - MetricFlow.Dashboards
+
+### Binary
+**module**
 
 ### Correlations
 **context**
@@ -75,6 +78,7 @@ Unified metric storage and retrieval. Persists metrics from external data provid
 
 Dependencies:
 - MetricFlow.Users
+- MetricFlow.Metrics.MetricRepository
 
 ### Users
 **context**
@@ -98,9 +102,6 @@ Accept invitation flow.
 Dependencies:
 - MetricFlow.Invitations
 
-### Application
-**module**
-
 ### Chat
 **liveview**
 
@@ -115,13 +116,10 @@ Dependencies:
 ### Connect
 **liveview**
 
-OAuth connection flow.
+OAuth connection flow for linking marketing platforms to a user account. Displays all supported platforms (Google Ads, Facebook Ads, Google Analytics) with their current connection status and per-platform OAuth initiation links. Also serves as the OAuth callback handler — when the user returns from the provider, the view processes the authorization code, persists the integration, and shows a confirmation or error message.
 
 Dependencies:
 - MetricFlow.Integrations
-
-### CoreComponents
-**module**
 
 ### Editor
 **liveview**
@@ -138,12 +136,6 @@ Create/edit individual visualizations.
 
 Dependencies:
 - MetricFlow.Dashboards
-
-### ErrorHTML
-**module**
-
-### ErrorJSON
-**module**
 
 ### Goals
 **liveview**
@@ -171,7 +163,7 @@ Dependencies:
 - MetricFlow.DataSync
 
 ### Index
-**module**
+**liveview**
 
 List user's accounts with switcher functionality. Displays all accounts the user belongs to (personal and team), shows account type and the user's role in each, and allows switching the active account context via `UserPreferences.select_active_account/2`. The active account is highlighted. Subscribes to PubSub for real-time account and member updates.
 
@@ -194,7 +186,7 @@ AI insights panel, suggestion feedback.
 Dependencies:
 - MetricFlow.Ai
 
-### Layouts
+### IntegrationCallbackController
 **module**
 
 ### Login
@@ -206,17 +198,14 @@ Dependencies:
 - MetricFlow.Users
 
 ### Members
-**module**
+**liveview**
 
 Manage account members and permissions for the active account. Displays all members with their roles and join dates. Owners and admins can change member roles, remove members, and invite new users. Enforces authorization via `Accounts.Authorization` — only owners/admins see management controls. Protects the last owner from removal or demotion. Subscribes to member PubSub for real-time updates.
 
 Dependencies:
 - MetricFlow.Accounts
 
-### PageController
-**module**
-
-### PageHTML
+### OnboardingLive
 **module**
 
 ### PromEx
@@ -263,7 +252,7 @@ Dependencies:
 - MetricFlow.Agencies
 
 ### Settings
-**module**
+**liveview**
 
 Account settings, ownership transfer, and deletion for the active account. Owners and admins can edit account name and slug. Only owners can transfer ownership to another admin/member and delete the account. Deletion requires typing the account name for confirmation and re-entering the user's password. Personal accounts cannot be deleted. Subscribes to account PubSub for real-time updates.
 

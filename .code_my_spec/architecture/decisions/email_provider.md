@@ -1,7 +1,7 @@
 # Email Delivery Provider
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 
@@ -172,16 +172,18 @@ SendGrid is the most widely recognized email provider, offering both transaction
 
 ## Decision
 
-**Postmark is recommended**, with the Platform plan targeted for production once agency white-labeling is active.
+**Mailgun** is selected, with the Foundation plan ($35/month, 1,000 domains) targeted for production once agency white-labeling is active.
 
-The agency white-label requirement is the decisive constraint. MetricFlow must support multiple client-owned sender domains from which transactional emails are dispatched. Among providers with a well-maintained Swoosh adapter, Postmark is the only one that:
+The agency white-label requirement is the decisive constraint. MetricFlow must support multiple client-owned sender domains from which transactional emails are dispatched. Mailgun's Foundation plan supports 1,000 custom sending domains — the most permissive tier among providers considered for multi-domain use at a reasonable price point.
 
-1. Provides unlimited sender domains on a plan that remains cost-reasonable for an early-stage SaaS ($18/month Platform)
-2. Delivers the best independently verified inbox placement rate (83.3%)
-3. Offers a programmatic Sender Signatures API that allows MetricFlow to register and verify client domains without manual intervention per client
-4. Ships a stable, first-party Swoosh adapter requiring no additional dependencies
+While Postmark has better deliverability (83.3% vs 71.4% inbox placement), Mailgun provides:
 
-Resend's domain limits (1 on free, 10 on Pro and Scale) are a structural mismatch for an agency product. Mailgun reaches parity on domain count only at the $35/month Foundation tier and has materially worse deliverability. AWS SES is operationally expensive to operate correctly and requires manual sandbox exit before any real users can receive email.
+1. 1,000 sender domains on the Foundation plan — more than sufficient for agency white-labeling at early and mid-stage growth
+2. A stable, first-party Swoosh adapter (`Swoosh.Adapters.Mailgun`) shipping in Swoosh core
+3. Advanced analytics, inbound routing, and domain verification APIs
+4. A free tier (100 emails/day) adequate for development
+
+Resend's domain limits (1 on free, 10 on Pro/Scale) are a structural mismatch for an agency product. AWS SES is operationally expensive and requires manual sandbox exit. Postmark has better deliverability but Mailgun's domain support at the Foundation tier is a better fit for cost and scale.
 
 For development, the existing `Swoosh.Adapters.Local` configuration is retained — no changes needed to `config/config.exs`.
 
@@ -190,12 +192,13 @@ For development, the existing `Swoosh.Adapters.Local` configuration is retained 
 The adapter is set in `config/runtime.exs` for production:
 
 ```elixir
-config :metric_flow, MetricFlow.Infrastructure.Mailer,
-  adapter: Swoosh.Adapters.Postmark,
-  api_key: System.fetch_env!("POSTMARK_API_KEY")
+config :metric_flow, MetricFlow.Mailer,
+  adapter: Swoosh.Adapters.Mailgun,
+  api_key: System.fetch_env!("MAILGUN_API_KEY"),
+  domain: System.fetch_env!("MAILGUN_DOMAIN")
 ```
 
-No new Mix dependencies are required. `Swoosh.Adapters.Postmark` ships with the `swoosh` package already in `mix.exs`.
+No new Mix dependencies are required. `Swoosh.Adapters.Mailgun` ships with the `swoosh` package already in `mix.exs`.
 
 ### White-Label Integration Design
 
@@ -208,16 +211,17 @@ defp from_address(%WhiteLabelConfig{sender_domain: domain, sender_name: name}),
   do: {name, "noreply@#{domain}"}
 ```
 
-Each agency sender domain must be verified in Postmark before emails can be sent from it. Verification should be triggered during the agency white-label configuration flow and tracked with a status field (`:pending`, `:verified`, `:failed`).
+Each agency sender domain must be verified in Mailgun before emails can be sent from it. Verification should be triggered during the agency white-label configuration flow and tracked with a status field (`:pending`, `:verified`, `:failed`). Mailgun's Domain Verification API is used to add and verify sending domains programmatically.
 
 ---
 
 ## Consequences
 
-- **No dependency change** — `swoosh` is already in `mix.exs`; `Swoosh.Adapters.Postmark` is included
-- **Environment variable required** — `POSTMARK_API_KEY` must be provisioned in production and staging environments
-- **Staging isolation** — a separate Postmark server (or message stream) should be used for staging to avoid polluting production metrics
-- **Agency onboarding complexity** — adding white-label email sending requires building a domain verification flow backed by the Postmark Sender Signatures API; this is follow-up implementation work, not part of the adapter selection
-- **Cost at scale** — Postmark is not the cheapest option at high volume; if sending volume grows to millions of emails per month, a re-evaluation against AWS SES should be performed
-- **Deliverability monitoring** — Postmark's dashboard provides bounce and open tracking out of the box; webhooks can feed this data back into MetricFlow for per-account health monitoring
+- **No dependency change** — `swoosh` is already in `mix.exs`; `Swoosh.Adapters.Mailgun` is included
+- **Environment variables required** — `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` must be provisioned in production and staging environments
+- **Staging isolation** — a separate Mailgun domain should be used for staging to avoid polluting production metrics
+- **Agency onboarding complexity** — adding white-label email sending requires building a domain verification flow backed by the Mailgun Domain Verification API; this is follow-up implementation work, not part of the adapter selection
+- **Deliverability trade-off** — Mailgun's inbox placement (71.4%) is lower than Postmark's (83.3%); monitor bounce rates and consider dedicated IP add-on ($35/month) if deliverability becomes an issue
+- **Cost at scale** — Foundation plan at $35/month for 50,000 emails; Scale at $90/month for 100,000 emails with dedicated IP included
+- **Deliverability monitoring** — Mailgun's dashboard provides bounce, open, and click tracking; webhooks can feed this data back into MetricFlow for per-account health monitoring
 - **Test suite** — `Swoosh.Adapters.Test` (already the default for `Mix.env() == :test`) continues to be used in tests; no change to test configuration required

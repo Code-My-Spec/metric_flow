@@ -21,7 +21,7 @@
 | 17 | [Caching Strategy](decisions/caching_strategy.md) | Proposed | PostgreSQL materialized views for dashboards + Cachex for computed results, no Redis |
 | 18 | [OAuth Token Refresh](decisions/oauth_token_refresh.md) | Proposed | Reactive refresh via Assent.Strategy.OAuth2.refresh_access_token/3, provider-specific handling |
 | 19 | [Deployment](decisions/deployment.md) | Proposed | Fly.io with managed PostgreSQL, BEAM clustering via dns_cluster, wildcard TLS for white-label |
-| 20 | [Email Provider](decisions/email_provider.md) | Proposed | Postmark via Swoosh adapter — unlimited sender domains for agency white-label at $18/month |
+| 20 | [Email Provider](decisions/email_provider.md) | Accepted | Mailgun via Swoosh adapter — 1,000 sender domains on Foundation plan for agency white-label |
 | 21 | [File Storage](decisions/file_storage.md) | Proposed | Tigris (Fly.io native S3-compatible) for agency logos and report exports — zero egress, automatic CDN caching |
 | 22 | [Monitoring & Observability](decisions/monitoring_observability.md) | Proposed | Sentry (free tier) for errors + PromEx with Fly.io managed Prometheus/Grafana for APM |
 | 23 | [Report Export](decisions/report_export.md) | Proposed | Phased: browser print + CSV in Phase 1, ChromicPDF in Phase 2 when report template stabilizes |

@@ -2,134 +2,52 @@
 
 Manage account members and permissions for the active account. Displays all members with their roles and join dates. Owners and admins can change member roles, remove members, and invite new users. Enforces authorization via `Accounts.Authorization` — only owners/admins see management controls. Protects the last owner from removal or demotion. Subscribes to member PubSub for real-time updates.
 
-**Type**: liveview
+## Type
+
+liveview
+
+## Route
+
+`/accounts/members`
+
+## Params
+
+None
 
 ## Dependencies
 
 - MetricFlow.Accounts
 
-## Delegates
+## Components
 
-## Functions
+- AccountLive.Components.Navigation - sidebar or tab navigation with active tab indicator for the accounts section
+- AccountLive.Components.RoleBadge - displays a styled badge for a member's role (owner, admin, account_manager, read_only)
 
-### mount/3
+## User Interactions
 
-Initialize the LiveView by loading members for the active account.
+- **phx-click="change_role"**: Triggered when an owner or admin selects a new role from the role dropdown on a member row. Calls `Accounts.update_user_role/4`. On success, reloads the member list and shows a success flash. On error (e.g., demoting the last owner), shows an error flash. Only visible to owners and admins.
+- **phx-click="remove_member"**: Triggered when an owner or admin clicks the remove button on a member row. Calls `Accounts.remove_user_from_account/3`. On success, reloads the member list and shows a success flash. Hidden for the last owner row and for the current user's own row. Only visible to owners and admins.
+- **phx-submit="invite_member"**: Triggered when an owner or admin submits the invite form with an email address and role. Looks up the user by email, then calls `Accounts.add_user_to_account/4`. On success, reloads the member list, shows a success flash, and clears the form. On error (user not found, already a member), shows an error flash. Only visible to owners and admins.
 
-```elixir
-@spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-```
+## Design
 
-**Process**:
-1. Extract `current_scope` from socket assigns
-2. Get the active account via `scope.active_account_id`; redirect to `/accounts` if no active account
-3. Load members via `Accounts.list_account_members(scope, account_id)` (returns members with preloaded users)
-4. Determine the current user's role via `Accounts.get_user_role(scope, scope.user.id, account_id)`
-5. Subscribe to member PubSub via `Accounts.subscribe_member(scope)`
-6. Assign `members`, `account_id`, `current_user_role`, and page title
+Layout: Single-column, centered page with `max-w-4xl` container.
 
-**Test Assertions**:
-- renders the members page with account members listed
-- displays each member's name, email, role, and join date
-- redirects to accounts page when no active account is set
-- redirects unauthenticated users to login
+Page header: Title "Members" with a subtitle showing the active account name.
 
-### render/1
+Main content:
+  - Card: Members table listing all account members
+    - Table columns: Avatar/initials, Name and Email, Role (badge), Joined date, Actions (owners/admins only)
+    - Each row has `data-role="member"` attribute
+    - Role column uses `.badge` with role-specific color: `.badge-primary` for owner, `.badge-secondary` for admin, `.badge-accent` for account_manager, `.badge-ghost` for read_only
+    - Actions column (owners/admins only): role change `<select>` dropdown and `.btn .btn-ghost .btn-xs .btn-error` remove button
+    - Remove button is hidden for the last owner row and for the current user's own row
+    - Members with read_only or account_manager role see no Actions column
+  - Card (owners/admins only): Invite member form
+    - Email input field labeled "Email address"
+    - Role select dropdown with options: admin, account_manager, read_only (owner is not selectable)
+    - `.btn .btn-primary` submit button labeled "Invite"
 
-Render the members list with role management controls.
+Components: `.card`, `.card-body`, `.table`, `.badge`, `.badge-primary`, `.badge-secondary`, `.badge-accent`, `.badge-ghost`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-xs`, `.btn-error`, `.form-control`, `.input`, `.select`, `.label`
 
-```elixir
-@spec render(map()) :: Phoenix.LiveView.Rendered.t()
-```
-
-**Process**:
-1. Render page header with title "Members"
-2. For each member, render a row with `data-role="member"` showing: user email, role badge, and `inserted_at` date
-3. If current user is owner or admin, show role change dropdown and remove button for each non-self member
-4. Hide remove button for the last owner (prevent orphaned account)
-5. Include an "Invite Member" section with email input for owners/admins
-6. Members with `:member` role see a read-only list without management controls
-
-**Test Assertions**:
-- displays member email and role for each member
-- shows role change controls for owners/admins
-- hides management controls for regular members
-- does not show remove button for the last owner
-- includes invite member form for owners/admins
-
-### handle_event("change_role", params, socket)/3
-
-Change a member's role within the account.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Extract `user_id` and `role` from params
-2. Call `Accounts.update_user_role(scope, user_id, account_id, role)`
-3. On success: reload members list, put success flash
-4. On error (e.g., last owner demotion): put error flash with message
-
-**Test Assertions**:
-- updates member role and reflects change in the list
-- prevents demoting the last owner and shows error
-- only owners/admins can change roles
-
-### handle_event("remove_member", params, socket)/3
-
-Remove a member from the account.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Extract `user_id` from params
-2. Call `Accounts.remove_user_from_account(scope, user_id, account_id)`
-3. On success: reload members list, put success flash
-4. On error (e.g., last owner): put error flash
-
-**Test Assertions**:
-- removes member and they disappear from the list
-- prevents removing the last owner and shows error
-- only owners/admins can remove members
-
-### handle_event("invite_member", params, socket)/3
-
-Invite a new user to the account by email.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Extract `email` and `role` from params
-2. Look up user by email; if not found, put error flash
-3. Call `Accounts.add_user_to_account(scope, user_id, account_id, role)`
-4. On success: reload members list, put success flash, clear form
-5. On error (e.g., already a member): put error flash
-
-**Test Assertions**:
-- adds a new member to the account
-- shows error when email not found
-- shows error when user is already a member
-- only owners/admins can invite members
-
-### handle_info(pubsub_message, socket)/2
-
-Handle real-time PubSub updates for member changes.
-
-```elixir
-@spec handle_info(tuple(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Pattern match on `{:created, _}`, `{:updated, _}`, or `{:deleted, _}` member messages
-2. Reload members list via `Accounts.list_account_members(scope, account_id)`
-3. Re-assign updated members to socket
-
-**Test Assertions**:
-- refreshes member list when a member is added
-- refreshes member list when a member role changes
-- refreshes member list when a member is removed
+Responsive: Table scrolls horizontally on mobile via `overflow-x-auto`. Invite form fields stack vertically on small screens.

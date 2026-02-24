@@ -2,7 +2,9 @@
 
 List user's accounts with switcher functionality. Displays all accounts the user belongs to (personal and team), shows account type and the user's role in each, and allows switching the active account context via `UserPreferences.select_active_account/2`. The active account is highlighted. Subscribes to PubSub for real-time account and member updates.
 
-**Type**: liveview
+## Type
+
+liveview
 
 ## Dependencies
 

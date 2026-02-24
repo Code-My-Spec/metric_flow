@@ -141,10 +141,6 @@ Data access layer for Integration CRUD operations filtered by user_id. All opera
 
 Behaviour contract defining callbacks all OAuth provider implementations must implement. Providers return Assent strategy configuration via config/0, specify strategy module via strategy/0, and transform provider-specific user data via normalize_user/1. Enables leveraging Assent's battle-tested OAuth implementations while maintaining separation of concerns.
 
-### MetricFlow.Integrations.Providers.GitHub
-
-GitHub provider implementation using Assent.Strategy.Github. Configures OAuth with user:email and repo scopes. Normalizes GitHub user data to domain model including provider_user_id, email, name, username, and avatar_url extracted from OpenID Connect claims.
-
 ### MetricFlow.Integrations.Providers.Google
 
 Google provider implementation using Assent.Strategy.Google. Configures OAuth with email, profile, and analytics.edit scopes with offline access and consent prompt. Normalizes Google user data to domain model including provider_user_id, email, name, avatar_url, and hosted_domain for Google Workspace accounts.

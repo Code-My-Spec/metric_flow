@@ -8,8 +8,13 @@ context
 
 ## Delegates
 
+- create_metric/2: MetricFlow.Metrics.MetricRepository.create_metric/2
+- create_metrics/2: MetricFlow.Metrics.MetricRepository.create_metrics/2
 - list_metrics/2: MetricFlow.Metrics.MetricRepository.list_metrics/2
 - get_metric/2: MetricFlow.Metrics.MetricRepository.get_metric/2
+- query_time_series/3: MetricFlow.Metrics.MetricRepository.query_time_series/3
+- aggregate_metrics/3: MetricFlow.Metrics.MetricRepository.aggregate_metrics/3
+- list_metric_names/2: MetricFlow.Metrics.MetricRepository.list_metric_names/2
 - delete_metrics_by_provider/2: MetricFlow.Metrics.MetricRepository.delete_metrics_by_provider/2
 
 ## Functions
@@ -24,9 +29,7 @@ Persists a single metric record for the scoped user. Called by DataSync.SyncWork
 
 **Process**:
 1. Delegate to MetricRepository.create_metric/2
-2. Build changeset with user_id from scope, plus metric_type, metric_name, value, recorded_at, dimensions, and provider from attrs
-3. Insert metric record
-4. Return ok tuple with metric or error with changeset
+2. Return ok tuple with metric or error with changeset
 
 **Test Assertions**:
 - returns ok tuple with metric for valid attrs
@@ -47,9 +50,8 @@ Bulk-inserts a list of metric maps for the scoped user. Used by SyncWorker for e
 ```
 
 **Process**:
-1. Add user_id from scope and timestamps to each metric map
-2. Batch insert via Repo.insert_all
-3. Return ok tuple with count of inserted records
+1. Delegate to MetricRepository.create_metrics/2
+2. Return ok tuple with count of inserted records
 
 **Test Assertions**:
 - returns ok tuple with count of inserted metrics
@@ -68,9 +70,6 @@ Lists metrics for the scoped user with optional filters. Delegates to MetricRepo
 
 **Process**:
 1. Delegate to MetricRepository.list_metrics/2
-2. Apply optional filters: provider, metric_type, metric_name, date_range
-3. Apply optional limit and offset for pagination
-4. Order by recorded_at descending
 
 **Test Assertions**:
 - returns list of metrics for scoped user
@@ -92,6 +91,9 @@ Retrieves a specific metric record for the scoped user. Delegates to MetricRepos
 @spec get_metric(Scope.t(), integer()) :: {:ok, Metric.t()} | {:error, :not_found}
 ```
 
+**Process**:
+1. Delegate to MetricRepository.get_metric/2
+
 **Test Assertions**:
 - returns ok tuple with metric when found
 - returns error tuple with :not_found when metric doesn't exist
@@ -106,13 +108,7 @@ Returns metric values as a time series for a given metric name, grouped by date.
 ```
 
 **Process**:
-1. Query metrics matching metric_name for scoped user
-2. Apply optional provider filter
-3. Apply date_range filter, defaulting to last 30 days
-4. Group by date (truncate recorded_at to date)
-5. Sum values per date
-6. Order by date ascending
-7. Return list of date/value maps
+1. Delegate to MetricRepository.query_time_series/3
 
 **Test Assertions**:
 - returns list of date/value maps for matching metrics
@@ -133,10 +129,7 @@ Returns aggregated metric values (sum, average, min, max, count) for a given met
 ```
 
 **Process**:
-1. Query metrics matching metric_name for scoped user
-2. Apply optional provider and date_range filters
-3. Calculate sum, avg, min, max, count aggregations
-4. Return aggregation map
+1. Delegate to MetricRepository.aggregate_metrics/3
 
 **Test Assertions**:
 - returns map with sum, avg, min, max, count keys
@@ -157,10 +150,7 @@ Returns distinct metric names available for the scoped user. Used by Goals UI fo
 ```
 
 **Process**:
-1. Query distinct metric_name values for scoped user
-2. Apply optional provider filter
-3. Order alphabetically
-4. Return list of metric name strings
+1. Delegate to MetricRepository.list_metric_names/2
 
 **Test Assertions**:
 - returns list of distinct metric names
@@ -178,6 +168,9 @@ Deletes all metrics for the scoped user from a specific provider. Used when an i
 @spec delete_metrics_by_provider(Scope.t(), atom()) :: {:ok, integer()}
 ```
 
+**Process**:
+1. Delegate to MetricRepository.delete_metrics_by_provider/2
+
 **Test Assertions**:
 - returns ok tuple with count of deleted metrics
 - deletes only metrics for the specified provider
@@ -188,7 +181,7 @@ Deletes all metrics for the scoped user from a specific provider. Used when an i
 ## Dependencies
 
 - MetricFlow.Users
-- MetricFlow.Infrastructure
+- MetricFlow.Metrics.MetricRepository
 
 ## Components
 
