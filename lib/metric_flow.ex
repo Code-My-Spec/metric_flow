@@ -10,5 +10,22 @@ defmodule MetricFlow do
   use Boundary,
     top_level?: true,
     deps: [],
-    exports: [Repo, Mailer, Vault, Users, Users.{User, Scope}]
+    exports: [
+      Repo,
+      Mailer,
+      Vault,
+      Encrypted.Binary,
+      Accounts,
+      Accounts.Account,
+      Accounts.AccountMember,
+      DataSync,
+      Integrations,
+      Integrations.Integration,
+      Metrics,
+      Metrics.Metric,
+      Users,
+      Users.User,
+      Users.Scope,
+      Users.UserToken
+    ]
 end

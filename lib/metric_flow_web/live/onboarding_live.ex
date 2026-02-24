@@ -1,0 +1,24 @@
+defmodule MetricFlowWeb.OnboardingLive do
+  use MetricFlowWeb, :live_view
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
+      <div class="mx-auto max-w-2xl text-center">
+        <.header>Welcome to MetricFlow</.header>
+
+        <p class="mt-4">
+          Let's get started setting up your account. This onboarding process will guide you through
+          configuring your workspace.
+        </p>
+      </div>
+    </Layouts.app>
+    """
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok, socket}
+  end
+end

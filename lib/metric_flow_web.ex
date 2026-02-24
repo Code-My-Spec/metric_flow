@@ -12,7 +12,7 @@ defmodule MetricFlowWeb do
   component, etc, so keep them short and clean, focused
   on imports, uses and aliases.
 
-  Do NOT define functions inside the quoted expressions
+  DO NOT define functions inside the quoted expressions
   below. Instead, define additional modules and import
   those modules here.
   """

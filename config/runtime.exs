@@ -1,4 +1,5 @@
 import Config
+import Dotenvy
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
@@ -18,8 +19,22 @@ import Config
 # script that automatically sets the env var above.
 # Load .env files in dev and test via Dotenvy (ADR: dotenvy)
 if config_env() in [:dev, :test] do
-  Dotenvy.source([".env", ".env.#{config_env()}"])
+  env_dir_prefix = System.get_env("RELEASE_ROOT") || "."
+
+  source!([
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".env.#{config_env()}", env_dir_prefix),
+    System.get_env()
+  ])
 end
+
+# OAuth provider credentials — available in all environments
+config :metric_flow,
+  github_client_id: env!("GITHUB_CLIENT_ID", :string, nil),
+  github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, nil),
+  google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
+  google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, nil),
+  oauth_base_url: env!("OAUTH_BASE_URL", :string, nil)
 
 if System.get_env("PHX_SERVER") do
   config :metric_flow, MetricFlowWeb.Endpoint, server: true
@@ -72,10 +87,11 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # Postmark for production email delivery (ADR: email_provider)
+  # Mailgun for production email delivery (ADR: email_provider)
   config :metric_flow, MetricFlow.Mailer,
-    adapter: Swoosh.Adapters.Postmark,
-    api_key: System.fetch_env!("POSTMARK_API_KEY")
+    adapter: Swoosh.Adapters.Mailgun,
+    api_key: System.fetch_env!("MAILGUN_API_KEY"),
+    domain: System.fetch_env!("MAILGUN_DOMAIN")
 
   config :swoosh, :api_client, Swoosh.ApiClient.Req
 

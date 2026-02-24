@@ -74,16 +74,34 @@ defmodule MetricFlowWeb.UserLive.Confirmation do
 
   @impl true
   def mount(%{"token" => token}, _session, socket) do
-    if user = Users.get_user_by_magic_link_token(token) do
-      form = to_form(%{"token" => token}, as: "user")
+    case Users.get_user_by_magic_link_token(token) do
+      %{confirmed_at: nil} = _user ->
+        # Auto-confirm unconfirmed users and redirect to onboarding
+        case Users.login_user_by_magic_link(token) do
+          {:ok, {_user, _tokens}} ->
+            {:ok,
+             socket
+             |> put_flash(:info, "Account confirmed successfully.")
+             |> push_navigate(to: ~p"/onboarding")}
 
-      {:ok, assign(socket, user: user, form: form, trigger_submit: false),
-       temporary_assigns: [form: nil]}
-    else
-      {:ok,
-       socket
-       |> put_flash(:error, "Magic link is invalid or it has expired.")
-       |> push_navigate(to: ~p"/users/log-in")}
+          _ ->
+            {:ok,
+             socket
+             |> put_flash(:error, "Magic link is invalid or it has expired.")
+             |> push_navigate(to: ~p"/users/log-in")}
+        end
+
+      %{} = user ->
+        form = to_form(%{"token" => token}, as: "user")
+
+        {:ok, assign(socket, user: user, form: form, trigger_submit: false),
+         temporary_assigns: [form: nil]}
+
+      nil ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Magic link is invalid or it has expired.")
+         |> push_navigate(to: ~p"/users/log-in")}
     end
   end
 

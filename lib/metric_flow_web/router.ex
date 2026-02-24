@@ -59,7 +59,20 @@ defmodule MetricFlowWeb.Router do
       on_mount: [{MetricFlowWeb.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+      live "/accounts", AccountLive.Index, :index
+      live "/accounts/members", AccountLive.Members, :index
+      live "/accounts/settings", AccountLive.Settings, :index
+
+      # Integration routes
+      live "/integrations", IntegrationLive.Index, :index
+      live "/integrations/connect", IntegrationLive.Connect, :index
+      live "/integrations/connect/:provider", IntegrationLive.Connect, :detail
+      live "/integrations/connect/:provider/accounts", IntegrationLive.Connect, :accounts
+      live "/integrations/oauth/callback/:provider", IntegrationLive.Connect, :callback
     end
+
+    # Legacy OAuth callback redirect (some providers use this path)
+    get "/integrations/callback/:provider", IntegrationCallbackController, :callback
 
     post "/users/update-password", UserSessionController, :update_password
   end
@@ -72,6 +85,7 @@ defmodule MetricFlowWeb.Router do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
+      live "/onboarding", OnboardingLive, :index
     end
 
     post "/users/log-in", UserSessionController, :create

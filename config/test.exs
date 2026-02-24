@@ -29,14 +29,21 @@ config :metric_flow, MetricFlow.Mailer, adapter: Swoosh.Adapters.Test
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
-# Oban testing mode — jobs are not executed, but can be asserted on
-config :metric_flow, Oban, testing: :manual
+# Oban testing mode — jobs are not executed, but can be asserted on.
+# The repo must be set explicitly here because this config replaces the
+# base config.exs Oban config entirely in the test environment.
+config :metric_flow, Oban,
+  repo: MetricFlow.Repo,
+  testing: :manual
 
 # Disable Sentry in test
 config :sentry, dsn: nil
 
-# Print only warnings and errors during test
-config :logger, level: :warning
+# Set log level to :info to allow capture_log to capture worker sync events
+# (e.g. SyncWorker start/completion logs asserted in sync_worker_test.exs).
+# Workers log at :info level; capture_log requires the global level to be at
+# most :info for those messages to be captured.
+config :logger, level: :info
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
@@ -44,3 +51,15 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Allow stub providers in Integration schema during tests
+config :metric_flow, :test_providers, [
+  :stub,
+  :stub_no_expiry,
+  :stub_comma_scope,
+  :stub_array_scope,
+  :stub_token_error,
+  :stub_norm_error,
+  :stub_callback_error,
+  :stub_authorize_error
+]

@@ -8,6 +8,8 @@ defmodule MetricFlow.Users.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :account_name, :string
+    field :account_type, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -103,6 +105,26 @@ defmodule MetricFlow.Users.User do
       |> delete_change(:password)
     else
       changeset
+    end
+  end
+
+  @doc """
+  A user changeset for registration with email, password, account name, and account type.
+  """
+  def registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :password, :account_name, :account_type])
+    |> validate_email(opts)
+    |> validate_password(opts)
+    |> validate_required([:account_name])
+    |> maybe_validate_account_type()
+  end
+
+  defp maybe_validate_account_type(changeset) do
+    case get_change(changeset, :account_type) do
+      nil -> changeset
+      "" -> changeset
+      _ -> validate_inclusion(changeset, :account_type, ["client", "agency"])
     end
   end
 

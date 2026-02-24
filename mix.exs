@@ -11,7 +11,6 @@ defmodule MetricFlow.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: compilers(Mix.env()),
-      spex: [pattern: "test/spex/**/*_spex.exs"],
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -100,12 +99,11 @@ defmodule MetricFlow.MixProject do
       # HTML parsing
       {:floki, "~> 0.38.0"},
       # Testing (ADR: e2e_testing)
-      {:req_cassette, "~> 0.4", only: :test},
+      {:req_cassette, "~> 0.5", only: :test},
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
-      {:mix_machine, git: "https://github.com/johns10/mix_machine"},
       {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
