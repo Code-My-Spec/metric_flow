@@ -1,12 +1,12 @@
 defmodule MetricFlowWeb.UserAuthTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   alias Phoenix.LiveView
   alias MetricFlow.Users
   alias MetricFlow.Users.Scope
   alias MetricFlowWeb.UserAuth
 
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   @remember_me_cookie "_metric_flow_web_user_remember_me"
   @remember_me_cookie_max_age 60 * 60 * 24 * 14

@@ -1,8 +1,8 @@
 defmodule MetricFlowWeb.UserLive.LoginTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   describe "login page" do
     test "renders login page", %{conn: conn} do

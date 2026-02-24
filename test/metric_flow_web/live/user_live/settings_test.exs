@@ -1,9 +1,9 @@
 defmodule MetricFlowWeb.UserLive.SettingsTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   alias MetricFlow.Users
   import Phoenix.LiveViewTest
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do

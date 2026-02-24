@@ -1,9 +1,9 @@
 defmodule MetricFlow.UsersTest do
-  use MetricFlow.DataCase
+  use MetricFlowTest.DataCase
 
   alias MetricFlow.Users
 
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
   alias MetricFlow.Users.{User, UserToken}
 
   describe "get_user_by_email/1" do
@@ -77,11 +77,11 @@ defmodule MetricFlow.UsersTest do
       assert "has already been taken" in errors_on(changeset).email
     end
 
-    test "registers users without password" do
+    test "registers users with password" do
       email = unique_user_email()
       {:ok, user} = Users.register_user(valid_user_attributes(email: email))
       assert user.email == email
-      assert is_nil(user.hashed_password)
+      assert user.hashed_password
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
@@ -350,14 +350,12 @@ defmodule MetricFlow.UsersTest do
       assert {:error, :not_found} = Users.login_user_by_magic_link(encoded_token)
     end
 
-    test "raises when unconfirmed user has password set" do
+    test "confirms unconfirmed user with password set" do
       user = unconfirmed_user_fixture()
-      {1, nil} = Repo.update_all(User, set: [hashed_password: "hashed"])
       {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
 
-      assert_raise RuntimeError, ~r/magic link log in is not allowed/, fn ->
-        Users.login_user_by_magic_link(encoded_token)
-      end
+      assert {:ok, {confirmed_user, _tokens}} = Users.login_user_by_magic_link(encoded_token)
+      assert confirmed_user.confirmed_at
     end
   end
 

@@ -1,0 +1,96 @@
+defmodule MetricFlowSpex.SharedGivens do
+  @moduledoc """
+  Shared given steps for BDD specifications.
+
+  Import these givens in your spec files:
+
+      defmodule MetricFlowSpex.FeatureNameSpex do
+        use SexySpex
+        import_givens MetricFlowSpex.SharedGivens.SharedGivens
+        # ...
+      end
+
+  Add new shared givens here when you find yourself duplicating setup code
+  across multiple specs. Remember: spex files can only access the Web layer,
+  so shared givens should set up state through UI interactions, not fixtures.
+  """
+
+  use SexySpex.Givens
+
+  import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
+  @endpoint MetricFlowWeb.Endpoint
+
+  given :user_registered_with_password do
+    email = "testuser#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    conn = Phoenix.ConnTest.build_conn()
+    {:ok, view, _html} = live(conn, "/users/register")
+
+    view
+    |> form("#registration_form", user: %{
+      email: email,
+      password: password,
+      account_name: "Test Account"
+    })
+    |> render_submit()
+
+    {:ok, %{registered_email: email, registered_password: password}}
+  end
+
+  given :user_logged_in_as_owner do
+    email = "owner#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    # Register through UI
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form", user: %{
+      email: email,
+      password: password,
+      account_name: "Owner Account"
+    })
+    |> render_submit()
+
+    # Log in through UI
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password", user: %{
+        email: email,
+        password: password,
+        remember_me: true
+      })
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok, %{
+      owner_conn: authed_conn,
+      owner_email: email,
+      owner_password: password
+    }}
+  end
+
+  given :second_user_registered do
+    email = "member#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form", user: %{
+      email: email,
+      password: password,
+      account_name: "Member Account"
+    })
+    |> render_submit()
+
+    {:ok, %{second_user_email: email, second_user_password: password}}
+  end
+end

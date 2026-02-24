@@ -1,4 +1,4 @@
-defmodule MetricFlow.DataCase do
+defmodule MetricFlowTest.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,9 +10,11 @@ defmodule MetricFlow.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use MetricFlow.DataCase, async: true`, although
+  by setting `use MetricFlowTest.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
+
+  alias Ecto.Adapters.SQL.Sandbox
 
   use ExUnit.CaseTemplate
 
@@ -23,12 +25,12 @@ defmodule MetricFlow.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import MetricFlow.DataCase
+      import MetricFlowTest.DataCase
     end
   end
 
   setup tags do
-    MetricFlow.DataCase.setup_sandbox(tags)
+    MetricFlowTest.DataCase.setup_sandbox(tags)
     :ok
   end
 
@@ -36,8 +38,8 @@ defmodule MetricFlow.DataCase do
   Sets up the sandbox based on the test tags.
   """
   def setup_sandbox(tags) do
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(MetricFlow.Repo, shared: not tags[:async])
-    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+    pid = Sandbox.start_owner!(MetricFlow.Repo, shared: not tags[:async])
+    on_exit(fn -> Sandbox.stop_owner(pid) end)
   end
 
   @doc """

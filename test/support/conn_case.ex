@@ -1,4 +1,4 @@
-defmodule MetricFlowWeb.ConnCase do
+defmodule MetricFlowTest.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -11,9 +11,11 @@ defmodule MetricFlowWeb.ConnCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use MetricFlowWeb.ConnCase, async: true`, although
+  by setting `use MetricFlowTest.ConnCase, async: true`, although
   this option is not recommended for other databases.
   """
+
+  alias MetricFlow.Users.Scope
 
   use ExUnit.CaseTemplate
 
@@ -27,12 +29,12 @@ defmodule MetricFlowWeb.ConnCase do
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
-      import MetricFlowWeb.ConnCase
+      import MetricFlowTest.ConnCase
     end
   end
 
   setup tags do
-    MetricFlow.DataCase.setup_sandbox(tags)
+    MetricFlowTest.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 
@@ -45,8 +47,8 @@ defmodule MetricFlowWeb.ConnCase do
   test context.
   """
   def register_and_log_in_user(%{conn: conn} = context) do
-    user = MetricFlow.UsersFixtures.user_fixture()
-    scope = MetricFlow.Users.Scope.for_user(user)
+    user = MetricFlowTest.UsersFixtures.user_fixture()
+    scope = Scope.for_user(user)
 
     opts =
       context
@@ -74,6 +76,6 @@ defmodule MetricFlowWeb.ConnCase do
   defp maybe_set_token_authenticated_at(_token, nil), do: nil
 
   defp maybe_set_token_authenticated_at(token, authenticated_at) do
-    MetricFlow.UsersFixtures.override_token_authenticated_at(token, authenticated_at)
+    MetricFlowTest.UsersFixtures.override_token_authenticated_at(token, authenticated_at)
   end
 end

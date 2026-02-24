@@ -2,7 +2,7 @@ defmodule MetricFlow.SmokeTest do
   @moduledoc """
   Verifies that all decided libraries load and basic functionality works.
   """
-  use MetricFlow.DataCase, async: true
+  use MetricFlowTest.DataCase, async: true
 
   describe "decided libraries load correctly" do
     test "Oban is configured" do

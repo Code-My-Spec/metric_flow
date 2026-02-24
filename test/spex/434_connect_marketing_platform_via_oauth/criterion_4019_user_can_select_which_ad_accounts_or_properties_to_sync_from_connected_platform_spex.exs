@@ -1,0 +1,104 @@
+defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConnectedPlatformSpex do
+  use SexySpex
+  use MetricFlowTest.ConnCase
+  import Phoenix.LiveViewTest
+
+  import_givens MetricFlowSpex.SharedGivens
+
+  spex "User can select which ad accounts or properties to sync from connected platform" do
+    scenario "after connecting a platform the user sees an account selection UI" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the user visits the OAuth callback with a success code and is redirected", context do
+        callback_conn = get(context.owner_conn, "/integrations/callback/google_ads", %{
+          "code" => "mock_auth_code_account_selection",
+          "state" => "some_state_token"
+        })
+
+        redirect_path = redirected_to(callback_conn)
+        follow_conn = recycle(callback_conn)
+        {:ok, view, _html} = live(follow_conn, redirect_path)
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "the user sees options to select ad accounts or properties for syncing", context do
+        html = render(context.view)
+        assert html =~ "account" or html =~ "Account" or
+                 html =~ "propert" or html =~ "select" or html =~ "Select"
+        :ok
+      end
+    end
+
+    scenario "the platform account selection page lists available accounts to sync" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the user navigates to the account selection page for a connected platform", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "the user sees a list of available ad accounts or properties", context do
+        assert has_element?(context.view, "[data-role='account-list']") or
+                 has_element?(context.view, "[data-role='property-list']") or
+                 has_element?(context.view, "[data-role='account-selection']")
+        :ok
+      end
+    end
+
+    scenario "the user can select one or more accounts to sync" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the user is on the account selection page for Google Ads", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "each account entry has a selectable checkbox or toggle", context do
+        assert has_element?(context.view, "input[type='checkbox'][data-role='account-checkbox']") or
+                 has_element?(context.view, "input[type='checkbox']") or
+                 has_element?(context.view, "[data-role='account-toggle']")
+        :ok
+      end
+    end
+
+    scenario "the user can confirm the account selection to start syncing" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the user is on the account selection page for Google Ads", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "the page has a confirm or save selection button", context do
+        assert has_element?(context.view, "[data-role='save-selection']") or
+                 has_element?(context.view, "button", "Save") or
+                 has_element?(context.view, "button", "Confirm") or
+                 has_element?(context.view, "button", "Start Syncing")
+        :ok
+      end
+    end
+
+    scenario "the user can select properties to sync from Google Analytics" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the user navigates to the account selection page for a connected Google Analytics", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "the user sees a list of properties available to sync", context do
+        html = render(context.view)
+        assert html =~ "propert" or html =~ "Propert" or
+                 html =~ "account" or html =~ "Account"
+        :ok
+      end
+
+      then_ "the page has a mechanism to select which properties to sync", context do
+        assert has_element?(context.view, "input[type='checkbox']") or
+                 has_element?(context.view, "[data-role='property-toggle']") or
+                 has_element?(context.view, "[data-role='account-selection']")
+        :ok
+      end
+    end
+  end
+end

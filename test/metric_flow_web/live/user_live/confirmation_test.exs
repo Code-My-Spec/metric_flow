@@ -1,8 +1,8 @@
 defmodule MetricFlowWeb.UserLive.ConfirmationTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Users
 
@@ -11,14 +11,16 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
   end
 
   describe "Confirm user" do
-    test "renders confirmation page for unconfirmed user", %{conn: conn, unconfirmed_user: user} do
+    test "auto-confirms unconfirmed user and redirects to onboarding", %{conn: conn, unconfirmed_user: user} do
       token =
         extract_user_token(fn url ->
           Users.deliver_login_instructions(user, url)
         end)
 
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
-      assert html =~ "Confirm and stay logged in"
+      assert {:error, {:live_redirect, %{to: "/onboarding"}}} =
+               live(conn, ~p"/users/log-in/#{token}")
+
+      assert Users.get_user!(user.id).confirmed_at
     end
 
     test "renders login page for confirmed user", %{conn: conn, confirmed_user: user} do
@@ -51,22 +53,13 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
           Users.deliver_login_instructions(user, url)
         end)
 
-      {:ok, lv, _html} = live(conn, ~p"/users/log-in/#{token}")
-
-      form = form(lv, "#confirmation_form", %{"user" => %{"token" => token}})
-      render_submit(form)
-
-      conn = follow_trigger_action(form, conn)
-
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
-               "User confirmed successfully"
+      # First visit auto-confirms and redirects to onboarding
+      assert {:error, {:live_redirect, %{to: "/onboarding"}}} =
+               live(conn, ~p"/users/log-in/#{token}")
 
       assert Users.get_user!(user.id).confirmed_at
-      # we are logged in now
-      assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
 
-      # log out, new conn
+      # Token is consumed, second visit redirects to login with error
       conn = build_conn()
 
       {:ok, _lv, html} =

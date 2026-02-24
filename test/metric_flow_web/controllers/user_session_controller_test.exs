@@ -1,7 +1,7 @@
 defmodule MetricFlowWeb.UserSessionControllerTest do
-  use MetricFlowWeb.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: true
 
-  import MetricFlow.UsersFixtures
+  import MetricFlowTest.UsersFixtures
   alias MetricFlow.Users
 
   setup do
