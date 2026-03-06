@@ -382,29 +382,51 @@ daisyui: {
     <!-- Top Nav Example -->
     <h3 class="font-semibold mb-4">Top Navigation</h3>
     <div class="mf-card overflow-hidden mb-8">
-      <nav class="mf-topnav px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-8">
-          <span class="text-lg font-bold tracking-tight">
-            <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
-          </span>
-          <div class="flex gap-1">
-            <a class="btn btn-ghost btn-sm">Dashboard</a>
-            <a class="btn btn-ghost btn-sm">Integrations</a>
-            <a class="btn btn-ghost btn-sm">Reports</a>
-            <a class="btn btn-ghost btn-sm">Settings</a>
+      <div class="navbar mf-topnav">
+        <div class="navbar-start">
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </div>
+            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow">
+              <li><a>Dashboard</a></li>
+              <li><a>Integrations</a></li>
+              <li><a>Reports</a></li>
+              <li><a>Settings</a></li>
+            </ul>
           </div>
+          <a class="btn btn-ghost text-lg font-bold tracking-tight">
+            <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+          </a>
         </div>
-        <div class="flex items-center gap-3">
-          <button class="btn btn-ghost btn-sm btn-circle">
+        <div class="navbar-center hidden lg:flex">
+          <ul class="menu menu-horizontal px-1">
+            <li><a>Dashboard</a></li>
+            <li><a>Integrations</a></li>
+            <li><a>Reports</a></li>
+            <li><a>Settings</a></li>
+          </ul>
+        </div>
+        <div class="navbar-end gap-2">
+          <button class="btn btn-ghost btn-circle">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
           </button>
-          <div class="avatar placeholder">
-            <div class="bg-primary text-primary-content w-8 rounded-full">
-              <span class="text-xs">JD</span>
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+              <div class="bg-primary text-primary-content w-8 rounded-full">
+                <span class="text-xs">JD</span>
+              </div>
             </div>
+            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow">
+              <li><a>Profile</a></li>
+              <li><a>Settings</a></li>
+              <li><a>Logout</a></li>
+            </ul>
           </div>
         </div>
-      </nav>
+      </div>
     </div>
 
     <!-- Page Templates -->

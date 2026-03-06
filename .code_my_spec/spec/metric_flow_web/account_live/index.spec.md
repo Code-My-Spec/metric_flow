@@ -1,112 +1,59 @@
 # MetricFlowWeb.AccountLive.Index
 
-List user's accounts with switcher functionality. Displays all accounts the user belongs to (personal and team), shows account type and the user's role in each, and allows switching the active account context via `UserPreferences.select_active_account/2`. The active account is highlighted. Subscribes to PubSub for real-time account and member updates.
+List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user's role in each, and any agency access level and origination status for client accounts accessed via an agency grant. Highlights the currently active account and allows switching the active account context. Includes an inline form for creating new team accounts. Requires authentication; unauthenticated requests are redirected to `/users/log-in`. Subscribes to PubSub on mount for real-time account updates.
 
 ## Type
 
 liveview
 
+## Route
+
+`/accounts`
+
+## Params
+
+None
+
 ## Dependencies
 
 - MetricFlow.Accounts
-- MetricFlow.UserPreferences
+- MetricFlow.Agencies
+- MetricFlowWeb.Layouts
 
-## Functions
+## Components
 
-### mount/3
+None
 
-Initialize the LiveView by loading the user's accounts and subscribing to PubSub topics.
+## User Interactions
 
-```elixir
-@spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-```
+- **phx-click="switch_account" phx-value-account_id**: Calls `Accounts.select_active_account/2` with the given account ID. Updates the active account in scope, re-renders all account cards so the selected account has `data-active="true"` and all others have `data-active="false"`. The switch button for the now-active account becomes disabled with label "Active". Only accepts account IDs the user is already a member of. Shows an info flash "Switched to {account name}".
+- **phx-submit="create_team"**: Validates and submits the new team account form with `name` and `slug` fields. Calls `Accounts.create_team_account/2`. On success, clears the form, shows a success flash "Team account created", and appends the new account to the list. On validation error, re-renders the form inline with field-level errors without clearing user input.
+- **phx-change="validate_team"**: Live-validates the new team account form as the user types. Calls `Accounts.change_account/3` with the current params and re-renders field errors inline. Does not persist any data.
+- **handle_info {:created | :updated | :deleted, account}**: On mount (when socket is connected), subscribes to `Accounts.subscribe_account/1` scoped to the current user. On receiving any of these PubSub messages, calls `Accounts.list_accounts/1` to refresh the full accounts list. The active account highlight is preserved across refreshes — the card matching the current active account retains `data-active="true"`.
 
-**Process**:
-1. Extract `current_scope` from socket assigns
-2. Subscribe to account and member PubSub channels via `Accounts.subscribe_account/1` and `Accounts.subscribe_member/1`
-3. Load all user accounts via `Accounts.list_accounts(scope)`
-4. Assign `accounts`, `active_account_id` (from `scope.active_account_id`), and page title
+## Design
 
-**Test Assertions**:
-- renders the accounts page with page title
-- lists all accounts the user belongs to
-- highlights the currently active account
-- redirects unauthenticated users to login
+Layout: Centered single-column page, max-width 2xl, with top padding.
 
-### handle_event("switch_account", params, socket)/3
+Header:
+- H1 "Your Accounts"
 
-Switch the user's active account context.
+Account list (renders for each account the user belongs to):
+- One `.card.bg-base-200` row per account with `data-role="account-card"`, `data-account-id="{id}"`, and `data-active="true"` or `data-active="false"` depending on whether the account matches the currently active context
+- Account name as a bold heading
+- `.badge.badge-primary` or `.badge.badge-ghost` indicating account type: "Personal" for personal accounts, "Team" for team accounts
+- `.badge` showing the user's membership role in the account (e.g., "owner", "member", "read_only")
+- For client accounts accessed via an agency grant: an additional `.badge` showing the access level (e.g., "Account Manager", "Admin", "Read Only") and a separate `.badge` showing origination status ("Originator" or "Invited")
+- Right side: a `[data-role="switch-account"]` button with `phx-value-account_id`. Disabled and labeled "Active" when the account is the current active context; labeled "Switch" when inactive
 
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
+Empty state (shown when the user belongs to no accounts):
+- Muted text "No accounts found."
 
-**Process**:
-1. Extract `account_id` from params
-2. Call `UserPreferences.select_active_account(scope, account_id)` to persist the selection
-3. Update `active_account_id` in socket assigns
-4. Put an info flash confirming the switch
+Create Team Account form (`form[phx-submit="create_team"]`, `phx-change="validate_team"`):
+- Name input (`name="team[name]"`), with inline `.label-text-alt` error on validation failure
+- Slug input (`name="team[slug]"`), monospace font, hint "Lowercase letters, numbers, and hyphens", with inline `.label-text-alt` error on validation failure
+- `.btn.btn-primary` "Create Team" submit button
 
-**Test Assertions**:
-- updates the active account and highlights the newly selected account
-- persists the selection via UserPreferences
-- displays a confirmation flash message
+Components: `.card`, `.bg-base-200`, `.badge`, `.badge-primary`, `.badge-ghost`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.form-control`, `.input`, `.label`, `.label-text-alt`
 
-### handle_event("create_team", params, socket)/3
-
-Create a new team account from the inline form.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Extract account attributes (name, slug) from params
-2. Call `Accounts.create_team_account(scope, attrs)`
-3. On success: reload accounts list, put success flash, clear form
-4. On error: assign changeset errors to form
-
-**Test Assertions**:
-- creates a team account and adds it to the list
-- shows validation errors for invalid input
-- new team account appears in the accounts list
-
-### handle_info(pubsub_message, socket)/2
-
-Handle real-time PubSub updates for account and member changes.
-
-```elixir
-@spec handle_info(tuple(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Pattern match on `{:created, _}`, `{:updated, _}`, or `{:deleted, _}` messages
-2. Reload accounts list via `Accounts.list_accounts(scope)`
-3. Re-assign updated accounts to socket
-
-**Test Assertions**:
-- refreshes the account list when a new account is created
-- refreshes the account list when an account is updated
-- refreshes the account list when an account is deleted
-
-### render/1
-
-Render the accounts list with switcher UI.
-
-```elixir
-@spec render(map()) :: Phoenix.LiveView.Rendered.t()
-```
-
-**Process**:
-1. Render page header with title "Accounts"
-2. For each account, render a card showing: account name, type badge (personal/team), user's role, and active indicator
-3. Each account card has a `data-role="account"` attribute and a click handler for `switch_account`
-4. The active account card has a `data-active="true"` attribute
-5. Include a "New Team Account" form with name and slug fields
-
-**Test Assertions**:
-- displays account name for each account
-- displays account type badge (personal or team)
-- displays the user's role in each account
-- active account has a visual indicator
-- includes a form to create a new team account
+Responsive: Account cards stack vertically on all screen sizes; form fields stack full-width on mobile.

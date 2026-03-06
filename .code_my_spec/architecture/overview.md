@@ -80,6 +80,9 @@ Dependencies:
 - MetricFlow.Users
 - MetricFlow.Metrics.MetricRepository
 
+### Release
+**module**
+
 ### Users
 **context**
 
@@ -101,6 +104,9 @@ Accept invitation flow.
 
 Dependencies:
 - MetricFlow.Invitations
+
+### AccountEdit
+**module**
 
 ### Chat
 **liveview**
@@ -145,6 +151,9 @@ Configure goal metrics.
 Dependencies:
 - MetricFlow.Metrics
 
+### HealthController
+**module**
+
 ### Index
 **liveview**
 
@@ -165,10 +174,11 @@ Dependencies:
 ### Index
 **liveview**
 
-List user's accounts with switcher functionality. Displays all accounts the user belongs to (personal and team), shows account type and the user's role in each, and allows switching the active account context via `UserPreferences.select_active_account/2`. The active account is highlighted. Subscribes to PubSub for real-time account and member updates.
+List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user's role in each, and any agency access level and origination status for client accounts accessed via an agency grant. Highlights the currently active account and allows switching the active account context. Includes an inline form for creating new team accounts. Requires authentication; unauthenticated requests are redirected to `/users/log-in`. Subscribes to PubSub on mount for real-time account updates.
 
 Dependencies:
 - MetricFlow.Accounts
+- MetricFlow.Agencies
 
 ### Index
 **liveview**
@@ -192,7 +202,7 @@ Dependencies:
 ### Login
 **liveview**
 
-User login and session management.
+User login and session management. Provides two authentication paths: a magic link sent to the user's email address, and direct password-based login. Also handles re-authentication (sudo mode) when a user who is already signed in needs to confirm their identity before performing a sensitive action.
 
 Dependencies:
 - MetricFlow.Users
@@ -246,10 +256,12 @@ Dependencies:
 ### Settings
 **liveview**
 
-Agency configuration: auto-enrollment, white-label.
+Agency configuration: auto-enrollment, white-label. A function component module rendered within the `/accounts/settings` page. Renders two configuration cards — auto-enrollment and white-label branding — conditionally for team account owners and admins.
 
 Dependencies:
 - MetricFlow.Agencies
+- MetricFlow.Agencies.AutoEnrollmentRule
+- MetricFlow.Agencies.WhiteLabelConfig
 
 ### Settings
 **liveview**
@@ -280,5 +292,11 @@ Dependencies:
 **module**
 
 ### UserSessionController
+**module**
+
+### WhiteLabel
+**module**
+
+### WhiteLabelHook
 **module**
 

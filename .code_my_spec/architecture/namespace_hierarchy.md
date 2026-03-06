@@ -6,9 +6,11 @@ MetricFlow [module]
 │   └── Authorization [module] Role-based authorization module providing can?/3 predicate functions for all account operations. Accepts a Scope stru...
 ├── Agencies [context] Agency-specific features: team management, white-labeling, client account origination.
 │   ├── AgenciesRepository [module] Data access layer for agency features — handles CRUD for auto-enrollment rules, white-label configs, team members, an...
+│   ├── AgencyClientAccessGrant [module] Ecto schema representing an agency's access grant to a client account. Stores the agency_account_id, client_account_i...
 │   ├── AutoEnrollmentRule [module] Ecto schema representing domain-based auto-enrollment configuration for agency accounts. Stores email domain patterns...
 │   └── WhiteLabelConfig [module] Ecto schema for agency white-label branding configuration. Stores logo URL, primary and secondary brand colors, and c...
 ├── Ai [context] LLM integration for chat, insights, and report generation.
+│   ├── AiRepository [module] Data access layer for all Ai context CRUD operations. All queries are scoped by account_id and/or user_id via the Sco...
 │   ├── ChatMessage [schema] Individual message: session_id, role, content
 │   ├── ChatSession [schema] Chat conversation: user_id, account_id, context
 │   ├── Insight [schema] Generated insight: account_id, correlation_id, content, type
@@ -20,8 +22,10 @@ MetricFlow [module]
 │   ├── CorrelationJob [schema] Scheduled/running correlation calculation
 │   ├── CorrelationResult [schema] Calculated correlation: account_id, metric_id, goal_metric_id, coefficient, optimal_lag, calculated_at
 │   ├── CorrelationWorker [module] Oban worker for correlation calculations
-│   └── CorrelationsRepository [module] Correlation queries
+│   ├── CorrelationsRepository [module] Correlation queries
+│   └── Math [module] Pure functional module implementing statistical calculations. Provides pearson/2 (Pearson correlation coefficient fro...
 ├── Dashboards [context] Visualizations and dashboard collections.
+│   ├── ChartBuilder [module] Pure module for building Vega-Lite chart specifications. Constructs time series line charts, bar charts, and summary ...
 │   ├── Dashboard [schema] Collection with name, owner_id, built_in (boolean for canned)
 │   ├── DashboardVisualization [schema] Junction: dashboard_id, visualization_id, position, size
 │   ├── DashboardsRepository [module] Dashboard CRUD
@@ -52,6 +56,7 @@ MetricFlow [module]
 ├── Metrics [context] Unified metric storage and retrieval. Persists metrics from external data providers (Google Analytics, Google Ads, Fa...
 │   ├── Metric [module] Ecto schema representing a unified metric data point. Stores metric_type (category like "traffic", "advertising", "fi...
 │   └── MetricRepository [module] Data access layer for Metric CRUD and query operations filtered by user_id. All operations are scoped via Scope struc...
+├── Release [module]
 ├── Users [context] User authentication, registration, and session management.
 │   ├── Scope [module] Caller scope struct exported by the Users boundary for use across the application. Holds the current User struct in t...
 │   ├── User [module] Ecto schema representing a registered user in the MetricFlow system. Stores email, bcrypt-hashed password, and accoun...
@@ -60,11 +65,11 @@ MetricFlow [module]
 └── Vault [module]
 MetricFlowWeb [module]
 ├── AccountLive
-│   ├── Index [liveview] List user's accounts with switcher functionality. Displays all accounts the user belongs to (personal and team), show...
+│   ├── Index [liveview] List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user'...
 │   ├── Members [liveview] Manage account members and permissions for the active account. Displays all members with their roles and join dates. ...
 │   └── Settings [liveview] Account settings, ownership transfer, and deletion for the active account. Owners and admins can edit account name an...
 ├── AgencyLive
-│   └── Settings [liveview] Agency configuration: auto-enrollment, white-label.
+│   └── Settings [liveview] Agency configuration: auto-enrollment, white-label. A function component module rendered within the `/accounts/settin...
 ├── AiLive
 │   ├── Chat [liveview] AI chat interface for data exploration.
 │   ├── Insights [liveview] AI insights panel, suggestion feedback.
@@ -76,8 +81,10 @@ MetricFlowWeb [module]
 │   ├── Editor [liveview] Create/edit dashboards, arrange visualizations.
 │   ├── Index [liveview] List dashboards (user's and canned).
 │   └── Show [liveview] View dashboard with visualizations.
+├── HealthController [module]
 ├── IntegrationCallbackController [module]
 ├── IntegrationLive
+│   ├── AccountEdit [module]
 │   ├── Connect [liveview] OAuth connection flow for linking marketing platforms to a user account. Displays all supported platforms (Google Ads...
 │   ├── Index [liveview] List and manage integrations, manual sync trigger.
 │   └── SyncHistory [liveview] View sync status and history, shows automated daily sync results.
@@ -85,13 +92,16 @@ MetricFlowWeb [module]
 │   ├── Accept [liveview] Accept invitation flow.
 │   └── Send [liveview] Send invitations to users/agencies.
 ├── OnboardingLive [module]
+├── Plugs
+│   └── WhiteLabel [module]
 ├── PromEx [module]
 ├── UserAuth [module]
 ├── UserLive
 │   ├── Confirmation [module]
-│   ├── Login [liveview] User login and session management.
+│   ├── Login [liveview] User login and session management. Provides two authentication paths: a magic link sent to the user's email address, ...
 │   ├── Registration [liveview] User registration and account creation.
 │   └── Settings [liveview] User settings including password reset.
 ├── UserSessionController [module]
-└── VisualizationLive
-    └── Editor [liveview] Create/edit individual visualizations.
+├── VisualizationLive
+│   └── Editor [liveview] Create/edit individual visualizations.
+└── WhiteLabelHook [module]
