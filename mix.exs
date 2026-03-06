@@ -33,9 +33,9 @@ defmodule MetricFlow.MixProject do
 
   # :spex compiler only needed in test (compiles BDD spec files for Boundary)
   defp compilers(:test),
-    do: [:diagnostics, :boundary, :phoenix_live_view, :erlang, :elixir, :app]
+    do: [:diagnostics, :phoenix_live_view, :erlang, :elixir, :app]
 
-  defp compilers(_), do: [:boundary, :phoenix_live_view, :erlang, :elixir, :app]
+  defp compilers(_), do: [:phoenix_live_view, :erlang, :elixir, :app]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support", "test/spex"]
@@ -103,7 +103,7 @@ defmodule MetricFlow.MixProject do
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:client_utils, "~> 0.1"},
+      {:client_utils, "~> 0.1.15"},
       {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
       {:boundary, "~> 0.10.4", runtime: false}
     ]

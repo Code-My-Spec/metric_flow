@@ -28,6 +28,14 @@ if config_env() in [:dev, :test] do
   ])
 end
 
+# Cloudflare Tunnel — merge secret from env var (dev only)
+tunnel_config = Application.get_env(:metric_flow, :cloudflare_tunnel, [])
+
+if tunnel_config[:mode] == :named do
+  config :metric_flow, :cloudflare_tunnel,
+    Keyword.put(tunnel_config, :tunnel_secret, env!("CLOUDFLARE_TUNNEL_SECRET", :string, ""))
+end
+
 # OAuth provider credentials — available in all environments
 config :metric_flow,
   github_client_id: env!("GITHUB_CLIENT_ID", :string, nil),

@@ -19,7 +19,7 @@ config :metric_flow, MetricFlow.Repo,
 config :metric_flow, MetricFlowWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
+  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4070")],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -83,6 +83,14 @@ config :phoenix_live_view,
   debug_attributes: true,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+# Cloudflare Tunnel — named tunnel to dev.metric-flow.app
+config :metric_flow, :cloudflare_tunnel,
+  mode: :named,
+  hostname: "dev.metric-flow.app",
+  tunnel_id: "087e2228-74d8-437d-bc92-b41c9fc9f253",
+  account_tag: "6477547f586ec90db2c2a0081dcd98bd",
+  origin_url: "http://127.0.0.1:4070"
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
