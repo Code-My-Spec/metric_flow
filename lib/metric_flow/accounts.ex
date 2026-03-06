@@ -31,6 +31,15 @@ defmodule MetricFlow.Accounts do
   defdelegate remove_user_from_account(scope, user_id, account_id), to: AccountRepository
   defdelegate add_user_to_account(scope, user_id, account_id, role), to: AccountRepository
 
+  @doc """
+  Returns the primary account ID for the scoped user.
+
+  Used by AI and Correlations contexts to associate records with the user's account.
+  Returns the ID of the user's first account, or nil if no accounts exist.
+  """
+  @spec get_personal_account_id(Scope.t()) :: integer() | nil
+  defdelegate get_personal_account_id(scope), to: AccountRepository
+
   # ---------------------------------------------------------------------------
   # Changeset helpers
   # ---------------------------------------------------------------------------

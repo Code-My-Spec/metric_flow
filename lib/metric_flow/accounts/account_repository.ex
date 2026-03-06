@@ -65,7 +65,17 @@ defmodule MetricFlow.Accounts.AccountRepository do
   @spec create_team_account(Scope.t(), map()) ::
           {:ok, Account.t()} | {:error, Ecto.Changeset.t()}
   def create_team_account(%Scope{user: user}, attrs) do
-    account_attrs = Map.merge(attrs, %{type: "team", originator_user_id: user.id})
+    # Normalize attrs to string keys to avoid mixed-key maps when merging
+    # server-controlled fields (type, originator_user_id) with user-provided
+    # form params that arrive as string-keyed maps from LiveView.
+    string_attrs = for {k, v} <- attrs, into: %{}, do: {to_string(k), v}
+
+    account_attrs =
+      Map.merge(string_attrs, %{
+        "type" => "team",
+        "originator_user_id" => user.id
+      })
+
     account_changeset = Account.creation_changeset(%Account{}, account_attrs)
 
     multi =
@@ -288,6 +298,15 @@ defmodule MetricFlow.Accounts.AccountRepository do
   end
 
   defp check_last_owner(%AccountMember{}, _account_id), do: :ok
+
+  @doc """
+  Returns the ID of the user's first account, or nil if none exist.
+  """
+  @spec get_personal_account_id(Scope.t()) :: integer() | nil
+  def get_personal_account_id(%Scope{user: user}) do
+    from(m in AccountMember, where: m.user_id == ^user.id, select: m.account_id, limit: 1)
+    |> Repo.one()
+  end
 
   defp broadcast(topic, message) do
     Phoenix.PubSub.broadcast(@pubsub, topic, message)
