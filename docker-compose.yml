@@ -1,0 +1,56 @@
+# Run with: docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env up -d
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: metric_flow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: metric_flow_uat
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metric_flow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "4000"
+    environment:
+      DATABASE_URL: ecto://metric_flow:${POSTGRES_PASSWORD}@db/metric_flow_uat
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PHX_HOST: ${PHX_HOST}
+      PHX_SERVER: "true"
+      CLOAK_KEY: ${CLOAK_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      RESEND_TOKEN: ${RESEND_TOKEN:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - internal
+      - caddy_proxy
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
+  caddy_proxy:
+    external: true

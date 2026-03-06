@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# scripts/deploy-uat — deploy metric_flow UAT to Hetzner
+set -euo pipefail
+
+SERVER="deploy@46.225.105.88"
+APP_DIR="/opt/metric_flow/uat"
+ENV_FILE="/opt/metric_flow/uat.env"
+PROJECT="metric-flow-uat"
+
+echo "==> Syncing code to server..."
+rsync -az --delete \
+  --exclude='.git' \
+  --exclude='_build' \
+  --exclude='deps' \
+  --exclude='.code_my_spec' \
+  --exclude='test' \
+  --exclude='.env' \
+  --exclude='.env.*' \
+  ./ "$SERVER:$APP_DIR/"
+
+echo "==> Building and restarting containers..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -p $PROJECT --env-file $ENV_FILE up -d --build"
+
+echo "==> Running migrations..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+
+echo "==> Done: https://uat.metric-flow.app"
