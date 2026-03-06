@@ -1,0 +1,168 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-02-25T15:20:12.702384Z",
+      "request": {
+        "body_json": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": "Create a bar chart showing revenue by month\n\nReturn the COMPLETE Vega-Lite v5 specification as a valid JSON string in the vega_lite_json field. The JSON must include $schema, mark, and encoding keys.",
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-5-20250929",
+          "output_format": {
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "vega_lite_json": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "vega_lite_json"
+              ],
+              "type": "object"
+            },
+            "type": "json_schema"
+          },
+          "stream": false,
+          "system": "You are a marketing analytics assistant specialising in multi-platform\nperformance data. You help users understand their marketing metrics across\nGoogle Analytics, Google Ads, Facebook Ads, and QuickBooks revenue data.\n\nWhen analysing data, focus on actionable insights that connect marketing\nspend and activity to measurable business outcomes. Be concise, precise,\nand data-driven in your responses."
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "anthropic-beta": [
+            "structured-outputs-2025-11-13"
+          ],
+          "anthropic-version": [
+            "2023-06-01"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ],
+          "x-api-key": [
+            "REDACTED_API_KEY"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.anthropic.com/v1/messages"
+      },
+      "response": {
+        "body_json": {
+          "content": [
+            {
+              "text": "{\"vega_lite_json\":\"{\\\"$schema\\\":\\\"https://vega.github.io/schema/vega-lite/v5.json\\\",\\\"description\\\":\\\"Monthly revenue bar chart\\\",\\\"data\\\":{\\\"values\\\":[{\\\"month\\\":\\\"2024-01\\\",\\\"revenue\\\":45000},{\\\"month\\\":\\\"2024-02\\\",\\\"revenue\\\":52000},{\\\"month\\\":\\\"2024-03\\\",\\\"revenue\\\":48000},{\\\"month\\\":\\\"2024-04\\\",\\\"revenue\\\":61000},{\\\"month\\\":\\\"2024-05\\\",\\\"revenue\\\":58000},{\\\"month\\\":\\\"2024-06\\\",\\\"revenue\\\":67000},{\\\"month\\\":\\\"2024-07\\\",\\\"revenue\\\":71000},{\\\"month\\\":\\\"2024-08\\\",\\\"revenue\\\":69000},{\\\"month\\\":\\\"2024-09\\\",\\\"revenue\\\":73000},{\\\"month\\\":\\\"2024-10\\\",\\\"revenue\\\":78000},{\\\"month\\\":\\\"2024-11\\\",\\\"revenue\\\":82000},{\\\"month\\\":\\\"2024-12\\\",\\\"revenue\\\":88000}]},\\\"mark\\\":\\\"bar\\\",\\\"encoding\\\":{\\\"x\\\":{\\\"field\\\":\\\"month\\\",\\\"type\\\":\\\"temporal\\\",\\\"timeUnit\\\":\\\"yearmonth\\\",\\\"title\\\":\\\"Month\\\",\\\"axis\\\":{\\\"labelAngle\\\":-45}},\\\"y\\\":{\\\"field\\\":\\\"revenue\\\",\\\"type\\\":\\\"quantitative\\\",\\\"title\\\":\\\"Revenue ($)\\\",\\\"axis\\\":{\\\"format\\\":\\\"$,.0f\\\"}},\\\"color\\\":{\\\"value\\\":\\\"#4682b4\\\"},\\\"tooltip\\\":[{\\\"field\\\":\\\"month\\\",\\\"type\\\":\\\"temporal\\\",\\\"timeUnit\\\":\\\"yearmonth\\\",\\\"title\\\":\\\"Month\\\"},{\\\"field\\\":\\\"revenue\\\",\\\"type\\\":\\\"quantitative\\\",\\\"title\\\":\\\"Revenue\\\",\\\"format\\\":\\\"$,.0f\\\"}]},\\\"width\\\":600,\\\"height\\\":400,\\\"title\\\":\\\"Revenue by Month\\\"}\"}",
+              "type": "text"
+            }
+          ],
+          "id": "msg_017Du3tKh7T6AUDSWvjn1dKV",
+          "model": "claude-sonnet-4-5-20250929",
+          "role": "assistant",
+          "stop_reason": "end_turn",
+          "stop_sequence": null,
+          "type": "message",
+          "usage": {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "inference_geo": "not_available",
+            "input_tokens": 292,
+            "output_tokens": 458,
+            "service_tier": "standard"
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "anthropic-organization-id": [
+            "1fc62d6b-229c-4681-aa24-571557a26024"
+          ],
+          "anthropic-ratelimit-input-tokens-limit": [
+            "2000000"
+          ],
+          "anthropic-ratelimit-input-tokens-remaining": [
+            "2000000"
+          ],
+          "anthropic-ratelimit-input-tokens-reset": [
+            "2026-02-25T15:20:08Z"
+          ],
+          "anthropic-ratelimit-output-tokens-limit": [
+            "400000"
+          ],
+          "anthropic-ratelimit-output-tokens-remaining": [
+            "400000"
+          ],
+          "anthropic-ratelimit-output-tokens-reset": [
+            "2026-02-25T15:20:12Z"
+          ],
+          "anthropic-ratelimit-requests-limit": [
+            "4000"
+          ],
+          "anthropic-ratelimit-requests-remaining": [
+            "3999"
+          ],
+          "anthropic-ratelimit-requests-reset": [
+            "2026-02-25T15:20:05Z"
+          ],
+          "anthropic-ratelimit-tokens-limit": [
+            "2400000"
+          ],
+          "anthropic-ratelimit-tokens-remaining": [
+            "2400000"
+          ],
+          "anthropic-ratelimit-tokens-reset": [
+            "2026-02-25T15:20:08Z"
+          ],
+          "cf-cache-status": [
+            "DYNAMIC"
+          ],
+          "cf-ray": [
+            "9d382f4b49c2a314-YUL"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-security-policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Wed, 25 Feb 2026 15:20:12 GMT"
+          ],
+          "request-id": [
+            "req_011CYV1hxSYMN9s8q9A5ry67"
+          ],
+          "server": [
+            "cloudflare"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "x-envoy-upstream-service-time": [
+            "7123"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

@@ -59,6 +59,14 @@ defmodule MetricFlowTest.UsersFixtures do
     user
   end
 
+  @doc """
+  Looks up a user by email address. Returns nil if not found.
+  Useful in BDD spex after registration via the UI form.
+  """
+  def get_user_by_email(email) do
+    Users.get_user_by_email(email)
+  end
+
   def extract_user_token(fun) do
     {:ok, captured_email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")

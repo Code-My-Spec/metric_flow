@@ -107,7 +107,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
       # Owner sees role change select for other members
-      assert has_element?(lv, "[data-role='member'] select")
+      assert has_element?(lv, "[data-role='member-row'] select")
     end
 
     test "hides management controls for account_manager and read_only members", %{conn: conn} do
@@ -119,8 +119,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # account_manager sees no role change selects or remove buttons
-      refute has_element?(lv, "[data-role='member'] select")
+      # account_manager sees no members list, no role change selects, no remove buttons
+      refute has_element?(lv, "[data-role='members-list']")
+      refute has_element?(lv, "[data-role='member-row']")
+      refute has_element?(lv, "[data-role='member-row'] select")
       refute has_element?(lv, "[phx-click='remove_member']")
     end
 
@@ -132,7 +134,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
       # The sole owner row has no remove button
-      refute has_element?(lv, "[data-role='member'][data-user-id='#{user.id}'] [phx-click='remove_member']")
+      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{user.id}'] [phx-click='remove_member']")
     end
 
     test "includes invite member form for owners and admins", %{conn: conn} do
@@ -162,7 +164,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> element("[data-role='member'][data-user-id='#{target_user.id}'] select")
+        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] select")
         |> render_change(%{"role" => "admin", "user_id" => target_user.id})
 
       assert html =~ "admin"
@@ -177,7 +179,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> element("[data-role='member'][data-user-id='#{owner.id}'] select")
+        |> element("[data-role='member-row'][data-user-id='#{owner.id}'] select")
         |> render_change(%{"role" => "admin", "user_id" => owner.id})
 
       assert html =~ "last owner"
@@ -194,7 +196,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      refute has_element?(lv, "[data-role='member'][data-user-id='#{target_user.id}'] select")
+      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{target_user.id}'] select")
     end
   end
 
@@ -214,7 +216,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> element("[data-role='member'][data-user-id='#{target_user.id}'] [phx-click='remove_member']")
+        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] [phx-click='remove_member']")
         |> render_click()
 
       refute html =~ target_user.email
@@ -229,7 +231,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       # The last owner row has no remove button — clicking is impossible.
       # Verify the button is absent to enforce the protection.
-      refute has_element?(lv, "[data-role='member'][data-user-id='#{owner.id}'] [phx-click='remove_member']")
+      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{owner.id}'] [phx-click='remove_member']")
     end
 
     test "only owners and admins can remove members", %{conn: conn} do

@@ -1,0 +1,217 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-02-25T15:20:49.344526Z",
+      "request": {
+        "body_json": {},
+        "body_type": "json",
+        "headers": {},
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.anthropic.com/v1/messages"
+      },
+      "response": {
+        "body_json": {
+          "content": [
+            {
+              "text": "{\"confidence\": 0.91, \"suggestions\": [\"Increase budget allocation to high-performing channels driving sessions, as the strong 0.91 correlation with 1-day lag demonstrates reliable conversion of traffic to revenue\"], \"summary\": \"Strong 0.91 correlation between sessions and revenue (1-day lag) indicates reliable traffic-to-revenue conversion; recommend increasing budget on session-driving channels.\"}",
+              "type": "text"
+            }
+          ],
+          "id": "msg_ai_context_generate_insights",
+          "model": "claude-haiku-4-5-20251001",
+          "role": "assistant",
+          "stop_reason": "end_turn",
+          "stop_sequence": null,
+          "type": "message",
+          "usage": {
+            "input_tokens": 457,
+            "output_tokens": 145
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-02-25T15:45:58.564863Z",
+      "request": {
+        "body_json": {
+          "max_tokens": 4096,
+          "messages": [
+            {
+              "content": "Correlation Results:\n- sessions → revenue: coefficient=0.85, optimal_lag=3 days\n\nData Window: 2026-02-25 to 2026-02-25\n\nAvailable Metrics: sessions, revenue\n",
+              "role": "user"
+            }
+          ],
+          "model": "claude-haiku-4-5-20251001",
+          "output_format": {
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "type": "number"
+                },
+                "suggestions": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "confidence",
+                "suggestions",
+                "summary"
+              ],
+              "type": "object"
+            },
+            "type": "json_schema"
+          },
+          "stream": false,
+          "system": "You are a marketing analytics assistant specialising in multi-platform\nperformance data. You help users understand their marketing metrics across\nGoogle Analytics, Google Ads, Facebook Ads, and QuickBooks revenue data.\n\nWhen analysing data, focus on actionable insights that connect marketing\nspend and activity to measurable business outcomes. Be concise, precise,\nand data-driven in your responses.\n\nYou are generating structured insights from marketing correlation data.\n\nFor each significant correlation, provide:\n- A detailed content explanation of the relationship and recommended action\n- A brief one-line summary\n- A suggestion_type: one of budget_increase, budget_decrease, optimization, monitoring, or general\n- A confidence score between 0.0 and 1.0\n\nFocus on actionable recommendations that connect marketing spend to business outcomes.\nConsider the optimal lag when suggesting timing adjustments."
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "anthropic-beta": [
+            "structured-outputs-2025-11-13"
+          ],
+          "anthropic-version": [
+            "2023-06-01"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ],
+          "x-api-key": [
+            "REDACTED_API_KEY"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.anthropic.com/v1/messages"
+      },
+      "response": {
+        "body_json": {
+          "content": [
+            {
+              "text": "{\"confidence\": 0.45, \"suggestions\": [\"Expand data collection window to at least 4-8 weeks for statistically valid correlation analysis\", \"Verify that the 3-day optimal lag is calculated across multiple weeks of historical data before implementing timing adjustments\", \"Monitor sessions and revenue relationship continuously as more data accumulates\", \"Document current conversion patterns to establish baseline before making budget decisions\"], \"summary\": \"Strong sessions-to-revenue correlation (0.85) identified, but single-day data window prevents confident actionability—expand historical analysis period before implementing budget or timing changes.\"}",
+              "type": "text"
+            }
+          ],
+          "id": "msg_01YTfqcYsSQCLtVJFvkABuin",
+          "model": "claude-haiku-4-5-20251001",
+          "role": "assistant",
+          "stop_reason": "end_turn",
+          "stop_sequence": null,
+          "type": "message",
+          "usage": {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "inference_geo": "not_available",
+            "input_tokens": 446,
+            "output_tokens": 128,
+            "service_tier": "standard"
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "anthropic-organization-id": [
+            "1fc62d6b-229c-4681-aa24-571557a26024"
+          ],
+          "anthropic-ratelimit-input-tokens-limit": [
+            "4000000"
+          ],
+          "anthropic-ratelimit-input-tokens-remaining": [
+            "4000000"
+          ],
+          "anthropic-ratelimit-input-tokens-reset": [
+            "2026-02-25T15:45:56Z"
+          ],
+          "anthropic-ratelimit-output-tokens-limit": [
+            "800000"
+          ],
+          "anthropic-ratelimit-output-tokens-remaining": [
+            "800000"
+          ],
+          "anthropic-ratelimit-output-tokens-reset": [
+            "2026-02-25T15:45:58Z"
+          ],
+          "anthropic-ratelimit-requests-limit": [
+            "4000"
+          ],
+          "anthropic-ratelimit-requests-remaining": [
+            "3999"
+          ],
+          "anthropic-ratelimit-requests-reset": [
+            "2026-02-25T15:45:55Z"
+          ],
+          "anthropic-ratelimit-tokens-limit": [
+            "4800000"
+          ],
+          "anthropic-ratelimit-tokens-remaining": [
+            "4800000"
+          ],
+          "anthropic-ratelimit-tokens-reset": [
+            "2026-02-25T15:45:56Z"
+          ],
+          "cf-cache-status": [
+            "DYNAMIC"
+          ],
+          "cf-ray": [
+            "9d385522ff95a254-YUL"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-security-policy": [
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Wed, 25 Feb 2026 15:45:58 GMT"
+          ],
+          "request-id": [
+            "req_011CYV3gDiV4SFJXmuqBrhek"
+          ],
+          "server": [
+            "cloudflare"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "x-envoy-upstream-service-time": [
+            "2843"
+          ],
+          "x-robots-tag": [
+            "none"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}
