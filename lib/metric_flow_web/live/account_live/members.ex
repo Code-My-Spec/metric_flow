@@ -5,8 +5,8 @@ defmodule MetricFlowWeb.AccountLive.Members do
   Displays all members of the active account with their roles and join dates.
   Owners and admins can change member roles, remove members, and invite new
   users by email. Enforces role-based authorization — only owners and admins
-  see management controls. Protects the last owner from removal or demotion.
-  Subscribes to member PubSub for real-time updates.
+  see the members list and management controls. Protects the last owner from
+  removal or demotion. Subscribes to member PubSub for real-time updates.
   """
 
   use MetricFlowWeb, :live_view
@@ -40,8 +40,8 @@ defmodule MetricFlowWeb.AccountLive.Members do
         </.header>
 
         <div class="mt-8 space-y-6">
-          <%!-- Members table --%>
-          <div class="card bg-base-100 shadow">
+          <%!-- Members table — visible to owners and admins only --%>
+          <div :if={@can_manage} class="card bg-base-100 shadow" data-role="members-list">
             <div class="card-body p-0">
               <div class="overflow-x-auto">
                 <table class="table w-full">
@@ -56,7 +56,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
                   <tbody>
                     <tr
                       :for={member <- @members}
-                      data-role="member"
+                      data-role="member-row"
                       data-user-id={member.user_id}
                     >
                       <td>

@@ -31,39 +31,82 @@ defmodule MetricFlowWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :white_label_config, :map, default: nil, doc: "optional agency white-label configuration"
+
+  attr :active_account_name, :string,
+    default: nil,
+    doc: "the name of the currently active account, shown in the navbar"
+
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
+    <div class="navbar bg-base-200 shadow-sm px-4 sm:px-6 lg:px-8">
+      <div class="navbar-start">
+        <div class="dropdown">
+          <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+            </svg>
+          </div>
+          <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+            <%= if @current_scope do %>
+              <li><a href={~p"/integrations"}>Integrations</a></li>
+              <li><a href={~p"/correlations"}>Correlations</a></li>
+              <li><a href={~p"/insights"}>Insights</a></li>
+              <li><a href={~p"/chat"}>Chat</a></li>
+              <li><a href={~p"/accounts"}>Accounts</a></li>
+            <% end %>
+          </ul>
+        </div>
+        <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight">
+          <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
         </a>
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
+      <div class="navbar-center hidden lg:flex">
+        <%= if @current_scope do %>
+          <ul class="menu menu-horizontal px-1">
+            <li><a href={~p"/integrations"}>Integrations</a></li>
+            <li><a href={~p"/correlations"}>Correlations</a></li>
+            <li><a href={~p"/insights"}>Insights</a></li>
+            <li><a href={~p"/chat"}>Chat</a></li>
+            <li><a href={~p"/accounts"}>Accounts</a></li>
+          </ul>
+        <% end %>
       </div>
-    </header>
+      <div class="navbar-end gap-2">
+        <%= if @active_account_name do %>
+          <span data-role="current-account-name" class="text-sm text-base-content/70 hidden sm:inline">
+            {@active_account_name}
+          </span>
+        <% end %>
+        <.theme_toggle />
+        <%= if @current_scope do %>
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+              <div class="bg-primary text-primary-content w-8 rounded-full">
+                <span class="text-xs">
+                  {String.first(@current_scope.user.email) |> String.upcase()}
+                </span>
+              </div>
+            </div>
+            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+              <li class="menu-title text-xs">{@current_scope.user.email}</li>
+              <li><a href={~p"/users/settings"}>Settings</a></li>
+              <li>
+                <a href={~p"/users/log-out"} method="delete">Log out</a>
+              </li>
+            </ul>
+          </div>
+        <% else %>
+          <a href={~p"/users/log-in"} class="btn btn-ghost btn-sm">Log in</a>
+          <a href={~p"/users/register"} class="btn btn-primary btn-sm">Register</a>
+        <% end %>
+      </div>
+    </div>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+    <main class="px-4 py-10 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-5xl space-y-4">
         {render_slot(@inner_block)}
       </div>
     </main>

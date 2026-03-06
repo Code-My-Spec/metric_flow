@@ -69,6 +69,18 @@ defmodule MetricFlowWeb.Router do
       live "/integrations/connect/:provider", IntegrationLive.Connect, :detail
       live "/integrations/connect/:provider/accounts", IntegrationLive.Connect, :accounts
       live "/integrations/oauth/callback/:provider", IntegrationLive.Connect, :callback
+      live "/integrations/sync-history", IntegrationLive.SyncHistory, :index
+
+      # Dashboard routes
+      live "/dashboards/:id", DashboardLive.Show, :show
+
+      # Correlation routes
+      live "/correlations", CorrelationLive.Index, :index
+
+      # AI routes
+      live "/insights", AiLive.Insights, :index
+      live "/chat", AiLive.Chat, :index
+      live "/chat/:id", AiLive.Chat, :show
     end
 
     # Legacy OAuth callback redirect (some providers use this path)
