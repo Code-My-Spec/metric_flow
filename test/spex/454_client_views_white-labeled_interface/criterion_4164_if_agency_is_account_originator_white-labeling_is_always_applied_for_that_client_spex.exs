@@ -26,7 +26,8 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
       end
 
       given_ "the client accesses the dashboard via the agency subdomain", context do
-        conn = %Plug.Conn{context.owner_conn | host: "originator.metricflow.io"}
+        %Plug.Conn{} = owner_conn = context.owner_conn
+        conn = %{owner_conn | host: "originator.metricflow.io"}
         {:ok, view, _html} = live(conn, "/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
@@ -68,7 +69,8 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
       end
 
       given_ "the client navigates to their account settings via the agency subdomain", context do
-        conn = %Plug.Conn{context.owner_conn | host: "originator2.metricflow.io"}
+        %Plug.Conn{} = owner_conn = context.owner_conn
+        conn = %{owner_conn | host: "originator2.metricflow.io"}
         {:ok, view, _html} = live(conn, "/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end

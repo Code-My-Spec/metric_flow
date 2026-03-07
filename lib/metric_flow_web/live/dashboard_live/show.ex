@@ -32,11 +32,45 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
       <div class="max-w-5xl mx-auto mf-content px-4 py-8">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold">All Metrics</h1>
-          <p class="mt-1 text-base-content/60">
-            Your complete marketing and financial picture
+        <div class="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold">All Metrics</h1>
+            <p class="mt-1 text-base-content/60">
+              Your complete marketing and financial picture
+            </p>
+          </div>
+          <button
+            phx-click="open_ai_chat"
+            data-role="open-ai-chat"
+            class="btn btn-ghost btn-sm flex-shrink-0"
+          >
+            AI Chat
+          </button>
+        </div>
+
+        <%!-- Inline AI chat panel --%>
+        <div
+          :if={@chat_panel_open}
+          data-role="ai-chat-interface"
+          class="mf-card p-5 mb-6"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">AI Chat</h3>
+            <button
+              phx-click="close_ai_chat"
+              data-role="close-chat-panel"
+              aria-label="Close AI Chat"
+              class="btn btn-ghost btn-xs"
+            >
+              ✕
+            </button>
+          </div>
+          <p class="text-sm text-base-content/60 mb-3">
+            Ask questions about your metrics and get AI-powered insights.
           </p>
+          <.link navigate={~p"/chat"} class="btn btn-primary btn-sm">
+            Open Full AI Chat
+          </.link>
         </div>
 
         <div :if={not @has_integrations} data-role="onboarding-prompt" class="mf-card p-8 text-center">
@@ -267,6 +301,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:has_integrations, false)
           |> assign(:ai_panel_open, false)
           |> assign(:ai_panel_metric, nil)
+          |> assign(:chat_panel_open, false)
           |> assign(:page_title, "All Metrics")
 
         {:ok, socket}
@@ -288,6 +323,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:selected_metric_type, nil)
           |> assign(:ai_panel_open, false)
           |> assign(:ai_panel_metric, nil)
+          |> assign(:chat_panel_open, false)
           |> assign(:page_title, "All Metrics")
 
         {:ok, socket}
@@ -365,14 +401,6 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     {:noreply, socket |> assign(:dashboard_data, dashboard_data) |> assign(:selected_metric_type, nil)}
   end
 
-  def handle_event("show_ai_insights", %{"metric" => metric_name}, socket) do
-    {:noreply, socket |> assign(:ai_panel_open, true) |> assign(:ai_panel_metric, metric_name)}
-  end
-
-  def handle_event("hide_ai_insights", _params, socket) do
-    {:noreply, socket |> assign(:ai_panel_open, false)}
-  end
-
   def handle_event("filter_metric_type", %{"metric_type" => type}, socket) do
     scope = socket.assigns.current_scope
 
@@ -387,6 +415,22 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     {:ok, dashboard_data} = Dashboards.get_dashboard_data(scope, opts)
     dashboard_data = enrich_with_known_metrics(dashboard_data)
     {:noreply, socket |> assign(:dashboard_data, dashboard_data) |> assign(:selected_metric_type, type)}
+  end
+
+  def handle_event("show_ai_insights", %{"metric" => metric_name}, socket) do
+    {:noreply, socket |> assign(:ai_panel_open, true) |> assign(:ai_panel_metric, metric_name)}
+  end
+
+  def handle_event("hide_ai_insights", _params, socket) do
+    {:noreply, socket |> assign(:ai_panel_open, false)}
+  end
+
+  def handle_event("open_ai_chat", _params, socket) do
+    {:noreply, assign(socket, :chat_panel_open, true)}
+  end
+
+  def handle_event("close_ai_chat", _params, socket) do
+    {:noreply, assign(socket, :chat_panel_open, false)}
   end
 
   # ---------------------------------------------------------------------------

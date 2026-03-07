@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
                   disabled={account.id == @active_account_id}
                   class={if account.id == @active_account_id, do: "btn btn-sm btn-ghost", else: "btn btn-sm btn-primary"}
                 >
-                  {if account.id == @active_account_id, do: "Active", else: "Switch"}
+                  {if account.id == @active_account_id, do: "Active", else: account.name}
                 </button>
               </div>
             </div>

@@ -1,0 +1,389 @@
+<!-- <MetricFlowWeb.Layouts.root> lib/metric_flow_web/components/layouts/root.html.heex:1 (metric_flow) --><!DOCTYPE html>
+<html data-phx-loc="2" lang="en" data-theme="metricflow">
+  <head data-phx-loc="3">
+    <meta data-phx-loc="4" charset="utf-8">
+    <meta data-phx-loc="5" name="viewport" content="width=device-width, initial-scale=1">
+    <meta data-phx-loc="6" name="csrf-token" content="V09fXg4rOSkGSwgSeQcvCQgGLXo1CAVJ1vjhjAXpc9AHHlHP_Lb4mi03">
+    <!-- @caller lib/metric_flow_web/components/layouts/root.html.heex:7 (metric_flow) --><!-- <Phoenix.Component.live_title> lib/phoenix_component.ex:2252 (phoenix_live_view) --><title data-phx-loc="2253" data-default="MetricFlow">MetricFlow</title><!-- </Phoenix.Component.live_title> -->
+    <link data-phx-loc="10" rel="preconnect" href="https://fonts.googleapis.com">
+    <link data-phx-loc="11" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link data-phx-loc="12" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link data-phx-loc="16" phx-track-static rel="stylesheet" href="/assets/css/app.css">
+    <script data-phx-loc="17" defer phx-track-static type="text/javascript" src="/assets/js/app.js">
+    </script>
+  </head>
+  <body data-phx-loc="20">
+    <div id="phx-GJpamrMCqngVu1oi" data-phx-main data-phx-session="SFMyNTY.g2gDaAJhBnQAAAAIdwJpZG0AAAAUcGh4LUdKcGFtck1DcW5nVnUxb2l3B3Nlc3Npb250AAAAAHcKcGFyZW50X3BpZHcDbmlsdwZyb3V0ZXJ3G0VsaXhpci5NZXRyaWNGbG93V2ViLlJvdXRlcncEdmlld3cpRWxpeGlyLk1ldHJpY0Zsb3dXZWIuQWNjb3VudExpdmUuU2V0dGluZ3N3CHJvb3RfcGlkdwNuaWx3CXJvb3Rfdmlld3cpRWxpeGlyLk1ldHJpY0Zsb3dXZWIuQWNjb3VudExpdmUuU2V0dGluZ3N3EWxpdmVfc2Vzc2lvbl9uYW1ldxpyZXF1aXJlX2F1dGhlbnRpY2F0ZWRfdXNlcm4GAD8e2MScAWIAAVGA.gwzbf2dLjA9ia6UdhnminhLMyhrOAWXCPR0m1Bx2SRg" data-phx-static="SFMyNTY.g2gDaAJhBnQAAAADdwJpZG0AAAAUcGh4LUdKcGFtck1DcW5nVnUxb2l3BWZsYXNodAAAAAFtAAAABGluZm9tAAAADVdlbGNvbWUgYmFjayF3CmFzc2lnbl9uZXdsAAAAAXcNY3VycmVudF9zY29wZWpuBgA_HtjEnAFiAAFRgA.CnCS3yByYoemnL7SkT9vUIikLCXI-6PgSncw59Fd-aM"><!-- <MetricFlowWeb.AccountLive.Settings.render> lib/metric_flow_web/live/account_live/settings.ex:28 (metric_flow) --><!-- @caller lib/metric_flow_web/live/account_live/settings.ex:29 (metric_flow) --><!-- <MetricFlowWeb.Layouts.app> lib/metric_flow_web/components/layouts.ex:43 (metric_flow) -->
+<div data-phx-loc="52" class="navbar mf-topnav px-4 sm:px-6 lg:px-8">
+  <div data-phx-loc="53" class="navbar-start">
+    <div data-phx-loc="54" class="dropdown">
+      <div data-phx-loc="55" tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <svg data-phx-loc="56" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path data-phx-loc="57" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
+        </svg>
+      </div>
+      <ul data-phx-loc="60" tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+        
+          <li data-phx-loc="62"><a data-phx-loc="62" href="/integrations">Integrations</a></li>
+          <li data-phx-loc="63"><a data-phx-loc="63" href="/correlations">Correlations</a></li>
+          <li data-phx-loc="64"><a data-phx-loc="64" href="/insights">Insights</a></li>
+          <li data-phx-loc="65"><a data-phx-loc="65" href="/chat">Chat</a></li>
+          <li data-phx-loc="66"><a data-phx-loc="66" href="/accounts">Accounts</a></li>
+        
+      </ul>
+    </div>
+    
+      <a data-phx-loc="80" href="/" class="btn btn-ghost text-lg font-bold tracking-tight">
+        <span data-phx-loc="81" class="text-primary">Metric</span><span data-phx-loc="81" class="text-accent">Flow</span>
+      </a>
+    
+  </div>
+  <div data-phx-loc="85" class="navbar-center hidden lg:flex">
+    
+      <ul data-phx-loc="87" class="menu menu-horizontal px-1">
+        <li data-phx-loc="88"><a data-phx-loc="88" href="/integrations">Integrations</a></li>
+        <li data-phx-loc="89"><a data-phx-loc="89" href="/correlations">Correlations</a></li>
+        <li data-phx-loc="90"><a data-phx-loc="90" href="/insights">Insights</a></li>
+        <li data-phx-loc="91"><a data-phx-loc="91" href="/chat">Chat</a></li>
+        <li data-phx-loc="92"><a data-phx-loc="92" href="/accounts">Accounts</a></li>
+      </ul>
+    
+  </div>
+  <div data-phx-loc="96" class="navbar-end gap-2">
+    
+    
+      <div data-phx-loc="103" class="dropdown dropdown-end">
+        <div data-phx-loc="104" tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+          <div data-phx-loc="105" class="bg-primary text-primary-content w-8 rounded-full">
+            <span data-phx-loc="106" class="text-xs">
+              Q
+            </span>
+          </div>
+        </div>
+        <ul data-phx-loc="111" tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li data-phx-loc="112" class="menu-title text-xs">qa@example.com</li>
+          <li data-phx-loc="113"><a data-phx-loc="113" href="/users/settings">Settings</a></li>
+          <li data-phx-loc="114">
+            <a data-phx-loc="115" href="/users/log-out" method="delete">Log out</a>
+          </li>
+        </ul>
+      </div>
+    
+  </div>
+</div>
+
+<main data-phx-loc="126" class="mf-content px-4 py-10 sm:px-6 lg:px-8">
+  <div data-phx-loc="127" class="mx-auto max-w-[1400px] space-y-4">
+    <!-- <:inner_block> lib/metric_flow_web/live/account_live/settings.ex:29 (metric_flow) -->
+  <div data-phx-loc="30" class="mx-auto max-w-2xl mf-content">
+    <!-- @caller lib/metric_flow_web/live/account_live/settings.ex:31 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.header> lib/metric_flow_web/components/core_components.ex:290 (metric_flow) --><header data-phx-loc="291" class="pb-4">
+  <div data-phx-loc="292">
+    <h1 data-phx-loc="293" class="text-lg font-semibold leading-8">
+      
+      Account Settings
+      
+    </h1>
+    <p data-phx-loc="296" class="text-sm text-base-content/70">
+      <!-- <:subtitle> lib/metric_flow_web/live/account_live/settings.ex:33 (metric_flow) --><span data-phx-loc="33" class="text-base-content/60">QA Test Account</span><!-- </:subtitle> -->
+    </p>
+  </div>
+  <div data-phx-loc="300" class="flex-none"></div>
+</header><!-- </MetricFlowWeb.CoreComponents.header> -->
+
+    <div data-phx-loc="36" class="mt-8 space-y-8">
+      
+      <div data-phx-loc="38" class="card bg-base-100 shadow mf-card">
+        <div data-phx-loc="39" class="card-body">
+          <h2 data-phx-loc="40" class="card-title text-base">General Settings</h2>
+          <form data-phx-loc="41" id="account-settings-form" phx-change="validate" phx-submit="save" class="space-y-4">
+            <div data-phx-loc="47" class="form-control">
+              <label data-phx-loc="48" class="label">
+                <span data-phx-loc="49" class="label-text">Account Name</span>
+              </label>
+              <input data-phx-loc="51" type="text" name="account[name]" value="QA Test Account" class="input w-full " phx-debounce="300">
+              
+            </div>
+
+            <div data-phx-loc="63" class="form-control">
+              <label data-phx-loc="64" class="label">
+                <span data-phx-loc="65" class="label-text">Slug</span>
+              </label>
+              <input data-phx-loc="67" type="text" name="account[slug]" value="qa-test-account-2659" class="input w-full font-mono " phx-debounce="300">
+              
+              <p data-phx-loc="77" class="text-xs text-base-content/50 mt-1">
+                Used in URLs. Lowercase letters, numbers, and hyphens only.
+              </p>
+            </div>
+
+            <div data-phx-loc="82" class="form-control">
+              <label data-phx-loc="83" class="label">
+                <span data-phx-loc="84" class="label-text text-sm text-base-content/60">Account Type</span>
+              </label>
+              <p data-phx-loc="86" class="text-sm">Team</p>
+            </div>
+
+            <div data-phx-loc="89" class="card-actions justify-end">
+              <button data-phx-loc="90" type="submit" class="btn btn-primary w-full sm:w-auto">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      
+      
+
+      
+      
+        <!-- @caller lib/metric_flow_web/live/account_live/settings.ex:137 (metric_flow) --><!-- <MetricFlowWeb.AgencyLive.Settings.auto_enrollment_section> lib/metric_flow_web/live/agency_live/settings.ex:32 (metric_flow) --><div data-phx-loc="33" data-role="agency-auto-enrollment" class="card bg-base-100 shadow mf-card">
+  <div data-phx-loc="34" class="card-body">
+    <h2 data-phx-loc="35" class="card-title text-base">Auto-Enrollment</h2>
+    <p data-phx-loc="36" class="text-sm text-base-content/60">
+      Automatically add new users to this agency when they register with a matching email domain.
+    </p>
+
+    
+    <div data-phx-loc="41" class="flex items-center gap-3 mt-2">
+      <span data-phx-loc="42" class="text-sm">
+        readonlydomain.com
+      </span>
+      
+        <span data-phx-loc="56" class="badge badge-ghost">Disabled</span>
+      
+    </div>
+
+    <form data-phx-loc="60" id="auto-enrollment-form" phx-submit="save_auto_enrollment" class="space-y-4 mt-4">
+      <div data-phx-loc="61" class="form-control">
+        <label data-phx-loc="62" class="label">
+          <span data-phx-loc="63" class="label-text">Email Domain</span>
+        </label>
+        <input data-phx-loc="65" type="text" name="auto_enrollment[domain]" data-role="auto-enrollment-domain-input" value="readonlydomain.com" class="input w-full " placeholder="e.g., myagency.com">
+        
+      </div>
+
+      <div data-phx-loc="81" class="form-control">
+        <label data-phx-loc="82" class="label">
+          <span data-phx-loc="83" class="label-text">Default Access Level</span>
+        </label>
+        <select data-phx-loc="85" name="auto_enrollment[default_access_level]" data-role="auto-enrollment-default-role" class="select w-full">
+          <option data-phx-loc="90" value="read_only" selected>
+            Read Only
+          </option><option data-phx-loc="90" value="account_manager">
+            Account Manager
+          </option><option data-phx-loc="90" value="admin">
+            Admin
+          </option>
+        </select>
+      </div>
+
+      <div data-phx-loc="100" class="card-actions justify-end">
+        <button data-phx-loc="101" type="submit" class="btn btn-primary w-full sm:w-auto">
+          Enable Auto-Enrollment
+        </button>
+      </div>
+    </form>
+  </div>
+</div><!-- </MetricFlowWeb.AgencyLive.Settings.auto_enrollment_section> -->
+        <!-- @caller lib/metric_flow_web/live/account_live/settings.ex:141 (metric_flow) --><!-- <MetricFlowWeb.AgencyLive.Settings.white_label_section> lib/metric_flow_web/live/agency_live/settings.ex:126 (metric_flow) --><div data-phx-loc="127" data-role="agency-white-label" class="card bg-base-100 shadow mf-card">
+  <div data-phx-loc="128" class="card-body">
+    <h2 data-phx-loc="129" class="card-title text-base">White-Label Branding</h2>
+    <p data-phx-loc="130" class="text-sm text-base-content/60">
+      Customize the branding shown to your clients.
+    </p>
+
+    
+    
+
+    <form data-phx-loc="163" id="white-label-form" phx-submit="save_white_label" phx-change="validate_white_label" class="space-y-4 mt-4">
+      <div data-phx-loc="164" class="form-control">
+        <label data-phx-loc="165" class="label">
+          <span data-phx-loc="166" class="label-text">Subdomain</span>
+        </label>
+        <input data-phx-loc="168" type="text" name="white_label[subdomain]" value="reports-andersonthefish" class="input w-full font-mono ">
+        <p data-phx-loc="174" class="text-xs text-base-content/50 mt-1">
+          Lowercase letters, numbers, and hyphens only (3–63 characters).
+        </p>
+        
+      </div>
+
+      <div data-phx-loc="185" class="form-control">
+        <label data-phx-loc="186" class="label">
+          <span data-phx-loc="187" class="label-text">Logo URL</span>
+        </label>
+        <input data-phx-loc="189" type="text" name="white_label[logo_url]" value="https://cdn.example.com/logo.png" class="input w-full ">
+        
+      </div>
+
+      <div data-phx-loc="203" class="form-control">
+        <label data-phx-loc="204" class="label">
+          <span data-phx-loc="205" class="label-text">Primary Color</span>
+        </label>
+        <input data-phx-loc="207" type="text" name="white_label[primary_color]" value="#FF5733" class="input w-full font-mono " placeholder="#RRGGBB">
+        
+      </div>
+
+      <div data-phx-loc="222" class="form-control">
+        <label data-phx-loc="223" class="label">
+          <span data-phx-loc="224" class="label-text">Secondary Color</span>
+        </label>
+        <input data-phx-loc="226" type="text" name="white_label[secondary_color]" value="#3498DB" class="input w-full font-mono " placeholder="#RRGGBB">
+        
+      </div>
+
+      <div data-phx-loc="241" class="card-actions justify-end gap-2">
+        <button data-phx-loc="242" type="button" class="btn btn-ghost btn-sm" data-role="reset-white-label" phx-click="reset_white_label">
+          Reset to Default
+        </button>
+        <button data-phx-loc="251" type="submit" class="btn btn-primary w-full sm:w-auto">
+          Save Branding
+        </button>
+      </div>
+    </form>
+
+    
+    <div data-phx-loc="258" class="mt-4 p-4 rounded border border-warning/40 bg-warning/5" data-role="dns-verification">
+      <h3 data-phx-loc="263" class="text-sm font-semibold mb-2">DNS Verification Required</h3>
+      <p data-phx-loc="264" class="text-sm text-base-content/60 mb-2">
+        To activate your custom subdomain <span data-phx-loc="265" class="font-mono font-medium">reports-andersonthefish</span>,
+        configure a CNAME record pointing to <span data-phx-loc="266" class="font-mono">app.metricflow.io</span>.
+      </p>
+      <div data-phx-loc="268" class="flex items-center gap-3">
+        <span data-phx-loc="269" class="badge badge-warning badge-sm">Pending verification</span>
+        <button data-phx-loc="270" type="button" class="btn btn-ghost btn-sm" data-role="verify-dns" phx-click="verify_dns">
+          Verify DNS
+        </button>
+      </div>
+    </div>
+  </div>
+</div><!-- </MetricFlowWeb.AgencyLive.Settings.white_label_section> -->
+      
+
+      
+      <div data-phx-loc="148" class="card bg-base-100 shadow mf-card">
+        <div data-phx-loc="149" class="card-body">
+          <h2 data-phx-loc="150" class="card-title text-base">Transfer Ownership</h2>
+          <p data-phx-loc="151" class="text-sm text-base-content/60">
+            The selected member will become the account owner. You will be demoted to admin.
+          </p>
+          <form data-phx-loc="154" id="transfer-ownership-form" data-role="transfer-ownership" phx-submit="transfer_ownership" class="space-y-4 mt-4">
+            <div data-phx-loc="160" class="form-control">
+              <label data-phx-loc="161" class="label">
+                <span data-phx-loc="162" class="label-text">New Owner</span>
+              </label>
+              <select data-phx-loc="164" name="user_id" class="select w-full">
+                <option data-phx-loc="165" value="6">
+                  qa-member@example.com
+                </option><option data-phx-loc="165" value="7">
+                  newuser@testco-qa.com
+                </option><option data-phx-loc="165" value="9">
+                  employee@readonlydomain.com
+                </option>
+              </select>
+            </div>
+            <div data-phx-loc="170" class="card-actions justify-end">
+              <button data-phx-loc="171" type="submit" class="btn btn-warning">
+                Transfer Ownership
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      
+      <div data-phx-loc="180" class="card bg-base-100 shadow mf-card border border-error/40">
+        <div data-phx-loc="184" class="card-body">
+          <h2 data-phx-loc="185" class="card-title text-base text-error">Delete Account</h2>
+          
+          <form data-phx-loc="192" id="delete-account-form" data-role="delete-account" phx-submit="delete_account" class="space-y-4">
+            
+            <input data-phx-loc="199" type="text" name="delete_confirmation[account_name]" class="sr-only" aria-hidden="true">
+            <input data-phx-loc="205" type="password" name="delete_confirmation[password]" class="sr-only" aria-hidden="true">
+
+            <p data-phx-loc="212" class="text-sm text-base-content/60">
+              This action is permanent and cannot be undone. This deletion is irreversible — all account data, members, and integrations will be deleted.
+            </p>
+
+            <div data-phx-loc="216" class="form-control">
+              <label data-phx-loc="217" class="label">
+                <span data-phx-loc="218" class="label-text">Type the account name to confirm</span>
+              </label>
+              <input data-phx-loc="220" type="text" name="account_name_confirmation" class="input w-full" phx-debounce="blur" placeholder="QA Test Account">
+            </div>
+
+            <div data-phx-loc="229" class="form-control">
+              <label data-phx-loc="230" class="label">
+                <span data-phx-loc="231" class="label-text">Your password</span>
+              </label>
+              <input data-phx-loc="233" type="password" name="password" class="input input-password w-full">
+            </div>
+
+            <div data-phx-loc="240" class="card-actions justify-end">
+              <button data-phx-loc="241" type="submit" class="btn btn-error">
+                Delete Account
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- </:inner_block> -->
+  </div>
+</main>
+
+<!-- @caller lib/metric_flow_web/components/layouts.ex:132 (metric_flow) --><!-- <MetricFlowWeb.Layouts.flash_group> lib/metric_flow_web/components/layouts.ex:147 (metric_flow) --><div data-phx-loc="148" id="flash-group" aria-live="polite">
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:149 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="flash-info" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;info&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#flash-info&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-info">
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:67 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-information-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    
+    <div data-phx-loc="69">
+      
+      <p data-phx-loc="71">Welcome back!</p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:150 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><!-- </MetricFlowWeb.CoreComponents.flash> -->
+
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:152 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="client-error" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;error&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50" hidden phx-connected="[[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}],[&quot;set_attr&quot;,{&quot;attr&quot;:[&quot;hidden&quot;,&quot;&quot;]}]]" phx-disconnected="[[&quot;show&quot;,{&quot;time&quot;:300,&quot;to&quot;:&quot;.phx-client-error #client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-out&quot;,&quot;duration-300&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;]]}],[&quot;remove_attr&quot;,{&quot;attr&quot;:&quot;hidden&quot;}]]">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-error">
+    
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:68 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-exclamation-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    <div data-phx-loc="69">
+      <p data-phx-loc="70" class="font-semibold">We can&#39;t find the internet</p>
+      <p data-phx-loc="71"><!-- <:inner_block> lib/metric_flow_web/components/layouts.ex:152 (metric_flow) -->
+    Attempting to reconnect
+    <!-- @caller lib/metric_flow_web/components/layouts.ex:161 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-arrow-path ml-1 size-3 motion-safe:animate-spin"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+  <!-- </:inner_block> --></p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:164 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="server-error" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;error&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50" hidden phx-connected="[[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}],[&quot;set_attr&quot;,{&quot;attr&quot;:[&quot;hidden&quot;,&quot;&quot;]}]]" phx-disconnected="[[&quot;show&quot;,{&quot;time&quot;:300,&quot;to&quot;:&quot;.phx-server-error #server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-out&quot;,&quot;duration-300&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;]]}],[&quot;remove_attr&quot;,{&quot;attr&quot;:&quot;hidden&quot;}]]">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-error">
+    
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:68 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-exclamation-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    <div data-phx-loc="69">
+      <p data-phx-loc="70" class="font-semibold">Something went wrong!</p>
+      <p data-phx-loc="71"><!-- <:inner_block> lib/metric_flow_web/components/layouts.ex:164 (metric_flow) -->
+    Attempting to reconnect
+    <!-- @caller lib/metric_flow_web/components/layouts.ex:173 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-arrow-path ml-1 size-3 motion-safe:animate-spin"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+  <!-- </:inner_block> --></p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+</div><!-- </MetricFlowWeb.Layouts.flash_group> --><!-- </MetricFlowWeb.Layouts.app> --><!-- </MetricFlowWeb.AccountLive.Settings.render> --></div>
+  <iframe hidden height="0" width="0" src="/phoenix/live_reload/frame"></iframe></body>
+</html><!-- </MetricFlowWeb.Layouts.root> -->

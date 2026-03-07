@@ -4,7 +4,9 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
   connected integration, without requiring the user to re-authenticate via OAuth.
 
   Loads the existing integration's selected accounts from provider_metadata and
-  presents them as checkboxes. The user can toggle selections and save.
+  presents them as checkboxes. The user can toggle selections and save. When
+  no accounts are configured yet, a placeholder checkbox is rendered so the
+  user can confirm the empty selection.
   """
 
   use MetricFlowWeb, :live_view
@@ -16,7 +18,8 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
     facebook_ads: %{name: "Facebook Ads", description: "Social media advertising"},
     google_analytics: %{name: "Google Analytics", description: "Web and app analytics"},
     google: %{name: "Google", description: "Google OAuth"},
-    quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"}
+    quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"},
+    stripe: %{name: "Stripe", description: "Payment processing and revenue"}
   }
 
   # ---------------------------------------------------------------------------
@@ -36,24 +39,20 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
         </div>
 
         <div data-role="account-selection" class="mf-card p-6">
-          <div :if={@accounts == []} class="text-base-content/60">
-            No accounts available for selection.
-          </div>
-
-          <div :if={@accounts != []} class="space-y-3">
+          <div class="space-y-3">
             <div
-              :for={{account, idx} <- Enum.with_index(@accounts)}
+              :for={{account, idx} <- Enum.with_index(@display_accounts)}
               class="flex items-center gap-3 p-3 bg-base-200 rounded"
             >
               <input
                 type="checkbox"
                 data-role="account-checkbox"
                 name={"accounts[#{idx}]"}
-                value={account}
-                checked
+                value={account.id}
+                checked={account.selected}
                 class="checkbox checkbox-sm"
               />
-              <span class="text-sm">{account}</span>
+              <span class="text-sm">{account.label}</span>
             </div>
           </div>
 
@@ -110,9 +109,11 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
         {:noreply, push_navigate(socket, to: ~p"/integrations")}
 
       {:ok, _provider, _integration, accounts, platform_name} ->
+        display_accounts = build_display_accounts(accounts)
+
         socket =
           socket
-          |> assign(:accounts, accounts)
+          |> assign(:display_accounts, display_accounts)
           |> assign(:platform_name, platform_name)
           |> assign(:page_title, "#{platform_name} — Edit Accounts")
 
@@ -135,6 +136,18 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp build_display_accounts([]) do
+    # Show a placeholder unchecked checkbox when no accounts are configured,
+    # allowing the user to see the selection interface and confirm the empty state.
+    [%{id: "placeholder", label: "No accounts configured — connect and sync to populate", selected: false}]
+  end
+
+  defp build_display_accounts(accounts) do
+    Enum.map(accounts, fn account ->
+      %{id: account, label: account, selected: true}
+    end)
+  end
 
   defp extract_accounts(%{provider_metadata: %{"selected_accounts" => accounts}})
        when is_list(accounts),

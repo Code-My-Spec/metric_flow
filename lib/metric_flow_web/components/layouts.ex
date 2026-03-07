@@ -41,7 +41,18 @@ defmodule MetricFlowWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="navbar bg-base-200 shadow-sm px-4 sm:px-6 lg:px-8">
+    <%= if @white_label_config do %>
+      <style>
+        :root {
+          --wl-primary: <%= @white_label_config[:primary_color] || @white_label_config["primary_color"] %>;
+          --wl-secondary: <%= @white_label_config[:secondary_color] || @white_label_config["secondary_color"] %>;
+        }
+      </style>
+    <% end %>
+    <div
+      class="navbar mf-topnav px-4 sm:px-6 lg:px-8"
+      data-white-label={if @white_label_config, do: "true"}
+    >
       <div class="navbar-start">
         <div class="dropdown">
           <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
@@ -59,9 +70,20 @@ defmodule MetricFlowWeb.Layouts do
             <% end %>
           </ul>
         </div>
-        <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight">
-          <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
-        </a>
+        <%= if @white_label_config && (@white_label_config[:logo_url] || @white_label_config["logo_url"]) do %>
+          <a href="/" class="btn btn-ghost">
+            <img
+              src={@white_label_config[:logo_url] || @white_label_config["logo_url"]}
+              alt="Agency Logo"
+              data-role="agency-logo"
+              class="h-8 w-auto"
+            />
+          </a>
+        <% else %>
+          <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight" data-role="default-logo">
+            <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+          </a>
+        <% end %>
       </div>
       <div class="navbar-center hidden lg:flex">
         <%= if @current_scope do %>
@@ -80,7 +102,6 @@ defmodule MetricFlowWeb.Layouts do
             {@active_account_name}
           </span>
         <% end %>
-        <.theme_toggle />
         <%= if @current_scope do %>
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
@@ -105,8 +126,8 @@ defmodule MetricFlowWeb.Layouts do
       </div>
     </div>
 
-    <main class="px-4 py-10 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl space-y-4">
+    <main class="mf-content px-4 py-10 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[1400px] space-y-4">
         {render_slot(@inner_block)}
       </div>
     </main>

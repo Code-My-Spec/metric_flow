@@ -18,7 +18,7 @@ defmodule MetricFlow.DashboardsTest do
     {user, scope}
   end
 
-  defp valid_recorded_at(offset_days \\ 0) do
+  defp valid_recorded_at(offset_days) do
     DateTime.utc_now()
     |> DateTime.add(-offset_days * 86_400, :second)
     |> DateTime.truncate(:microsecond)
@@ -65,7 +65,7 @@ defmodule MetricFlow.DashboardsTest do
   # ---------------------------------------------------------------------------
 
   describe "get_dashboard_data/2" do
-    test "returns ok tuple with dashboard data map when user has integrations and metrics", %{} do
+    test "returns an ok tuple with a map containing all five keys: time_series, summary_stats, available_filters, connected_platforms, applied_filters" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id)
@@ -80,7 +80,7 @@ defmodule MetricFlow.DashboardsTest do
       assert Map.has_key?(data, :applied_filters)
     end
 
-    test "time_series contains one entry per distinct metric name" do
+    test "time_series contains one entry per distinct metric name for the scoped user" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id, %{metric_name: "sessions", value: 10.0})
@@ -95,7 +95,7 @@ defmodule MetricFlow.DashboardsTest do
       assert "pageviews" in metric_names
     end
 
-    test "summary_stats contains one entry per distinct metric name with sum, avg, min, max, count" do
+    test "summary_stats contains one entry per distinct metric name with sum, avg, min, max, and count keys" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id, %{metric_name: "sessions", value: 100.0})
@@ -114,7 +114,7 @@ defmodule MetricFlow.DashboardsTest do
       assert Map.has_key?(sessions_stats.stats, :count)
     end
 
-    test "connected_platforms reflects the user's current integrations" do
+    test "connected_platforms reflects the provider atoms of the user's current integrations" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id, :google)
 
@@ -145,7 +145,7 @@ defmodule MetricFlow.DashboardsTest do
       assert "pageviews" in filters.metric_names
     end
 
-    test "applies platform filter to both time_series and summary_stats queries" do
+    test "applies platform filter to both time_series and summary_stats, excluding metrics from other providers" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id, :google)
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_analytics, value: 50.0})
@@ -162,7 +162,7 @@ defmodule MetricFlow.DashboardsTest do
       assert sessions_stats.stats.sum == 50.0
     end
 
-    test "applies date_range filter to both time_series and summary_stats queries" do
+    test "applies date_range filter to both time_series and summary_stats, excluding metrics outside the range" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
@@ -178,7 +178,7 @@ defmodule MetricFlow.DashboardsTest do
       assert sessions_stats.stats.count == 1
     end
 
-    test "applies metric_type filter to both time_series and summary_stats queries" do
+    test "applies metric_type filter to time_series and summary_stats, excluding metrics of other types" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id, %{metric_name: "sessions", metric_type: "traffic", value: 10.0})
@@ -191,7 +191,7 @@ defmodule MetricFlow.DashboardsTest do
       refute "clicks" in metric_names
     end
 
-    test "uses default_date_range/0 when no date_range option provided" do
+    test "uses default_date_range/0 when no date_range option is provided" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
       insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
@@ -204,7 +204,7 @@ defmodule MetricFlow.DashboardsTest do
       assert sessions_ts.data != []
     end
 
-    test "returns empty time_series and summary_stats when user has no metrics" do
+    test "returns empty time_series and empty summary_stats when the user has no metrics" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
 
@@ -214,7 +214,7 @@ defmodule MetricFlow.DashboardsTest do
       assert data.summary_stats == []
     end
 
-    test "applied_filters in the result reflects the opts used for the query" do
+    test "applied_filters in the result reflects all opts used including the resolved date_range" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
 
@@ -250,7 +250,7 @@ defmodule MetricFlow.DashboardsTest do
 
   describe "build_chart_spec/2" do
     # credo:disable-for-next-line Credo.Check.Readability.StringSigils
-    test "returns a map with \"$schema\" key pointing to a Vega-Lite schema URL" do
+    test "returns a map with a \"$schema\" key pointing to a Vega-Lite schema URL" do
       data = [%{date: ~D[2025-01-01], value: 100.0}]
       spec = Dashboards.build_chart_spec("Sessions", data)
 
@@ -260,7 +260,7 @@ defmodule MetricFlow.DashboardsTest do
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.StringSigils
-    test "returned map includes \"mark\" set to \"line\"" do
+    test "returned map includes a \"mark\" key configured for a line chart with type \"line\"" do
       data = [%{date: ~D[2025-01-01], value: 50.0}]
       spec = Dashboards.build_chart_spec("Clicks", data)
 
@@ -269,7 +269,7 @@ defmodule MetricFlow.DashboardsTest do
     end
 
     # credo:disable-for-next-line Credo.Check.Readability.StringSigils
-    test "returned map includes \"encoding\" with \"x\" mapped to the date field and \"y\" mapped to the value field" do
+    test "returned map includes an \"encoding\" key with \"x\" mapped to the \"date\" field and \"y\" mapped to the \"value\" field" do
       data = [%{date: ~D[2025-01-01], value: 50.0}]
       spec = Dashboards.build_chart_spec("Revenue", data)
 
@@ -278,7 +278,7 @@ defmodule MetricFlow.DashboardsTest do
       assert spec["encoding"]["y"]["field"] == "value"
     end
 
-    test "returned map title uses the metric_name argument" do
+    test "title in the returned spec matches the metric_name argument" do
       data = [%{date: ~D[2025-01-01], value: 50.0}]
       spec = Dashboards.build_chart_spec("Monthly Revenue", data)
 
@@ -293,7 +293,7 @@ defmodule MetricFlow.DashboardsTest do
       assert spec["data"]["values"] == []
     end
 
-    test "data points are serialized with date as ISO 8601 string" do
+    test "data points in the spec have dates serialized as ISO 8601 strings" do
       data = [
         %{date: ~D[2025-03-15], value: 42.0},
         %{date: ~D[2025-03-16], value: 58.5}
@@ -362,7 +362,7 @@ defmodule MetricFlow.DashboardsTest do
       assert :custom in keys
     end
 
-    test ":last_7_days range spans 7 days ending on yesterday" do
+    test ":last_7_days range spans 7 days (diff of 6) ending on yesterday" do
       result = Dashboards.available_date_ranges()
       entry = Enum.find(result, &(&1.key == :last_7_days))
       {start_date, end_date} = entry.range
@@ -373,7 +373,7 @@ defmodule MetricFlow.DashboardsTest do
       assert Date.diff(end_date, start_date) == 6
     end
 
-    test ":last_30_days range spans 30 days ending on yesterday" do
+    test ":last_30_days range spans 30 days (diff of 29) ending on yesterday" do
       result = Dashboards.available_date_ranges()
       entry = Enum.find(result, &(&1.key == :last_30_days))
       {start_date, end_date} = entry.range
@@ -384,7 +384,7 @@ defmodule MetricFlow.DashboardsTest do
       assert Date.diff(end_date, start_date) == 29
     end
 
-    test ":last_90_days range spans 90 days ending on yesterday" do
+    test ":last_90_days range spans 90 days (diff of 89) ending on yesterday" do
       result = Dashboards.available_date_ranges()
       entry = Enum.find(result, &(&1.key == :last_90_days))
       {start_date, end_date} = entry.range
@@ -409,14 +409,11 @@ defmodule MetricFlow.DashboardsTest do
       assert entry.range == nil
     end
 
-    test "all bounded range end dates are yesterday (not today)" do
+    test "all bounded range end dates are yesterday, never today" do
       result = Dashboards.available_date_ranges()
       yesterday = Date.utc_today() |> Date.add(-1)
 
-      bounded_entries =
-        Enum.filter(result, fn entry ->
-          entry.range != nil
-        end)
+      bounded_entries = Enum.filter(result, fn entry -> entry.range != nil end)
 
       assert Enum.all?(bounded_entries, fn entry ->
                {_start, end_date} = entry.range
@@ -438,14 +435,14 @@ defmodule MetricFlow.DashboardsTest do
   # ---------------------------------------------------------------------------
 
   describe "has_integrations?/1" do
-    test "returns true when user has one or more integrations" do
+    test "returns true when the user has one or more integrations" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
 
       assert Dashboards.has_integrations?(scope) == true
     end
 
-    test "returns false when user has no integrations" do
+    test "returns false when the user has no integrations" do
       {_user, scope} = user_with_scope()
 
       assert Dashboards.has_integrations?(scope) == false

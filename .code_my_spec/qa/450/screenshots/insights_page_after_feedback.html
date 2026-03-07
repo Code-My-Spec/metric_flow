@@ -1,0 +1,407 @@
+<!-- <MetricFlowWeb.Layouts.root> lib/metric_flow_web/components/layouts/root.html.heex:1 (metric_flow) --><!DOCTYPE html>
+<html data-phx-loc="2" lang="en" data-theme="metricflow">
+  <head data-phx-loc="3">
+    <meta data-phx-loc="4" charset="utf-8">
+    <meta data-phx-loc="5" name="viewport" content="width=device-width, initial-scale=1">
+    <meta data-phx-loc="6" name="csrf-token" content="RCR7DCc7DEFfOjhWBA8qX1kZOCMsezdusW1jiiY-5saopyK7lLlocNM8">
+    <!-- @caller lib/metric_flow_web/components/layouts/root.html.heex:7 (metric_flow) --><!-- <Phoenix.Component.live_title> lib/phoenix_component.ex:2252 (phoenix_live_view) --><title data-phx-loc="2253" data-default="MetricFlow">
+      AI Insights
+    </title><!-- </Phoenix.Component.live_title> -->
+    <link data-phx-loc="10" rel="preconnect" href="https://fonts.googleapis.com">
+    <link data-phx-loc="11" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link data-phx-loc="12" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link data-phx-loc="16" phx-track-static rel="stylesheet" href="/assets/css/app.css">
+    <script data-phx-loc="17" defer phx-track-static type="text/javascript" src="/assets/js/app.js">
+    </script>
+  </head>
+  <body data-phx-loc="20">
+    <div id="phx-GJpdIxO4bj8-UiYE" data-phx-main data-phx-session="SFMyNTY.g2gDaAJhBnQAAAAIdwJpZG0AAAAUcGh4LUdKcGRJeE80Ymo4LVVpWUV3B3Nlc3Npb250AAAAAHcKcGFyZW50X3BpZHcDbmlsdwZyb3V0ZXJ3G0VsaXhpci5NZXRyaWNGbG93V2ViLlJvdXRlcncEdmlld3ckRWxpeGlyLk1ldHJpY0Zsb3dXZWIuQWlMaXZlLkluc2lnaHRzdwhyb290X3BpZHcDbmlsdwlyb290X3ZpZXd3JEVsaXhpci5NZXRyaWNGbG93V2ViLkFpTGl2ZS5JbnNpZ2h0c3cRbGl2ZV9zZXNzaW9uX25hbWV3GnJlcXVpcmVfYXV0aGVudGljYXRlZF91c2VybgYAOZwCxZwBYgABUYA.A_Mw83uIz3Uhe6l7zZCD1QSQkb0GyRFB0_3pwFAwUsU" data-phx-static="SFMyNTY.g2gDaAJhBnQAAAADdwJpZG0AAAAUcGh4LUdKcGRJeE80Ymo4LVVpWUV3BWZsYXNodAAAAAFtAAAABGluZm9tAAAADVdlbGNvbWUgYmFjayF3CmFzc2lnbl9uZXdsAAAAAXcNY3VycmVudF9zY29wZWpuBgA5nALFnAFiAAFRgA.xqlvsWjOw8lMKxRz8ByVEKw-6bdN2IGW-hbSDyXUUDE"><!-- <MetricFlowWeb.AiLive.Insights.render> lib/metric_flow_web/live/ai_live/insights.ex:47 (metric_flow) --><!-- @caller lib/metric_flow_web/live/ai_live/insights.ex:48 (metric_flow) --><!-- <MetricFlowWeb.Layouts.app> lib/metric_flow_web/components/layouts.ex:43 (metric_flow) -->
+<div data-phx-loc="52" class="navbar mf-topnav px-4 sm:px-6 lg:px-8">
+  <div data-phx-loc="53" class="navbar-start">
+    <div data-phx-loc="54" class="dropdown">
+      <div data-phx-loc="55" tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <svg data-phx-loc="56" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path data-phx-loc="57" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
+        </svg>
+      </div>
+      <ul data-phx-loc="60" tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+        
+          <li data-phx-loc="62"><a data-phx-loc="62" href="/integrations">Integrations</a></li>
+          <li data-phx-loc="63"><a data-phx-loc="63" href="/correlations">Correlations</a></li>
+          <li data-phx-loc="64"><a data-phx-loc="64" href="/insights">Insights</a></li>
+          <li data-phx-loc="65"><a data-phx-loc="65" href="/chat">Chat</a></li>
+          <li data-phx-loc="66"><a data-phx-loc="66" href="/accounts">Accounts</a></li>
+        
+      </ul>
+    </div>
+    
+      <a data-phx-loc="80" href="/" class="btn btn-ghost text-lg font-bold tracking-tight">
+        <span data-phx-loc="81" class="text-primary">Metric</span><span data-phx-loc="81" class="text-accent">Flow</span>
+      </a>
+    
+  </div>
+  <div data-phx-loc="85" class="navbar-center hidden lg:flex">
+    
+      <ul data-phx-loc="87" class="menu menu-horizontal px-1">
+        <li data-phx-loc="88"><a data-phx-loc="88" href="/integrations">Integrations</a></li>
+        <li data-phx-loc="89"><a data-phx-loc="89" href="/correlations">Correlations</a></li>
+        <li data-phx-loc="90"><a data-phx-loc="90" href="/insights">Insights</a></li>
+        <li data-phx-loc="91"><a data-phx-loc="91" href="/chat">Chat</a></li>
+        <li data-phx-loc="92"><a data-phx-loc="92" href="/accounts">Accounts</a></li>
+      </ul>
+    
+  </div>
+  <div data-phx-loc="96" class="navbar-end gap-2">
+    
+    
+      <div data-phx-loc="103" class="dropdown dropdown-end">
+        <div data-phx-loc="104" tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+          <div data-phx-loc="105" class="bg-primary text-primary-content w-8 rounded-full">
+            <span data-phx-loc="106" class="text-xs">
+              Q
+            </span>
+          </div>
+        </div>
+        <ul data-phx-loc="111" tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li data-phx-loc="112" class="menu-title text-xs">qa@example.com</li>
+          <li data-phx-loc="113"><a data-phx-loc="113" href="/users/settings">Settings</a></li>
+          <li data-phx-loc="114">
+            <a data-phx-loc="115" href="/users/log-out" method="delete">Log out</a>
+          </li>
+        </ul>
+      </div>
+    
+  </div>
+</div>
+
+<main data-phx-loc="126" class="mf-content px-4 py-10 sm:px-6 lg:px-8">
+  <div data-phx-loc="127" class="mx-auto max-w-[1400px] space-y-4">
+    <!-- <:inner_block> lib/metric_flow_web/live/ai_live/insights.ex:48 (metric_flow) -->
+  <div data-phx-loc="49" class="max-w-4xl mx-auto mf-content px-4 py-8">
+    
+    <h1 data-phx-loc="51" class="text-2xl font-bold">AI Insights</h1>
+    <p data-phx-loc="52" class="text-base-content/60 mt-1">
+      Actionable recommendations generated from your correlation analysis
+    </p>
+
+    
+    <div data-phx-loc="57" data-role="type-filter" class="flex items-center gap-2 mt-6 mb-6 flex-wrap">
+      <button data-phx-loc="58" phx-click="filter_type" phx-value-type="all" class="btn btn-primary btn-sm">
+        All
+      </button><button data-phx-loc="58" phx-click="filter_type" phx-value-type="budget_increase" class="btn btn-ghost btn-sm">
+        Budget Increase
+      </button><button data-phx-loc="58" phx-click="filter_type" phx-value-type="budget_decrease" class="btn btn-ghost btn-sm">
+        Budget Decrease
+      </button><button data-phx-loc="58" phx-click="filter_type" phx-value-type="optimization" class="btn btn-ghost btn-sm">
+        Optimization
+      </button><button data-phx-loc="58" phx-click="filter_type" phx-value-type="monitoring" class="btn btn-ghost btn-sm">
+        Monitoring
+      </button><button data-phx-loc="58" phx-click="filter_type" phx-value-type="general" class="btn btn-ghost btn-sm">
+        General
+      </button>
+    </div>
+
+    
+    
+
+    
+    
+
+    
+    <div data-phx-loc="102" data-role="insights-list" class="space-y-4">
+      <div data-phx-loc="103" data-role="insight-card" data-insight-id="1" class="mf-card p-5">
+        <div data-phx-loc="109" class="flex flex-col gap-3">
+          
+          <div data-phx-loc="111" class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <p data-phx-loc="112" data-role="insight-summary" class="font-medium text-base-content">
+              Increase Google Ads budget to capitalize on strong revenue correlation
+            </p>
+            <div data-phx-loc="115" class="flex items-center gap-2 flex-shrink-0">
+              <span data-phx-loc="116" data-role="insight-type-badge" class="badge badge-sm badge-primary">
+                Budget Increase
+              </span>
+              <span data-phx-loc="122" data-role="insight-confidence-badge" data-confidence="0.85" class="badge badge-sm badge-success">
+                85% confidence
+              </span>
+            </div>
+          </div>
+
+          
+          <div data-phx-loc="133" data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+            Your Google Ads clicks metric shows a strong positive correlation of 0.82 with revenue (7-day lag). This suggests that increasing your Google Ads budget is likely to drive meaningful revenue growth. Consider increasing spend by 15–25% and monitoring results over the next 2–3 weeks.
+          </div>
+
+          
+          <div data-phx-loc="138" data-role="insight-correlation-ref" class="text-xs text-base-content/50">
+            Based on correlation result #5
+          </div>
+
+          
+          <div data-phx-loc="147" data-role="insight-generated-at" class="text-xs text-base-content/40">
+            Generated Mar 06, 2026 at 9:08 PM
+          </div>
+
+          
+          <div data-phx-loc="152" data-role="ai-feedback-section" class="pt-3 border-t border-base-content/10">
+            <div data-phx-loc="156" data-role="insight-feedback">
+              <!-- <MetricFlowWeb.AiLive.Insights.render_feedback_section> lib/metric_flow_web/live/ai_live/insights.ex:191 (metric_flow) --><div data-phx-loc="192" data-role="feedback-confirmation" class="flex items-center gap-2 text-sm">
+  <span data-phx-loc="193" class="badge badge-success badge-sm">&#10003;</span>
+  <span data-phx-loc="194" class="text-base-content/60">
+    Thanks for your feedback — helps improve future suggestions.
+  </span>
+</div><!-- </MetricFlowWeb.AiLive.Insights.render_feedback_section> -->
+            </div>
+          </div>
+        </div>
+      </div><div data-phx-loc="103" data-role="insight-card" data-insight-id="2" class="mf-card p-5">
+        <div data-phx-loc="109" class="flex flex-col gap-3">
+          
+          <div data-phx-loc="111" class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <p data-phx-loc="112" data-role="insight-summary" class="font-medium text-base-content">
+              Optimize Facebook Ads targeting — moderate impressions correlation
+            </p>
+            <div data-phx-loc="115" class="flex items-center gap-2 flex-shrink-0">
+              <span data-phx-loc="116" data-role="insight-type-badge" class="badge badge-sm badge-success">
+                Optimization
+              </span>
+              <span data-phx-loc="122" data-role="insight-confidence-badge" data-confidence="0.72" class="badge badge-sm badge-success">
+                72% confidence
+              </span>
+            </div>
+          </div>
+
+          
+          <div data-phx-loc="133" data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+            Facebook Ads impressions have a moderate positive correlation (0.51) with revenue at a 14-day lag. Rather than increasing overall budget, optimizing your targeting to reach higher-intent audiences may improve the conversion rate of these impressions into revenue.
+          </div>
+
+          
+          
+
+          
+          <div data-phx-loc="147" data-role="insight-generated-at" class="text-xs text-base-content/40">
+            Generated Mar 06, 2026 at 8:08 PM
+          </div>
+
+          
+          <div data-phx-loc="152" data-role="ai-feedback-section" class="pt-3 border-t border-base-content/10">
+            <div data-phx-loc="156" data-role="insight-feedback">
+              <!-- <MetricFlowWeb.AiLive.Insights.render_feedback_section> lib/metric_flow_web/live/ai_live/insights.ex:191 (metric_flow) --><div data-phx-loc="192" data-role="feedback-confirmation" class="flex items-center gap-2 text-sm">
+  <span data-phx-loc="193" class="badge badge-success badge-sm">&#10003;</span>
+  <span data-phx-loc="194" class="text-base-content/60">
+    Thanks for your feedback — helps improve future suggestions.
+  </span>
+</div><!-- </MetricFlowWeb.AiLive.Insights.render_feedback_section> -->
+            </div>
+          </div>
+        </div>
+      </div><div data-phx-loc="103" data-role="insight-card" data-insight-id="3" class="mf-card p-5">
+        <div data-phx-loc="109" class="flex flex-col gap-3">
+          
+          <div data-phx-loc="111" class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <p data-phx-loc="112" data-role="insight-summary" class="font-medium text-base-content">
+              Monitor Google Analytics sessions — weak correlation with revenue
+            </p>
+            <div data-phx-loc="115" class="flex items-center gap-2 flex-shrink-0">
+              <span data-phx-loc="116" data-role="insight-type-badge" class="badge badge-sm badge-ghost">
+                Monitoring
+              </span>
+              <span data-phx-loc="122" data-role="insight-confidence-badge" data-confidence="0.55" class="badge badge-sm badge-ghost">
+                55% confidence
+              </span>
+            </div>
+          </div>
+
+          
+          <div data-phx-loc="133" data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+            Website sessions from Google Analytics show a weak positive correlation (0.29) with revenue at a 5-day lag. This relationship is not strong enough to base budget decisions on. Continue monitoring over the next 30 days to see if the correlation strengthens.
+          </div>
+
+          
+          
+
+          
+          <div data-phx-loc="147" data-role="insight-generated-at" class="text-xs text-base-content/40">
+            Generated Mar 06, 2026 at 7:08 PM
+          </div>
+
+          
+          <div data-phx-loc="152" data-role="ai-feedback-section" class="pt-3 border-t border-base-content/10">
+            <div data-phx-loc="156" data-role="insight-feedback">
+              <!-- <MetricFlowWeb.AiLive.Insights.render_feedback_section> lib/metric_flow_web/live/ai_live/insights.ex:202 (metric_flow) --><p data-phx-loc="203" data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
+  Your feedback helps improve future suggestions.
+</p>
+<div data-phx-loc="206" class="flex items-center gap-2">
+  <button data-phx-loc="207" phx-click="submit_feedback" phx-value-insight-id="3" phx-value-rating="helpful" data-role="feedback-helpful" class="btn btn-ghost btn-sm">
+    Helpful
+  </button>
+  <button data-phx-loc="216" phx-click="submit_feedback" phx-value-insight-id="3" phx-value-rating="not_helpful" data-role="feedback-not-helpful" class="btn btn-ghost btn-sm">
+    Not helpful
+  </button>
+</div><!-- </MetricFlowWeb.AiLive.Insights.render_feedback_section> -->
+            </div>
+          </div>
+        </div>
+      </div><div data-phx-loc="103" data-role="insight-card" data-insight-id="4" class="mf-card p-5">
+        <div data-phx-loc="109" class="flex flex-col gap-3">
+          
+          <div data-phx-loc="111" class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <p data-phx-loc="112" data-role="insight-summary" class="font-medium text-base-content">
+              Review ad spend allocation — negative income correlation detected
+            </p>
+            <div data-phx-loc="115" class="flex items-center gap-2 flex-shrink-0">
+              <span data-phx-loc="116" data-role="insight-type-badge" class="badge badge-sm badge-warning">
+                Budget Decrease
+              </span>
+              <span data-phx-loc="122" data-role="insight-confidence-badge" data-confidence="0.63" class="badge badge-sm badge-ghost">
+                63% confidence
+              </span>
+            </div>
+          </div>
+
+          
+          <div data-phx-loc="133" data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+            QuickBooks income shows a negative correlation (-0.38) with revenue. This may indicate that during high-cost periods, revenue is being suppressed. Review your cost structure and consider reducing overhead expenses during campaign-heavy periods.
+          </div>
+
+          
+          
+
+          
+          <div data-phx-loc="147" data-role="insight-generated-at" class="text-xs text-base-content/40">
+            Generated Mar 06, 2026 at 6:08 PM
+          </div>
+
+          
+          <div data-phx-loc="152" data-role="ai-feedback-section" class="pt-3 border-t border-base-content/10">
+            <div data-phx-loc="156" data-role="insight-feedback">
+              <!-- <MetricFlowWeb.AiLive.Insights.render_feedback_section> lib/metric_flow_web/live/ai_live/insights.ex:202 (metric_flow) --><p data-phx-loc="203" data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
+  Your feedback helps improve future suggestions.
+</p>
+<div data-phx-loc="206" class="flex items-center gap-2">
+  <button data-phx-loc="207" phx-click="submit_feedback" phx-value-insight-id="4" phx-value-rating="helpful" data-role="feedback-helpful" class="btn btn-ghost btn-sm">
+    Helpful
+  </button>
+  <button data-phx-loc="216" phx-click="submit_feedback" phx-value-insight-id="4" phx-value-rating="not_helpful" data-role="feedback-not-helpful" class="btn btn-ghost btn-sm">
+    Not helpful
+  </button>
+</div><!-- </MetricFlowWeb.AiLive.Insights.render_feedback_section> -->
+            </div>
+          </div>
+        </div>
+      </div><div data-phx-loc="103" data-role="insight-card" data-insight-id="5" class="mf-card p-5">
+        <div data-phx-loc="109" class="flex flex-col gap-3">
+          
+          <div data-phx-loc="111" class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <p data-phx-loc="112" data-role="insight-summary" class="font-medium text-base-content">
+              Strong spend-to-revenue relationship across platforms
+            </p>
+            <div data-phx-loc="115" class="flex items-center gap-2 flex-shrink-0">
+              <span data-phx-loc="116" data-role="insight-type-badge" class="badge badge-sm badge-ghost">
+                General
+              </span>
+              <span data-phx-loc="122" data-role="insight-confidence-badge" data-confidence="0.78" class="badge badge-sm badge-success">
+                78% confidence
+              </span>
+            </div>
+          </div>
+
+          
+          <div data-phx-loc="133" data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+            Across your connected platforms, ad spend shows a consistent positive correlation (0.74) with revenue at a 3-day lag. This is a general indicator that your overall marketing investment is working. Continue your current strategy and review quarterly.
+          </div>
+
+          
+          
+
+          
+          <div data-phx-loc="147" data-role="insight-generated-at" class="text-xs text-base-content/40">
+            Generated Mar 06, 2026 at 5:08 PM
+          </div>
+
+          
+          <div data-phx-loc="152" data-role="ai-feedback-section" class="pt-3 border-t border-base-content/10">
+            <div data-phx-loc="156" data-role="insight-feedback">
+              <!-- <MetricFlowWeb.AiLive.Insights.render_feedback_section> lib/metric_flow_web/live/ai_live/insights.ex:202 (metric_flow) --><p data-phx-loc="203" data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
+  Your feedback helps improve future suggestions.
+</p>
+<div data-phx-loc="206" class="flex items-center gap-2">
+  <button data-phx-loc="207" phx-click="submit_feedback" phx-value-insight-id="5" phx-value-rating="helpful" data-role="feedback-helpful" class="btn btn-ghost btn-sm">
+    Helpful
+  </button>
+  <button data-phx-loc="216" phx-click="submit_feedback" phx-value-insight-id="5" phx-value-rating="not_helpful" data-role="feedback-not-helpful" class="btn btn-ghost btn-sm">
+    Not helpful
+  </button>
+</div><!-- </MetricFlowWeb.AiLive.Insights.render_feedback_section> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div data-phx-loc="165" data-role="ai-personalization-note" class="mt-8 pt-6 border-t border-base-content/10">
+      <p data-phx-loc="170" class="text-xs text-base-content/40 text-center">
+        AI suggestions learn from your feedback and improve over time.
+      </p>
+    </div>
+  </div>
+<!-- </:inner_block> -->
+  </div>
+</main>
+
+<!-- @caller lib/metric_flow_web/components/layouts.ex:132 (metric_flow) --><!-- <MetricFlowWeb.Layouts.flash_group> lib/metric_flow_web/components/layouts.ex:147 (metric_flow) --><div data-phx-loc="148" id="flash-group" aria-live="polite">
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:149 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="flash-info" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;info&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#flash-info&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-info">
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:67 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-information-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    
+    <div data-phx-loc="69">
+      
+      <p data-phx-loc="71">Welcome back!</p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:150 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><!-- </MetricFlowWeb.CoreComponents.flash> -->
+
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:152 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="client-error" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;error&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50" hidden phx-connected="[[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}],[&quot;set_attr&quot;,{&quot;attr&quot;:[&quot;hidden&quot;,&quot;&quot;]}]]" phx-disconnected="[[&quot;show&quot;,{&quot;time&quot;:300,&quot;to&quot;:&quot;.phx-client-error #client-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-out&quot;,&quot;duration-300&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;]]}],[&quot;remove_attr&quot;,{&quot;attr&quot;:&quot;hidden&quot;}]]">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-error">
+    
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:68 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-exclamation-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    <div data-phx-loc="69">
+      <p data-phx-loc="70" class="font-semibold">We can&#39;t find the internet</p>
+      <p data-phx-loc="71"><!-- <:inner_block> lib/metric_flow_web/components/layouts.ex:152 (metric_flow) -->
+    Attempting to reconnect
+    <!-- @caller lib/metric_flow_web/components/layouts.ex:161 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-arrow-path ml-1 size-3 motion-safe:animate-spin"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+  <!-- </:inner_block> --></p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+
+  <!-- @caller lib/metric_flow_web/components/layouts.ex:164 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.flash> lib/metric_flow_web/components/core_components.ex:53 (metric_flow) --><div data-phx-loc="54" id="server-error" phx-click="[[&quot;push&quot;,{&quot;value&quot;:{&quot;key&quot;:&quot;error&quot;},&quot;event&quot;:&quot;lv:clear-flash&quot;}],[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}]]" role="alert" class="toast toast-top toast-end z-50" hidden phx-connected="[[&quot;hide&quot;,{&quot;time&quot;:200,&quot;to&quot;:&quot;#server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-in&quot;,&quot;duration-200&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;]]}],[&quot;set_attr&quot;,{&quot;attr&quot;:[&quot;hidden&quot;,&quot;&quot;]}]]" phx-disconnected="[[&quot;show&quot;,{&quot;time&quot;:300,&quot;to&quot;:&quot;.phx-server-error #server-error&quot;,&quot;transition&quot;:[[&quot;transition-all&quot;,&quot;ease-out&quot;,&quot;duration-300&quot;],[&quot;opacity-0&quot;,&quot;translate-y-4&quot;,&quot;sm:translate-y-0&quot;,&quot;sm:scale-95&quot;],[&quot;opacity-100&quot;,&quot;translate-y-0&quot;,&quot;sm:scale-100&quot;]]}],[&quot;remove_attr&quot;,{&quot;attr&quot;:&quot;hidden&quot;}]]">
+  <div data-phx-loc="62" class="alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap alert-error">
+    
+    <!-- @caller lib/metric_flow_web/components/core_components.ex:68 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-exclamation-circle size-5 shrink-0"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    <div data-phx-loc="69">
+      <p data-phx-loc="70" class="font-semibold">Something went wrong!</p>
+      <p data-phx-loc="71"><!-- <:inner_block> lib/metric_flow_web/components/layouts.ex:164 (metric_flow) -->
+    Attempting to reconnect
+    <!-- @caller lib/metric_flow_web/components/layouts.ex:173 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-arrow-path ml-1 size-3 motion-safe:animate-spin"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+  <!-- </:inner_block> --></p>
+    </div>
+    <div data-phx-loc="73" class="flex-1"></div>
+    <button data-phx-loc="74" type="button" class="group self-start cursor-pointer" aria-label="close">
+      <!-- @caller lib/metric_flow_web/components/core_components.ex:75 (metric_flow) --><!-- <MetricFlowWeb.CoreComponents.icon> lib/metric_flow_web/components/core_components.ex:417 (metric_flow) --><span data-phx-loc="418" class="hero-x-mark size-5 opacity-40 group-hover:opacity-70"></span><!-- </MetricFlowWeb.CoreComponents.icon> -->
+    </button>
+  </div>
+</div><!-- </MetricFlowWeb.CoreComponents.flash> -->
+</div><!-- </MetricFlowWeb.Layouts.flash_group> --><!-- </MetricFlowWeb.Layouts.app> --><!-- </MetricFlowWeb.AiLive.Insights.render> --></div>
+  <iframe hidden height="0" width="0" src="/phoenix/live_reload/frame"></iframe></body>
+</html><!-- </MetricFlowWeb.Layouts.root> -->

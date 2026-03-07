@@ -7,12 +7,17 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   requires typing the account name and re-entering the user's password.
   Personal accounts cannot be deleted. Subscribes to account PubSub for
   real-time updates.
+
+  For team accounts where the current user is an owner or admin, the agency
+  auto-enrollment and white-label branding sections are also rendered.
   """
 
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Accounts
+  alias MetricFlow.Agencies
   alias MetricFlow.Users
+  alias MetricFlowWeb.AgencyLive
 
   # ---------------------------------------------------------------------------
   # Render
@@ -21,7 +26,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={@active_account_name}>
       <div class="mx-auto max-w-2xl mf-content">
         <.header>
           Account Settings
@@ -126,6 +131,18 @@ defmodule MetricFlowWeb.AccountLive.Settings do
               </div>
             </div>
           </div>
+
+          <%!-- Agency sections: auto-enrollment and white-label (team accounts, owner/admin only) --%>
+          <%= if @account.type == "team" and @current_user_role in [:owner, :admin] do %>
+            <AgencyLive.Settings.auto_enrollment_section
+              auto_enrollment_rule={@auto_enrollment_rule}
+              auto_enrollment_form={@auto_enrollment_form}
+            />
+            <AgencyLive.Settings.white_label_section
+              white_label_config={@agency_white_label_config}
+              white_label_form={@white_label_form}
+            />
+          <% end %>
 
           <%!-- Section 2: Transfer Ownership (owners of team accounts only) --%>
           <div :if={@is_owner and @account.type == "team"} class="card bg-base-100 shadow mf-card">
@@ -262,6 +279,8 @@ defmodule MetricFlowWeb.AccountLive.Settings do
           |> assign(:is_owner, user_role == :owner)
           |> assign(:can_edit, user_role in [:owner, :admin])
           |> assign(:can_save, user_role in [:owner, :admin])
+          |> assign(:active_account_name, account.name)
+          |> assign_agency_data(scope, account, user_role)
 
         {:ok, socket}
     end
@@ -334,6 +353,107 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     do_delete_account(name_confirmation, password, socket)
   end
 
+  def handle_event("save_auto_enrollment", %{"auto_enrollment" => params}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    attrs = %{
+      email_domain: params["domain"],
+      default_access_level: parse_access_level(params["default_access_level"]),
+      enabled: true
+    }
+
+    case Agencies.configure_auto_enrollment(scope, account.id, attrs) do
+      {:ok, rule} ->
+        {:noreply,
+         socket
+         |> assign(:auto_enrollment_rule, rule)
+         |> assign(:auto_enrollment_form, empty_form())
+         |> put_flash(:info, "Auto-enrollment enabled")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        errors = changeset_to_errors(changeset)
+        {:noreply, assign(socket, :auto_enrollment_form, %{params: params, errors: errors})}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+    end
+  end
+
+  def handle_event("disable_auto_enrollment", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    attrs = %{enabled: false}
+
+    case Agencies.configure_auto_enrollment(scope, account.id, attrs) do
+      {:ok, rule} ->
+        {:noreply,
+         socket
+         |> assign(:auto_enrollment_rule, rule)
+         |> put_flash(:info, "Auto-enrollment disabled")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to disable auto-enrollment")}
+    end
+  end
+
+  def handle_event("validate_white_label", %{"white_label" => params}, socket) do
+    {:noreply, assign(socket, :white_label_form, %{params: params, errors: []})}
+  end
+
+  def handle_event("save_white_label", %{"white_label" => params}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    attrs = %{
+      subdomain: params["subdomain"],
+      logo_url: params["logo_url"],
+      primary_color: params["primary_color"],
+      secondary_color: params["secondary_color"]
+    }
+
+    case Agencies.update_white_label_config(scope, account.id, attrs) do
+      {:ok, config} ->
+        {:noreply,
+         socket
+         |> assign(:agency_white_label_config, config)
+         |> assign(:white_label_form, empty_form())
+         |> put_flash(:info, "White-label settings saved")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        errors = changeset_to_errors(changeset)
+        {:noreply, assign(socket, :white_label_form, %{params: params, errors: errors})}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure white-label branding")}
+    end
+  end
+
+  def handle_event("reset_white_label", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    case Agencies.reset_white_label_config(scope, account.id) do
+      :ok ->
+        {:noreply,
+         socket
+         |> assign(:agency_white_label_config, nil)
+         |> assign(:white_label_form, empty_form())
+         |> put_flash(:info, "Branding reset to default")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to reset white-label branding")}
+    end
+  end
+
+  def handle_event("verify_dns", _params, socket) do
+    {:noreply, put_flash(socket, :info, "DNS verification initiated. Please allow a few minutes.")}
+  end
+
   # ---------------------------------------------------------------------------
   # PubSub message handlers
   # ---------------------------------------------------------------------------
@@ -356,6 +476,37 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp assign_agency_data(socket, scope, account, user_role)
+       when account.type == "team" and user_role in [:owner, :admin] do
+    auto_enrollment_rule =
+      case Agencies.get_auto_enrollment_rule(scope, account.id) do
+        {:error, _} -> nil
+        rule -> rule
+      end
+
+    agency_white_label_config =
+      case Agencies.get_white_label_config(scope, account.id) do
+        {:error, _} -> nil
+        config -> config
+      end
+
+    socket
+    |> assign(:auto_enrollment_rule, auto_enrollment_rule)
+    |> assign(:auto_enrollment_form, empty_form())
+    |> assign(:agency_white_label_config, agency_white_label_config)
+    |> assign(:white_label_form, empty_form())
+  end
+
+  defp assign_agency_data(socket, _scope, _account, _user_role) do
+    socket
+    |> assign(:auto_enrollment_rule, nil)
+    |> assign(:auto_enrollment_form, empty_form())
+    |> assign(:agency_white_label_config, nil)
+    |> assign(:white_label_form, empty_form())
+  end
+
+  defp empty_form, do: %{params: %{}, errors: []}
 
   defp do_delete_account(name_confirmation, password, socket) do
     account = socket.assigns.account
@@ -451,4 +602,15 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
   defp parse_id(id) when is_integer(id), do: id
   defp parse_id(id) when is_binary(id), do: String.to_integer(id)
+
+  defp parse_access_level("read_only"), do: :read_only
+  defp parse_access_level("account_manager"), do: :account_manager
+  defp parse_access_level("admin"), do: :admin
+  defp parse_access_level(_), do: :read_only
+
+  defp changeset_to_errors(%Ecto.Changeset{} = changeset) do
+    Enum.map(changeset.errors, fn {field, {msg, opts}} ->
+      {field, {translate_error_msg({msg, opts}), opts}}
+    end)
+  end
 end

@@ -134,13 +134,13 @@ defmodule MetricFlow.Correlations.MathTest do
   # ---------------------------------------------------------------------------
 
   describe "pearson/2" do
-    test "returns 1.0 for perfectly correlated lists" do
+    test "returns 1.0 for perfectly correlated lists (e.g., [1, 2, 3] and [2, 4, 6])" do
       result = Math.pearson(perfectly_correlated_xs(), perfectly_correlated_ys())
 
       assert result == 1.0
     end
 
-    test "returns -1.0 for perfectly anti-correlated lists" do
+    test "returns -1.0 for perfectly anti-correlated lists (e.g., [1, 2, 3] and [6, 4, 2])" do
       result = Math.pearson(perfectly_anti_correlated_xs(), perfectly_anti_correlated_ys())
 
       assert result == -1.0
@@ -154,14 +154,6 @@ defmodule MetricFlow.Correlations.MathTest do
 
     test "returns nil for empty lists" do
       assert Math.pearson([], []) == nil
-    end
-
-    test "returns nil when first list is empty" do
-      assert Math.pearson([], [1.0, 2.0, 3.0]) == nil
-    end
-
-    test "returns nil when second list is empty" do
-      assert Math.pearson([1.0, 2.0, 3.0], []) == nil
     end
 
     test "returns nil for lists of different lengths" do

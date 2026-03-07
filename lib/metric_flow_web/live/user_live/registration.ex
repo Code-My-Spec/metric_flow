@@ -2,6 +2,7 @@ defmodule MetricFlowWeb.UserLive.Registration do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Accounts
+  alias MetricFlow.Agencies
   alias MetricFlow.Users
   alias MetricFlow.Users.{Scope, User}
 
@@ -109,6 +110,7 @@ defmodule MetricFlowWeb.UserLive.Registration do
           )
 
         maybe_create_account(user)
+        Agencies.process_new_user_auto_enrollment(user)
 
         {:noreply,
          assign(socket,

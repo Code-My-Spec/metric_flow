@@ -26,7 +26,8 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
       end
 
       given_ "the client visits the dashboard via the agency subdomain", context do
-        conn = %Plug.Conn{context.owner_conn | host: "nodefaultbrand.metricflow.io"}
+        %Plug.Conn{} = owner_conn = context.owner_conn
+        conn = %{owner_conn | host: "nodefaultbrand.metricflow.io"}
         {:ok, view, _html} = live(conn, "/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
@@ -81,7 +82,8 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
       end
 
       given_ "the client visits the account settings page via the agency subdomain", context do
-        conn = %Plug.Conn{context.owner_conn | host: "nobrandcheck.metricflow.io"}
+        %Plug.Conn{} = owner_conn = context.owner_conn
+        conn = %{owner_conn | host: "nobrandcheck.metricflow.io"}
         {:ok, view, _html} = live(conn, "/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end

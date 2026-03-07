@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       end
 
       when_ "the owner views the members page", context do
-        {:ok, view, html} = live(context.owner_conn, "/accounts/members")
+        {:ok, _view, html} = live(context.owner_conn, "/accounts/members")
         {:ok, Map.put(context, :owner_members_html, html)}
       end
 

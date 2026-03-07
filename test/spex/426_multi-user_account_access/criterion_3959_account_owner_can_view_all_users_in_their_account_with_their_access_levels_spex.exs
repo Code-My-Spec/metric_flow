@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
       end
 
       then_ "each member row has a member data role", context do
-        assert has_element?(context.view, "[data-role='member']")
+        assert has_element?(context.view, "[data-role='member-row']")
         :ok
       end
     end

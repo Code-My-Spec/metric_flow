@@ -42,7 +42,7 @@ _No requirements defined_
 ## MetricFlowWeb.IntegrationLive.SyncHistory (liveview)
 
 - [x] spec_file - LiveView specification file exists
-- [ ] spec_valid - LiveView specification is valid
+- [x] spec_valid - LiveView specification is valid
 - [x] dependencies_satisfied - Component dependencies are satisfied
 - [x] implementation_file - Component implementation file exists
 - [x] test_file - Component test file exists

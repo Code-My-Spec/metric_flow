@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
       end
 
       then_ "the members list is present on the page", context do
-        assert has_element?(context.view, "[data-role='member']")
+        assert has_element?(context.view, "[data-role='member-row']")
         :ok
       end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
           context.view
           |> render()
           |> Floki.parse_document!()
-          |> Floki.find("[data-role='member']")
+          |> Floki.find("[data-role='member-row']")
 
         assert length(member_rows) >= 2
         :ok

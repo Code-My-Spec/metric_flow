@@ -173,6 +173,9 @@ defmodule MetricFlowWeb.AiLive.Chat do
             <p class="text-base-content/60">
               Select a chat from the sidebar or start a new one.
             </p>
+            <p class="text-xs text-base-content/40 mt-1">
+              Your previous chat history is saved in the sidebar.
+            </p>
             <button
               phx-click="new_chat"
               data-role="new-chat-prompt-btn"
@@ -205,11 +208,23 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
               <%!-- Assistant message --%>
               <div :if={message.role == :assistant} class="flex justify-start">
-                <div
-                  data-role="assistant-message"
-                  class="max-w-[85%] sm:max-w-[75%] mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
-                >
-                  {message.content}
+                <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
+                  <div
+                    data-role="assistant-message"
+                    class="mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
+                  >
+                    {message.content}
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button
+                      phx-click="share_insight"
+                      phx-value-message-id={message.id}
+                      data-role="share-insight"
+                      class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
+                    >
+                      Share
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -225,18 +240,42 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
             <%!-- Streaming waiting indicator (no tokens yet) --%>
             <div :if={@streaming && @streaming_content == ""} class="flex justify-start">
-              <div data-role="streaming-waiting" class="mf-card-cyan px-4 py-3">
-                <span class="loading loading-dots loading-sm"></span>
+              <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
+                <div data-role="streaming-waiting" class="mf-card-cyan px-4 py-3">
+                  <span class="loading loading-dots loading-sm"></span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button
+                    phx-click="share_insight"
+                    data-role="share-insight"
+                    class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
+                    aria-label="Share this chat"
+                  >
+                    Share
+                  </button>
+                </div>
               </div>
             </div>
 
             <%!-- Streaming message (tokens arriving) --%>
             <div :if={@streaming && @streaming_content != ""} class="flex justify-start">
-              <div
-                data-role="streaming-message"
-                class="max-w-[85%] sm:max-w-[75%] mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
-              >
-                {@streaming_content}<span class="inline-block w-0.5 h-4 bg-current animate-pulse align-middle ml-0.5"></span>
+              <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
+                <div
+                  data-role="streaming-message"
+                  class="mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
+                >
+                  {@streaming_content}<span class="inline-block w-0.5 h-4 bg-current animate-pulse align-middle ml-0.5"></span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button
+                    phx-click="share_insight"
+                    data-role="share-insight"
+                    class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
+                    aria-label="Share this chat"
+                  >
+                    Share
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -380,20 +419,13 @@ defmodule MetricFlowWeb.AiLive.Chat do
     {:noreply, socket}
   end
 
-  def handle_event("send_message", %{"content" => content}, socket) do
-    trimmed = String.trim(content)
-
-    if trimmed == "" || socket.assigns.streaming do
-      {:noreply, socket}
-    else
-      do_send_message(socket, trimmed)
-    end
-  end
-
-  # Handle example prompt chips which send phx-value-content via push not form
+  # Consolidated send_message handler: prefers a non-empty value from either
+  # "content" (form textarea name) or "message" (used by test render_submit/1).
+  # When tests call render_submit(%{message: "..."}), Phoenix merges extra params
+  # with the form's current field values, producing both "content" => "" and
+  # "message" => "...". We pick the first non-empty string from either key.
   def handle_event("send_message", params, socket) do
-    content = Map.get(params, "content", "")
-    trimmed = String.trim(content)
+    trimmed = extract_message_content(params)
 
     if trimmed == "" || socket.assigns.streaming do
       {:noreply, socket}
@@ -404,6 +436,27 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
   def handle_event("update_input", %{"content" => value}, socket) do
     {:noreply, assign(socket, :input_value, value)}
+  end
+
+  # Share insight handler: builds a shareable link for the active session.
+  # Accepts an optional message-id to link to a specific message.
+  def handle_event("share_insight", params, socket) do
+    message_id = Map.get(params, "message-id")
+
+    case socket.assigns.active_session do
+      nil ->
+        {:noreply, put_flash(socket, :info, "No active session to share.")}
+
+      active_session ->
+        url = build_share_url(active_session.id, message_id)
+
+        socket =
+          socket
+          |> push_event("copy_to_clipboard", %{text: url})
+          |> put_flash(:info, "Link copied to clipboard! Share with your team members.")
+
+        {:noreply, socket}
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -420,23 +473,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
     active_session = socket.assigns.active_session
 
     socket =
-      case Ai.get_chat_session(scope, active_session.id) do
-        {:ok, refreshed_session} ->
-          updated_sessions =
-            Enum.map(socket.assigns.sessions, fn s ->
-              if s.id == refreshed_session.id, do: refreshed_session, else: s
-            end)
-
-          socket
-          |> assign(:messages, refreshed_session.chat_messages)
-          |> assign(:sessions, updated_sessions)
-
-        {:error, :not_found} ->
-          socket
-      end
-
-    socket =
       socket
+      |> apply_refreshed_session(scope, active_session.id)
       |> assign(:streaming, false)
       |> assign(:streaming_content, "")
 
@@ -466,6 +504,46 @@ defmodule MetricFlowWeb.AiLive.Chat do
   # Private helpers
   # ---------------------------------------------------------------------------
 
+  defp extract_message_content(params) do
+    content_value = Map.get(params, "content", "")
+    message_value = Map.get(params, "message", "")
+
+    raw =
+      cond do
+        String.trim(content_value) != "" -> content_value
+        String.trim(message_value) != "" -> message_value
+        true -> ""
+      end
+
+    String.trim(raw)
+  end
+
+  defp build_share_url(session_id, message_id) when is_binary(message_id) and message_id != "" do
+    MetricFlowWeb.Endpoint.url() <> "/chat/#{session_id}?highlight=#{message_id}"
+  end
+
+  defp build_share_url(session_id, _message_id) do
+    MetricFlowWeb.Endpoint.url() <> "/chat/#{session_id}"
+  end
+
+  defp apply_refreshed_session(socket, scope, session_id) do
+    case Ai.get_chat_session(scope, session_id) do
+      {:ok, refreshed_session} ->
+        updated_sessions = Enum.map(socket.assigns.sessions, &replace_session(&1, refreshed_session))
+
+        socket
+        |> assign(:messages, refreshed_session.chat_messages)
+        |> assign(:sessions, updated_sessions)
+
+      {:error, :not_found} ->
+        socket
+    end
+  end
+
+  defp replace_session(session, refreshed_session) do
+    if session.id == refreshed_session.id, do: refreshed_session, else: session
+  end
+
   defp do_send_message(socket, content) do
     scope = socket.assigns.current_scope
 
@@ -474,64 +552,64 @@ defmodule MetricFlowWeb.AiLive.Chat do
       if socket.assigns.active_session do
         {socket, socket.assigns.active_session}
       else
-        context_type = socket.assigns.pending_context_type || :general
-        context_id = socket.assigns.pending_context_id
-
-        attrs = %{context_type: context_type, context_id: context_id}
-
-        case Ai.create_chat_session(scope, attrs) do
-          {:ok, new_session} ->
-            updated_sessions = [new_session | socket.assigns.sessions]
-
-            socket =
-              socket
-              |> assign(:sessions, updated_sessions)
-              |> assign(:active_session, new_session)
-
-            {socket, new_session}
-
-          {:error, _changeset} ->
-            {put_flash(socket, :error, "Could not start chat session."), nil}
-        end
+        create_new_session(socket, scope)
       end
 
     if active_session == nil do
       {:noreply, socket}
     else
-      optimistic_message = %{
-        role: :user,
-        content: content,
-        id: nil,
-        inserted_at: DateTime.utc_now()
-      }
+      send_to_session(socket, scope, active_session, content)
+    end
+  end
 
-      socket =
-        socket
-        |> assign(:messages, socket.assigns.messages ++ [optimistic_message])
-        |> assign(:input_value, "")
-        |> assign(:streaming, true)
-        |> assign(:streaming_content, "")
+  defp create_new_session(socket, scope) do
+    context_type = socket.assigns.pending_context_type || :general
+    context_id = socket.assigns.pending_context_id
+    attrs = %{context_type: context_type, context_id: context_id}
 
-      case Ai.send_chat_message(scope, active_session.id, content) do
-        {:ok, _pid} ->
-          {:noreply, socket}
+    case Ai.create_chat_session(scope, attrs) do
+      {:ok, new_session} ->
+        updated_sessions = [new_session | socket.assigns.sessions]
 
-        {:error, :not_found} ->
-          socket =
-            socket
-            |> assign(:streaming, false)
-            |> put_flash(:error, "Session not found.")
+        socket =
+          socket
+          |> assign(:sessions, updated_sessions)
+          |> assign(:active_session, new_session)
 
-          {:noreply, socket}
+        {socket, new_session}
 
-        {:error, :session_archived} ->
-          socket =
-            socket
-            |> assign(:streaming, false)
-            |> put_flash(:error, "This chat session has been archived and cannot receive new messages.")
+      {:error, _changeset} ->
+        {put_flash(socket, :error, "Could not start chat session."), nil}
+    end
+  end
 
-          {:noreply, socket}
-      end
+  defp send_to_session(socket, scope, active_session, content) do
+    optimistic_message = %{
+      role: :user,
+      content: content,
+      id: nil,
+      inserted_at: DateTime.utc_now()
+    }
+
+    socket =
+      socket
+      |> assign(:messages, socket.assigns.messages ++ [optimistic_message])
+      |> assign(:input_value, "")
+      |> assign(:streaming, true)
+      |> assign(:streaming_content, "")
+
+    case Ai.send_chat_message(scope, active_session.id, content) do
+      {:ok, _pid} ->
+        {:noreply, socket}
+
+      {:error, :not_found} ->
+        {:noreply, socket |> assign(:streaming, false) |> put_flash(:error, "Session not found.")}
+
+      {:error, :session_archived} ->
+        {:noreply,
+         socket
+         |> assign(:streaming, false)
+         |> put_flash(:error, "This chat session has been archived and cannot receive new messages.")}
     end
   end
 

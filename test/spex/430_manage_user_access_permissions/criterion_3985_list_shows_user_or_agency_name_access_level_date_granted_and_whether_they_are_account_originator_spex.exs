@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
       end
 
       then_ "the owner member row is present in the list", context do
-        assert has_element?(context.view, "[data-role='member']")
+        assert has_element?(context.view, "[data-role='member-row']")
         :ok
       end
 

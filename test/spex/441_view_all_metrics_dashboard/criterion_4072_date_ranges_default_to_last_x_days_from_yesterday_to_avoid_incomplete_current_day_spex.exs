@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
       end
 
       then_ "today's date is not presented as the end of the default date range", context do
-        html = render(context.view)
+        _html = render(context.view)
         today_str = context.today_str
 
         # The end date shown must not be today. We check that the dashboard does

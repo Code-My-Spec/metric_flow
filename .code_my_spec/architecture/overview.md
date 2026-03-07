@@ -22,12 +22,12 @@ Dependencies:
 ### Ai
 **context**
 
-LLM integration for chat, insights, and report generation.
+Public API boundary for the Ai bounded context.
 
 Dependencies:
 - MetricFlow.Metrics
 - MetricFlow.Correlations
-- MetricFlow.Dashboards
+- MetricFlow.Users.Scope
 
 ### Binary
 **module**
@@ -35,18 +35,22 @@ Dependencies:
 ### Correlations
 **context**
 
-Correlation calculations and analysis results.
+Public API boundary for the Correlations bounded context.
 
 Dependencies:
 - MetricFlow.Metrics
+- MetricFlow.Integrations
+- MetricFlow.Users.Scope
 
 ### Dashboards
 **context**
 
-Visualizations and dashboard collections.
+Public API boundary for the Dashboards bounded context. Aggregates and shapes metric data from the Metrics context into chart-ready structures for the "All Metrics" dashboard view. Delegates Vega-Lite chart construction to ChartBuilder. Delegates integration presence checks to Integrations.
 
 Dependencies:
 - MetricFlow.Metrics
+- MetricFlow.Integrations
+- MetricFlow.Users.Scope
 
 ### DataSync
 **context**
@@ -70,6 +74,10 @@ Dependencies:
 **context**
 
 Invitation flow for granting account access.
+
+Dependencies:
+- MetricFlow.Accounts
+- MetricFlow.Users.Scope
 
 ### Metrics
 **context**
@@ -100,18 +108,22 @@ User authentication, registration, and session management.
 ### Accept
 **liveview**
 
-Accept invitation flow.
+Accept invitation flow. Validates an invitation token from a URL parameter and allows the recipient to accept or decline access to an account. Handles both authenticated users (who accept directly) and unauthenticated users (who are redirected to log in or register before being returned to this page).
 
 Dependencies:
 - MetricFlow.Invitations
+- MetricFlow.Users
 
 ### AccountEdit
+**module**
+
+### ActiveAccountHook
 **module**
 
 ### Chat
 **liveview**
 
-AI chat interface for data exploration.
+AI chat interface for data exploration. Displays a sidebar of previous chat sessions alongside an active conversation area. Users can start new sessions, continue existing ones, and ask natural language questions about their metrics. Assistant responses are streamed token-by-token.
 
 Dependencies:
 - MetricFlow.Ai
@@ -161,6 +173,7 @@ View correlation analysis (Raw and Smart modes), displays automated correlation 
 
 Dependencies:
 - MetricFlow.Correlations
+- MetricFlow.Correlations.CorrelationResult
 
 ### Index
 **liveview**
@@ -191,7 +204,7 @@ Dependencies:
 ### Insights
 **liveview**
 
-AI insights panel, suggestion feedback.
+AI insights panel displaying AI-generated recommendations from correlation analysis, with suggestion type filtering and per-insight helpful/not-helpful feedback.
 
 Dependencies:
 - MetricFlow.Ai
@@ -240,10 +253,11 @@ Dependencies:
 ### Send
 **liveview**
 
-Send invitations to users/agencies.
+Send email invitations to users or agencies to grant them access to the active account. Displays a send-invitation form and a list of pending invitations. Only owners and admins of the active account may access this page. Invitations are sent to any email address — the recipient does not need to have an existing account. Pending invitations can be cancelled by the inviting user, an owner, or an admin.
 
 Dependencies:
 - MetricFlow.Invitations
+- MetricFlow.Accounts
 
 ### Settings
 **liveview**
@@ -275,7 +289,7 @@ Dependencies:
 ### Show
 **liveview**
 
-View dashboard with visualizations.
+View dashboard with visualizations. Displays unified marketing and financial metrics from all connected platforms via Vega-Lite time series charts, summary stat cards, and filter controls. When no integrations are connected, renders an onboarding prompt. Unauthenticated users are redirected to `/users/log-in` by the router's authentication plug.
 
 Dependencies:
 - MetricFlow.Dashboards

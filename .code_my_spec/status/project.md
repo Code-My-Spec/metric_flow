@@ -8,4 +8,6 @@
 - [x] issues_triaged - All incoming QA issues have been triaged
 - [x] issues_resolved - All medium+ accepted issues have been resolved
 - [ ] all_stories_complete - All story requirements satisfied
-- [ ] project_qa - QA summary exists and valid
+- [ ] qa_journey_plan - QA journey plan exists and valid
+- [ ] qa_journey_execute - QA journey result exists and valid
+- [ ] qa_journey_wallaby - Wallaby journey tests exist

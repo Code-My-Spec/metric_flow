@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
         [member_row | _] =
           html
           |> Floki.parse_document!()
-          |> Floki.find("[data-role='member'][data-user-id]")
+          |> Floki.find("[data-role='member-row'][data-user-id]")
           |> Enum.reject(fn row ->
             Floki.text(row) =~ context.owner_email
           end)

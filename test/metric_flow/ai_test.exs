@@ -16,6 +16,7 @@ defmodule MetricFlow.AiTest do
   alias MetricFlow.Repo
 
   @cassette_dir "test/cassettes/ai"
+  @llm_match_opts [mode: :replay, match_requests_on: [:method, :uri]]
 
   setup do
     {user, scope} = user_with_scope()
@@ -159,7 +160,7 @@ defmodule MetricFlow.AiTest do
       assert updated.rating == :not_helpful
     end
 
-    test "stores the user_id from the scope (not from attrs)", %{scope: scope, account_id: account_id, user: user} do
+    test "stores the user_id from the scope, not from attrs", %{scope: scope, account_id: account_id, user: user} do
       insight = insert_insight!(account_id)
 
       assert {:ok, feedback} = Ai.submit_feedback(scope, insight.id, %{rating: :helpful, user_id: -999})
@@ -389,13 +390,15 @@ defmodule MetricFlow.AiTest do
   # generate_insights/3
   # ---------------------------------------------------------------------------
 
-  describe "generate_insights/2" do
+  describe "generate_insights/3" do
     test "returns ok tuple with list of Insight structs on success", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_insights",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           assert {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
           assert is_list(insights)
           assert insights != []
@@ -409,7 +412,9 @@ defmodule MetricFlow.AiTest do
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_insights",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
           persisted_count = Repo.aggregate(Insight, :count, :id)
           assert persisted_count == length(insights)
@@ -417,12 +422,14 @@ defmodule MetricFlow.AiTest do
       end)
     end
 
-    test "links each insight to the correlation_result_id when present", %{scope: scope, account_id: account_id} do
+    test "links each insight to the account_id from the scope", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_insights",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
           assert Enum.all?(insights, &(&1.account_id == account_id))
         end
@@ -474,7 +481,7 @@ defmodule MetricFlow.AiTest do
 
       capture_log(fn ->
         with_cassette "insights_generator_error",
-                      [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]],
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
                       fn plug ->
           assert {:error, _reason} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
         end
@@ -486,19 +493,23 @@ defmodule MetricFlow.AiTest do
   # generate_vega_spec/3
   # ---------------------------------------------------------------------------
 
-  describe "generate_vega_spec/2" do
+  describe "generate_vega_spec/3" do
     test "returns ok tuple with Vega-Lite spec map on success", %{scope: scope} do
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_vega_spec",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           assert {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
           assert is_map(spec)
         end
       end)
     end
 
-    test "returned spec map includes \"$schema\" pointing to Vega-Lite v5 URL", %{scope: scope} do
+    test "returned spec map includes \"$schema\" pointing to the Vega-Lite v5 URL", %{scope: scope} do
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_vega_spec",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
           assert spec["$schema"] == "https://vega.github.io/schema/vega-lite/v5.json"
         end
@@ -507,7 +518,9 @@ defmodule MetricFlow.AiTest do
 
     test "returned spec map includes mark and encoding keys", %{scope: scope} do
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_vega_spec",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
           assert Map.has_key?(spec, "mark")
           assert Map.has_key?(spec, "encoding")
@@ -521,7 +534,9 @@ defmodule MetricFlow.AiTest do
       # metric names list may be empty when no metrics are in the DB, but the call
       # should still complete.
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+        with_cassette "ai_context_generate_vega_spec",
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
+                      fn plug ->
           assert {:ok, _spec} = Ai.generate_vega_spec(scope, "Show me a revenue chart", req_http_options: [plug: plug])
         end
       end)
@@ -534,7 +549,7 @@ defmodule MetricFlow.AiTest do
       # {:error, :invalid_vega_spec}. We verify any error is returned here.
       capture_log(fn ->
         with_cassette "report_generator_error",
-                      [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]],
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
                       fn plug ->
           assert {:error, _reason} = Ai.generate_vega_spec(scope, "Generate a chart", req_http_options: [plug: plug])
         end
@@ -544,7 +559,7 @@ defmodule MetricFlow.AiTest do
     test "propagates error tuple when ReportGenerator returns an error", %{scope: scope} do
       capture_log(fn ->
         with_cassette "report_generator_error",
-                      [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]],
+                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
                       fn plug ->
           assert {:error, _reason} = Ai.generate_vega_spec(scope, "Show me revenue data", req_http_options: [plug: plug])
         end
@@ -556,7 +571,7 @@ defmodule MetricFlow.AiTest do
   # send_chat_message/4
   # ---------------------------------------------------------------------------
 
-  describe "send_chat_message/3" do
+  describe "send_chat_message/4" do
     setup %{user: user, account_id: account_id} do
       session = insert_chat_session!(user.id, account_id, %{status: :active, title: "Test"})
       %{session: session}
@@ -586,7 +601,7 @@ defmodule MetricFlow.AiTest do
       assert_receive {:chat_complete, _}, 5000
     end
 
-    test "spawns a Task that streams tokens to the caller", %{scope: scope, session: session} do
+    test "spawns a Task that streams tokens to the caller as :chat_token messages", %{scope: scope, session: session} do
       opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -609,11 +624,39 @@ defmodule MetricFlow.AiTest do
         )
 
       assert length(assistant_msgs) == 1
+    end
+
+    test "assistant ChatMessage content equals the concatenation of all streamed tokens", %{scope: scope, session: session} do
+      opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
+
+      {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
+      assert_receive {:chat_complete, _}, 5000
+
+      assistant_msgs =
+        Repo.all(
+          from m in ChatMessage,
+            where: m.chat_session_id == ^session.id and m.role == :assistant
+        )
+
       assert hd(assistant_msgs).content == "Hello world"
+    end
+
+    test "assistant ChatMessage token_count equals the length of the full content string", %{scope: scope, session: session} do
+      opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
+
+      {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
+      assert_receive {:chat_complete, _}, 5000
+
+      assistant_msgs =
+        Repo.all(
+          from m in ChatMessage,
+            where: m.chat_session_id == ^session.id and m.role == :assistant
+        )
+
       assert hd(assistant_msgs).token_count == String.length("Hello world")
     end
 
-    test "sends :chat_complete message to caller when streaming finishes", %{scope: scope, session: session} do
+    test "sends :chat_complete message with token_count to caller when streaming finishes", %{scope: scope, session: session} do
       opts = [stream_chat_fn: success_stream_fn(["Done"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)

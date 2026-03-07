@@ -4,5 +4,5 @@ defmodule MetricFlowTest do
   use Boundary,
     top_level?: true,
     deps: [MetricFlow, MetricFlowWeb],
-    exports: [DataCase, ConnCase, UsersFixtures]
+    exports: [DataCase, ConnCase, UsersFixtures, IntegrationsFixtures]
 end

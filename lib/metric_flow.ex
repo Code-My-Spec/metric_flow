@@ -21,6 +21,8 @@ defmodule MetricFlow do
       DataSync,
       Integrations,
       Integrations.Integration,
+      Invitations,
+      Invitations.Invitation,
       Metrics,
       Metrics.Metric,
       Users,

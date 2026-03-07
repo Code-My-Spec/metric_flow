@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
       end
 
       then_ "the owner's member row is present", context do
-        assert has_element?(context.view, "[data-role='member']")
+        assert has_element?(context.view, "[data-role='member-row']")
         :ok
       end
 

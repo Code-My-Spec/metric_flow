@@ -95,11 +95,10 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # Mailgun for production email delivery (ADR: email_provider)
+  # Resend for production email delivery (ADR: email_provider)
   config :metric_flow, MetricFlow.Mailer,
-    adapter: Swoosh.Adapters.Mailgun,
-    api_key: System.fetch_env!("MAILGUN_API_KEY"),
-    domain: System.fetch_env!("MAILGUN_DOMAIN")
+    adapter: Swoosh.Adapters.Resend,
+    api_key: System.fetch_env!("RESEND_API_KEY")
 
   config :swoosh, :api_client, Swoosh.ApiClient.Req
 
