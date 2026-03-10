@@ -1,0 +1,78 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-09T03:12:41.179280Z",
+      "request": {
+        "body_json": {
+          "query": "SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions, metrics.ctr, metrics.average_cpc, metrics.conversions_value, campaign.name, segments.date\nFROM campaign\nWHERE segments.date BETWEEN '2026-01-01' AND '2026-01-31'\nORDER BY segments.date DESC"
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "login-customer-id": [
+            "6775417331"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://googleads.googleapis.com/v23/customers/8952788948/googleAds:searchStream"
+      },
+      "response": {
+        "body_json": [
+          {
+            "error": {
+              "code": 401,
+              "message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+              "status": "UNAUTHENTICATED"
+            }
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Mon, 09 Mar 2026 03:12:41 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "www-authenticate": [
+            "Bearer realm=\"https://accounts.google.com/\", error=\"invalid_token\""
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 401
+      }
+    }
+  ],
+  "version": "2.0"
+}

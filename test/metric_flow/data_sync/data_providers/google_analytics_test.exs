@@ -2,6 +2,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
   use ExUnit.Case, async: true
 
   import ExUnit.CaptureLog
+  import ReqCassette
 
   alias MetricFlow.DataSync.DataProviders.GoogleAnalytics
   alias MetricFlow.Integrations.Integration
@@ -59,7 +60,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
     )
   end
 
-  # GA4 response with 6 metrics per row: sessions, pageviews, users,
+  # GA4 response with 6 metrics per row: sessions, screenPageViews, users,
   # bounceRate, averageSessionDuration, newUsers
   defp valid_api_response do
     Jason.encode!(%{
@@ -90,7 +91,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       "dimensionHeaders" => [%{"name" => "date"}],
       "metricHeaders" => [
         %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "pageviews", "type" => "TYPE_INTEGER"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
         %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
         %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
@@ -126,7 +127,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       ],
       "metricHeaders" => [
         %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "pageviews", "type" => "TYPE_INTEGER"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
         %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
         %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
@@ -159,7 +160,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       ],
       "metricHeaders" => [
         %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "pageviews", "type" => "TYPE_INTEGER"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
         %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
         %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
@@ -335,7 +336,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       assert date_range["startDate"] == Date.to_iso8601(expected_start)
     end
 
-    test "requests sessions, pageviews, users, bounceRate, averageSessionDuration, newUsers metrics" do
+    test "requests sessions, screenPageViews, users, bounceRate, averageSessionDuration, newUsers metrics" do
       test_pid = self()
       plug = capture_request_plug(test_pid)
 
@@ -348,7 +349,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       metric_names = Enum.map(decoded["metrics"], & &1["name"])
 
       assert "sessions" in metric_names
-      assert "pageviews" in metric_names
+      assert "screenPageViews" in metric_names
       assert "bounceRate" in metric_names
       assert "averageSessionDuration" in metric_names
       assert "newUsers" in metric_names
@@ -706,6 +707,66 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       scopes = GoogleAnalytics.required_scopes()
 
       assert "https://www.googleapis.com/auth/analytics.readonly" in scopes
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Cassette integration tests — real Google Analytics API traffic
+  # ---------------------------------------------------------------------------
+
+  describe "fetch_metrics/2 with cassette" do
+    @describetag :integration
+
+    import MetricFlowTest.CassetteFixtures
+
+    setup do
+      case google_analytics_integration() do
+        nil -> {:ok, skip: true}
+        integration -> {:ok, integration: integration}
+      end
+    end
+
+    test "fetches real GA4 metrics from Google Analytics API", context do
+      if context[:skip], do: flunk("GA4_TEST_PROPERTY_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "ga4_fetch_metrics", cassette_opts("ga4_fetch_metrics"), fn plug ->
+          assert {:ok, metrics} =
+                   GoogleAnalytics.fetch_metrics(context.integration,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert is_list(metrics)
+
+          for metric <- metrics do
+            assert metric.provider == :google_analytics
+            assert metric.metric_type == "traffic"
+            assert is_binary(metric.metric_name)
+            assert is_number(metric.value)
+            assert %DateTime{} = metric.recorded_at
+            assert is_map(metric.dimensions)
+          end
+        end
+      end)
+    end
+
+    test "returns structured error for unauthorized request", context do
+      if context[:skip], do: flunk("GA4_TEST_PROPERTY_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "ga4_unauthorized", cassette_opts("ga4_unauthorized"), fn plug ->
+          bad_token = %{context.integration | access_token: "invalid-token"}
+
+          assert {:error, reason} =
+                   GoogleAnalytics.fetch_metrics(bad_token,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert reason in [:unauthorized, :insufficient_permissions, :property_not_found]
+        end
+      end)
     end
   end
 end

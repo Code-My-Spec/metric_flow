@@ -20,7 +20,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
 
   @metric_names [
     "sessions",
-    "pageviews",
+    "screenPageViews",
     "activeUsers",
     "bounceRate",
     "averageSessionDuration",

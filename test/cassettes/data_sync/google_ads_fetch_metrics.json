@@ -1,0 +1,3673 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-09T03:12:41.648813Z",
+      "request": {
+        "body_json": {
+          "query": "SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions, metrics.ctr, metrics.average_cpc, metrics.conversions_value, campaign.name, segments.date\nFROM campaign\nWHERE segments.date BETWEEN '2026-01-01' AND '2026-01-31'\nORDER BY segments.date DESC"
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "login-customer-id": [
+            "6775417331"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://googleads.googleapis.com/v23/customers/8952788948/googleAds:searchStream"
+      },
+      "response": {
+        "body_json": [
+          {
+            "fieldMask": "metrics.impressions,metrics.clicks,metrics.costMicros,metrics.conversions,metrics.ctr,metrics.averageCpc,metrics.conversionsValue,campaign.name,segments.date",
+            "queryResourceConsumption": "1233",
+            "requestId": "OJMelO4009iHqTtn80lMxg",
+            "results": [
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 272000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1360000",
+                  "ctr": 0.17857142857142858,
+                  "impressions": "28"
+                },
+                "segments": {
+                  "date": "2026-01-31"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 256666.66666666666,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1540000",
+                  "ctr": 0.2727272727272727,
+                  "impressions": "22"
+                },
+                "segments": {
+                  "date": "2026-01-31"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2380053.7,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "23800537",
+                  "ctr": 0.1,
+                  "impressions": "100"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 5900000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "5900000",
+                  "ctr": 0.5,
+                  "impressions": "2"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 3213333.3333333335,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19280000",
+                  "ctr": 0.375,
+                  "impressions": "16"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 102226.4693877551,
+                  "clicks": "49",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "5009097",
+                  "ctr": 0.392,
+                  "impressions": "125"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 10000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "20000",
+                  "ctr": 0.11764705882352941,
+                  "impressions": "17"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 11236661,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "11236661",
+                  "ctr": 0.125,
+                  "impressions": "8"
+                },
+                "segments": {
+                  "date": "2026-01-30"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2617473.5555555555,
+                  "clicks": "9",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "23557262",
+                  "ctr": 0.17647058823529413,
+                  "impressions": "51"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 6820000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "13640000",
+                  "ctr": 0.5,
+                  "impressions": "4"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 7090000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7090000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 2026481.3333333333,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "12158888",
+                  "ctr": 0.3,
+                  "impressions": "20"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2362000,
+                  "clicks": "5",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "11810000",
+                  "ctr": 0.19230769230769232,
+                  "impressions": "26"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 116370,
+                  "clicks": "40",
+                  "conversions": 3.998693,
+                  "conversionsValue": 0,
+                  "costMicros": "4654800",
+                  "ctr": 0.3508771929824561,
+                  "impressions": "114"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2036666.6666666667,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6110000",
+                  "ctr": 0.0967741935483871,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 6586666.666666667,
+                  "clicks": "3",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "19760000",
+                  "ctr": 0.13043478260869565,
+                  "impressions": "23"
+                },
+                "segments": {
+                  "date": "2026-01-29"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2934508.777777778,
+                  "clicks": "9",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "26410579",
+                  "ctr": 0.03474903474903475,
+                  "impressions": "259"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 5957412,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "11914824",
+                  "ctr": 0.044444444444444446,
+                  "impressions": "45"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 7340000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7340000",
+                  "ctr": 0.03225806451612903,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 2140000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "2140000",
+                  "ctr": 0.06666666666666667,
+                  "impressions": "15"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2364000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "11820000",
+                  "ctr": 0.13513513513513514,
+                  "impressions": "37"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 119473.96610169491,
+                  "clicks": "59",
+                  "conversions": 0.999668,
+                  "conversionsValue": 0,
+                  "costMicros": "7048964",
+                  "ctr": 0.3089005235602094,
+                  "impressions": "191"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 4910125.5,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "9820251",
+                  "ctr": 0.06666666666666667,
+                  "impressions": "30"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 451371.125,
+                  "clicks": "8",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "3610969",
+                  "ctr": 0.0625,
+                  "impressions": "128"
+                },
+                "segments": {
+                  "date": "2026-01-28"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2299204,
+                  "clicks": "11",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "25291244",
+                  "ctr": 0.09734513274336283,
+                  "impressions": "113"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 13670000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "27340000",
+                  "ctr": 0.125,
+                  "impressions": "16"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 6251478,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6251478",
+                  "ctr": 0.02564102564102564,
+                  "impressions": "39"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 1110000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1110000",
+                  "ctr": 0.05,
+                  "impressions": "20"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2596666.6666666665,
+                  "clicks": "6",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "15580000",
+                  "ctr": 0.18181818181818182,
+                  "impressions": "33"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 118587.60606060606,
+                  "clicks": "33",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "3913391",
+                  "ctr": 0.25984251968503935,
+                  "impressions": "127"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1414000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7070000",
+                  "ctr": 0.1111111111111111,
+                  "impressions": "45"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2493369.5,
+                  "clicks": "8",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19946956",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "56"
+                },
+                "segments": {
+                  "date": "2026-01-27"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 4630361.6,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "46303616",
+                  "ctr": 0.06756756756756757,
+                  "impressions": "148"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "25"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 11130000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "11130000",
+                  "ctr": 0.25,
+                  "impressions": "4"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 650000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "650000",
+                  "ctr": 0.058823529411764705,
+                  "impressions": "17"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 4242500,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "16970000",
+                  "ctr": 0.23529411764705882,
+                  "impressions": "17"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 163934.93103448275,
+                  "clicks": "29",
+                  "conversions": 3,
+                  "conversionsValue": 0,
+                  "costMicros": "4754113",
+                  "ctr": 0.29,
+                  "impressions": "100"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 7275625.333333333,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "21826876",
+                  "ctr": 0.375,
+                  "impressions": "8"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2857142.8571428573,
+                  "clicks": "7",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "20000000",
+                  "ctr": 0.35,
+                  "impressions": "20"
+                },
+                "segments": {
+                  "date": "2026-01-26"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 3800000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7600000",
+                  "ctr": 0.05263157894736842,
+                  "impressions": "38"
+                },
+                "segments": {
+                  "date": "2026-01-25"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 10000,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "70000",
+                  "ctr": 0.13725490196078433,
+                  "impressions": "51"
+                },
+                "segments": {
+                  "date": "2026-01-25"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2007500,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "8030000",
+                  "ctr": 0.09302325581395349,
+                  "impressions": "43"
+                },
+                "segments": {
+                  "date": "2026-01-24"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 10000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "20000",
+                  "ctr": 0.07692307692307693,
+                  "impressions": "26"
+                },
+                "segments": {
+                  "date": "2026-01-24"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 1192656.6666666667,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7155940",
+                  "ctr": 0.061855670103092786,
+                  "impressions": "97"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 9003971,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "9003971",
+                  "ctr": 0.03225806451612903,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 6980000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "13960000",
+                  "ctr": 0.3333333333333333,
+                  "impressions": "6"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "5"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 4350087.4,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "21750437",
+                  "ctr": 0.18518518518518517,
+                  "impressions": "27"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 153022.84210526315,
+                  "clicks": "38",
+                  "conversions": 5,
+                  "conversionsValue": 0,
+                  "costMicros": "5814868",
+                  "ctr": 0.2733812949640288,
+                  "impressions": "139"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 4382500,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "17530000",
+                  "ctr": 0.07017543859649122,
+                  "impressions": "57"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 700663,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "3503315",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "55"
+                },
+                "segments": {
+                  "date": "2026-01-23"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3051773.3846153845,
+                  "clicks": "13",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "39673054",
+                  "ctr": 0.10483870967741936,
+                  "impressions": "124"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "35"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "39"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 810342,
+                  "clicks": "2",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "1620684",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "14"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 1522000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7610000",
+                  "ctr": 0.19230769230769232,
+                  "impressions": "26"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 105454.46666666666,
+                  "clicks": "60",
+                  "conversions": 8,
+                  "conversionsValue": 0,
+                  "costMicros": "6327268",
+                  "ctr": 0.24793388429752067,
+                  "impressions": "242"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "48"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 817885.8181818182,
+                  "clicks": "11",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "8996744",
+                  "ctr": 0.12222222222222222,
+                  "impressions": "90"
+                },
+                "segments": {
+                  "date": "2026-01-22"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2165000,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "12990000",
+                  "ctr": 0.05405405405405406,
+                  "impressions": "111"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7060000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7060000",
+                  "ctr": 0.07142857142857142,
+                  "impressions": "14"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "18"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 9040000,
+                  "clicks": "2",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "18080000",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "14"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 56124.969696969696,
+                  "clicks": "33",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1852124",
+                  "ctr": 0.30275229357798167,
+                  "impressions": "109"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 9740000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "9740000",
+                  "ctr": 0.5,
+                  "impressions": "2"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2724000,
+                  "clicks": "5",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "13620000",
+                  "ctr": 0.10638297872340426,
+                  "impressions": "47"
+                },
+                "segments": {
+                  "date": "2026-01-21"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 4005469.714285714,
+                  "clicks": "7",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "28038288",
+                  "ctr": 0.05263157894736842,
+                  "impressions": "133"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 6580000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6580000",
+                  "ctr": 0.5,
+                  "impressions": "2"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 4260000,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "12780000",
+                  "ctr": 0.3,
+                  "impressions": "10"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "22"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2854000,
+                  "clicks": "5",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "14270000",
+                  "ctr": 0.23809523809523808,
+                  "impressions": "21"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 202784.25,
+                  "clicks": "40",
+                  "conversions": 3.999317,
+                  "conversionsValue": 0,
+                  "costMicros": "8111370",
+                  "ctr": 0.2857142857142857,
+                  "impressions": "140"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1015186,
+                  "clicks": "10",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "10151860",
+                  "ctr": 0.07692307692307693,
+                  "impressions": "130"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 706540,
+                  "clicks": "12",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "8478480",
+                  "ctr": 0.1276595744680851,
+                  "impressions": "94"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 501251.6666666667,
+                  "clicks": "15",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7518775",
+                  "ctr": 0.06578947368421052,
+                  "impressions": "228"
+                },
+                "segments": {
+                  "date": "2026-01-20"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2142209.909090909,
+                  "clicks": "11",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "23564309",
+                  "ctr": 0.088,
+                  "impressions": "125"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7198038,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7198038",
+                  "ctr": 0.03125,
+                  "impressions": "32"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 4230000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "4230000",
+                  "ctr": 0.2,
+                  "impressions": "5"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "9"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 5313333.333333333,
+                  "clicks": "3",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "15940000",
+                  "ctr": 0.25,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 103744.45,
+                  "clicks": "40",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "4149778",
+                  "ctr": 0.24539877300613497,
+                  "impressions": "163"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2880000,
+                  "clicks": "8",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "23040000",
+                  "ctr": 0.12121212121212122,
+                  "impressions": "66"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 12463574,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "24927148",
+                  "ctr": 0.13333333333333333,
+                  "impressions": "15"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 990650.875,
+                  "clicks": "8",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7925207",
+                  "ctr": 0.10810810810810811,
+                  "impressions": "74"
+                },
+                "segments": {
+                  "date": "2026-01-19"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1497873.8333333333,
+                  "clicks": "6",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "8987243",
+                  "ctr": 0.10344827586206896,
+                  "impressions": "58"
+                },
+                "segments": {
+                  "date": "2026-01-18"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 782857.1428571428,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "5480000",
+                  "ctr": 0.12727272727272726,
+                  "impressions": "55"
+                },
+                "segments": {
+                  "date": "2026-01-18"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 769835.3076923077,
+                  "clicks": "13",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10007859",
+                  "ctr": 0.1368421052631579,
+                  "impressions": "95"
+                },
+                "segments": {
+                  "date": "2026-01-18"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1210000,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7260000",
+                  "ctr": 0.15,
+                  "impressions": "40"
+                },
+                "segments": {
+                  "date": "2026-01-17"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 1250000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6250000",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "35"
+                },
+                "segments": {
+                  "date": "2026-01-17"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 172125.375,
+                  "clicks": "8",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1377003",
+                  "ctr": 0.10810810810810811,
+                  "impressions": "74"
+                },
+                "segments": {
+                  "date": "2026-01-17"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 1999230.7692307692,
+                  "clicks": "13",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "25990000",
+                  "ctr": 0.052,
+                  "impressions": "250"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7090000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7090000",
+                  "ctr": 0.029411764705882353,
+                  "impressions": "34"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 13890000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "13890000",
+                  "ctr": 0.08333333333333333,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 3420000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "3420000",
+                  "ctr": 0.03571428571428571,
+                  "impressions": "28"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 9587913,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19175826",
+                  "ctr": 0.08,
+                  "impressions": "25"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 76337.2463768116,
+                  "clicks": "69",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "5267270",
+                  "ctr": 0.3053097345132743,
+                  "impressions": "226"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2083225,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "14582575",
+                  "ctr": 0.0958904109589041,
+                  "impressions": "73"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 1652181.4285714286,
+                  "clicks": "7",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "11565270",
+                  "ctr": 0.22580645161290322,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 1012643.25,
+                  "clicks": "8",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "8101146",
+                  "ctr": 0.24242424242424243,
+                  "impressions": "33"
+                },
+                "segments": {
+                  "date": "2026-01-16"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3398074.714285714,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "23786523",
+                  "ctr": 0.15217391304347827,
+                  "impressions": "46"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 3523214,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7046428",
+                  "ctr": 0.1111111111111111,
+                  "impressions": "18"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "40"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2852013.1,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "28520131",
+                  "ctr": 0.22727272727272727,
+                  "impressions": "44"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 59798.86,
+                  "clicks": "50",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "2989943",
+                  "ctr": 0.24752475247524752,
+                  "impressions": "202"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2134444.4444444445,
+                  "clicks": "9",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19210000",
+                  "ctr": 0.13043478260869565,
+                  "impressions": "69"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 4980000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "9960000",
+                  "ctr": 0.2857142857142857,
+                  "impressions": "7"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 3455914.6666666665,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10367744",
+                  "ctr": 0.10714285714285714,
+                  "impressions": "28"
+                },
+                "segments": {
+                  "date": "2026-01-15"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3095000,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "30950000",
+                  "ctr": 0.09433962264150944,
+                  "impressions": "106"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 3720000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7440000",
+                  "ctr": 0.0625,
+                  "impressions": "32"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 3500000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7000000",
+                  "ctr": 0.13333333333333333,
+                  "impressions": "15"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "8"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 8373333.333333333,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "25120000",
+                  "ctr": 0.09375,
+                  "impressions": "32"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 84236.76119402985,
+                  "clicks": "67",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "5643863",
+                  "ctr": 0.3116279069767442,
+                  "impressions": "215"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1086666.6666666667,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "3260000",
+                  "ctr": 0.045454545454545456,
+                  "impressions": "66"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 1626944.3333333333,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "9761666",
+                  "ctr": 0.16666666666666666,
+                  "impressions": "36"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 534098.4827586206,
+                  "clicks": "29",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "15488856",
+                  "ctr": 0.1070110701107011,
+                  "impressions": "271"
+                },
+                "segments": {
+                  "date": "2026-01-14"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3675028.714285714,
+                  "clicks": "7",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "25725201",
+                  "ctr": 0.07,
+                  "impressions": "100"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 6910000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6910000",
+                  "ctr": 0.041666666666666664,
+                  "impressions": "24"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 7592101,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7592101",
+                  "ctr": 0.05263157894736842,
+                  "impressions": "19"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 7522321,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "15044642",
+                  "ctr": 0.16666666666666666,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 10530064.666666666,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "31590194",
+                  "ctr": 0.075,
+                  "impressions": "40"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 137611.22807017545,
+                  "clicks": "57",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "7843840",
+                  "ctr": 0.2835820895522388,
+                  "impressions": "201"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1153333.3333333333,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6920000",
+                  "ctr": 0.13333333333333333,
+                  "impressions": "45"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2833984.6666666665,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "17003908",
+                  "ctr": 0.10344827586206896,
+                  "impressions": "58"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 335847,
+                  "clicks": "17",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "5709399",
+                  "ctr": 0.025449101796407185,
+                  "impressions": "668"
+                },
+                "segments": {
+                  "date": "2026-01-13"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 8760910.75,
+                  "clicks": "4",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "35043643",
+                  "ctr": 0.06666666666666667,
+                  "impressions": "60"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7470000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7470000",
+                  "ctr": 0.25,
+                  "impressions": "4"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 6670000,
+                  "clicks": "1",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "6670000",
+                  "ctr": 0.125,
+                  "impressions": "8"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "17"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 2380000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "4760000",
+                  "ctr": 0.037037037037037035,
+                  "impressions": "54"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 126236.31578947368,
+                  "clicks": "19",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "2398490",
+                  "ctr": 0.17272727272727273,
+                  "impressions": "110"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 3830000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7660000",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "14"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 1538461.5384615385,
+                  "clicks": "13",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "20000000",
+                  "ctr": 0.20634920634920634,
+                  "impressions": "63"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 2124488.6666666665,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "12746932",
+                  "ctr": 0.041666666666666664,
+                  "impressions": "144"
+                },
+                "segments": {
+                  "date": "2026-01-12"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2502500,
+                  "clicks": "4",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "10010000",
+                  "ctr": 0.09523809523809523,
+                  "impressions": "42"
+                },
+                "segments": {
+                  "date": "2026-01-11"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 185000,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "740000",
+                  "ctr": 0.0784313725490196,
+                  "impressions": "51"
+                },
+                "segments": {
+                  "date": "2026-01-11"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 378543.55555555556,
+                  "clicks": "18",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6813784",
+                  "ctr": 0.029850746268656716,
+                  "impressions": "603"
+                },
+                "segments": {
+                  "date": "2026-01-11"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2630000,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10520000",
+                  "ctr": 0.07547169811320754,
+                  "impressions": "53"
+                },
+                "segments": {
+                  "date": "2026-01-10"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 210000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1050000",
+                  "ctr": 0.14705882352941177,
+                  "impressions": "34"
+                },
+                "segments": {
+                  "date": "2026-01-10"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 1920000,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "13440000",
+                  "ctr": 0.05555555555555555,
+                  "impressions": "126"
+                },
+                "segments": {
+                  "date": "2026-01-10"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 1700000,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "17000000",
+                  "ctr": 0.0390625,
+                  "impressions": "256"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 6590000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6590000",
+                  "ctr": 0.029411764705882353,
+                  "impressions": "34"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 7140000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7140000",
+                  "ctr": 0.5,
+                  "impressions": "2"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 2870000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "2870000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 8560000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "17120000",
+                  "ctr": 0.05263157894736842,
+                  "impressions": "38"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 88431.14583333333,
+                  "clicks": "48",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "4244695",
+                  "ctr": 0.2553191489361702,
+                  "impressions": "188"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 1813333.3333333333,
+                  "clicks": "6",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10880000",
+                  "ctr": 0.20689655172413793,
+                  "impressions": "29"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2494285.714285714,
+                  "clicks": "7",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "17460000",
+                  "ctr": 0.19444444444444445,
+                  "impressions": "36"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 491263,
+                  "clicks": "22",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10807786",
+                  "ctr": 0.01345565749235474,
+                  "impressions": "1635"
+                },
+                "segments": {
+                  "date": "2026-01-09"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3738030.6,
+                  "clicks": "10",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "37380306",
+                  "ctr": 0.04329004329004329,
+                  "impressions": "231"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7060000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7060000",
+                  "ctr": 0.047619047619047616,
+                  "impressions": "21"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 10236202,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "10236202",
+                  "ctr": 0.05,
+                  "impressions": "20"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 1980000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1980000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 5480000,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "27400000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "55"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 100803.52272727272,
+                  "clicks": "44",
+                  "conversions": 4.000648,
+                  "conversionsValue": 0,
+                  "costMicros": "4435355",
+                  "ctr": 0.27848101265822783,
+                  "impressions": "158"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 3998908.2,
+                  "clicks": "5",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19994541",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "55"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 17043656,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "34087312",
+                  "ctr": 0.125,
+                  "impressions": "16"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 1964134.6,
+                  "clicks": "10",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "19641346",
+                  "ctr": 0.024630541871921183,
+                  "impressions": "406"
+                },
+                "segments": {
+                  "date": "2026-01-08"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 1423000,
+                  "clicks": "10",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "14230000",
+                  "ctr": 0.057803468208092484,
+                  "impressions": "173"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 7320000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7320000",
+                  "ctr": 0.037037037037037035,
+                  "impressions": "27"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 310000,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "930000",
+                  "ctr": 0.07142857142857142,
+                  "impressions": "42"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 13076.5,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "26153",
+                  "ctr": 0.08333333333333333,
+                  "impressions": "24"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 590000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1180000",
+                  "ctr": 0.04,
+                  "impressions": "50"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 143891.421875,
+                  "clicks": "64",
+                  "conversions": 6.499512,
+                  "conversionsValue": 0,
+                  "costMicros": "9209051",
+                  "ctr": 0.2857142857142857,
+                  "impressions": "224"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 4920000,
+                  "clicks": "4",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "19680000",
+                  "ctr": 0.3333333333333333,
+                  "impressions": "12"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 2054423.25,
+                  "clicks": "8",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "16435386",
+                  "ctr": 0.1568627450980392,
+                  "impressions": "51"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 1259529,
+                  "clicks": "11",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "13854819",
+                  "ctr": 0.02956989247311828,
+                  "impressions": "372"
+                },
+                "segments": {
+                  "date": "2026-01-07"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 3179570.4285714286,
+                  "clicks": "7",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "22256993",
+                  "ctr": 0.10606060606060606,
+                  "impressions": "66"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 5600000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "11200000",
+                  "ctr": 0.043478260869565216,
+                  "impressions": "46"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 5610000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "5610000",
+                  "ctr": 0.1111111111111111,
+                  "impressions": "9"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "5"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 245533,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "491066",
+                  "ctr": 0.125,
+                  "impressions": "16"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 30206.275,
+                  "clicks": "40",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "1208251",
+                  "ctr": 0.2702702702702703,
+                  "impressions": "148"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "29"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "22"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 995000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1990000",
+                  "ctr": 0.06451612903225806,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-06"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 7072659.25,
+                  "clicks": "4",
+                  "conversions": 2,
+                  "conversionsValue": 0,
+                  "costMicros": "28290637",
+                  "ctr": 0.05555555555555555,
+                  "impressions": "72"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 6996766,
+                  "clicks": "2",
+                  "conversions": 1,
+                  "conversionsValue": 0,
+                  "costMicros": "13993532",
+                  "ctr": 0.125,
+                  "impressions": "16"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 5400000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "5400000",
+                  "ctr": 0.3333333333333333,
+                  "impressions": "3"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "averageCpc": 510000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "510000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 3005000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "6010000",
+                  "ctr": 0.2222222222222222,
+                  "impressions": "9"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 116151.4,
+                  "clicks": "35",
+                  "conversions": 4,
+                  "conversionsValue": 0,
+                  "costMicros": "4065299",
+                  "ctr": 0.23648648648648649,
+                  "impressions": "148"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Texas",
+                  "resourceName": "customers/8952788948/campaigns/23423931792"
+                },
+                "metrics": {
+                  "averageCpc": 2100000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "2100000",
+                  "ctr": 0.03225806451612903,
+                  "impressions": "31"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Washington",
+                  "resourceName": "customers/8952788948/campaigns/23433499675"
+                },
+                "metrics": {
+                  "averageCpc": 710000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "710000",
+                  "ctr": 0.09090909090909091,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "New Jersey",
+                  "resourceName": "customers/8952788948/campaigns/23433503008"
+                },
+                "metrics": {
+                  "averageCpc": 2710000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "2710000",
+                  "ctr": 0.07142857142857142,
+                  "impressions": "14"
+                },
+                "segments": {
+                  "date": "2026-01-05"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2531359.909090909,
+                  "clicks": "11",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "27844959",
+                  "ctr": 0.038461538461538464,
+                  "impressions": "286"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "averageCpc": 3460000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "3460000",
+                  "ctr": 0.012345679012345678,
+                  "impressions": "81"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 4270000,
+                  "clicks": "3",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "12810000",
+                  "ctr": 0.1111111111111111,
+                  "impressions": "27"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "11"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 4004361,
+                  "clicks": "4",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "16017444",
+                  "ctr": 0.125,
+                  "impressions": "32"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 181406.98039215687,
+                  "clicks": "51",
+                  "conversions": 4.000647,
+                  "conversionsValue": 0,
+                  "costMicros": "9251756",
+                  "ctr": 0.3953488372093023,
+                  "impressions": "129"
+                },
+                "segments": {
+                  "date": "2026-01-02"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "California",
+                  "resourceName": "customers/8952788948/campaigns/1614467914"
+                },
+                "metrics": {
+                  "averageCpc": 2405454.5454545454,
+                  "clicks": "11",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "26460000",
+                  "ctr": 0.06043956043956044,
+                  "impressions": "182"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Central Ohio",
+                  "resourceName": "customers/8952788948/campaigns/1615092465"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "18"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Hawaii",
+                  "resourceName": "customers/8952788948/campaigns/1777187716"
+                },
+                "metrics": {
+                  "averageCpc": 7990000,
+                  "clicks": "1",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "7990000",
+                  "ctr": 0.14285714285714285,
+                  "impressions": "7"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "Florida",
+                  "resourceName": "customers/8952788948/campaigns/1777204507"
+                },
+                "metrics": {
+                  "clicks": "0",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "0",
+                  "ctr": 0,
+                  "impressions": "2"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "North Carolina",
+                  "resourceName": "customers/8952788948/campaigns/1894165101"
+                },
+                "metrics": {
+                  "averageCpc": 9205000,
+                  "clicks": "2",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "18410000",
+                  "ctr": 0.1,
+                  "impressions": "20"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              },
+              {
+                "campaign": {
+                  "name": "PM- November 2024",
+                  "resourceName": "customers/8952788948/campaigns/21926129519"
+                },
+                "metrics": {
+                  "averageCpc": 21950.82608695652,
+                  "clicks": "46",
+                  "conversions": 0,
+                  "conversionsValue": 0,
+                  "costMicros": "1009738",
+                  "ctr": 0.35658914728682173,
+                  "impressions": "129"
+                },
+                "segments": {
+                  "date": "2026-01-01"
+                }
+              }
+            ]
+          }
+        ],
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Mon, 09 Mar 2026 03:12:41 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

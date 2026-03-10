@@ -1,0 +1,94 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-10T12:51:19.061625Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "access_token=EAAevd1aEsj0BQ5NtSWrZBtNuevwaBXSJZASQkoQYqlZCVvNinGw0eY7hgVdtP6hyMt9FCPvU9XZAjXZAS17sbLhrZCFCHgFZB8roHWBn3m34QUkRifEC76DgViigSKXtpViJt1M3ksZChJcjjgDmwKWqtMbe6MNrNtEGRIIxK5SeSlxjMJoMTcHdiaZCsVCkv32IszjcDCEIcmAZAwgsBulCnUxZA72m9ZAC10rJqOyZCPx5P8VZBliXF06IQQsZAklUXgKAMpK6t8Tg6rCZB9EDtQ7dm7QYSq0DTiNh86UhIBYZD&fields=campaign_name%2Cdate_start%2Cimpressions%2Cclicks%2Cspend%2Ccpm%2Ccpc%2Cctr%2Cactions&level=campaign&limit=100&time_range=%7B%22since%22%3A%222025-12-01%22%2C%22until%22%3A%222026-03-09%22%7D",
+        "uri": "https://graph.facebook.com/v22.0/act_135910517/insights"
+      },
+      "response": {
+        "body": "{\"data\":[{\"campaign_name\":\"Post: \\\"#ad The buzz is already moving through the racing...\\\"\",\"date_start\":\"2025-12-01\",\"impressions\":\"11782\",\"clicks\":\"776\",\"spend\":\"475.62\",\"cpm\":\"40.368359\",\"cpc\":\"0.612912\",\"ctr\":\"6.586318\",\"actions\":[{\"action_type\":\"link_click\",\"value\":\"463\"},{\"action_type\":\"page_engagement\",\"value\":\"579\"},{\"action_type\":\"landing_page_view\",\"value\":\"331\"},{\"action_type\":\"omni_landing_page_view\",\"value\":\"331\"},{\"action_type\":\"onsite_conversion.post_unlike\",\"value\":\"4\"},{\"action_type\":\"post_engagement\",\"value\":\"579\"},{\"action_type\":\"comment\",\"value\":\"1\"},{\"action_type\":\"post_interaction_gross\",\"value\":\"116\"},{\"action_type\":\"post\",\"value\":\"1\"},{\"action_type\":\"onsite_conversion.post_net_like\",\"value\":\"110\"},{\"action_type\":\"post_reaction\",\"value\":\"114\"}],\"date_stop\":\"2026-03-09\"},{\"campaign_name\":\"Tailored web traffic campaign 1\\/22\\/2026 Campaign\",\"date_start\":\"2025-12-01\",\"impressions\":\"4569\",\"clicks\":\"514\",\"spend\":\"20.77\",\"cpm\":\"4.545852\",\"cpc\":\"0.040409\",\"ctr\":\"11.249726\",\"actions\":[{\"action_type\":\"link_click\",\"value\":\"190\"},{\"action_type\":\"page_engagement\",\"value\":\"252\"},{\"action_type\":\"landing_page_view\",\"value\":\"143\"},{\"action_type\":\"omni_landing_page_view\",\"value\":\"143\"},{\"action_type\":\"post_engagement\",\"value\":\"251\"},{\"action_type\":\"comment\",\"value\":\"1\"},{\"action_type\":\"like\",\"value\":\"1\"},{\"action_type\":\"post_interaction_gross\",\"value\":\"61\"},{\"action_type\":\"post\",\"value\":\"2\"},{\"action_type\":\"onsite_conversion.post_save\",\"value\":\"1\"},{\"action_type\":\"onsite_conversion.post_net_like\",\"value\":\"57\"},{\"action_type\":\"onsite_conversion.post_net_save\",\"value\":\"1\"},{\"action_type\":\"post_reaction\",\"value\":\"57\"}],\"date_stop\":\"2026-03-09\"}],\"paging\":{\"cursors\":{\"before\":\"MAZDZD\",\"after\":\"MQZDZD\"}}}",
+        "body_type": "text",
+        "headers": {
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "alt-svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "cache-control": [
+            "private, no-cache, no-store, must-revalidate"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "text/javascript; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 10 Mar 2026 12:51:19 GMT"
+          ],
+          "etag": [
+            "\"941543286af46c4690f85583d4e4c513f932e011\""
+          ],
+          "expires": [
+            "Sat, 01 Jan 2000 00:00:00 GMT"
+          ],
+          "facebook-api-version": [
+            "v25.0"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "strict-transport-security": [
+            "max-age=15552000; preload"
+          ],
+          "vary": [
+            "Origin",
+            "Accept-Encoding"
+          ],
+          "x-ad-api-version-warning": [
+            "The call has been auto-upgraded to v25.0 as v22.0 has been deprecated."
+          ],
+          "x-business-use-case-usage": [
+            "{\"135910517\":[{\"type\":\"ads_insights\",\"call_count\":1,\"total_cputime\":1,\"total_time\":1,\"estimated_time_to_regain_access\":0,\"ads_api_access_tier\":\"development_access\"}]}"
+          ],
+          "x-fb-ads-insights-throttle": [
+            "{\"app_id_util_pct\":0.01,\"acc_id_util_pct\":0,\"ads_api_access_tier\":\"development_access\"}"
+          ],
+          "x-fb-aed": [
+            "769"
+          ],
+          "x-fb-connection-quality": [
+            "EXCELLENT; q=0.9, rtt=20, rtx=0, c=10, mss=1380, tbw=3281, tp=-1, tpl=-1, uplat=1106, ullat=0"
+          ],
+          "x-fb-debug": [
+            "EiCgSL6xRXB37JrIl61OP6INvly9as5WFAu4ZZ78NQyfrS3Mp9DaAYLqLZ9CDMwgX1NUzYAzKIXak98FGmOy6Q=="
+          ],
+          "x-fb-request-id": [
+            "Aj7YEUjU7LgcxzyeUHdkyZs"
+          ],
+          "x-fb-rev": [
+            "1034850413"
+          ],
+          "x-fb-trace-id": [
+            "DqdgoXr+Yan"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

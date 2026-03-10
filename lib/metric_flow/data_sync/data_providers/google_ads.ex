@@ -15,7 +15,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
   alias MetricFlow.Integrations.Integration
 
-  @base_url "https://googleads.googleapis.com/v16/customers"
+  @base_url "https://googleads.googleapis.com/v23/customers"
   @default_date_range_days 30
   @max_pages 100
 
@@ -36,7 +36,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
       breakdown = Keyword.get(opts, :breakdown, :campaign)
       http_plug = Keyword.get(opts, :http_plug)
 
-      do_fetch(integration.access_token, customer_id, date_range, breakdown, http_plug)
+      login_customer_id = resolve_login_customer_id(integration, opts)
+      do_fetch(integration.access_token, customer_id, login_customer_id, date_range, breakdown, http_plug)
     else
       true -> {:error, :unauthorized}
       {:error, reason} -> {:error, reason}
@@ -60,22 +61,30 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
     end
   end
 
+  defp resolve_login_customer_id(integration, opts) do
+    Keyword.get(opts, :login_customer_id) ||
+      get_in(integration.provider_metadata, ["login_customer_id"]) ||
+      Application.get_env(:metric_flow, :google_ads_login_customer_id)
+  end
+
   defp default_date_range do
     today = Date.utc_today()
     start_date = Date.add(today, -@default_date_range_days)
     {start_date, today}
   end
 
-  defp do_fetch(access_token, customer_id, {start_date, end_date}, breakdown, http_plug) do
+  defp do_fetch(access_token, customer_id, login_customer_id, {start_date, end_date}, breakdown, http_plug) do
     url = "#{@base_url}/#{customer_id}/googleAds:searchStream"
     query = build_gaql_query(start_date, end_date, breakdown)
     developer_token = Application.get_env(:metric_flow, :google_ads_developer_token, "")
 
-    headers = [
-      {"Authorization", "Bearer #{access_token}"},
-      {"Content-Type", "application/json"},
-      {"developer-token", developer_token}
-    ]
+    headers =
+      [
+        {"Authorization", "Bearer #{access_token}"},
+        {"Content-Type", "application/json"},
+        {"developer-token", developer_token}
+      ]
+      |> maybe_add_login_customer_id(login_customer_id)
 
     body = Jason.encode!(%{"query" => query})
 
@@ -95,6 +104,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
         case fetch_remaining_pages(
                access_token,
                customer_id,
+               login_customer_id,
                query,
                developer_token,
                http_plug,
@@ -118,6 +128,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   defp fetch_remaining_pages(
          _access_token,
          _customer_id,
+         _login_customer_id,
          _query,
          _developer_token,
          _http_plug,
@@ -131,6 +142,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   defp fetch_remaining_pages(
          _access_token,
          _customer_id,
+         _login_customer_id,
          _query,
          _developer_token,
          _http_plug,
@@ -145,6 +157,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   defp fetch_remaining_pages(
          access_token,
          customer_id,
+         login_customer_id,
          query,
          developer_token,
          http_plug,
@@ -154,11 +167,13 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
        ) do
     url = "#{@base_url}/#{customer_id}/googleAds:searchStream"
 
-    headers = [
-      {"Authorization", "Bearer #{access_token}"},
-      {"Content-Type", "application/json"},
-      {"developer-token", developer_token}
-    ]
+    headers =
+      [
+        {"Authorization", "Bearer #{access_token}"},
+        {"Content-Type", "application/json"},
+        {"developer-token", developer_token}
+      ]
+      |> maybe_add_login_customer_id(login_customer_id)
 
     body = Jason.encode!(%{"query" => query, "pageToken" => page_token})
 
@@ -178,6 +193,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
         fetch_remaining_pages(
           access_token,
           customer_id,
+          login_customer_id,
           query,
           developer_token,
           http_plug,
@@ -213,9 +229,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
     from_clause =
       if breakdown == :ad_group do
-        "ad_group_performance_report"
+        "ad_group"
       else
-        "campaign_performance_report"
+        "campaign"
       end
 
     """
@@ -244,6 +260,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   end
 
   defp handle_http_result({:ok, %{status: 429}}), do: {:error, :rate_limited}
+  defp handle_http_result({:ok, %{status: 500}}), do: {:error, :internal_server_error}
+  defp handle_http_result({:ok, %{status: status}}) when status >= 500, do: {:error, :server_error}
   defp handle_http_result({:error, :malformed_response}), do: {:error, :malformed_response}
 
   defp handle_http_result({:error, {:network_error, reason}}),
@@ -377,4 +395,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
   defp maybe_add_plug(opts, nil), do: opts
   defp maybe_add_plug(opts, plug), do: Keyword.put(opts, :plug, plug)
+
+  defp maybe_add_login_customer_id(headers, nil), do: headers
+  defp maybe_add_login_customer_id(headers, id), do: headers ++ [{"login-customer-id", id}]
 end

@@ -2,6 +2,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
   use ExUnit.Case, async: true
 
   import ExUnit.CaptureLog
+  import ReqCassette
 
   alias MetricFlow.DataSync.DataProviders.GoogleAds
   alias MetricFlow.Integrations.Integration
@@ -785,6 +786,67 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
       scopes = GoogleAds.required_scopes()
 
       assert "https://www.googleapis.com/auth/adwords" in scopes
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Cassette integration tests — real Google Ads API traffic
+  # ---------------------------------------------------------------------------
+
+  describe "fetch_metrics/2 with cassette" do
+    @describetag :integration
+
+    import MetricFlowTest.CassetteFixtures
+
+    setup do
+      case google_ads_integration() do
+        nil -> {:ok, skip: true}
+        integration -> {:ok, integration: integration}
+      end
+    end
+
+    test "fetches real campaign metrics from Google Ads API", context do
+      if context[:skip], do: flunk("GOOGLE_ADS_TEST_CUSTOMER_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "google_ads_fetch_metrics", cassette_opts("google_ads_fetch_metrics"), fn plug ->
+          assert {:ok, metrics} =
+                   GoogleAds.fetch_metrics(context.integration,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert is_list(metrics)
+
+          for metric <- metrics do
+            assert metric.provider == :google_ads
+            assert metric.metric_type == "advertising"
+            assert is_binary(metric.metric_name)
+            assert is_number(metric.value)
+            assert %DateTime{} = metric.recorded_at
+            assert is_map(metric.metadata)
+            assert Map.has_key?(metric.metadata, :customer_id)
+          end
+        end
+      end)
+    end
+
+    test "returns structured error for unauthorized request", context do
+      if context[:skip], do: flunk("GOOGLE_ADS_TEST_CUSTOMER_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "google_ads_unauthorized", cassette_opts("google_ads_unauthorized"), fn plug ->
+          bad_token = %{context.integration | access_token: "invalid-token"}
+
+          assert {:error, reason} =
+                   GoogleAds.fetch_metrics(bad_token,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert reason in [:unauthorized, :insufficient_permissions, :customer_not_found]
+        end
+      end)
     end
   end
 end

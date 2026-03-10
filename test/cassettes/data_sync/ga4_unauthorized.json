@@ -1,0 +1,106 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-09T02:50:21.921049Z",
+      "request": {
+        "body_json": {
+          "dateRanges": [
+            {
+              "endDate": "2026-01-31",
+              "startDate": "2026-01-01"
+            }
+          ],
+          "dimensions": [
+            {
+              "name": "date"
+            }
+          ],
+          "metrics": [
+            {
+              "name": "sessions"
+            },
+            {
+              "name": "pageviews"
+            },
+            {
+              "name": "activeUsers"
+            },
+            {
+              "name": "bounceRate"
+            },
+            {
+              "name": "averageSessionDuration"
+            },
+            {
+              "name": "newUsers"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://analyticsdata.googleapis.com/v1beta/properties/396614951:runReport"
+      },
+      "response": {
+        "body_json": {
+          "error": {
+            "code": 401,
+            "message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+            "status": "UNAUTHENTICATED"
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Mon, 09 Mar 2026 02:50:21 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "www-authenticate": [
+            "Bearer realm=\"https://accounts.google.com/\", error=\"invalid_token\""
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 401
+      }
+    }
+  ],
+  "version": "2.0"
+}

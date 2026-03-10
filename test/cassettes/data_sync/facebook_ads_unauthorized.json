@@ -1,0 +1,90 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-10T12:51:19.142464Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "access_token=invalid-token&fields=campaign_name%2Cdate_start%2Cimpressions%2Cclicks%2Cspend%2Ccpm%2Ccpc%2Cctr%2Cactions&level=campaign&limit=100&time_range=%7B%22since%22%3A%222025-12-01%22%2C%22until%22%3A%222026-03-09%22%7D",
+        "uri": "https://graph.facebook.com/v22.0/act_135910517/insights"
+      },
+      "response": {
+        "body": "{\"error\":{\"message\":\"Invalid OAuth access token - Cannot parse access token\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"AWa0Z7vcnzdwO1_-KXkh7ST\"}}",
+        "body_type": "text",
+        "headers": {
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "alt-svc": [
+            "h3=\":443\"; ma=86400"
+          ],
+          "cache-control": [
+            "no-store"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "text/javascript; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 10 Mar 2026 12:51:19 GMT"
+          ],
+          "debug-link": [
+            "https://www.meta.com/debug/?mid=fbd81c80b60dcfceb52b1223b7744fea"
+          ],
+          "error-mid": [
+            "fbd81c80b60dcfceb52b1223b7744fea"
+          ],
+          "expires": [
+            "Sat, 01 Jan 2000 00:00:00 GMT"
+          ],
+          "pragma": [
+            "no-cache"
+          ],
+          "proxy-status": [
+            "http_request_error; e_fb_vipaddr=\"AcMfat8pzOEXZhuOxiDfDJRrSrTyFmHLyv0tECm07gxBYaGNQI0tjxwAHzrVTjy9iyOzO7JEed6lF16oTW8ceWzKdxbkxLP-ySpC\"; e_clientaddr=\"AcN8Qj7GnTYZlQakwF4v_O74Kq3bZh8MJTKBnV_nGmjUuwWFq882zOc407vIPgrVSxalYC-tYGYPC6C05u7SxQoMXIRNBM0-hVwBL46fKfP9gN3hWQ\"; e_upip=\"AcP8aihzS1p0XlQocA8vgoJxe0Gv4NG8mG7NSM0U4pp4F24ojCA7SatQ7ze83et1BM0gQ1XDM3h5SAUUSn7Oqd20piJuBrE7elHpzW9q\"; e_fb_zone=\"AcOegRbu0Humnt7T9ZLApUu7BYnhAvp9g4p8TRmId4L9GTVvvynqoLmlawIDEJVR\"; e_fb_twtaskhandle=\"AcNowpyGpka9Gxzc1Yfy45742HdgFfXYT0WFVJQly-58aZoNiqGwfNnPRQENhfS0vekWMAH8HwdvWn6ZkN30_JQd7Z8P2Ti9jUBu-qGuOPDKrw\"; e_proxy=\"AcM6wPEgfrQYE7WLa0F3JGlYa1fLnFhjTV69w-KYPpLKZFHn2L-zfHZHrttMiqGtx-fQMDGPKunGr0azaV0\", http_request_error; e_fb_vipaddr=\"AcO44DKOoDD4LW-P2GsHg9UKf3eYGqz21HI-op2QPjYlxjNyq_6u2J70tXJn9x2Jtkz7CA\"; e_clientaddr=\"AcPTC9NGKu1WExUJ0tXnkf8MB8Zf856h02s6_Vq0FcC5MRnYpn4qkYw77UgGhWxAY1Imf6nekBr14LTeKcx2\"; e_upip=\"AcPSgQ5oWuRZJeVFll1aLzdqDvG6cgYOvZ7p9kQ8zM4OKW68ko0DNYuKR7yvskBuColcU3KZvq6KliF_uC52QWj4riVot5qUbvD6\"; e_fb_zone=\"AcNbGxzvyMNVcXZnqiq-Xt1u2uohSHSY7X-mB_XgbQnnp8zl37aL-rcDUTEACw\"; e_fb_twtaskhandle=\"AcMJ55weQyGqX-6K6Mh9ml_4uSgp-hrt36qsMWMSl_R1uyWmh7z_2BOFmdoxVeM25pcJt9FFrlFNQ02qm9uQpqtNW5c8cm2b2js\"; e_proxy=\"AcPlMn5H23aAjl0E-VkZTold13xPNSH4EXWfevEE6l2ZGMxUzBZFcSe2upXwC3sgzt5jXi5mK13iMaM\""
+          ],
+          "strict-transport-security": [
+            "max-age=15552000; preload"
+          ],
+          "vary": [
+            "Origin"
+          ],
+          "www-authenticate": [
+            "OAuth \"Facebook Platform\" \"invalid_token\" \"Invalid OAuth access token - Cannot parse access token\""
+          ],
+          "x-fb-aed": [
+            "769"
+          ],
+          "x-fb-connection-quality": [
+            "EXCELLENT; q=0.9, rtt=20, rtx=0, c=10, mss=1380, tbw=5136, tp=-1, tpl=-1, uplat=37, ullat=0"
+          ],
+          "x-fb-debug": [
+            "Qxr2xg7oxbvXY+SKgLWvmmv8Fe9EjbLdfruKSGvDRr+sYh4RiguQNW+pb1Ij//DqUISK246JXXrGmSk6DXmDkA=="
+          ],
+          "x-fb-request-id": [
+            "AWa0Z7vcnzdwO1_-KXkh7ST"
+          ],
+          "x-fb-rev": [
+            "1034851462"
+          ],
+          "x-fb-trace-id": [
+            "ApZUyDJ5fBx"
+          ]
+        },
+        "status": 400
+      }
+    }
+  ],
+  "version": "2.0"
+}

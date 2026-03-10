@@ -42,7 +42,22 @@ config :metric_flow,
   github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, nil),
   google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
   google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, nil),
-  oauth_base_url: env!("OAUTH_BASE_URL", :string, nil)
+  google_ads_developer_token: env!("GOOGLE_ADS_DEVELOPER_TOKEN", :string, nil),
+  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil)
+
+# Test-only: expose cassette recording credentials via Application config
+# so test fixtures can read them without relying on System.get_env.
+if config_env() == :test do
+  config :metric_flow, :test_credentials,
+    google_ads_customer_id: env!("GOOGLE_ADS_TEST_CUSTOMER_ID", :string, nil),
+    ga4_property_id: env!("GA4_TEST_PROPERTY_ID", :string, nil),
+    facebook_ad_account_id: env!("FACEBOOK_TEST_AD_ACCOUNT_ID", :string, nil),
+    quickbooks_realm_id: env!("QUICKBOOKS_TEST_REALM_ID", :string, nil),
+    google_access_token: env!("GOOGLE_TEST_ACCESS_TOKEN", :string, nil),
+    google_refresh_token: env!("GOOGLE_TEST_REFRESH_TOKEN", :string, nil),
+    google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil),
+    facebook_access_token: env!("FACEBOOK_TEST_ACCESS_TOKEN", :string, nil)
+end
 
 if System.get_env("PHX_SERVER") do
   config :metric_flow, MetricFlowWeb.Endpoint, server: true
@@ -145,7 +160,7 @@ if config_env() == :prod do
     ]
 end
 
-# LLM API key — available in all environments for development testing (ADR: llm_provider)
-if anthropic_key = System.get_env("ANTHROPIC_API_KEY") do
+# LLM API key — available in all environments (ADR: llm_provider)
+if anthropic_key = env!("ANTHROPIC_API_KEY", :string, nil) do
   config :req_llm, :anthropic_api_key, anthropic_key
 end

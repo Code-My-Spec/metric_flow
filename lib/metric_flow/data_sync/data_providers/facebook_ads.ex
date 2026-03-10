@@ -16,7 +16,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
 
   alias MetricFlow.Integrations.Integration
 
-  @api_version "v18.0"
+  @api_version "v22.0"
   @api_base_url "https://graph.facebook.com"
   @default_date_range_days 30
   @page_limit 100

@@ -2,6 +2,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
   use ExUnit.Case, async: true
 
   import ExUnit.CaptureLog
+  import ReqCassette
 
   alias MetricFlow.DataSync.DataProviders.FacebookAds
   alias MetricFlow.Integrations.Integration
@@ -1080,6 +1081,66 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
       scopes = FacebookAds.required_scopes()
 
       assert "ads_management" in scopes
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Cassette integration tests — real Facebook Ads API traffic
+  # ---------------------------------------------------------------------------
+
+  describe "fetch_metrics/2 with cassette" do
+    @describetag :integration
+
+    import MetricFlowTest.CassetteFixtures
+
+    setup do
+      case facebook_ads_integration() do
+        nil -> {:ok, skip: true}
+        integration -> {:ok, integration: integration}
+      end
+    end
+
+    test "fetches real ad metrics from Facebook Marketing API", context do
+      if context[:skip], do: flunk("FACEBOOK_TEST_AD_ACCOUNT_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "facebook_ads_fetch_metrics", cassette_opts("facebook_ads_fetch_metrics"), fn plug ->
+          assert {:ok, metrics} =
+                   FacebookAds.fetch_metrics(context.integration,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert is_list(metrics)
+
+          for metric <- metrics do
+            assert metric.provider == :facebook_ads
+            assert metric.metric_type == "ad_performance"
+            assert is_binary(metric.metric_name)
+            assert is_number(metric.value)
+            assert %DateTime{} = metric.recorded_at
+            assert is_map(metric.metadata)
+          end
+        end
+      end)
+    end
+
+    test "returns structured error for unauthorized request", context do
+      if context[:skip], do: flunk("FACEBOOK_TEST_AD_ACCOUNT_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "facebook_ads_unauthorized", cassette_opts("facebook_ads_unauthorized"), fn plug ->
+          bad_token = %{context.integration | access_token: "invalid-token"}
+
+          assert {:error, reason} =
+                   FacebookAds.fetch_metrics(bad_token,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert reason in [:unauthorized, :insufficient_permissions, :ad_account_not_found, :invalid_token]
+        end
+      end)
     end
   end
 end
