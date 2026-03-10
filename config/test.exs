@@ -39,6 +39,10 @@ config :metric_flow, Oban,
 # Disable Sentry in test
 config :sentry, dsn: nil
 
+# Disable PromEx metrics polling in test — the Oban poller hits the DB
+# outside the sandbox and triggers error logs that fail SexySpex tests.
+config :metric_flow, MetricFlowWeb.PromEx, disabled: true
+
 # Default to :warning to reduce noise in test output.
 # Tests that need capture_log at :info can use @tag capture_log: true
 # with Logger.configure(level: :info) in their setup block.
@@ -65,8 +69,3 @@ config :metric_flow, :test_providers, [
   :stub_callback_error,
   :stub_authorize_error
 ]
-
-# Provide a placeholder Anthropic API key for tests so ReqLLM does not
-# reject the key before ReqCassette can intercept the HTTP request.
-# All LLM calls in tests must go through cassette playback (req_http_options: [plug: plug]).
-config :req_llm, :anthropic_api_key, "REDACTED_API_KEY"

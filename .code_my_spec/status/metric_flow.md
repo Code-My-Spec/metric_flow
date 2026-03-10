@@ -14,9 +14,9 @@
 - [x] [MetricFlow.Ai](.code_my_spec/status/metric_flow/ai.md) (47/47)
 - [x] [MetricFlow.Correlations](.code_my_spec/status/metric_flow/correlations.md) (35/35)
 - [x] [MetricFlow.Dashboards](.code_my_spec/status/metric_flow/dashboards.md) (38/38)
-- [x] [MetricFlow.DataSync](.code_my_spec/status/metric_flow/data_sync.md) (77/77)
+- [ ] [MetricFlow.DataSync](.code_my_spec/status/metric_flow/data_sync.md) (76/77)
 - [ ] [MetricFlow.Encrypted](.code_my_spec/status/metric_flow/encrypted.md) (3/6)
-- [x] [MetricFlow.Integrations](.code_my_spec/status/metric_flow/integrations.md) (35/35)
+- [ ] [MetricFlow.Integrations](.code_my_spec/status/metric_flow/integrations.md) (34/35)
 - [x] [MetricFlow.Invitations](.code_my_spec/status/metric_flow/invitations.md) (29/29)
 - [x] [MetricFlow.Metrics](.code_my_spec/status/metric_flow/metrics.md) (23/23)
 - [ ] [MetricFlow.Release](.code_my_spec/status/metric_flow/release.md) (3/6)
@@ -24,7 +24,7 @@
 - [ ] [MetricFlow.Vault](.code_my_spec/status/metric_flow/vault.md) (3/6)
 
 
-## Stories (21/34 complete)
+## Stories (19/34 complete)
 
 - [x] #424 User Registration and Account Creation (5/5)
 - [x] #425 User Login and Session Management (5/5)
@@ -32,8 +32,8 @@
 - [x] #455 Account Deletion (Owner Only) (5/5)
 - [x] #430 Manage User Access Permissions (5/5)
 - [x] #434 Connect Marketing Platform via OAuth (5/5)
-- [x] #436 View and Manage Platform Integrations (5/5)
-- [x] #438 Manual Sync Trigger (Admin) (5/5)
+- [ ] #436 View and Manage Platform Integrations (4/5)
+- [ ] #438 Manual Sync Trigger (Admin) (4/5)
 - [x] #427 Agency Team Auto-Enrollment (5/5)
 - [x] #431 Agency Views and Manages Client Accounts (5/5)
 - [x] #437 Automated Daily Data Sync (5/5)

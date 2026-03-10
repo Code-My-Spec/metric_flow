@@ -3,8 +3,11 @@ defmodule MetricFlow.IntegrationsTest do
 
   import ExUnit.CaptureLog
   import MetricFlowTest.UsersFixtures
+  import ReqCassette
 
   alias MetricFlow.Integrations
+
+  @cassette_dir "test/cassettes/oauth"
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Users.Scope
 
@@ -46,8 +49,8 @@ defmodule MetricFlow.IntegrationsTest do
         "refresh_token" => "stub-refresh-token"
       }
 
-      token = Map.merge(token_base, Map.get(config, :token_overrides, %{}))
-      user = Map.get(config, :user_override, %{"sub" => "stub-user-id", "email" => "stub@example.com"})
+      token = Map.merge(token_base, Keyword.get(config, :token_overrides, %{}))
+      user = Keyword.get(config, :user_override, %{"sub" => "stub-user-id", "email" => "stub@example.com"})
       {:ok, %{token: token, user: user}}
     end
 
@@ -286,7 +289,7 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # authorize_url/1
+  # authorize_url/1 — stub tests
   # ---------------------------------------------------------------------------
 
   describe "authorize_url/1" do
@@ -321,6 +324,51 @@ defmodule MetricFlow.IntegrationsTest do
     test "returns error tuple with :unsupported_provider for unknown provider atom" do
       capture_log(fn ->
         assert {:error, :unsupported_provider} = Integrations.authorize_url(:nonexistent_provider)
+      end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # authorize_url/1 — real Google provider via Assent with cassette recording
+  # ---------------------------------------------------------------------------
+
+  describe "authorize_url/1 with real Google provider" do
+    @describetag :integration
+
+    setup do
+      # Restore real providers so we exercise the actual Google module + Assent
+      Application.delete_env(:metric_flow, :oauth_providers)
+
+      on_exit(fn ->
+        Application.put_env(:metric_flow, :oauth_providers, @stub_providers)
+      end)
+
+      :ok
+    end
+
+    test "generates a valid Google OAuth authorization URL through Assent" do
+      if Application.get_env(:metric_flow, :google_client_id) == nil,
+        do: flunk("Google OAuth credentials not configured in .env.test")
+
+      capture_log(fn ->
+        with_cassette "google_authorize_url",
+          [
+            cassette_dir: @cassette_dir,
+            mode: :replay,
+            match_requests_on: [:method, :uri],
+            filter_request_headers: ["authorization"]
+          ],
+          fn plug ->
+            opts = [http_adapter: {Assent.HTTPAdapter.Req, [plug: plug]}]
+
+            assert {:ok, %{url: url, session_params: session_params}} =
+                     Integrations.authorize_url(:google, opts)
+
+            assert String.contains?(url, "accounts.google.com")
+            assert String.contains?(url, "response_type=code")
+            assert String.contains?(url, "scope=")
+            assert is_map(session_params)
+          end
       end)
     end
   end

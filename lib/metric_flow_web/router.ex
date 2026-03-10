@@ -27,6 +27,13 @@ defmodule MetricFlowWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/privacy", PageController, :privacy
+    get "/terms", PageController, :terms
+  end
+
+  # Health check for Caddy reverse proxy and Docker healthcheck
+  scope "/" do
+    get "/health", MetricFlowWeb.HealthController, :index
   end
 
   # Other scopes may use custom stacks.

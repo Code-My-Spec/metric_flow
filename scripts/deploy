@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# scripts/deploy — deploy metric_flow prod to Hetzner
+set -euo pipefail
+
+SERVER="deploy@46.225.105.88"
+APP_DIR="/opt/metric_flow/app"
+ENV_FILE="/opt/metric_flow/prod.env"
+PROJECT="metric-flow-prod"
+COMPOSE_FILE="docker-compose.prod.yml"
+
+echo "==> Syncing code to server..."
+rsync -az --delete \
+  --exclude='.git' \
+  --exclude='_build' \
+  --exclude='deps' \
+  --exclude='assets/node_modules' \
+  --exclude='.code_my_spec' \
+  --exclude='test' \
+  --exclude='.env' \
+  --exclude='.env.*' \
+  --exclude='uat.env' \
+  ./ "$SERVER:$APP_DIR/"
+
+echo "==> Building and restarting containers..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE up -d --build"
+
+echo "==> Running migrations..."
+ssh "$SERVER" "cd $APP_DIR && \
+  docker compose -f $COMPOSE_FILE -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
+
+echo "==> Done: https://metric-flow.app"

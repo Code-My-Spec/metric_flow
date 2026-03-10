@@ -2,6 +2,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
   use ExUnit.Case, async: true
 
   import ExUnit.CaptureLog
+  import ReqCassette
 
   alias MetricFlow.DataSync.DataProviders.QuickBooks
   alias MetricFlow.Integrations.Integration
@@ -1334,6 +1335,66 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       scopes = QuickBooks.required_scopes()
 
       assert Enum.any?(scopes, fn s -> String.contains?(s, "quickbooks.accounting") end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Cassette integration tests — real QuickBooks API traffic
+  # ---------------------------------------------------------------------------
+
+  describe "fetch_metrics/2 with cassette" do
+    @describetag :integration
+
+    import MetricFlowTest.CassetteFixtures
+
+    setup do
+      case quickbooks_integration() do
+        nil -> {:ok, skip: true}
+        integration -> {:ok, integration: integration}
+      end
+    end
+
+    test "fetches real financial metrics from QuickBooks API", context do
+      if context[:skip], do: flunk("QUICKBOOKS_TEST_REALM_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "quickbooks_fetch_metrics", cassette_opts("quickbooks_fetch_metrics"), fn plug ->
+          assert {:ok, metrics} =
+                   QuickBooks.fetch_metrics(context.integration,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert is_list(metrics)
+
+          for metric <- metrics do
+            assert metric.provider == :quickbooks
+            assert is_binary(metric.metric_type)
+            assert is_binary(metric.metric_name)
+            assert is_number(metric.value)
+            assert %DateTime{} = metric.recorded_at
+            assert is_map(metric.metadata)
+          end
+        end
+      end)
+    end
+
+    test "returns structured error for unauthorized request", context do
+      if context[:skip], do: flunk("QUICKBOOKS_TEST_REALM_ID not set in .env.test")
+
+      capture_log(fn ->
+        with_cassette "quickbooks_unauthorized", cassette_opts("quickbooks_unauthorized"), fn plug ->
+          bad_token = %{context.integration | access_token: "invalid-token"}
+
+          assert {:error, reason} =
+                   QuickBooks.fetch_metrics(bad_token,
+                     http_plug: plug,
+                     date_range: default_date_range()
+                   )
+
+          assert reason in [:unauthorized, :insufficient_permissions, :company_not_found]
+        end
+      end)
     end
   end
 end

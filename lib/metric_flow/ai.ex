@@ -249,6 +249,7 @@ defmodule MetricFlow.Ai do
     case stream_fn.(system_prompt, messages, opts) do
       {:ok, stream_response} ->
         content = collect_stream(stream_response, caller)
+        content = if content == "", do: "I wasn't able to generate a response. Please try again.", else: content
 
         {:ok, _msg} =
           AiRepository.create_chat_message(scope, %{

@@ -132,6 +132,15 @@ defmodule MetricFlowWeb.Layouts do
       </div>
     </main>
 
+    <footer class="footer footer-center p-6 bg-base-200 text-base-content/60 text-sm">
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/privacy" class="link link-hover">Privacy Policy</a>
+        <a href="/terms" class="link link-hover">Terms of Service</a>
+        <a href="mailto:support@metric-flow.app" class="link link-hover">Contact</a>
+      </div>
+      <p>&copy; {Date.utc_today().year} MetricFlow. All rights reserved.</p>
+    </footer>
+
     <.flash_group flash={@flash} />
     """
   end

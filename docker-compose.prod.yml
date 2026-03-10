@@ -1,4 +1,4 @@
-# Run with: docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env up -d
+# Run with: docker compose -f docker-compose.prod.yml -p metric-flow-prod --env-file /opt/metric_flow/prod.env up -d
 
 services:
   db:
@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: metric_flow
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: metric_flow_uat
+      POSTGRES_DB: metric_flow_prod
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U metric_flow"]
       interval: 5s
@@ -27,7 +27,7 @@ services:
     expose:
       - "4000"
     environment:
-      DATABASE_URL: ecto://metric_flow:${POSTGRES_PASSWORD}@db/metric_flow_uat
+      DATABASE_URL: ecto://metric_flow:${POSTGRES_PASSWORD}@db/metric_flow_prod
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       PHX_HOST: ${PHX_HOST}
       PHX_SERVER: "true"

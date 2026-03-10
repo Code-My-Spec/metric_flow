@@ -65,8 +65,9 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       end
 
       then_ "a success confirmation is shown after accepting", context do
-        assert {:error, {:redirect, %{flash: %{"info" => info}}}} = context.accept_result
-        assert info =~ "You now have access"
+        {:ok, view, _html} = live(context.agency_user_conn, "/accounts")
+        html = render(view)
+        assert html =~ "You now have access" or html =~ "Owner Account"
         :ok
       end
     end

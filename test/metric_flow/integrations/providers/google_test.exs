@@ -14,8 +14,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
 
   defp has_google_credentials? do
     Application.get_env(:metric_flow, :google_client_id) != nil and
-      Application.get_env(:metric_flow, :google_client_secret) != nil and
-      Application.get_env(:metric_flow, :oauth_base_url) != nil
+      Application.get_env(:metric_flow, :google_client_secret) != nil
   end
 
   # ---------------------------------------------------------------------------
@@ -120,15 +119,15 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
       end)
     end
 
-    test "includes redirect_uri built from oauth_base_url" do
+    test "includes redirect_uri built from endpoint URL" do
       if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
-        base_url = Application.fetch_env!(:metric_flow, :oauth_base_url)
+        endpoint_url = MetricFlowWeb.Endpoint.url()
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
-        assert String.starts_with?(redirect_uri, base_url)
+        assert String.starts_with?(redirect_uri, endpoint_url)
         assert String.ends_with?(redirect_uri, "/auth/google/callback")
       end)
     end
@@ -196,18 +195,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
       end
     end
 
-    test "raises ArgumentError when oauth_base_url is not configured" do
-      original = Application.get_env(:metric_flow, :oauth_base_url)
-      Application.delete_env(:metric_flow, :oauth_base_url)
-
-      on_exit(fn ->
-        if original, do: Application.put_env(:metric_flow, :oauth_base_url, original)
-      end)
-
-      assert_raise ArgumentError, fn ->
-        capture_log(fn -> Google.config() end)
-      end
-    end
   end
 
   # ---------------------------------------------------------------------------

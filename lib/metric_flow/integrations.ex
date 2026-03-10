@@ -68,13 +68,13 @@ defmodule MetricFlow.Integrations do
   Returns `{:ok, %{url: url, session_params: params}}` on success.
   Returns `{:error, :unsupported_provider}` for unknown provider atoms.
   """
-  @spec authorize_url(atom()) ::
+  @spec authorize_url(atom(), keyword()) ::
           {:ok, %{url: String.t(), session_params: map()}}
           | {:error, :unsupported_provider}
           | {:error, term()}
-  def authorize_url(provider) do
+  def authorize_url(provider, opts \\ []) do
     with {:ok, provider_mod} <- fetch_provider(provider) do
-      config = provider_mod.config() |> Map.new()
+      config = provider_mod.config() ++ opts
       strategy = provider_mod.strategy()
       strategy.authorize_url(config)
     end
@@ -96,11 +96,11 @@ defmodule MetricFlow.Integrations do
   Returns `{:error, :unsupported_provider}` for unknown provider atoms.
   Returns `{:error, reason}` when token exchange or normalization fails.
   """
-  @spec handle_callback(Scope.t(), atom(), map(), map()) ::
+  @spec handle_callback(Scope.t(), atom(), map(), map(), keyword()) ::
           {:ok, Integration.t()} | {:error, term()}
-  def handle_callback(%Scope{} = scope, provider, session_params, callback_params) do
+  def handle_callback(%Scope{} = scope, provider, session_params, callback_params, opts \\ []) do
     with {:ok, provider_mod} <- fetch_provider(provider),
-         config = build_callback_config(provider_mod, session_params),
+         config = build_callback_config(provider_mod, session_params) ++ opts,
          strategy = provider_mod.strategy(),
          {:ok, %{token: token, user: user_data}} <- strategy.callback(config, callback_params),
          {:ok, normalized} <- provider_mod.normalize_user(user_data) do
@@ -127,7 +127,7 @@ defmodule MetricFlow.Integrations do
           {:ok, Integration.t()} | {:error, term()}
   def refresh_token(%Scope{} = scope, %Integration{} = integration) do
     with {:ok, provider_mod} <- fetch_provider(integration.provider) do
-      config = Map.new(provider_mod.config())
+      config = provider_mod.config()
       strategy = provider_mod.strategy()
 
       case strategy.refresh_access_token(config, %{"refresh_token" => integration.refresh_token}) do
@@ -158,8 +158,7 @@ defmodule MetricFlow.Integrations do
 
   defp build_callback_config(provider_mod, session_params) do
     provider_mod.config()
-    |> Map.new()
-    |> Map.merge(session_params)
+    |> Keyword.put(:session_params, session_params)
   end
 
   defp build_integration_attrs(token, normalized_user) do

@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       end
 
       then_ "the navigation shows the account switcher with both accounts", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/dashboard")
+        {:ok, view, _html} = live(context.invitee_conn, "/accounts")
         html = render(view)
         assert html =~ "Owner Account"
         :ok

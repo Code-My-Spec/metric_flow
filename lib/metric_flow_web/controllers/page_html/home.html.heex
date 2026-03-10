@@ -130,4 +130,14 @@
       <a href={~p"/users/register"} class="btn btn-primary btn-wide">Create Your Account</a>
     </div>
   </section>
+
+  <%!-- Footer --%>
+  <footer class="footer footer-center p-8 bg-base-300 text-base-content/60 text-sm">
+    <div class="flex flex-wrap justify-center gap-6">
+      <a href={~p"/privacy"} class="link link-hover">Privacy Policy</a>
+      <a href={~p"/terms"} class="link link-hover">Terms of Service</a>
+      <a href="mailto:support@metric-flow.app" class="link link-hover">Contact</a>
+    </div>
+    <p>&copy; <%= Date.utc_today().year %> MetricFlow. All rights reserved.</p>
+  </footer>
 </div>

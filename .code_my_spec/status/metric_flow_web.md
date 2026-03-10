@@ -17,7 +17,7 @@
 - [ ] [MetricFlowWeb.DashboardLive](.code_my_spec/status/metric_flow_web/dashboard_live.md) (15/21)
 - [ ] [MetricFlowWeb.HealthController](.code_my_spec/status/metric_flow_web/health_controller.md) (2/6)
 - [ ] [MetricFlowWeb.IntegrationCallbackController](.code_my_spec/status/metric_flow_web/integration_callback_controller.md) (2/6)
-- [ ] [MetricFlowWeb.IntegrationLive](.code_my_spec/status/metric_flow_web/integration_live.md) (23/27)
+- [ ] [MetricFlowWeb.IntegrationLive](.code_my_spec/status/metric_flow_web/integration_live.md) (22/27)
 - [x] [MetricFlowWeb.InvitationLive](.code_my_spec/status/metric_flow_web/invitation_live.md) (14/14)
 - [ ] [MetricFlowWeb.OnboardingLive](.code_my_spec/status/metric_flow_web/onboarding_live.md) (2/6)
 - [ ] [MetricFlowWeb.Plugs](.code_my_spec/status/metric_flow_web/plugs.md) (3/6)
@@ -29,7 +29,7 @@
 - [ ] [MetricFlowWeb.WhiteLabelHook](.code_my_spec/status/metric_flow_web/white_label_hook.md) (2/6)
 
 
-## Stories (21/34 complete)
+## Stories (19/34 complete)
 
 - [x] #424 User Registration and Account Creation (5/5)
 - [x] #425 User Login and Session Management (5/5)
@@ -37,8 +37,8 @@
 - [x] #455 Account Deletion (Owner Only) (5/5)
 - [x] #430 Manage User Access Permissions (5/5)
 - [x] #434 Connect Marketing Platform via OAuth (5/5)
-- [x] #436 View and Manage Platform Integrations (5/5)
-- [x] #438 Manual Sync Trigger (Admin) (5/5)
+- [ ] #436 View and Manage Platform Integrations (4/5)
+- [ ] #438 Manual Sync Trigger (Admin) (4/5)
 - [x] #427 Agency Team Auto-Enrollment (5/5)
 - [x] #431 Agency Views and Manages Client Accounts (5/5)
 - [x] #437 Automated Daily Data Sync (5/5)

@@ -341,6 +341,20 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     {:noreply, socket}
   end
 
+  def handle_info(
+        {:sync_failed, %{provider: provider, reason: reason}},
+        socket
+      ) do
+    syncing = MapSet.delete(socket.assigns.syncing, provider)
+
+    socket =
+      socket
+      |> assign(:syncing, syncing)
+      |> put_flash(:error, "Sync failed for #{provider}: #{reason}")
+
+    {:noreply, socket}
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------

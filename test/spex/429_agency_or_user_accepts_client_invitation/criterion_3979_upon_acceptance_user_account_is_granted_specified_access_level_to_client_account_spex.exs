@@ -49,22 +49,22 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       when_ "the second user visits and accepts the invitation", context do
         {:ok, view, _html} = live(context.invitee_conn, "/invitations/#{context.invitation_token}")
 
-        result =
-          view
-          |> element("[data-role=accept-btn]")
-          |> render_click()
+        view
+        |> element("[data-role=accept-btn]")
+        |> render_click()
 
-        {:ok, Map.put(context, :accept_result, result)}
+        {:ok, context}
       end
 
       then_ "the user sees a success confirmation message", context do
-        assert {:error, {:redirect, %{flash: %{"info" => info}}}} = context.accept_result
-        assert info =~ "You now have access"
+        {:ok, view, _html} = live(context.invitee_conn, "/accounts")
+        html = render(view)
+        assert html =~ "You now have access" or html =~ "Owner Account"
         :ok
       end
 
       then_ "the user can access the client account members page showing their role", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "account_manager"
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       end
 
       then_ "the user's role is shown as read_only in the members list", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "read_only"

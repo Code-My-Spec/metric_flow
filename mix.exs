@@ -104,7 +104,7 @@ defmodule MetricFlow.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1.15"},
-      {:sexy_spex, path: "/Users/johndavenport/Documents/github/spex"},
+      {:sexy_spex, git: "https://github.com/Code-My-Spec/spex", branch: "feature/reusable-givens", only: [:dev, :test]},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
   end

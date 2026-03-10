@@ -3,7 +3,7 @@
 
 ## Summary
 
-21/34 stories complete (all requirements satisfied)
+19/34 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -81,7 +81,7 @@ Status: in_progress | Priority: 7 | Component: MetricFlowWeb.IntegrationLive.Ind
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [x] component_complete - Linked component tree is fully implemented
+- [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -92,7 +92,7 @@ Status: in_progress | Priority: 8 | Component: MetricFlowWeb.IntegrationLive.Ind
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [x] component_complete - Linked component tree is fully implemented
+- [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
