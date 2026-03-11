@@ -24,8 +24,17 @@ mcp__vibium__browser_scroll_into_view(selector: "#login_form_password")
 mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
-mcp__vibium__browser_wait(selector: "body", timeout: 5000)
+mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)
+mcp__vibium__browser_get_url()   # verify — should be http://localhost:4070/
 ```
+
+IMPORTANT: After clicking the login button, the page performs a full HTTP redirect
+(POST → 302 → GET). During the redirect the DOM is briefly empty, so
+`wait(selector: "body")` will time out. Always use `wait_for_url` instead.
+
+Session persistence: Vibium's `browser_storage_state` export does NOT work with
+Phoenix signed session cookies (parsing fails). Sessions cannot be saved/restored.
+Each QA run must log in fresh — this takes ~2 seconds and is reliable.
 
 Navigate to authenticated pages after login:
 
@@ -92,20 +101,37 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:4070/accounts
 
 Use to set up test data before running tests. All seed scripts are idempotent — safe to run multiple times.
 
+IMPORTANT: If the Phoenix server is already running, `mix run priv/repo/qa_seeds.exs`
+will fail because it tries to start the application (including the Cloudflare tunnel
+GenServer), which conflicts with the running instance. Use `--no-start` and start
+only the repo:
+
 ```bash
-# Main QA seeds — creates two users and a team account
+# When server IS already running (typical QA scenario):
+mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([])" priv/repo/qa_seeds.exs
+
+# When server is NOT running:
 mix run priv/repo/qa_seeds.exs
 ```
 
+Prefer to verify seed data exists via the browser rather than re-running seeds.
+If you can log in as qa@example.com, the seeds are already in place.
+
 ### start-qa.sh (seed data entry point)
 
-Run this once at the start of each QA session to seed data. After running, use vibium MCP tools to launch the browser and log in.
+NOTE: This script calls `mix run` which may fail if the Phoenix server is already
+running (Cloudflare tunnel conflict). In practice, prefer the quick-check approach:
+
+1. Verify the server is up: `curl -s -o /dev/null -w "%{http_code}" http://localhost:4070/users/log-in` → expect 200
+2. Launch browser and attempt login — if login succeeds, seeds are in place
+3. Only run the seed script if login fails (user doesn't exist)
 
 ```bash
+# Only if needed:
 ./.code_my_spec/qa/scripts/start-qa.sh
 ```
 
-Then launch browser and log in via MCP:
+Standard QA session startup via MCP:
 
 ```
 mcp__vibium__browser_launch(headless: true)
@@ -153,7 +179,8 @@ mcp__vibium__browser_scroll_into_view(selector: "#login_form_password")
 mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa-member@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
-mcp__vibium__browser_wait(selector: "body", timeout: 5000)
+mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)
+mcp__vibium__browser_get_url()   # verify redirect landed
 ```
 
 ## Notes
@@ -164,7 +191,7 @@ The login page (`/users/log-in`) renders two forms with different IDs: `#login_f
 
 After registration, the app shows a confirmation screen (not an immediate redirect) and sends a magic link email. The user must click the link to confirm before they can log in with a password. In QA testing, the dev mailbox at `/dev/mailbox` shows sent emails. The seed script bypasses this by directly calling `login_user_by_magic_link/1` to confirm the user programmatically.
 
-The `/onboarding` route is in the public `current_user` live session (no auth required). After login, the server redirects to `/onboarding` if that is the `signed_in_path`. When testing post-login redirects, use `mcp__vibium__browser_wait_for_load()` or `mcp__vibium__browser_wait(selector: "body")` after clicking submit.
+The `/onboarding` route is in the public `current_user` live session (no auth required). After login, the server redirects to `/` (or `/onboarding` if that is the `signed_in_path`). When testing post-login redirects, use `mcp__vibium__browser_wait_for_url(pattern: "/")` after clicking submit. Do NOT use `wait(selector: "body")` — it times out during the HTTP redirect.
 
 `account_name` is a required field on the registration form. The `registration_changeset` validates `account_name` as required. Submitting registration without an account name will fail validation. The `account_type` field is optional — the form shows a select with a "Select account type" prompt as the default.
 

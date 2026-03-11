@@ -7,7 +7,6 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Stub providers
@@ -263,7 +262,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   # ---------------------------------------------------------------------------
 
   describe "handle_event connect" do
-    test "redirects to the OAuth provider authorization URL on success", %{conn: conn} do
+    test "redirects to the OAuth controller request route on connect click", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -275,13 +274,11 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
                  |> element("[data-role='connect-button'][phx-value-provider='stub']")
                  |> render_click()
 
-        assert String.starts_with?(redirect_url, "https://")
+        assert redirect_url == "/integrations/oauth/stub"
       end)
     end
 
-    test "redirect URL is the authorization URL returned by Integrations.authorize_url/1", %{
-      conn: conn
-    } do
+    test "redirects to the OAuth controller route for all providers including unsupported", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -290,167 +287,26 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
         assert {:error, {:redirect, %{to: redirect_url}}} =
                  lv
-                 |> element("[data-role='connect-button'][phx-value-provider='stub']")
+                 |> element("[data-role='connect-button'][phx-value-provider='unsupported_platform']")
                  |> render_click()
 
-        assert redirect_url == StubStrategy.auth_url()
+        assert redirect_url == "/integrations/oauth/unsupported_platform"
       end)
     end
 
-    test "shows an error flash for an unsupported provider", %{conn: conn} do
+    test "redirects to the OAuth controller route for providers with authorize errors", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
 
-        html =
-          lv
-          |> element("[data-role='connect-button'][phx-value-provider='unsupported_platform']")
-          |> render_click()
+        assert {:error, {:redirect, %{to: redirect_url}}} =
+                 lv
+                 |> element("[data-role='connect-button'][phx-value-provider='stub_authorize_error']")
+                 |> render_click()
 
-        assert html =~ "This platform is not yet supported"
-      end)
-    end
-
-    test "shows a generic error flash when authorize_url returns an unexpected error", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
-
-        html =
-          lv
-          |> element("[data-role='connect-button'][phx-value-provider='stub_authorize_error']")
-          |> render_click()
-
-        assert html =~ "Could not initiate connection. Please try again."
-      end)
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "mount/3 (callback route)"
-  # ---------------------------------------------------------------------------
-
-  describe "mount/3 (callback route)" do
-    test "assigns status :connected when code param is present and callback succeeds", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(
-            conn,
-            ~p"/integrations/oauth/callback/stub?code=valid-auth-code&state=#{StubStrategy.state()}"
-          )
-
-        html = render(lv)
-        assert html =~ "Integration Active"
-      end)
-    end
-
-    test "assigns status :connected and renders the integration confirmation view on success", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(
-            conn,
-            ~p"/integrations/oauth/callback/stub?code=valid-auth-code&state=#{StubStrategy.state()}"
-          )
-
-        html = render(lv)
-        assert html =~ "View Integrations"
-        assert html =~ "Connect another platform"
-      end)
-    end
-
-    test "assigns status :error when the error param is present (e.g. access_denied)", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(conn, ~p"/integrations/oauth/callback/stub?error=access_denied")
-
-        html = render(lv)
-        assert html =~ "Connection Failed"
-      end)
-    end
-
-    test "shows the Access was denied error message when the error param is access_denied", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(conn, ~p"/integrations/oauth/callback/stub?error=access_denied")
-
-        html = render(lv)
-        assert html =~ "Access was denied"
-      end)
-    end
-
-    test "assigns status :error and shows a generic error message when handle_callback fails", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(
-            conn,
-            ~p"/integrations/oauth/callback/stub_callback_error?code=valid-auth-code&state=#{StubStrategy.state()}"
-          )
-
-        html = render(lv)
-        assert html =~ "Connection Failed"
-      end)
-    end
-
-    test "renders Try again and Back to integrations links on the error view", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} =
-          live(conn, ~p"/integrations/oauth/callback/stub?error=access_denied")
-
-        assert has_element?(lv, "a", "Try again")
-        assert has_element?(lv, "a", "Back to integrations")
-      end)
-    end
-
-    test "persists the integration record in the database on a successful callback", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      scope = Scope.for_user(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, _html} =
-          live(
-            conn,
-            ~p"/integrations/oauth/callback/stub?code=valid-auth-code&state=#{StubStrategy.state()}"
-          )
-
-        assert {:ok, integration} = MetricFlow.Integrations.get_integration(scope, :stub)
-        assert integration.user_id == user.id
+        assert redirect_url == "/integrations/oauth/stub_authorize_error"
       end)
     end
   end
@@ -470,12 +326,6 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
          %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                live(conn, ~p"/integrations/connect/stub")
-    end
-
-    test "redirects unauthenticated users to /users/log-in when visiting the callback route",
-         %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/integrations/oauth/callback/stub?code=abc&state=xyz")
     end
   end
 end

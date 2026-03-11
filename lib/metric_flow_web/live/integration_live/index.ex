@@ -14,11 +14,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   alias MetricFlow.Integrations
 
   # Static display metadata for all supported platforms (marketing and financial).
+  # Google is a single OAuth connection that provides access to Ads and Analytics.
   @platform_metadata %{
-    google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
+    google: %{name: "Google", description: "Google Ads, Analytics, and Search Console"},
     facebook_ads: %{name: "Facebook Ads", description: "Social media advertising"},
-    google_analytics: %{name: "Google Analytics", description: "Web and app analytics"},
-    google: %{name: "Google", description: "Google OAuth"},
     quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"},
     stripe: %{name: "Stripe", description: "Payment processing and revenue"}
   }
@@ -141,45 +140,14 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     Disconnect
                   </button>
                 <% else %>
-                  <%= if platform.key == @first_available_key do %>
-                    <button
-                      data-role="reconnect-integration"
-                      phx-click="initiate_connect"
-                      phx-value-provider={Atom.to_string(platform.key)}
-                      class="btn btn-primary btn-sm"
-                    >
-                      Connect
-                    </button>
-                    <button
-                      data-role="disconnect-integration"
-                      phx-click="confirm_disconnect"
-                      phx-value-provider={Atom.to_string(platform.key)}
-                      class="btn btn-ghost btn-xs text-error"
-                    >
-                      Disconnect
-                    </button>
-                  <% else %>
-                    <.link
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
-                      class="btn btn-primary btn-sm"
-                    >
-                      Connect
-                    </.link>
-                  <% end %>
-                  <.link
-                    data-role="edit-integration-accounts"
-                    navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
-                    class="hidden"
+                  <button
+                    data-role="reconnect-integration"
+                    phx-click="initiate_connect"
+                    phx-value-provider={Atom.to_string(platform.key)}
+                    class="btn btn-primary btn-sm"
                   >
-                    Edit Accounts
-                  </.link>
-                  <.link
-                    data-role="integration-detail-link"
-                    navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
-                    class="hidden"
-                  >
-                    Details
-                  </.link>
+                    Connect
+                  </button>
                 <% end %>
               </div>
             </div>
@@ -261,16 +229,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   @impl true
   def handle_event("initiate_connect", %{"provider" => provider_str}, socket) do
-    # Show a flash message indicating the user should Connect this platform.
-    # The actual OAuth flow starts on the connect page.
-    platform_name =
-      platform_display_name(
-        socket.assigns.platforms,
-        String.to_existing_atom(provider_str)
-      )
-
-    {:noreply,
-     put_flash(socket, :info, "Authorize #{platform_name} to begin the Connect flow.")}
+    {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider_str}")}
   end
 
   @impl true

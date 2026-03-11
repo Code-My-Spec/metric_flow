@@ -209,7 +209,7 @@ AI insights panel displaying AI-generated recommendations from correlation analy
 Dependencies:
 - MetricFlow.Ai
 
-### IntegrationCallbackController
+### IntegrationOAuthController
 **module**
 
 ### Login

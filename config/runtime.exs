@@ -43,7 +43,11 @@ config :metric_flow,
   google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
   google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, nil),
   google_ads_developer_token: env!("GOOGLE_ADS_DEVELOPER_TOKEN", :string, nil),
-  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil)
+  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil),
+  quickbooks_client_id: env!("QUICKBOOKS_CLIENT_ID", :string, nil),
+  quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, nil),
+  facebook_app_id: env!("FACEBOOK_APP_ID", :string, nil),
+  facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, nil)
 
 # Test-only: expose cassette recording credentials via Application config
 # so test fixtures can read them without relying on System.get_env.

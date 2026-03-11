@@ -114,11 +114,24 @@ defmodule MetricFlow.DataSync.SyncWorker do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Maps an integration provider atom to the corresponding data provider module.
+  Maps an integration provider atom to the corresponding data provider module(s).
 
-  Returns {:ok, module} for supported sync providers and
+  The `:google` provider returns multiple data provider modules because a single
+  Google OAuth connection grants access to multiple services (Analytics, Ads)
+  based on the granted scopes.
+
+  Returns {:ok, [module]} for supported sync providers and
   {:error, :unsupported_provider} for unsupported or unknown providers.
   """
+  @spec providers_for(atom()) :: {:ok, [module()]} | {:error, :unsupported_provider}
+  def providers_for(:google), do: {:ok, [GoogleAnalytics, GoogleAds]}
+  def providers_for(:google_analytics), do: {:ok, [GoogleAnalytics]}
+  def providers_for(:google_ads), do: {:ok, [GoogleAds]}
+  def providers_for(:facebook_ads), do: {:ok, [FacebookAds]}
+  def providers_for(:quickbooks), do: {:ok, [QuickBooks]}
+  def providers_for(_), do: {:error, :unsupported_provider}
+
+  # Backwards-compatible single-provider lookup
   @spec provider_for(atom()) :: {:ok, module()} | {:error, :unsupported_provider}
   def provider_for(:google_analytics), do: {:ok, GoogleAnalytics}
   def provider_for(:google_ads), do: {:ok, GoogleAds}
@@ -187,36 +200,49 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp run_provider_sync(scope, integration, sync_job_id, http_plug, started_at) do
-    case provider_for(integration.provider) do
+    case providers_for(integration.provider) do
       {:error, :unsupported_provider} ->
         {:error, :unsupported_provider}
 
-      {:ok, provider_mod} ->
+      {:ok, provider_mods} ->
         opts = build_fetch_opts(http_plug)
+        run_all_providers(scope, integration, sync_job_id, provider_mods, opts, started_at)
+    end
+  end
 
+  defp run_all_providers(scope, integration, sync_job_id, provider_mods, opts, started_at) do
+    results =
+      Enum.map(provider_mods, fn provider_mod ->
         case provider_mod.fetch_metrics(integration, opts) do
           {:ok, metrics} ->
-            persist_and_record_success(scope, integration, sync_job_id, metrics, started_at)
+            {:ok, provider_mod, metrics}
 
           {:error, reason} ->
-            error_message = format_error(reason)
-
             Logger.error(
-              "SyncWorker provider fetch_metrics failed integration_id=#{integration.id} provider=#{integration.provider} reason=#{inspect(reason)}"
+              "SyncWorker provider fetch_metrics failed integration_id=#{integration.id} provider_mod=#{inspect(provider_mod)} reason=#{inspect(reason)}"
             )
 
-            record_history(
-              scope,
-              integration,
-              sync_job_id,
-              :failed,
-              0,
-              error_message,
-              started_at
-            )
-
-            {:error, reason}
+            {:error, provider_mod, reason}
         end
+      end)
+
+    all_metrics = Enum.flat_map(results, fn
+      {:ok, _mod, metrics} -> metrics
+      {:error, _mod, _reason} -> []
+    end)
+
+    errors = Enum.filter(results, &match?({:error, _, _}, &1))
+
+    if length(errors) == length(provider_mods) do
+      error_message =
+        Enum.map_join(errors, "; ", fn {:error, mod, reason} ->
+          "#{inspect(mod)}: #{format_error(reason)}"
+        end)
+
+      record_history(scope, integration, sync_job_id, :failed, 0, error_message, started_at)
+      {:error, :all_providers_failed}
+    else
+      persist_and_record_success(scope, integration, sync_job_id, all_metrics, started_at)
     end
   end
 

@@ -76,17 +76,18 @@ defmodule MetricFlowWeb.Router do
       live "/accounts/settings", AccountLive.Settings, :index
       live "/accounts/invitations", InvitationLive.Send, :index
 
-      # Integration routes
+      # Integration routes (LiveView)
       live "/integrations", IntegrationLive.Index, :index
       live "/integrations/connect", IntegrationLive.Connect, :index
       live "/integrations/connect/:provider", IntegrationLive.Connect, :detail
       live "/integrations/connect/:provider/accounts", IntegrationLive.Connect, :accounts
       live "/integrations/:provider/accounts/edit", IntegrationLive.AccountEdit, :edit
-      live "/integrations/oauth/callback/:provider", IntegrationLive.Connect, :callback
       live "/integrations/sync-history", IntegrationLive.SyncHistory, :index
 
       # Dashboard routes
       live "/dashboard", DashboardLive.Show, :index
+      live "/dashboards/new", DashboardLive.Editor, :new
+      live "/dashboards/:id/edit", DashboardLive.Editor, :edit
       live "/dashboards/:id", DashboardLive.Show, :show
 
       # Correlation routes
@@ -98,8 +99,9 @@ defmodule MetricFlowWeb.Router do
       live "/chat/:id", AiLive.Chat, :show
     end
 
-    # Legacy OAuth callback redirect (some providers use this path)
-    get "/integrations/callback/:provider", IntegrationCallbackController, :callback
+    # OAuth provider integration routes (controller — handles session_params)
+    get "/integrations/oauth/:provider", IntegrationOAuthController, :request
+    get "/integrations/oauth/callback/:provider", IntegrationOAuthController, :callback
 
     post "/users/update-password", UserSessionController, :update_password
   end

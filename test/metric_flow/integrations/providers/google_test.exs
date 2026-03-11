@@ -128,7 +128,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/auth/google/callback")
+        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/google")
       end)
     end
 
@@ -143,7 +143,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
         scope = Keyword.fetch!(auth_params, :scope)
         assert String.contains?(scope, "email")
         assert String.contains?(scope, "profile")
-        assert String.contains?(scope, "analytics.edit")
+        assert String.contains?(scope, "analytics.readonly")
       end)
     end
 

@@ -2,7 +2,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
   @moduledoc """
   Google OAuth provider implementation using Assent.Strategy.Google.
 
-  Configures OAuth with `email`, `profile`, and `analytics.edit` scopes,
+  Configures OAuth with `email`, `profile`, and `analytics.readonly` scopes,
   requesting offline access with a forced consent prompt to ensure a refresh
   token is issued on every authorisation. Normalizes Google user data
   (delivered as OpenID Connect claims) to the application domain model,
@@ -14,7 +14,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/auth/google/callback"
+  @callback_path "/integrations/oauth/callback/google"
 
   # ---------------------------------------------------------------------------
   # Behaviour implementation
@@ -41,7 +41,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
       client_secret: client_secret,
       redirect_uri: redirect_uri,
       authorization_params: [
-        scope: "email profile analytics.edit",
+        scope: "email profile https://www.googleapis.com/auth/analytics.readonly",
         access_type: "offline",
         prompt: "consent"
       ]

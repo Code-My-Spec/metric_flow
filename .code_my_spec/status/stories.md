@@ -3,7 +3,7 @@
 
 ## Summary
 
-19/34 stories complete (all requirements satisfied)
+21/34 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -70,7 +70,7 @@ Status: in_progress | Priority: 6 | Component: MetricFlowWeb.IntegrationLive.Con
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [x] component_complete - Linked component tree is fully implemented
+- [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -248,7 +248,7 @@ Status: in_progress | Priority: 23 | Component: MetricFlowWeb.InvitationLive.Sen
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #433 — Transfer Account Ownership
@@ -256,10 +256,10 @@ Status: in_progress | Priority: 23 | Component: MetricFlowWeb.InvitationLive.Sen
 Status: in_progress | Priority: 24 | Component: MetricFlowWeb.AccountLive.Settings
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #432 — User or Agency Self-Revokes Access
@@ -267,10 +267,10 @@ Status: in_progress | Priority: 24 | Component: MetricFlowWeb.AccountLive.Settin
 Status: in_progress | Priority: 25 | Component: MetricFlowWeb.InvitationLive.Accept
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #435 — Connect Financial Platform via OAuth
@@ -278,10 +278,10 @@ Status: in_progress | Priority: 25 | Component: MetricFlowWeb.InvitationLive.Acc
 Status: in_progress | Priority: 26 | Component: MetricFlowWeb.IntegrationLive.Connect
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [ ] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #443 — Create and Save Custom Reports
@@ -289,9 +289,9 @@ Status: in_progress | Priority: 26 | Component: MetricFlowWeb.IntegrationLive.Co
 Status: in_progress | Priority: 27 | Component: MetricFlowWeb.DashboardLive.Editor
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
+- [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
 
@@ -323,7 +323,7 @@ Status: in_progress | Priority: 30 | Component: MetricFlowWeb.IntegrationLive.Co
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [x] component_complete - Linked component tree is fully implemented
+- [ ] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 

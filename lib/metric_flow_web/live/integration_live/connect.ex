@@ -2,13 +2,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   @moduledoc """
   OAuth connection flow for linking marketing platforms to a user account.
 
-  Handles four distinct route patterns via handle_params/3, distinguished by
+  Handles three distinct route patterns via handle_params/3, distinguished by
   the live action assigned in the router:
 
   - `:index` (`/integrations/connect`) — platform selection grid showing all
     configured providers with their current connection status. The "connect"
     event initiates the OAuth flow by redirecting the browser to the
-    provider's authorization URL.
+    controller-based OAuth request route.
 
   - `:detail` (`/integrations/connect/:provider`) — per-platform detail view
     showing the OAuth initiation anchor and connection status.
@@ -16,9 +16,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   - `:accounts` (`/integrations/connect/:provider/accounts`) — account
     selection view for choosing which ad accounts or properties to sync.
 
-  - `:callback` (`/integrations/oauth/callback/:provider`) — OAuth callback
-    entry point. Processes the authorization code, persists the integration,
-    and renders a confirmation or error screen.
+  OAuth callback handling is performed by `IntegrationOAuthController`, which
+  can write to the Phoenix session (required for Assent state verification).
   """
 
   use MetricFlowWeb, :live_view
@@ -26,23 +25,18 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   alias MetricFlow.Integrations
 
   # Canonical set of supported marketing platforms always shown in the UI.
-  # Entries here are rendered in the platform grid even if no provider module
-  # is currently configured for them — attempting to connect an unconfigured
-  # platform shows an "unsupported" error flash gracefully.
+  # Google is a single OAuth connection covering Ads, Analytics, and Search Console.
   @canonical_platforms [
-    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising"},
+    %{key: :google, name: "Google", description: "Google Ads, Analytics, and Search Console"},
     %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising on Facebook and Instagram"},
-    %{key: :google_analytics, name: "Google Analytics", description: "Web and app analytics tracking"},
-    %{key: :unsupported_platform, name: "Unsupported Platform", description: "This integration is not yet available"}
+    %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data"}
   ]
 
   # Extended display metadata used for name lookup on dynamically configured providers.
   @platform_metadata %{
-    google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
+    google: %{name: "Google", description: "Google Ads, Analytics, and Search Console"},
     facebook_ads: %{name: "Facebook Ads", description: "Social media advertising on Facebook and Instagram"},
-    google_analytics: %{name: "Google Analytics", description: "Web and app analytics tracking"},
-    google: %{name: "Google", description: "Google OAuth"},
-    unsupported_platform: %{name: "Unsupported Platform", description: "This integration is not yet available"}
+    quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"}
   }
 
   # ---------------------------------------------------------------------------
@@ -68,8 +62,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <%= render_platform_detail(assigns) %>
           <% :accounts -> %>
             <%= render_account_selection(assigns) %>
-          <% :callback -> %>
-            <%= render_callback_result(assigns) %>
         <% end %>
       </div>
     </Layouts.app>
@@ -140,19 +132,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         </p>
       </div>
 
-      <div :if={not is_nil(@authorize_url)} class="mt-4">
-        <a
-          href={@authorize_url}
-          data-role="oauth-connect-button"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-primary w-full"
-        >
-          Connect {@platform.name}
-        </a>
-      </div>
-
-      <div :if={is_nil(@authorize_url) and is_nil(@integration)} class="mt-4">
+      <div :if={is_nil(@integration)} class="mt-4">
         <button
           data-role="connect-button"
           phx-click="connect"
@@ -214,62 +194,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     """
   end
 
-  defp render_callback_result(%{status: :connected} = assigns) do
-    ~H"""
-    <div class="mf-card max-w-sm mx-auto p-6 text-center">
-      <div class="text-success mb-4">
-        <.icon name="hero-check-circle" class="size-12 mx-auto" />
-      </div>
-      <h2 class="font-semibold text-xl mb-2">Integration Active</h2>
-      <p class="text-base-content/60 mb-4">
-        Your {@provider_name} account is connected and ready to sync data.
-      </p>
-      <span class="badge badge-success mb-6">Active</span>
-      <div class="flex flex-col gap-2 mt-4">
-        <.link navigate={~p"/integrations"} class="btn btn-primary">
-          View Integrations
-        </.link>
-        <.link navigate={~p"/integrations/connect"} class="btn btn-ghost btn-sm">
-          Connect another platform
-        </.link>
-      </div>
-    </div>
-    """
-  end
-
-  defp render_callback_result(%{status: :error} = assigns) do
-    ~H"""
-    <div class="mf-card max-w-sm mx-auto p-6 text-center">
-      <div class="text-error mb-4">
-        <.icon name="hero-x-circle" class="size-12 mx-auto" />
-      </div>
-      <h2 class="font-semibold text-xl text-error mb-2">Connection Failed</h2>
-      <p class="text-sm font-medium text-base-content/70 mb-1">{@provider_name}</p>
-      <p class="text-base-content/60 mb-2">{@error_message}</p>
-      <p class="text-xs text-base-content/40 mb-4">
-        Your {@provider_name} account is not active — connection could not be established.
-      </p>
-      <div class="flex flex-col gap-2 mt-4">
-        <.link navigate={~p"/integrations/connect/#{@provider}"} class="btn btn-primary">
-          Try again
-        </.link>
-        <.link navigate={~p"/integrations"} class="btn btn-ghost btn-sm">
-          Back to integrations
-        </.link>
-      </div>
-    </div>
-    """
-  end
-
-  defp render_callback_result(%{status: :loading} = assigns) do
-    ~H"""
-    <div class="mf-card max-w-sm mx-auto p-6 text-center">
-      <span class="loading loading-spinner loading-lg"></span>
-      <p class="mt-4 text-base-content/60">Connecting your account...</p>
-    </div>
-    """
-  end
-
   # ---------------------------------------------------------------------------
   # Mount
   # ---------------------------------------------------------------------------
@@ -285,13 +209,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       |> assign(:integrations, integrations)
       |> assign(:platforms, platforms)
       |> assign(:view_mode, :selection)
-      |> assign(:status, :loading)
-      |> assign(:error_message, nil)
       |> assign(:integration, nil)
       |> assign(:platform, nil)
-      |> assign(:authorize_url, nil)
       |> assign(:provider, nil)
-      |> assign(:provider_name, nil)
 
     {:ok, socket}
   end
@@ -314,38 +234,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   end
 
   def handle_params(
-        %{"provider" => provider} = params,
-        _uri,
-        %{assigns: %{live_action: :callback}} = socket
-      ) do
-    case params do
-      %{"error" => error} ->
-        error_description = Map.get(params, "error_description")
-        error_message = translate_oauth_error(error, error_description)
-
-        {:noreply,
-         socket
-         |> assign(:view_mode, :callback)
-         |> assign(:status, :error)
-         |> assign(:error_message, error_message)
-         |> assign(:provider, provider)
-         |> assign(:provider_name, provider_display_name(provider))}
-
-      %{"code" => _code} ->
-        handle_callback_params(provider, params, socket)
-
-      _ ->
-        {:noreply,
-         socket
-         |> assign(:view_mode, :callback)
-         |> assign(:status, :error)
-         |> assign(:error_message, "No authorization code received.")
-         |> assign(:provider, provider)
-         |> assign(:provider_name, provider_display_name(provider))}
-    end
-  end
-
-  def handle_params(
         %{"provider" => provider},
         _uri,
         %{assigns: %{live_action: :detail}} = socket
@@ -365,7 +253,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   def handle_event("connect", %{"provider" => provider_str}, socket) do
     case parse_provider(provider_str) do
       {:ok, provider} ->
-        handle_connect_event(provider, socket)
+        {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider}")}
 
       :error ->
         {:noreply, put_flash(socket, :error, "This platform is not yet supported")}
@@ -392,17 +280,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {:error, _} -> nil
           end
 
-        authorize_url =
-          case Integrations.authorize_url(provider_atom) do
-            {:ok, %{url: url}} -> url
-            {:error, _} -> nil
-          end
-
         platform =
           find_platform_metadata(provider_atom) ||
             build_unknown_platform(provider_atom, provider_str)
 
-        {:ok, platform, integration, authorize_url}
+        {:ok, platform, integration}
       rescue
         ArgumentError -> :unknown_provider
       end
@@ -411,13 +293,12 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       :unknown_provider ->
         {:noreply, push_navigate(socket, to: ~p"/integrations/connect")}
 
-      {:ok, platform, integration, authorize_url} ->
+      {:ok, platform, integration} ->
         {:noreply,
          socket
          |> assign(:view_mode, :detail)
          |> assign(:platform, platform)
          |> assign(:integration, integration)
-         |> assign(:authorize_url, authorize_url)
          |> assign(:provider, provider_str)}
     end
   end
@@ -446,54 +327,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
          |> assign(:view_mode, :accounts)
          |> assign(:platform, platform)
          |> assign(:provider, provider_str)}
-    end
-  end
-
-  defp handle_callback_params(provider_str, params, socket) do
-    scope = socket.assigns.current_scope
-
-    socket =
-      socket
-      |> assign(:view_mode, :callback)
-      |> assign(:provider, provider_str)
-      |> assign(:provider_name, provider_display_name(provider_str))
-
-    case parse_provider(provider_str) do
-      {:ok, provider} ->
-        session_params = get_session_params(socket)
-
-        case Integrations.handle_callback(scope, provider, session_params, params) do
-          {:ok, integration} ->
-            {:noreply,
-             socket
-             |> assign(:status, :connected)
-             |> assign(:integration, integration)}
-
-          {:error, _reason} ->
-            {:noreply,
-             socket
-             |> assign(:status, :error)
-             |> assign(:error_message, "Could not complete the connection. Please try again.")}
-        end
-
-      :error ->
-        {:noreply,
-         socket
-         |> assign(:status, :error)
-         |> assign(:error_message, "This platform is not supported.")}
-    end
-  end
-
-  defp handle_connect_event(provider, socket) do
-    case Integrations.authorize_url(provider) do
-      {:ok, %{url: url, session_params: _session_params}} ->
-        {:noreply, redirect(socket, external: url)}
-
-      {:error, :unsupported_provider} ->
-        {:noreply, put_flash(socket, :error, "This platform is not yet supported")}
-
-      {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Could not initiate connection. Please try again.")}
     end
   end
 
@@ -542,16 +375,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # Private helpers — utilities
   # ---------------------------------------------------------------------------
 
-  defp get_session_params(socket) do
-    case socket.private[:connect_params] do
-      %{"session_params" => session_params} when is_map(session_params) ->
-        session_params
-
-      _ ->
-        %{}
-    end
-  end
-
   # Converts a provider string to an existing atom.
   # Returns `{:ok, atom}` if the atom already exists in the VM, or `:error` if
   # it does not. Using `String.to_existing_atom/1` prevents unbounded atom
@@ -564,10 +387,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp platform_connected?(integrations, provider_key) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)
-  end
-
-  defp provider_display_name(provider) when is_atom(provider) do
-    provider_display_name(Atom.to_string(provider))
   end
 
   defp provider_display_name(provider) when is_binary(provider) do
@@ -584,17 +403,5 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     |> String.replace("_", " ")
     |> String.split()
     |> Enum.map_join(" ", &String.capitalize/1)
-  end
-
-  defp translate_oauth_error("access_denied", _description) do
-    "Access was denied"
-  end
-
-  defp translate_oauth_error(error, nil) do
-    "Authorization failed: #{error}"
-  end
-
-  defp translate_oauth_error(error, description) do
-    "Authorization failed: #{error} — #{description}"
   end
 end

@@ -13,12 +13,45 @@ defmodule MetricFlow.Dashboards do
 
   use Boundary,
     deps: [MetricFlow, MetricFlow.Integrations, MetricFlow.Metrics],
-    exports: []
+    exports: [Dashboard]
 
   alias MetricFlow.Dashboards.ChartBuilder
+  alias MetricFlow.Dashboards.Dashboard
+  alias MetricFlow.Dashboards.DashboardsRepository
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
+
+  # ---------------------------------------------------------------------------
+  # Delegated repository functions
+  # ---------------------------------------------------------------------------
+
+  defdelegate get_dashboard(scope, id), to: DashboardsRepository
+
+  @doc "Creates a new dashboard for the scoped user."
+  @spec save_dashboard(Scope.t(), map()) :: {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
+  def save_dashboard(%Scope{} = scope, attrs) do
+    DashboardsRepository.create_dashboard(scope, attrs)
+  end
+
+  @doc "Updates an existing dashboard with the given attributes."
+  @spec update_dashboard(Scope.t(), Dashboard.t(), map()) ::
+          {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
+  def update_dashboard(%Scope{}, %Dashboard{} = dashboard, attrs) do
+    DashboardsRepository.update_dashboard(dashboard, attrs)
+  end
+
+  @doc "Returns an Ecto changeset for a Dashboard."
+  @spec dashboard_changeset(Dashboard.t(), map()) :: Ecto.Changeset.t()
+  def dashboard_changeset(%Dashboard{} = dashboard, attrs) do
+    Dashboard.changeset(dashboard, attrs)
+  end
+
+  @doc "Returns the list of available metric names for the scoped user."
+  @spec list_available_metrics(Scope.t()) :: [String.t()]
+  def list_available_metrics(%Scope{} = scope) do
+    Metrics.list_metric_names(scope)
+  end
 
   # ---------------------------------------------------------------------------
   # get_dashboard_data/2

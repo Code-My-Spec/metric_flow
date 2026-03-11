@@ -17,6 +17,7 @@ defmodule MetricFlowWeb.Application do
         MetricFlow.Vault,
         {Oban, Application.fetch_env!(:metric_flow, Oban)},
         {Cachex, name: :metric_cache},
+        MetricFlow.Integrations.OAuthStateStore,
         # Start to serve requests, typically the last entry
         MetricFlowWeb.Endpoint
       ]
