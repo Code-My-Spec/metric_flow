@@ -3,7 +3,7 @@
 
 ## Summary
 
-21/34 stories complete (all requirements satisfied)
+20/34 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -72,7 +72,7 @@ Status: in_progress | Priority: 6 | Component: MetricFlowWeb.IntegrationLive.Con
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [x] qa_complete - QA brief and result artifacts valid
+- [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #436 — View and Manage Platform Integrations
@@ -83,7 +83,7 @@ Status: in_progress | Priority: 7 | Component: MetricFlowWeb.IntegrationLive.Ind
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [x] qa_complete - QA brief and result artifacts valid
+- [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #438 — Manual Sync Trigger (Admin)
@@ -94,7 +94,7 @@ Status: in_progress | Priority: 8 | Component: MetricFlowWeb.IntegrationLive.Ind
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [x] qa_complete - QA brief and result artifacts valid
+- [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #427 — Agency Team Auto-Enrollment
@@ -127,7 +127,7 @@ Status: in_progress | Priority: 11 | Component: MetricFlowWeb.IntegrationLive.Sy
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [x] qa_complete - QA brief and result artifacts valid
+- [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #439 — Sync Status and History
@@ -281,7 +281,7 @@ Status: in_progress | Priority: 26 | Component: MetricFlowWeb.IntegrationLive.Co
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [ ] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [x] qa_complete - QA brief and result artifacts valid
+- [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #443 — Create and Save Custom Reports

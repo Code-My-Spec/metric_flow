@@ -90,6 +90,42 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
 
   def normalize_user(_user_data), do: {:error, :invalid_user_data}
 
+  @doc """
+  Revokes a token (access or refresh) with the Intuit revocation endpoint.
+
+  Uses Basic Auth (client_id:client_secret) as required by the Intuit API.
+  """
+  @spec revoke_token(String.t()) :: :ok | {:error, term()}
+  @impl MetricFlow.Integrations.Providers.Behaviour
+  def revoke_token(token) when is_binary(token) do
+    client_id = Application.fetch_env!(:metric_flow, :quickbooks_client_id)
+    client_secret = Application.fetch_env!(:metric_flow, :quickbooks_client_secret)
+    credentials = Base.encode64("#{client_id}:#{client_secret}")
+
+    headers = [
+      {"authorization", "Basic #{credentials}"},
+      {"accept", "application/json"},
+      {"content-type", "application/json"}
+    ]
+
+    body = Jason.encode!(%{"token" => token})
+    url = "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
+
+    case Assent.Strategy.http_request(:post, url, body, headers, []) do
+      {:ok, %{status: 200}} ->
+        Logger.info("QuickBooks token revoked successfully")
+        :ok
+
+      {:ok, %{status: status, body: resp_body}} ->
+        Logger.warning("QuickBooks token revocation returned #{status}: #{inspect(resp_body)}")
+        {:error, {:revocation_failed, status}}
+
+      {:error, reason} ->
+        Logger.warning("QuickBooks token revocation request failed: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------

@@ -248,7 +248,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     provider = String.to_existing_atom(provider_str)
     scope = socket.assigns.current_scope
 
-    case Integrations.delete_integration(scope, provider) do
+    case Integrations.disconnect(scope, provider) do
       {:ok, _} ->
         integrations = Integrations.list_integrations(scope)
         first_available_key = find_first_available_key(socket.assigns.platforms, integrations)

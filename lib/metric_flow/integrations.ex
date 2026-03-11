@@ -42,6 +42,32 @@ defmodule MetricFlow.Integrations do
   defdelegate connected?(scope, provider), to: IntegrationRepository
   defdelegate get_integration_by_id(id), to: IntegrationRepository
 
+  @doc """
+  Disconnects an integration by revoking tokens with the provider (if
+  supported) and then deleting the local integration record.
+
+  Token revocation is best-effort — the integration is deleted even if
+  revocation fails, since the user's intent is to disconnect.
+  """
+  @spec disconnect(Scope.t(), atom()) :: {:ok, Integration.t()} | {:error, term()}
+  def disconnect(%Scope{} = scope, provider) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
+      revoke_provider_token(provider, integration)
+      IntegrationRepository.delete_integration(scope, provider)
+    end
+  end
+
+  defp revoke_provider_token(provider, integration) do
+    with {:ok, provider_mod} <- fetch_provider(provider),
+         true <- function_exported?(provider_mod, :revoke_token, 1),
+         token when is_binary(token) <- integration.refresh_token || integration.access_token do
+      case provider_mod.revoke_token(token) do
+        :ok -> :ok
+        {:error, reason} -> Logger.warning("Token revocation failed for #{provider}: #{inspect(reason)}")
+      end
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Provider discovery
   # ---------------------------------------------------------------------------

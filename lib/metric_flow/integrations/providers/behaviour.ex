@@ -40,4 +40,15 @@ defmodule MetricFlow.Integrations.Providers.Behaviour do
   will be `nil` when absent.
   """
   @callback normalize_user(user_data :: map()) :: {:ok, map()} | {:error, term()}
+
+  @doc """
+  Revokes an access or refresh token with the provider's revocation endpoint.
+
+  Accepts the token string to revoke. Returns `:ok` on success or
+  `{:error, reason}` on failure. Optional — defaults to `:ok` (no-op)
+  for providers that don't support or require token revocation.
+  """
+  @callback revoke_token(token :: String.t()) :: :ok | {:error, term()}
+
+  @optional_callbacks [revoke_token: 1]
 end
