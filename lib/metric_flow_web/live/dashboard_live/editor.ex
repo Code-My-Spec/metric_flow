@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             >
               Save Dashboard
             </button>
-            <.link navigate="/dashboard" class="btn btn-ghost">Cancel</.link>
+            <.link navigate="/dashboards" class="btn btn-ghost">Cancel</.link>
           </div>
         </div>
 
@@ -302,7 +302,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {:noreply,
          socket
          |> put_flash(:error, "Dashboard not found.")
-         |> redirect(to: "/dashboard")}
+         |> redirect(to: "/dashboards")}
     end
   end
 

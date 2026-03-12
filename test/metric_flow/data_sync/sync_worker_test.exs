@@ -323,7 +323,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
     test "returns error :unsupported_provider for unknown providers" do
       {user, _scope} = user_with_scope()
-      integration = insert_integration!(user.id, :google)
+      integration = insert_integration!(user.id, :github)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
 
       capture_log(fn ->
@@ -595,8 +595,11 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id)
 
+      previous_level = Logger.level()
+      Logger.configure(level: :info)
+
       log =
-        capture_log(fn ->
+        capture_log([level: :info], fn ->
           assert :ok =
                    perform_job(
                      SyncWorker,
@@ -604,6 +607,8 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
                      []
                    )
         end)
+
+      Logger.configure(level: previous_level)
 
       assert log =~ ~r/sync/i
     end

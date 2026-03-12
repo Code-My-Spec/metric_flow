@@ -1,0 +1,275 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-10T14:22:01.000000Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "start_date=2025-12-01&end_date=2026-03-09&accounting_method=Accrual",
+        "uri": "https://quickbooks.api.intuit.com/v3/company/9341453083026702/reports/ProfitAndLoss"
+      },
+      "response": {
+        "body_json": {
+          "Header": {
+            "ReportName": "ProfitAndLoss",
+            "StartPeriod": "2025-12-01",
+            "EndPeriod": "2026-03-09",
+            "Currency": "USD",
+            "Option": [
+              { "Name": "AccountingMethod", "Value": "Accrual" },
+              { "Name": "NoReportData", "Value": "false" }
+            ]
+          },
+          "Rows": {
+            "Row": [
+              {
+                "group": "Income",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Income" },
+                    { "value": "52450.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": [
+                    {
+                      "ColData": [
+                        { "value": "Sales of Product Income" },
+                        { "value": "42000.00" }
+                      ]
+                    },
+                    {
+                      "ColData": [
+                        { "value": "Services" },
+                        { "value": "10450.00" }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "group": "COGS",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Cost of Goods Sold" },
+                    { "value": "18200.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": []
+                }
+              },
+              {
+                "group": "Expenses",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Expenses" },
+                    { "value": "22300.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": [
+                    {
+                      "ColData": [
+                        { "value": "Rent" },
+                        { "value": "8000.00" }
+                      ]
+                    },
+                    {
+                      "ColData": [
+                        { "value": "Utilities" },
+                        { "value": "1500.00" }
+                      ]
+                    },
+                    {
+                      "ColData": [
+                        { "value": "Payroll" },
+                        { "value": "12800.00" }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "group": "NetIncome",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Net Income" },
+                    { "value": "11950.00" }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": [
+            "application/json;charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 10 Mar 2026 14:22:01 GMT"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "intuit_tid": [
+            "abc-123-def-456"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-10T14:22:02.000000Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "start_date=2025-12-01&end_date=2026-03-09&accounting_method=Accrual",
+        "uri": "https://quickbooks.api.intuit.com/v3/company/9341453083026702/reports/BalanceSheet"
+      },
+      "response": {
+        "body_json": {
+          "Header": {
+            "ReportName": "BalanceSheet",
+            "StartPeriod": "2025-12-01",
+            "EndPeriod": "2026-03-09",
+            "Currency": "USD"
+          },
+          "Rows": {
+            "Row": [
+              {
+                "group": "TotalAssets",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Assets" },
+                    { "value": "185000.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": [
+                    {
+                      "group": "Bank",
+                      "Summary": {
+                        "ColData": [
+                          { "value": "Total Bank" },
+                          { "value": "75000.00" }
+                        ]
+                      },
+                      "Rows": {
+                        "Row": [
+                          {
+                            "ColData": [
+                              { "value": "Checking" },
+                              { "value": "55000.00" }
+                            ]
+                          },
+                          {
+                            "ColData": [
+                              { "value": "Savings" },
+                              { "value": "20000.00" }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "group": "AR",
+                      "Summary": {
+                        "ColData": [
+                          { "value": "Total Accounts Receivable" },
+                          { "value": "32000.00" }
+                        ]
+                      },
+                      "Rows": {
+                        "Row": []
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "group": "TotalLiabilities",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Liabilities" },
+                    { "value": "45000.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": [
+                    {
+                      "group": "AP",
+                      "Summary": {
+                        "ColData": [
+                          { "value": "Total Accounts Payable" },
+                          { "value": "12500.00" }
+                        ]
+                      },
+                      "Rows": {
+                        "Row": []
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "group": "Equity",
+                "Summary": {
+                  "ColData": [
+                    { "value": "Total Equity" },
+                    { "value": "140000.00" }
+                  ]
+                },
+                "Rows": {
+                  "Row": []
+                }
+              }
+            ]
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": [
+            "application/json;charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 10 Mar 2026 14:22:02 GMT"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "intuit_tid": [
+            "abc-123-def-789"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

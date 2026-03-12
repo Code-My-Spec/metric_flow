@@ -50,7 +50,7 @@ defmodule MetricFlow.DataSyncTest do
 
   # An integration whose token is expired and has no refresh token — treated as
   # disconnected by sync_integration/2.
-  defp insert_disconnected_integration!(user_id, provider \\ :google_analytics) do
+  defp insert_disconnected_integration!(user_id, provider) do
     insert_integration!(user_id, provider, %{
       expires_at: past_expires_at(),
       refresh_token: nil

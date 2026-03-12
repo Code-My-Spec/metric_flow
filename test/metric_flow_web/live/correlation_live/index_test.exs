@@ -10,7 +10,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   alias MetricFlow.Correlations.CorrelationJob
   alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
+
 
   # ---------------------------------------------------------------------------
   # Fixtures

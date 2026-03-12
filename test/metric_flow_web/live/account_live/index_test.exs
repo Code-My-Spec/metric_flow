@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
 
   defp unique_slug, do: "account-#{System.unique_integer([:positive])}"
 
-  defp insert_account!(user, attrs \\ %{}) do
+  defp insert_account!(user, attrs) do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),
@@ -62,7 +62,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
     account
   end
 
-  defp grant_client_access(agency_account, client_account, attrs \\ %{}) do
+  defp grant_client_access(agency_account, client_account, attrs) do
     defaults = %{
       agency_account_id: agency_account.id,
       client_account_id: client_account.id,

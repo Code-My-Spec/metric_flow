@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
 
   defp unique_slug, do: "account-#{System.unique_integer([:positive])}"
 
-  defp insert_account!(user, attrs \\ %{}) do
+  defp insert_account!(user, attrs) do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),

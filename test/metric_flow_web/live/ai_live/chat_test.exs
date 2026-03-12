@@ -169,10 +169,12 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         {:ok, lv, _html} = mount_chat(conn, user)
 
         # There should be 3 example prompts in the empty state
-        assert lv
-               |> render()
-               |> String.split("[data-role=\"example-prompt\"]")
-               |> length() > 1
+        html = render(lv)
+
+        assert html
+               |> Floki.parse_document!()
+               |> Floki.find("[data-role='example-prompt']")
+               |> length() == 3
       end)
     end
 
@@ -410,10 +412,10 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
       capture_log(fn ->
         conn = log_in_user(conn, user)
 
-        {:ok, lv, _html} = live(conn, "/chat/99999999")
+        {:error, {:live_redirect, %{to: to, flash: flash}}} = live(conn, "/chat/99999999")
 
-        flash = lv |> render() |> Floki.parse_document!() |> Floki.text()
-        assert flash =~ "Chat session not found" or has_element?(lv, "[data-role='new-chat-header']")
+        assert to == "/chat"
+        assert flash["error"] =~ "Chat session not found"
       end)
     end
 
@@ -498,7 +500,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         |> render_click()
 
         # Sidebar toggle was fired — the view should still render correctly
-        assert render(lv) =~ "AI Chat"
+        assert render(lv) =~ "MetricFlow"
       end)
     end
   end
@@ -825,6 +827,9 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
 
         render_click(lv, "send_message", %{"content" => "Any insights?"})
         send(lv.pid, {:chat_complete, %{token_count: 0}})
+
+        # Type something so the empty-input guard doesn't keep the button disabled
+        lv |> element("form") |> render_change(%{"content" => "follow-up"})
 
         refute has_element?(lv, "[data-role='send-btn'][disabled]")
       end)

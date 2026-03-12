@@ -285,10 +285,10 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
 
+        # The connect page only shows configured providers, so we send the event
+        # directly to test that any provider string is forwarded to the OAuth route
         assert {:error, {:redirect, %{to: redirect_url}}} =
-                 lv
-                 |> element("[data-role='connect-button'][phx-value-provider='unsupported_platform']")
-                 |> render_click()
+                 render_click(lv, "connect", %{"provider" => "unsupported_platform"})
 
         assert redirect_url == "/integrations/oauth/unsupported_platform"
       end)

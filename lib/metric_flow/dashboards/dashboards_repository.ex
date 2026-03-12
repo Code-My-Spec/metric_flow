@@ -65,7 +65,10 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   """
   @spec create_dashboard(Scope.t(), map()) :: {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
   def create_dashboard(%Scope{user: user}, attrs) do
-    attrs_with_user = Map.put(attrs, :user_id, user.id)
+    attrs_with_user =
+      attrs
+      |> Enum.into(%{}, fn {k, v} -> {to_string(k), v} end)
+      |> Map.put("user_id", user.id)
 
     %Dashboard{}
     |> Dashboard.changeset(attrs_with_user)

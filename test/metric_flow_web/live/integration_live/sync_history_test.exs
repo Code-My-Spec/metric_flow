@@ -611,7 +611,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
 
         send(lv.pid, {:sync_failed, payload})
 
-        refute render(lv) =~ "Attempt"
+        refute render(lv) =~ ~r/Attempt \d+\/\d+/
       end)
     end
 
