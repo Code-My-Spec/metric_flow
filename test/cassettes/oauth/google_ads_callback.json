@@ -1,0 +1,55 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-11T20:00:00.000000Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {},
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://oauth2.googleapis.com/token"
+      },
+      "response": {
+        "body_json": {
+          "access_token": "ya29.cassette-google-ads-access-token",
+          "refresh_token": "1//cassette-google-ads-refresh-token",
+          "expires_in": 3600,
+          "token_type": "Bearer",
+          "scope": "email profile https://www.googleapis.com/auth/adwords"
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": ["application/json"]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-11T20:00:00.100000Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {},
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://www.googleapis.com/oauth2/v3/userinfo"
+      },
+      "response": {
+        "body_json": {
+          "sub": "cassette-google-user-id-12345",
+          "email": "testuser@example.com",
+          "name": "Cassette Test User",
+          "picture": "https://lh3.googleusercontent.com/photo.jpg",
+          "email_verified": true
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": ["application/json"]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

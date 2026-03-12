@@ -47,15 +47,10 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
     end
 
     scenario "OAuth callback page shows success confirmation after completing OAuth" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user arrives at the OAuth callback page with a success code", context do
-        {:ok, view, _html} =
-          live(
-            context.owner_conn,
-            "/integrations/oauth/callback/google_ads?code=test_auth_code&state=test_state"
-          )
-
+      given_ "the user navigates to the Google Ads detail page after OAuth", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 

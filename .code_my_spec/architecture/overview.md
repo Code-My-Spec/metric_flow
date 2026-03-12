@@ -201,6 +201,15 @@ List dashboards (user's and canned).
 Dependencies:
 - MetricFlow.Dashboards
 
+### Index
+**liveview**
+
+List and view saved reports. Displays user-created and system-generated reports including review metric summaries, rolling averages, and cross-platform performance snapshots. Reports aggregate data from the Metrics context into presentable, shareable formats distinct from real-time dashboards.
+
+Dependencies:
+- MetricFlow.Metrics
+- MetricFlow.Dashboards
+
 ### Insights
 **liveview**
 
@@ -292,6 +301,15 @@ Dependencies:
 View dashboard with visualizations. Displays unified marketing and financial metrics from all connected platforms via Vega-Lite time series charts, summary stat cards, and filter controls. When no integrations are connected, renders an onboarding prompt. Unauthenticated users are redirected to `/users/log-in` by the router's authentication plug.
 
 Dependencies:
+- MetricFlow.Dashboards
+
+### Show
+**liveview**
+
+View a single report with its visualizations and metric summaries. Renders report content including review metrics, rolling averages, and cross-platform comparisons in a read-only presentable format. Supports sharing and export actions.
+
+Dependencies:
+- MetricFlow.Metrics
 - MetricFlow.Dashboards
 
 ### SyncHistory

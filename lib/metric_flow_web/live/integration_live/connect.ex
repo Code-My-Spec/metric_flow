@@ -25,18 +25,19 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   alias MetricFlow.Integrations
 
   # Canonical set of supported marketing platforms always shown in the UI.
-  # Google is a single OAuth connection covering Ads, Analytics, and Search Console.
   @canonical_platforms [
-    %{key: :google, name: "Google", description: "Google Ads, Analytics, and Search Console"},
+    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising"},
     %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising on Facebook and Instagram"},
-    %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data"}
+    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    %{key: :quickbooks, name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   ]
 
   # Extended display metadata used for name lookup on dynamically configured providers.
   @platform_metadata %{
-    google: %{name: "Google", description: "Google Ads, Analytics, and Search Console"},
+    google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
     facebook_ads: %{name: "Facebook Ads", description: "Social media advertising on Facebook and Instagram"},
-    quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"}
+    google_analytics: %{name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    quickbooks: %{name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   }
 
   # ---------------------------------------------------------------------------
@@ -118,6 +119,16 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <p class="text-sm mt-2 text-base-content/60">
           Connected as {@integration.provider_metadata["email"] || "unknown"}
         </p>
+        <a
+          :if={@authorize_url}
+          data-role="oauth-connect-button"
+          href={@authorize_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary btn-sm w-full sm:w-auto mt-2"
+        >
+          Reconnect
+        </a>
       </div>
       <div :if={is_nil(@integration)} class="mb-4">
         <span class="badge badge-ghost">Not connected</span>
@@ -133,14 +144,16 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       </div>
 
       <div :if={is_nil(@integration)} class="mt-4">
-        <button
-          data-role="connect-button"
-          phx-click="connect"
-          phx-value-provider={@platform.key}
+        <a
+          :if={@authorize_url}
+          data-role="oauth-connect-button"
+          href={@authorize_url}
+          target="_blank"
+          rel="noopener noreferrer"
           class="btn btn-primary w-full"
         >
           Connect {@platform.name}
-        </button>
+        </a>
       </div>
 
       <div class="mt-4">
@@ -212,6 +225,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       |> assign(:integration, nil)
       |> assign(:platform, nil)
       |> assign(:provider, nil)
+      |> assign(:authorize_url, nil)
 
     {:ok, socket}
   end
@@ -251,13 +265,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   @impl true
   def handle_event("connect", %{"provider" => provider_str}, socket) do
-    case parse_provider(provider_str) do
-      {:ok, provider} ->
-        {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider}")}
-
-      :error ->
-        {:noreply, put_flash(socket, :error, "This platform is not yet supported")}
-    end
+    {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider_str}")}
   end
 
   def handle_event("save_account_selection", _params, socket) do
@@ -284,7 +292,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           find_platform_metadata(provider_atom) ||
             build_unknown_platform(provider_atom, provider_str)
 
-        {:ok, platform, integration}
+        authorize_url =
+          case Integrations.authorize_url(provider_atom) do
+            {:ok, %{url: url}} -> url
+            {:error, _} -> nil
+          end
+
+        {:ok, platform, integration, authorize_url}
       rescue
         ArgumentError -> :unknown_provider
       end
@@ -293,13 +307,14 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       :unknown_provider ->
         {:noreply, push_navigate(socket, to: ~p"/integrations/connect")}
 
-      {:ok, platform, integration} ->
+      {:ok, platform, integration, authorize_url} ->
         {:noreply,
          socket
          |> assign(:view_mode, :detail)
          |> assign(:platform, platform)
          |> assign(:integration, integration)
-         |> assign(:provider, provider_str)}
+         |> assign(:provider, provider_str)
+         |> assign(:authorize_url, authorize_url)}
     end
   end
 
@@ -340,7 +355,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # 3. Providers with existing user integrations not covered above
   #
   # This ensures:
-  # - Production always shows Google Ads, Facebook Ads, Google Analytics
+  # - Production always shows Google Ads, Facebook Ads, Google Analytics, QuickBooks
   # - Tests see their stub providers plus canonical platforms
   # - Legacy integrations remain visible even if their provider is no longer configured
   defp build_platform_list(integrations) do
@@ -374,16 +389,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
   # Private helpers — utilities
   # ---------------------------------------------------------------------------
-
-  # Converts a provider string to an existing atom.
-  # Returns `{:ok, atom}` if the atom already exists in the VM, or `:error` if
-  # it does not. Using `String.to_existing_atom/1` prevents unbounded atom
-  # creation from user-supplied input.
-  defp parse_provider(provider_str) do
-    {:ok, String.to_existing_atom(provider_str)}
-  rescue
-    ArgumentError -> :error
-  end
 
   defp platform_connected?(integrations, provider_key) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)

@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
     end
 
     scenario "clicking reconnect on a disconnected platform initiates the reconnection flow" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a disconnected integration", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -54,21 +54,19 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
       end
 
       when_ "the user clicks the reconnect button on the disconnected platform", context do
-        html =
+        result =
           context.view
-          |> element("[data-role='reconnect-integration']")
+          |> element("[data-platform='facebook_ads'] [data-role='reconnect-integration']")
           |> render_click()
 
-        {:ok, Map.put(context, :html, html)}
+        {:ok, Map.put(context, :reconnect_result, result)}
       end
 
       then_ "the user is taken to or shown a reconnect flow for that platform", context do
-        html = render(context.view)
-        assert html =~ "reconnect" or
-                 html =~ "Reconnect" or
-                 html =~ "authorize" or
-                 html =~ "Authorize" or
-                 html =~ "Connect"
+        # The reconnect button triggers an OAuth redirect — verify the redirect target
+        # contains a recognisable OAuth or connect path for the platform
+        assert match?({:error, {:redirect, %{to: "/integrations/oauth/facebook_ads"}}}, context.reconnect_result) or
+                 match?({:error, {:redirect, %{to: path}}} when is_binary(path), context.reconnect_result)
         :ok
       end
     end

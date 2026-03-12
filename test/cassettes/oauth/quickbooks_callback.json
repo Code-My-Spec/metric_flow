@@ -1,0 +1,30 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-11T20:00:00.000000Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {},
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+      },
+      "response": {
+        "body_json": {
+          "access_token": "cassette-quickbooks-access-token",
+          "refresh_token": "cassette-quickbooks-refresh-token",
+          "expires_in": 3600,
+          "token_type": "bearer",
+          "x_refresh_token_expires_in": 8726400
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": ["application/json"]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

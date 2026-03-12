@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
 
   spex "Disconnecting shows warning that historical data will remain but no new data will sync" do
     scenario "a warning appears when the user initiates a disconnect action" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
     end
 
     scenario "the warning explains that no new data will sync after disconnecting" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
     end
 
     scenario "the disconnect warning page or modal provides a confirm and cancel option" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")

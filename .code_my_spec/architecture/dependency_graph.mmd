@@ -30,6 +30,8 @@ metricflowweb_visualizationlive_editor[MetricFlowWeb.VisualizationLive.Editor]
 metricflowweb_ailive_insights[MetricFlowWeb.AiLive.Insights]
 metricflowweb_invitationlive_accept[MetricFlowWeb.InvitationLive.Accept]
 metricflowweb_dashboardlive_index[MetricFlowWeb.DashboardLive.Index]
+metricflowweb_reportlive_index[MetricFlowWeb.ReportLive.Index]
+metricflowweb_reportlive_show[MetricFlowWeb.ReportLive.Show]
 metricflowweb_userlive_login --> metricflow_users
 metricflowweb_userlive_registration --> metricflow_users
 metricflowweb_userlive_settings --> metricflow_users
@@ -77,3 +79,7 @@ metricflowweb_invitationlive_accept --> metricflow_invitations
 metricflowweb_invitationlive_accept --> metricflow_users
 metricflowweb_dashboardlive_index --> metricflow_dashboards
 metricflow_accounts --> metricflow_users
+metricflowweb_reportlive_index --> metricflow_metrics
+metricflowweb_reportlive_index --> metricflow_dashboards
+metricflowweb_reportlive_show --> metricflow_metrics
+metricflowweb_reportlive_show --> metricflow_dashboards

@@ -3,8 +3,11 @@
 
 ## MetricFlowWeb.VisualizationLive (live_context)
 
-_No requirements defined_
-
+- [ ] spec_file - Live context specification file exists
+- [ ] spec_valid - Live context specification is valid
+- [ ] children_designs - Child component designs are complete
+- [ ] children_implementations - Child component implementations are complete
+- [ ] dependencies_satisfied - Component dependencies are satisfied
 
 
 ## MetricFlowWeb.VisualizationLive.Editor (liveview)

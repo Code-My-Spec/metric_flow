@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
 
   spex "User can modify selected accounts without re-authenticating" do
     scenario "the integrations page offers an edit action for an existing integration" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")

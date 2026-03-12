@@ -85,7 +85,7 @@ MetricFlowWeb [module]
 │   ├── Goals [liveview] Configure goal metrics.
 │   └── Index [liveview] View correlation analysis (Raw and Smart modes), displays automated correlation results.
 ├── DashboardLive
-│   ├── Editor [liveview] Create/edit dashboards, arrange visualizations.
+│   ├── Editor [liveview] Create/edit dashboards, arrange visualizations. Allows authenticated users to build reports by composing visualizatio...
 │   ├── Index [liveview] List dashboards (user's and canned).
 │   └── Show [liveview] View dashboard with visualizations. Displays unified marketing and financial metrics from all connected platforms via...
 ├── HealthController [module]
@@ -102,6 +102,9 @@ MetricFlowWeb [module]
 ├── Plugs
 │   └── WhiteLabel [module]
 ├── PromEx [module]
+├── ReportLive
+│   ├── Index [liveview] List and view saved reports. Displays user-created and system-generated reports including review metric summaries, ro...
+│   └── Show [liveview] View a single report with its visualizations and metric summaries. Renders report content including review metrics, r...
 ├── UserAuth [module]
 ├── UserLive
 │   ├── Confirmation [module]

@@ -26,6 +26,7 @@ defmodule MetricFlow.Accounts.Authorization do
           | :add_member
           | :remove_member
           | :update_user_role
+          | :leave_account
 
   @doc """
   Returns true if the calling user has permission to perform the given action
@@ -71,6 +72,9 @@ defmodule MetricFlow.Accounts.Authorization do
   defp permitted?(:owner, :update_user_role, _context), do: true
   defp permitted?(:admin, :update_user_role, context), do: target_role_allowed?(:admin, context)
   defp permitted?(_role, :update_user_role, _context), do: false
+
+  defp permitted?(:owner, :leave_account, _context), do: false
+  defp permitted?(_role, :leave_account, _context), do: true
 
   defp permitted?(_role, _unknown_action, _context), do: false
 

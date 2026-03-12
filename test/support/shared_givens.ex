@@ -180,4 +180,110 @@ defmodule MetricFlowSpex.SharedGivens do
 
     {:ok, %{second_user_email: email, second_user_password: password}}
   end
+
+  given :owner_with_google_ads_integration do
+    email = "owner#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    # Register through UI
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form", user: %{
+      email: email,
+      password: password,
+      account_name: "Owner Account"
+    })
+    |> render_submit()
+
+    Process.sleep(50)
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+    drain.(drain)
+
+    # Create integration fixture
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_ads})
+
+    # Log in through UI
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password", user: %{
+        email: email,
+        password: password,
+        remember_me: true
+      })
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok,
+     %{
+       owner_conn: authed_conn,
+       owner_email: email,
+       owner_password: password
+     }}
+  end
+
+  given :owner_with_quickbooks_integration do
+    email = "owner#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form", user: %{
+      email: email,
+      password: password,
+      account_name: "Owner Account"
+    })
+    |> render_submit()
+
+    Process.sleep(50)
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+    drain.(drain)
+
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :quickbooks})
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password", user: %{
+        email: email,
+        password: password,
+        remember_me: true
+      })
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok,
+     %{
+       owner_conn: authed_conn,
+       owner_email: email,
+       owner_password: password
+     }}
+  end
+
+  given :with_oauth_stub_providers do
+    MetricFlowTest.OAuthStub.setup_oauth_providers()
+    {:ok, %{oauth_state: MetricFlowTest.OAuthStub.state_token()}}
+  end
 end

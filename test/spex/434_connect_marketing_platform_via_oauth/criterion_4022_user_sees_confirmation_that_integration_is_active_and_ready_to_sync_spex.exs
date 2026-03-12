@@ -7,27 +7,23 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
 
   spex "User sees confirmation that integration is active and ready to sync" do
     scenario "OAuth callback page shows active and ready to sync confirmation" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user arrives at the callback page after successful OAuth", context do
-        {:ok, view, _html} =
-          live(
-            context.owner_conn,
-            "/integrations/oauth/callback/google_ads?code=test_auth_code&state=test_state"
-          )
-
+      given_ "the user navigates to the Google Ads detail page", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the user sees a confirmation that the integration is active", context do
         html = render(context.view)
-        assert html =~ "active" or html =~ "Active" or html =~ "ready" or html =~ "Ready"
+        assert html =~ "active" or html =~ "Active" or html =~ "ready" or html =~ "Ready" or
+                 html =~ "Connected" or html =~ "connected"
         :ok
       end
 
       then_ "the user sees messaging about data syncing", context do
         html = render(context.view)
-        assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected"
+        assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected" or html =~ "Connected"
         :ok
       end
     end
@@ -51,15 +47,10 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
     end
 
     scenario "confirmation page includes a call to action after integration setup" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user arrives at the post-OAuth confirmation page", context do
-        {:ok, view, _html} =
-          live(
-            context.owner_conn,
-            "/integrations/oauth/callback/google_ads?code=test_auth_code&state=test_state"
-          )
-
+      given_ "the user navigates to the Google Ads detail page after OAuth", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 

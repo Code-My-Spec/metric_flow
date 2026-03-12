@@ -124,13 +124,6 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                   >
                     Edit Accounts
                   </.link>
-                  <.link
-                    data-role="integration-detail-link"
-                    navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
-                    class="btn btn-ghost btn-xs"
-                  >
-                    Manage
-                  </.link>
                   <button
                     data-role="disconnect-integration"
                     phx-click="confirm_disconnect"
@@ -149,6 +142,13 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     Connect
                   </button>
                 <% end %>
+                <.link
+                  data-role="integration-detail-link"
+                  navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
+                  class="btn btn-ghost btn-xs"
+                >
+                  Manage
+                </.link>
               </div>
             </div>
 

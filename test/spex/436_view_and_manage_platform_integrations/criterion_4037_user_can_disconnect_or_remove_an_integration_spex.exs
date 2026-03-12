@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
 
   spex "User can disconnect or remove an integration" do
     scenario "integrations page shows a disconnect or remove action for each integration" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
     end
 
     scenario "clicking disconnect on an integration initiates the disconnection flow" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a connected integration", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
     end
 
     scenario "after disconnecting an integration the integration no longer appears as connected" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")

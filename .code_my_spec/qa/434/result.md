@@ -1,0 +1,229 @@
+# QA Result
+
+Story 434: Connect Marketing Platform via OAuth
+
+## Status
+
+fail
+
+## Scenarios
+
+### Scenario 1 — Platform selection page lists all supported platforms
+
+PARTIAL PASS
+
+- Navigated to `http://localhost:4070/integrations/connect`
+- Page rendered without error
+- "Facebook Ads" is present (`data-platform="facebook_ads"`)
+- "Google Ads" is present (`data-platform="google_ads"`) — but only because a prior integration exists in the dev database; it has no description text and is not in the canonical platform list
+- "Google Analytics" is NOT present — no `data-platform="google_analytics"` element found
+- "Google" is present (`data-platform="google"`) as a canonical platform covering Ads, Analytics, and Search Console — this consolidates what the spec describes as separate google_ads and google_analytics platforms
+- "QuickBooks" is present (`data-platform="quickbooks"`) — replaces "Google Analytics" in the canonical list
+- Each present platform card has a `[data-role='connect-button']` element
+
+The spec and brief expect three separate platforms: `google_ads`, `facebook_ads`, `google_analytics`. The implementation has changed to: `google` (consolidated), `facebook_ads`, `quickbooks`. The `google_ads` card appearing is a side-effect of existing integration data in the dev DB, not a canonical platform entry.
+
+Screenshot: `.code_my_spec/qa/434/screenshots/s1_platform_selection.png`
+
+### Scenario 2 — Connect buttons are present for each platform
+
+PARTIAL PASS
+
+- `[data-platform='google_ads'] [data-role='connect-button']` — exists (shows "Reconnect" because integration is connected)
+- `[data-platform='facebook_ads'] [data-role='connect-button']` — exists (shows "Reconnect" because integration is connected)
+- `[data-platform='google_analytics'] [data-role='connect-button']` — NOT found; the `google_analytics` platform card is absent from the page
+- "Re-authenticate" text is not present on the page — passes
+
+The platform grid has diverged from the spec: `google_analytics` is absent and `google` (consolidated) is present instead.
+
+### Scenario 3 — Per-platform detail view shows OAuth initiation link
+
+FAIL
+
+- Navigated to `http://localhost:4070/integrations/connect/google_ads`
+- Page rendered the Google Ads detail card with "Connected" status
+- `[data-role='oauth-connect-button']` is NOT present anywhere on the page
+- The connect button is implemented as a `phx-click="connect"` button (`data-role="connect-button"`), not as an anchor tag with `href` and `target="_blank"`
+- Because the `google_ads` integration is already connected, even the `data-role="connect-button"` is not shown — only "Back to integrations" link
+
+The spec requires an anchor element with `data-role="oauth-connect-button"`, `target="_blank"`, and an `href` pointing to the OAuth authorization URL. The implementation uses a LiveView phx-click event that triggers a server-side redirect instead. This is a significant implementation gap vs. the spec.
+
+Screenshot: `.code_my_spec/qa/434/screenshots/s3_google_ads_detail.png`
+
+### Scenario 4 — Platform detail view does not show re-authenticate option
+
+PASS
+
+- On `http://localhost:4070/integrations/connect/google_ads`
+- "Re-authenticate" text — NOT present
+- "Re-connect" text — NOT present
+- Page shows "Google Ads", "Connected", "Connected as qa@example.com", "Back to integrations"
+
+### Scenario 5 — Account selection page renders correctly
+
+PASS
+
+- Navigated to `http://localhost:4070/integrations/connect/google_ads/accounts`
+- Page rendered "Google Ads — Select Accounts" heading
+- `[data-role='account-list']` — present
+- `[data-role='account-selection']` — present
+- `input[type='checkbox'][data-role='account-checkbox']` — present (checked, "All accounts")
+- `[data-role='save-selection']` button labeled "Save Selection" — present
+- Navigated to `http://localhost:4070/integrations/connect/google_analytics/accounts`
+- Page rendered "Google Analytics — Select Accounts" with the same account selection UI
+- All required elements present on both account selection pages
+
+Screenshots: `.code_my_spec/qa/434/screenshots/s5_account_selection_google_ads.png`, `.code_my_spec/qa/434/screenshots/s5_account_selection_google_analytics.png`
+
+### Scenario 6 — Integration not saved before OAuth
+
+PASS (verified against google_analytics — an unconnected provider)
+
+- Navigated to `http://localhost:4070/integrations/connect/google_analytics`
+- "Integration saved" — NOT present
+- "Integration active" — NOT present
+- Page shows `[data-role='connect-button']` labeled "Connect Google Analytics"
+
+Note: The brief tested this against `google_ads`, which already has a connected integration in the dev DB and shows "Connected" status. Tested against `google_analytics` (not connected) to validate the pre-OAuth state correctly.
+
+### Scenario 7 — OAuth callback success state shows confirmation
+
+FAIL
+
+- Navigated to `http://localhost:4070/integrations/oauth/callback/google_ads?code=test_auth_code&state=test_state`
+- The callback route is handled by `IntegrationOAuthController` (a controller, not a LiveView)
+- The controller attempted `Integrations.handle_callback` with `test_auth_code` — failed (no real credentials)
+- Redirected to `http://localhost:4070/integrations/connect` with flash: "This platform is not yet supported"
+- No "Connection Failed" heading — the callback renders no dedicated error page; errors are shown as flash messages on the platform selection page
+- No "Try again" link as a standalone element — the platform cards on `/integrations/connect` serve as implicit recovery options
+- The spec describes a dedicated callback result page with "Integration Active" or "Connection Failed" UI; the implementation uses flash-and-redirect instead
+
+Screenshot: `.code_my_spec/qa/434/screenshots/s7_callback_error_state.png`
+
+### Scenario 8 — OAuth callback with error parameter shows clear error message
+
+PARTIAL PASS
+
+- Navigated to `http://localhost:4070/integrations/oauth/callback/google_ads?error=access_denied`
+- Redirected to `http://localhost:4070/integrations/connect` with flash: "Access was denied. Please try again if you want to connect."
+- Error-related text appears — PASS
+- "Integration saved" and "successfully connected" do NOT appear — PASS
+- "Connection Failed" heading — NOT present (flash message shown instead, no dedicated heading)
+- Dedicated "Try again" link pointing to `/integrations/connect/google_ads` — NOT present
+- Dedicated "Back to integrations" link — NOT present as a separate recovery element
+
+- Navigated to `http://localhost:4070/integrations/oauth/callback/google_ads?error=access_denied&error_description=User+denied+access`
+- Flash shows "Access was denied. Please try again if you want to connect." (error_description is ignored for access_denied — user-friendly message is shown instead)
+- Page renders with recovery actions available via the platform selection grid
+
+The error handling works functionally (user sees an error message and can recover), but the implementation does not match the spec's design for a dedicated "Connection Failed" card with a "Try again" link.
+
+Screenshot: `.code_my_spec/qa/434/screenshots/s8_callback_access_denied.png`
+
+### Scenario 9 — Unauthenticated user is redirected
+
+PASS
+
+- Cleared all cookies by quitting and relaunching the browser
+- Navigated to `http://localhost:4070/integrations/connect`
+- Redirected to `http://localhost:4070/users/log-in`
+- The URL contains `/users/log-in` as expected
+
+### Scenario 10 — Integration page is scoped to the logged-in account
+
+PASS
+
+- Logged in as `qa@example.com`
+- Navigated to `http://localhost:4070/integrations`
+- Page shows integrations for the logged-in account (Facebook Ads, Google, QuickBooks connected; Stripe not connected)
+- "Transfer to agency", "Assign to agency", "Move to agency" — NONE present
+- Navigated to `http://localhost:4070/integrations/connect/google_ads`
+- None of the transfer phrases present on the detail page either
+
+Screenshots: `.code_my_spec/qa/434/screenshots/s10_integrations_list.png`, `.code_my_spec/qa/434/screenshots/s10_connect_detail_no_transfer.png`
+
+## Evidence
+
+- `.code_my_spec/qa/434/screenshots/s1_platform_selection.png` — Platform selection grid at `/integrations/connect`
+- `.code_my_spec/qa/434/screenshots/s3_google_ads_detail.png` — Google Ads detail page (connected state, no oauth-connect-button)
+- `.code_my_spec/qa/434/screenshots/s5_account_selection_google_ads.png` — Account selection page for Google Ads
+- `.code_my_spec/qa/434/screenshots/s5_account_selection_google_analytics.png` — Account selection page for Google Analytics
+- `.code_my_spec/qa/434/screenshots/s7_callback_error_state.png` — OAuth callback with test code redirects to platform selection with flash
+- `.code_my_spec/qa/434/screenshots/s8_callback_access_denied.png` — OAuth callback with error=access_denied redirects to platform selection with error flash
+- `.code_my_spec/qa/434/screenshots/s10_integrations_list.png` — Integrations list for qa@example.com account
+- `.code_my_spec/qa/434/screenshots/s10_connect_detail_no_transfer.png` — Connect detail page, no transfer options visible
+
+## Issues
+
+### Platform list does not include google_analytics; google_ads shows only because of existing integration data
+
+#### Severity
+HIGH
+
+#### Description
+The spec (`.code_my_spec/spec/metric_flow_web/integration_live/connect.spec.md`) defines the canonical platform list as `google_ads`, `facebook_ads`, and `google_analytics`. The current implementation defines `@canonical_platforms` as `google` (consolidated), `facebook_ads`, and `quickbooks`. The `google_analytics` platform is completely absent from the canonical platform list.
+
+The `google_ads` card appears on the platform selection page only because a prior integration record exists in the dev database — it is not in the canonical list, has an empty description, and would disappear on a fresh database. This means users on fresh accounts would not see any Google Ads or Google Analytics option.
+
+Reproduction: Navigate to `http://localhost:4070/integrations/connect`. No `data-platform="google_analytics"` card is present.
+
+### Per-platform detail view uses phx-click button instead of oauth-connect-button anchor
+
+#### Severity
+HIGH
+
+#### Description
+The spec requires the per-platform detail view to show an anchor element with:
+- `data-role="oauth-connect-button"`
+- `target="_blank"` (opens OAuth flow in a new tab)
+- An `href` attribute containing the pre-computed OAuth authorization URL
+
+The implementation renders a `<button data-role="connect-button" phx-click="connect">` instead. Clicking this triggers a server-side redirect (full page navigation), not a new tab. There is no `data-role="oauth-connect-button"` element anywhere in the application.
+
+Additionally, when an integration is already connected, even the `data-role="connect-button"` is hidden — the detail page only shows "Back to integrations". The spec says a "Reconnect" link should be shown for connected integrations.
+
+Reproduction: Navigate to `http://localhost:4070/integrations/connect/google_analytics` (not connected). Inspect for `[data-role='oauth-connect-button']` — not found.
+
+### OAuth callback does not render dedicated result page; uses flash-and-redirect instead
+
+#### Severity
+MEDIUM
+
+#### Description
+The spec describes a dedicated OAuth callback result page rendered at `/integrations/oauth/callback/:provider` with:
+- Success state: "Integration Active" heading, "Active" badge, "View Integrations" button
+- Error state: "Connection Failed" heading in `text-error`, error message, "Try again" link pointing to `/integrations/connect/:provider`, "Back to integrations" link
+
+The implementation (`IntegrationOAuthController.callback/2`) redirects to `/integrations` on success or `/integrations/connect` on error, using Phoenix flash messages. No dedicated callback result page is rendered. The flash message for `access_denied` says "Access was denied. Please try again if you want to connect." — the message is user-friendly but the page design does not match the spec.
+
+This means:
+- Users do not see a "Connection Failed" heading or dedicated error card
+- The "Try again" link does not point to the specific provider's connect page (instead, users see the full platform list)
+- On success, there is no "Integration Active" confirmation before redirecting
+
+Reproduction: Navigate to `http://localhost:4070/integrations/oauth/callback/google_ads?error=access_denied`. Redirected to `/integrations/connect` with a flash message. No dedicated error page.
+
+### Google Ads card has empty description when shown from integration data
+
+#### Severity
+LOW
+
+#### Description
+The `google_ads` card on the platform selection page (`/integrations/connect`) shows an empty description paragraph. This is because `google_ads` is not in `@platform_metadata` — it appears only because a legacy integration record exists. The `build_unknown_platform/2` helper is called, which sets `description: ""`.
+
+If `google_ads` should remain a visible platform (separate from the consolidated `google`), it needs a metadata entry. If it is superseded by the `google` canonical platform, old `google_ads` integrations should be migrated or the UI should show the `google` metadata for them.
+
+Reproduction: Navigate to `http://localhost:4070/integrations/connect`. The "Google Ads" card shows no description text beneath the platform name.
+
+### Brief tests google_analytics platform not present on fresh seeds
+
+#### Severity
+LOW
+
+#### Scope
+QA
+
+#### Description
+The brief instructs testing Scenarios 1, 2, and 8 against `google_analytics` as a canonical platform. The spec also lists `google_analytics` as a canonical platform. However, the current implementation does not include `google_analytics` in `@canonical_platforms` — the `google_analytics` route and accounts page function (via atom lookup) but the platform does not appear on the selection grid.
+
+The brief should be updated to reflect the actual canonical platforms (`google`, `facebook_ads`, `quickbooks`) or the spec/implementation discrepancy should be resolved first.

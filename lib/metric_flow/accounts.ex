@@ -30,6 +30,7 @@ defmodule MetricFlow.Accounts do
   defdelegate update_user_role(scope, user_id, account_id, role), to: AccountRepository
   defdelegate remove_user_from_account(scope, user_id, account_id), to: AccountRepository
   defdelegate add_user_to_account(scope, user_id, account_id, role), to: AccountRepository
+  defdelegate leave_account(scope, account_id), to: AccountRepository
 
   @doc """
   Returns the primary account ID for the scoped user.

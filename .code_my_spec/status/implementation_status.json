@@ -1,1 +1,1 @@
-{"scope":"orchestrate","requirement":"qa_complete","project_id":null,"component_id":null,"story_id":428,"dispatched_at":"2026-03-07T17:21:16.563179Z"}
+{"dispatched_tasks":[{"component_id":null,"dispatched_at":"2026-03-12T00:26:30.178024Z","project_id":null,"requirement":"bdd_specs_passing","scope":"orchestrate","story_id":424}],"updated_at":"2026-03-12T00:26:30.178086Z"}

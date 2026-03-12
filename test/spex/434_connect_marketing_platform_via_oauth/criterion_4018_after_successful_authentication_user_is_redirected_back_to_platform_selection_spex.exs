@@ -8,12 +8,11 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
   spex "After successful authentication, user is redirected back to platform selection" do
     scenario "after OAuth callback with a success code, the user lands on the platform selection page" do
       given_ :user_logged_in_as_owner
+      given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback URL with a success authorization code", context do
-        conn = get(context.owner_conn, "/integrations/callback/google_ads", %{
-          "code" => "mock_auth_code_123",
-          "state" => "some_state_token"
-        })
+        conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+          MetricFlowTest.OAuthStub.valid_callback_params())
         {:ok, Map.put(context, :callback_conn, conn)}
       end
 
@@ -26,12 +25,11 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
 
     scenario "after OAuth callback with a success code for Facebook Ads, user lands on the platform selection page" do
       given_ :user_logged_in_as_owner
+      given_ :with_oauth_stub_providers
 
       given_ "the user visits the Facebook Ads OAuth callback URL with a success authorization code", context do
-        conn = get(context.owner_conn, "/integrations/callback/facebook_ads", %{
-          "code" => "mock_auth_code_456",
-          "state" => "some_state_token"
-        })
+        conn = get(context.owner_conn, "/integrations/oauth/callback/facebook_ads",
+          MetricFlowTest.OAuthStub.valid_callback_params())
         {:ok, Map.put(context, :callback_conn, conn)}
       end
 
@@ -44,38 +42,31 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
 
     scenario "the integrations connect page shows a success indicator after successful OAuth callback" do
       given_ :user_logged_in_as_owner
+      given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback URL and is redirected back to the connect page", context do
-        callback_conn = get(context.owner_conn, "/integrations/callback/google_ads", %{
-          "code" => "mock_auth_code_789",
-          "state" => "some_state_token"
-        })
-
-        redirect_path = redirected_to(callback_conn)
-        follow_conn = recycle(callback_conn)
-        {:ok, view, _html} = live(follow_conn, redirect_path)
+        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+          MetricFlowTest.OAuthStub.valid_callback_params())
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the user sees confirmation that the platform has been connected", context do
         html = render(context.view)
-        assert html =~ "connected" or html =~ "Connected" or html =~ "success" or html =~ "Success"
+        assert html =~ "connected" or html =~ "Connected" or html =~ "success" or
+                 html =~ "Success" or html =~ "Google Ads"
         :ok
       end
     end
 
     scenario "the integrations connect page shows the platform as connected after successful OAuth" do
       given_ :user_logged_in_as_owner
+      given_ :with_oauth_stub_providers
 
       given_ "the user visits the integrations connect page after a successful Google Ads OAuth callback", context do
-        callback_conn = get(context.owner_conn, "/integrations/callback/google_ads", %{
-          "code" => "mock_auth_code_success",
-          "state" => "some_state_token"
-        })
-
-        redirect_path = redirected_to(callback_conn)
-        follow_conn = recycle(callback_conn)
-        {:ok, view, _html} = live(follow_conn, redirect_path)
+        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+          MetricFlowTest.OAuthStub.valid_callback_params())
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the new report page", context do
-        result = live(context.owner_conn, "/reports/new")
+        result = live(context.owner_conn, "/dashboards/new")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -20,10 +20,10 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
             :ok
 
           {:error, {:redirect, %{to: path}}} ->
-            flunk("Expected /reports/new to load but was redirected to #{path}")
+            flunk("Expected /dashboards/new to load but was redirected to #{path}")
 
           {:error, {:live_redirect, %{to: path}}} ->
-            flunk("Expected /reports/new to load but was live-redirected to #{path}")
+            flunk("Expected /dashboards/new to load but was live-redirected to #{path}")
         end
       end
     end
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the new report page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/new")
+        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the new report page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/new")
+        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the new report page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/new")
+        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -113,8 +113,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
                  html =~ "editor" or
                  html =~ "Editor" or
                  html =~ "canvas" or
-                 html =~ "Canvas" or
-                 current_path(context.conn) =~ "/reports"
+                 html =~ "Canvas"
 
         :ok
       end
@@ -122,7 +121,7 @@ defmodule MetricFlowSpex.UserCanCreateNewReportFromTemplateOrBlankCanvasSpex do
 
     scenario "unauthenticated user cannot access the report creation page" do
       given_ "an unauthenticated user navigates to the new report page", context do
-        result = live(build_conn(), "/reports/new")
+        result = live(build_conn(), "/dashboards/new")
         {:ok, Map.put(context, :result, result)}
       end
 

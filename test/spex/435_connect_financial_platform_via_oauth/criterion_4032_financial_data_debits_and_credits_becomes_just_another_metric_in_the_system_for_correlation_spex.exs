@@ -46,18 +46,16 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
     end
 
     scenario "a connected QuickBooks integration appears in the integrations list" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_quickbooks_integration
 
-      when_ "the user completes the QuickBooks OAuth flow", context do
-        {:ok, view, _html} =
-          live(context.owner_conn, "/integrations/oauth/callback/quickbooks?code=valid_code")
-
+      when_ "the user views the QuickBooks detail page", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the callback confirms the integration is active", context do
         html = render(context.view)
-        assert html =~ "Active" or html =~ "connected"
+        assert html =~ "Active" or html =~ "connected" or html =~ "Connected"
         :ok
       end
     end

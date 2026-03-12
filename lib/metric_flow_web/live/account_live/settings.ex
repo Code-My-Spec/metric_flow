@@ -10,6 +10,9 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
   For team accounts where the current user is an owner or admin, the agency
   auto-enrollment and white-label branding sections are also rendered.
+
+  Non-owner members of team accounts see a "Leave Account" section allowing
+  them to revoke their own access.
   """
 
   use MetricFlowWeb, :live_view
@@ -129,6 +132,34 @@ defmodule MetricFlowWeb.AccountLive.Settings do
                   <p class="text-sm">{account_type_label(@account.type)}</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <%!-- Section: Leave Account (non-owners of team accounts) --%>
+          <div :if={not @is_owner and @account.type == "team" and not @left_account} class="card bg-base-100 shadow mf-card border border-warning/40">
+            <div class="card-body">
+              <h2 class="card-title text-base">Leave Account</h2>
+              <p class="text-sm text-base-content/60">
+                Remove yourself from this account. You will lose access to all account data.
+                This action cannot be undone.
+              </p>
+              <div class="card-actions justify-end mt-4">
+                <button
+                  data-role="revoke-own-access"
+                  phx-click="leave_account"
+                  data-confirm="Are you sure you want to leave this account? You will lose all access."
+                  class="btn btn-warning"
+                >
+                  Leave Account
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <%!-- Leave Account success state --%>
+          <div :if={@left_account} class="card bg-base-100 shadow mf-card border border-success/40">
+            <div class="card-body">
+              <p class="text-success">Your access has been revoked. You have left the account.</p>
             </div>
           </div>
 
@@ -280,6 +311,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
           |> assign(:can_edit, user_role in [:owner, :admin])
           |> assign(:can_save, user_role in [:owner, :admin])
           |> assign(:active_account_name, account.name)
+          |> assign(:left_account, false)
           |> assign_agency_data(scope, account, user_role)
 
         {:ok, socket}
@@ -351,6 +383,23 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   def handle_event("delete_account", params, socket) do
     {name_confirmation, password} = extract_delete_params(params)
     do_delete_account(name_confirmation, password, socket)
+  end
+
+  def handle_event("leave_account", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    case Accounts.leave_account(scope, account.id) do
+      {:ok, _member} ->
+        {:noreply, assign(socket, :left_account, true)}
+
+      {:error, :unauthorized} ->
+        {:noreply,
+         put_flash(socket, :error, "Account owners cannot leave. Transfer ownership first.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to leave account")}
+    end
   end
 
   def handle_event("save_auto_enrollment", %{"auto_enrollment" => params}, socket) do

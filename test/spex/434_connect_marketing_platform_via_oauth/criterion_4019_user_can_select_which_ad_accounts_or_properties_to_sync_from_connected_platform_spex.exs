@@ -8,16 +8,12 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
   spex "User can select which ad accounts or properties to sync from connected platform" do
     scenario "after connecting a platform the user sees an account selection UI" do
       given_ :user_logged_in_as_owner
+      given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback with a success code and is redirected", context do
-        callback_conn = get(context.owner_conn, "/integrations/callback/google_ads", %{
-          "code" => "mock_auth_code_account_selection",
-          "state" => "some_state_token"
-        })
-
-        redirect_path = redirected_to(callback_conn)
-        follow_conn = recycle(callback_conn)
-        {:ok, view, _html} = live(follow_conn, redirect_path)
+        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+          MetricFlowTest.OAuthStub.valid_callback_params())
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
         :ok
       end
 
-      then_ "the accept button is not shown for the already-used invitation", _context do
+      then_ "the accept button is not shown for the already-used invitation", context do
         # The redirect means no LiveView is rendered, so there is no accept button
         :ok
       end

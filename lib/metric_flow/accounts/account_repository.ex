@@ -239,6 +239,24 @@ defmodule MetricFlow.Accounts.AccountRepository do
   end
 
   @doc """
+  Allows a non-owner member to remove themselves from an account.
+  Owners cannot leave an account — they must transfer ownership first.
+  Broadcasts {:deleted, member} on success.
+  """
+  @spec leave_account(Scope.t(), integer()) ::
+          {:ok, AccountMember.t()} | {:error, :unauthorized} | {:error, :not_found}
+  def leave_account(%Scope{user: user} = scope, account_id) do
+    with true <- Authorization.can?(scope, :leave_account, %{account_id: account_id}),
+         %AccountMember{} = member <- fetch_member!(user.id, account_id),
+         {:ok, deleted} <- Repo.delete(member) do
+      broadcast("account_members:user:#{user.id}", {:deleted, deleted})
+      {:ok, deleted}
+    else
+      false -> {:error, :unauthorized}
+    end
+  end
+
+  @doc """
   Adds a user to an account with the given role. Only owners and admins may add
   members. Only owners can add members with the owner role.
   Broadcasts {:created, member} on success.

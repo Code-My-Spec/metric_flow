@@ -20,7 +20,6 @@ defmodule MetricFlow.Integrations do
 
   require Logger
 
-  alias Assent.Strategy.OAuth2, as: AssentOAuth2
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Users.Scope
@@ -146,14 +145,19 @@ defmodule MetricFlow.Integrations do
     end
   end
 
-  # Two-phase callback: exchange code for tokens, then fetch user info if
-  # the provider has a user_url configured. Providers like QuickBooks don't
-  # expose a userinfo endpoint without OpenID scopes, so they omit user_url
-  # and we save tokens without user profile data.
-  defp exchange_and_normalize(_strategy, config, callback_params, provider_mod) do
+  # Delegates to the strategy's callback/2 to exchange the authorization code
+  # for tokens and (optionally) fetch user info. The strategy handles all HTTP
+  # interaction, which allows test stubs to return canned responses without
+  # network access.
+  #
+  # After the strategy returns, we normalize the user data through the provider
+  # module. If the strategy doesn't return user data (e.g. QuickBooks with
+  # OAuth2 strategy and no user_url), we normalize an empty map.
+  defp exchange_and_normalize(strategy, config, callback_params, provider_mod) do
     with :ok <- verify_state(config, callback_params),
-         {:ok, token} <- exchange_code_for_token(config, callback_params),
-         {:ok, normalized} <- fetch_user_info(config, token, provider_mod) do
+         {:ok, %{token: token} = result} <- strategy.callback(config, callback_params),
+         user_data = Map.get(result, :user, %{}),
+         {:ok, normalized} <- provider_mod.normalize_user(user_data) do
       {:ok, %{token: token, normalized: normalized}}
     end
   end
@@ -168,31 +172,6 @@ defmodule MetricFlow.Integrations do
       is_nil(stored_state) -> {:error, :missing_stored_state}
       stored_state == provided_state -> :ok
       true -> {:error, :state_mismatch}
-    end
-  end
-
-  defp exchange_code_for_token(config, callback_params) do
-    AssentOAuth2.grant_access_token(
-      config,
-      "authorization_code",
-      code: callback_params["code"],
-      redirect_uri: Keyword.get(config, :redirect_uri)
-    )
-  end
-
-  defp fetch_user_info(config, token, provider_mod) do
-    case Keyword.get(config, :user_url) do
-      nil ->
-        {:ok, %{}}
-
-      user_url ->
-        access_token = Map.get(token, "access_token")
-        headers = [{"authorization", "Bearer #{access_token}"}]
-
-        with {:ok, %{status: 200, body: user_data}} <-
-               Assent.Strategy.http_request(:get, user_url, nil, headers, config) do
-          provider_mod.normalize_user(user_data)
-        end
     end
   end
 
