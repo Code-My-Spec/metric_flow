@@ -133,17 +133,20 @@ defmodule MetricFlow.Integrations do
          config = build_callback_config(provider_mod, session_params) ++ opts,
          strategy = provider_mod.strategy(),
          {:ok, result} <- exchange_and_normalize(strategy, config, callback_params, provider_mod) do
-      attrs = build_integration_attrs(result.token, result.normalized)
-
       attrs =
-        case Map.get(callback_params, "realmId") do
-          nil -> attrs
-          realm_id -> put_in(attrs, [:provider_metadata, :realm_id], realm_id)
-        end
+        result.token
+        |> build_integration_attrs(result.normalized)
+        |> maybe_attach_realm_id(callback_params)
 
       IntegrationRepository.upsert_integration(scope, provider, attrs)
     end
   end
+
+  defp maybe_attach_realm_id(attrs, %{"realmId" => realm_id}) do
+    put_in(attrs, [:provider_metadata, :realm_id], realm_id)
+  end
+
+  defp maybe_attach_realm_id(attrs, _callback_params), do: attrs
 
   # Delegates to the strategy's callback/2 to exchange the authorization code
   # for tokens and (optionally) fetch user info. The strategy handles all HTTP
@@ -167,13 +170,13 @@ defmodule MetricFlow.Integrations do
     stored_state = Map.get(session_params, :state) || Map.get(session_params, "state")
     provided_state = Map.get(callback_params, "state")
 
-    cond do
-      is_nil(stored_state) and is_nil(provided_state) -> :ok
-      is_nil(stored_state) -> {:error, :missing_stored_state}
-      stored_state == provided_state -> :ok
-      true -> {:error, :state_mismatch}
-    end
+    do_verify_state(stored_state, provided_state)
   end
+
+  defp do_verify_state(nil, nil), do: :ok
+  defp do_verify_state(nil, _provided), do: {:error, :missing_stored_state}
+  defp do_verify_state(state, state), do: :ok
+  defp do_verify_state(_stored, _provided), do: {:error, :state_mismatch}
 
   @doc """
   Attempts to refresh the OAuth access token for an integration using the
@@ -228,14 +231,11 @@ defmodule MetricFlow.Integrations do
   end
 
   defp build_integration_attrs(token, normalized_user) do
-    expires_at = calculate_expires_at(token)
-    granted_scopes = parse_scopes(Map.get(token, "scope"))
-
     %{
       access_token: Map.get(token, "access_token"),
       refresh_token: Map.get(token, "refresh_token"),
-      expires_at: expires_at,
-      granted_scopes: granted_scopes,
+      expires_at: calculate_expires_at(token),
+      granted_scopes: parse_scopes(Map.get(token, "scope")),
       provider_metadata: Map.new(normalized_user)
     }
   end
@@ -249,12 +249,20 @@ defmodule MetricFlow.Integrations do
   end
 
   defp parse_scopes(nil), do: []
-
   defp parse_scopes(scopes) when is_list(scopes), do: scopes
 
   defp parse_scopes(scopes) when is_binary(scopes) do
-    separator = if String.contains?(scopes, ","), do: ",", else: " "
+    split_scope_string(scopes)
+  end
 
+  defp split_scope_string(scopes) when is_binary(scopes) do
+    case String.contains?(scopes, ",") do
+      true -> split_and_trim(scopes, ",")
+      false -> split_and_trim(scopes, " ")
+    end
+  end
+
+  defp split_and_trim(scopes, separator) do
     scopes
     |> String.split(separator)
     |> Enum.map(&String.trim/1)

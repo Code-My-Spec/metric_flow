@@ -17,7 +17,6 @@ None
 ## Dependencies
 
 - MetricFlow.DataSync
-- MetricFlowWeb.Layouts
 
 ## Components
 

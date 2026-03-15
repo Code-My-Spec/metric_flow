@@ -26,13 +26,12 @@ Returns Assent strategy configuration for Google OAuth with required credentials
 - returns keyword list with required OAuth configuration keys
 - includes client_id from application config
 - includes client_secret from application config
-- includes redirect_uri built from oauth_base_url
+- includes redirect_uri built from Endpoint.url()
 - includes authorization_params with email, profile, and analytics.edit scopes
 - includes access_type "offline" for refresh token support
 - includes prompt "consent" to force consent screen
 - raises ArgumentError when google_client_id is not configured
 - raises ArgumentError when google_client_secret is not configured
-- raises ArgumentError when oauth_base_url is not configured
 
 ### strategy/0
 

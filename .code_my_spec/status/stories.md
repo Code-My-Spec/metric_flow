@@ -3,7 +3,7 @@
 
 ## Summary
 
-7/42 stories complete (all requirements satisfied)
+13/42 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -69,6 +69,10 @@ Status: in_progress | Priority: 5 | Component: MetricFlowWeb.AccountLive.Members
 Status: in_progress | Priority: 6 | Component: MetricFlowWeb.IntegrationLive.Connect
 
 - [x] component_linked - Story has a linked surface component
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #436 — View and Manage Platform Integrations
@@ -77,9 +81,9 @@ Status: in_progress | Priority: 7 | Component: MetricFlowWeb.IntegrationLive.Ind
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #438 — Manual Sync Trigger (Admin)
@@ -88,7 +92,7 @@ Status: in_progress | Priority: 8 | Component: MetricFlowWeb.IntegrationLive.Ind
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -99,7 +103,7 @@ Status: in_progress | Priority: 9 | Component: MetricFlowWeb.AgencyLive.Settings
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -110,7 +114,7 @@ Status: in_progress | Priority: 10 | Component: MetricFlowWeb.AccountLive.Index
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -121,7 +125,7 @@ Status: in_progress | Priority: 11 | Component: MetricFlowWeb.IntegrationLive.Sy
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -132,7 +136,7 @@ Status: in_progress | Priority: 12 | Component: MetricFlowWeb.IntegrationLive.Sy
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -143,7 +147,7 @@ Status: in_progress | Priority: 13 | Component: MetricFlowWeb.DashboardLive.Show
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -154,7 +158,7 @@ Status: in_progress | Priority: 14 | Component: MetricFlowWeb.DashboardLive.Show
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -165,7 +169,7 @@ Status: in_progress | Priority: 15 | Component: MetricFlowWeb.DashboardLive.Show
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -176,7 +180,7 @@ Status: in_progress | Priority: 16 | Component: MetricFlowWeb.AgencyLive.Setting
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -187,7 +191,7 @@ Status: in_progress | Priority: 17 | Component: MetricFlowWeb.CorrelationLive.In
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -198,7 +202,7 @@ Status: in_progress | Priority: 18 | Component: MetricFlowWeb.AgencyLive.Setting
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -209,7 +213,7 @@ Status: in_progress | Priority: 19 | Component: MetricFlowWeb.AiLive.Insights
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -220,7 +224,7 @@ Status: in_progress | Priority: 20 | Component: MetricFlowWeb.AiLive.Chat
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -242,7 +246,7 @@ Status: in_progress | Priority: 23 | Component: MetricFlowWeb.InvitationLive.Sen
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [x] qa_complete - QA brief and result artifacts valid
 
@@ -275,7 +279,7 @@ Status: in_progress | Priority: 26 | Component: MetricFlowWeb.IntegrationLive.Co
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -286,7 +290,7 @@ Status: in_progress | Priority: 27 | Component: MetricFlowWeb.DashboardLive.Edit
 
 - [x] component_linked - Story has a linked surface component
 - [x] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -319,7 +323,7 @@ Status: in_progress | Priority: 30 | Component: MetricFlowWeb.IntegrationLive.Co
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -352,7 +356,7 @@ Status: in_progress | Priority: 33 | Component: MetricFlowWeb.CorrelationLive.In
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -363,7 +367,7 @@ Status: in_progress | Priority: 34 | Component: MetricFlowWeb.CorrelationLive.In
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -385,7 +389,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -396,7 +400,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -407,7 +411,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -418,7 +422,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -440,7 +444,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -451,7 +455,7 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
@@ -462,6 +466,6 @@ Status: in_progress | Component: MetricFlowWeb.IntegrationLive.SyncHistory
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid

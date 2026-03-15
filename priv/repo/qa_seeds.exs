@@ -97,6 +97,40 @@ _team_account =
   end
 
 # ---------------------------------------------------------------------------
+# 3. Google Ads Integration (with selected_accounts for QA Story 436)
+# ---------------------------------------------------------------------------
+
+IO.puts("\n--- Google Ads Integration ---")
+
+alias MetricFlow.Integrations.Integration
+
+existing_google_ads =
+  Repo.get_by(Integration, user_id: qa_user.id, provider: :google_ads)
+
+case existing_google_ads do
+  nil ->
+    %Integration{}
+    |> Integration.changeset(%{
+      user_id: qa_user.id,
+      provider: :google_ads,
+      access_token: "qa_test_token",
+      refresh_token: "qa_test_refresh",
+      expires_at: DateTime.add(DateTime.utc_now(), 86400, :second),
+      granted_scopes: ["https://www.googleapis.com/auth/adwords"],
+      provider_metadata: %{
+        "email" => "qa@example.com",
+        "selected_accounts" => ["Campaign Alpha", "Campaign Beta"]
+      }
+    })
+    |> Repo.insert!()
+
+    IO.puts("  Created google_ads integration for qa@example.com")
+
+  _existing ->
+    IO.puts("  Exists: google_ads integration for qa@example.com")
+end
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 

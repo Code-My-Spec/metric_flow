@@ -6,15 +6,15 @@ defmodule MetricFlow.IntegrationsTest do
   import ReqCassette
 
   alias MetricFlow.Integrations
-
-  @cassette_dir "test/cassettes/oauth"
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Users.Scope
+
+  @cassette_dir "test/cassettes/oauth"
 
   # ---------------------------------------------------------------------------
   # Test provider stubs
   #
-  # The context's authorize_url/1 and handle_callback/4 orchestrate OAuth flows
+  # The context's authorize_url/2 and handle_callback/5 orchestrate OAuth flows
   # at the application boundary. We use stub provider modules here so tests
   # remain fast and deterministic without requiring network access or real OAuth
   # credentials.
@@ -31,6 +31,9 @@ defmodule MetricFlow.IntegrationsTest do
   #   :stub_array_scope — scope delivered as a list
   #   :stub_token_error — strategy.callback returns an error
   #   :stub_norm_error  — normalize_user returns an error
+  #   :stub_revoke      — provider exports revoke_token/1
+  #   :stub_revoke_fail — provider exports revoke_token/1 but it fails
+  #   :stub_no_revoke   — provider does not export revoke_token/1
   # ---------------------------------------------------------------------------
 
   defmodule StubStrategy do
@@ -54,8 +57,51 @@ defmodule MetricFlow.IntegrationsTest do
       {:ok, %{token: token, user: user}}
     end
 
+    def refresh_access_token(_config, %{"refresh_token" => refresh_token})
+        when is_binary(refresh_token) do
+      {:ok,
+       %{
+         "access_token" => "refreshed-access-token",
+         "refresh_token" => refresh_token,
+         "expires_in" => 3600,
+         "scope" => "email profile"
+       }}
+    end
+
     def state, do: @state
     def auth_url, do: @auth_url
+  end
+
+  defmodule StubStrategyNoRefresh do
+    @moduledoc false
+
+    def authorize_url(_config) do
+      {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
+    end
+
+    def callback(_config, _params) do
+      {:ok, %{token: %{"access_token" => "stub-token"}, user: %{}}}
+    end
+
+    def refresh_access_token(_config, _token) do
+      {:error, :not_supported}
+    end
+  end
+
+  defmodule StubStrategyRefreshFail do
+    @moduledoc false
+
+    def authorize_url(_config) do
+      {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
+    end
+
+    def callback(_config, _params) do
+      {:ok, %{token: %{"access_token" => "stub-token"}, user: %{}}}
+    end
+
+    def refresh_access_token(_config, _token) do
+      {:error, :invalid_grant}
+    end
   end
 
   defmodule StubStrategyTokenError do
@@ -218,13 +264,172 @@ defmodule MetricFlow.IntegrationsTest do
     def normalize_user(_user_data), do: {:error, :normalization_failed}
   end
 
+  defmodule StubProviderWithRevoke do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_revoke/callback",
+        token_overrides: %{"expires_in" => 3600, "scope" => "email profile"}
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategy
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+
+    @impl true
+    def revoke_token(_token), do: :ok
+  end
+
+  defmodule StubProviderRevokeFailure do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_revoke_fail/callback",
+        token_overrides: %{"expires_in" => 3600, "scope" => "email profile"}
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategy
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+
+    @impl true
+    def revoke_token(_token), do: {:error, :revocation_failed}
+  end
+
+  defmodule StubProviderNoRevoke do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_no_revoke/callback",
+        token_overrides: %{"expires_in" => 3600, "scope" => "email profile"}
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategy
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+  end
+
+  defmodule StubProviderRefreshable do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_refreshable/callback"
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategy
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+  end
+
+  defmodule StubProviderRefreshNoSupport do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_no_refresh/callback"
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategyNoRefresh
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+  end
+
+  defmodule StubProviderRefreshFail do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_refresh_fail/callback"
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategyRefreshFail
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+  end
+
   @stub_providers %{
     stub: MetricFlow.IntegrationsTest.StubProvider,
     stub_no_expiry: MetricFlow.IntegrationsTest.StubProviderNoExpiry,
     stub_comma_scope: MetricFlow.IntegrationsTest.StubProviderCommaScope,
     stub_array_scope: MetricFlow.IntegrationsTest.StubProviderArrayScope,
     stub_token_error: MetricFlow.IntegrationsTest.StubProviderTokenError,
-    stub_norm_error: MetricFlow.IntegrationsTest.StubProviderNormalizeError
+    stub_norm_error: MetricFlow.IntegrationsTest.StubProviderNormalizeError,
+    stub_revoke: MetricFlow.IntegrationsTest.StubProviderWithRevoke,
+    stub_revoke_fail: MetricFlow.IntegrationsTest.StubProviderRevokeFailure,
+    stub_no_revoke: MetricFlow.IntegrationsTest.StubProviderNoRevoke,
+    stub_refreshable: MetricFlow.IntegrationsTest.StubProviderRefreshable,
+    stub_no_refresh: MetricFlow.IntegrationsTest.StubProviderRefreshNoSupport,
+    stub_refresh_fail: MetricFlow.IntegrationsTest.StubProviderRefreshFail
   }
 
   # ---------------------------------------------------------------------------
@@ -268,7 +473,7 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Setup — inject stub providers so authorize_url/1 and handle_callback/4
+  # Setup — inject stub providers so authorize_url/2 and handle_callback/5
   # can resolve test providers without touching real OAuth endpoints.
   # ---------------------------------------------------------------------------
 
@@ -289,10 +494,44 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # authorize_url/1 — stub tests
+  # list_providers/0
   # ---------------------------------------------------------------------------
 
-  describe "authorize_url/1" do
+  describe "list_providers/0" do
+    test "returns list of provider atoms from the default configuration" do
+      # Restore default providers so we exercise the real default map
+      Application.delete_env(:metric_flow, :oauth_providers)
+
+      on_exit(fn ->
+        Application.put_env(:metric_flow, :oauth_providers, @stub_providers)
+      end)
+
+      capture_log(fn ->
+        providers = Integrations.list_providers()
+
+        assert is_list(providers)
+        assert length(providers) > 0
+        assert Enum.all?(providers, &is_atom/1)
+        assert :google in providers
+      end)
+    end
+
+    test "reflects custom providers when application config overrides the default" do
+      capture_log(fn ->
+        providers = Integrations.list_providers()
+
+        assert is_list(providers)
+        assert :stub in providers
+        assert :stub_no_expiry in providers
+      end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # authorize_url/2 — stub tests
+  # ---------------------------------------------------------------------------
+
+  describe "authorize_url/2" do
     test "returns ok tuple with url and session_params for supported provider" do
       capture_log(fn ->
         assert {:ok, result} = Integrations.authorize_url(:stub)
@@ -329,10 +568,10 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # authorize_url/1 — real Google provider via Assent with cassette recording
+  # authorize_url/2 — real Google provider via Assent with cassette recording
   # ---------------------------------------------------------------------------
 
-  describe "authorize_url/1 with real Google provider" do
+  describe "authorize_url/2 with real Google provider" do
     @describetag :integration
 
     setup do
@@ -374,11 +613,11 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # handle_callback/4
+  # handle_callback/5
   # ---------------------------------------------------------------------------
 
-  describe "handle_callback/4" do
-    test "returns ok tuple with integration for valid callback" do
+  describe "handle_callback/5" do
+    test "returns ok tuple with integration for a valid callback" do
       {_user, scope} = user_with_scope()
 
       capture_log(fn ->
@@ -449,7 +688,7 @@ defmodule MetricFlow.IntegrationsTest do
       end)
     end
 
-    test "defaults expires_at to 1 year when expires_in not present" do
+    test "defaults expires_at to 1 year when expires_in is not present" do
       {_user, scope} = user_with_scope()
 
       one_year_from_now = DateTime.add(DateTime.utc_now(), 365 * 24 * 3600, :second)
@@ -520,7 +759,7 @@ defmodule MetricFlow.IntegrationsTest do
       end)
     end
 
-    test "handles scope as array" do
+    test "handles scope as list" do
       {_user, scope} = user_with_scope()
 
       capture_log(fn ->
@@ -578,6 +817,151 @@ defmodule MetricFlow.IntegrationsTest do
                  )
       end)
     end
+
+    test "returns error when OAuth state does not match session state" do
+      {_user, scope} = user_with_scope()
+
+      mismatched_callback_params = %{
+        "code" => "valid-auth-code",
+        "state" => "wrong-csrf-state-token"
+      }
+
+      capture_log(fn ->
+        assert {:error, :state_mismatch} =
+                 Integrations.handle_callback(
+                   scope,
+                   :stub,
+                   valid_session_params(),
+                   mismatched_callback_params
+                 )
+      end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # disconnect/2
+  # ---------------------------------------------------------------------------
+
+  describe "disconnect/2" do
+    test "returns ok tuple with the deleted integration on success" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_no_revoke)
+
+      capture_log(fn ->
+        assert {:ok, deleted} = Integrations.disconnect(scope, :stub_no_revoke)
+
+        assert deleted.id == integration.id
+        assert Repo.get(Integration, integration.id) == nil
+      end)
+    end
+
+    test "returns error tuple with :not_found when integration does not exist" do
+      {_user, scope} = user_with_scope()
+
+      capture_log(fn ->
+        assert {:error, :not_found} = Integrations.disconnect(scope, :stub_no_revoke)
+      end)
+    end
+
+    test "calls provider's revoke_token/1 when the function is exported" do
+      {user, scope} = user_with_scope()
+      insert_integration!(user.id, :stub_revoke)
+
+      capture_log(fn ->
+        assert {:ok, _deleted} = Integrations.disconnect(scope, :stub_revoke)
+      end)
+    end
+
+    test "deletes the integration even when token revocation fails" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_revoke_fail)
+
+      capture_log(fn ->
+        assert {:ok, deleted} = Integrations.disconnect(scope, :stub_revoke_fail)
+
+        assert deleted.id == integration.id
+        assert Repo.get(Integration, integration.id) == nil
+      end)
+    end
+
+    test "skips revocation when provider does not export revoke_token/1" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_no_revoke)
+
+      capture_log(fn ->
+        assert {:ok, deleted} = Integrations.disconnect(scope, :stub_no_revoke)
+
+        assert deleted.id == integration.id
+      end)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # refresh_token/2
+  # ---------------------------------------------------------------------------
+
+  describe "refresh_token/2" do
+    test "returns ok tuple with updated integration when refresh succeeds" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_refreshable)
+
+      capture_log(fn ->
+        assert {:ok, updated} = Integrations.refresh_token(scope, integration)
+
+        assert %Integration{} = updated
+        assert updated.id == integration.id
+        assert updated.access_token == "refreshed-access-token"
+      end)
+    end
+
+    test "returns error when provider strategy does not support refresh" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_no_refresh)
+
+      capture_log(fn ->
+        assert {:error, _reason} = Integrations.refresh_token(scope, integration)
+      end)
+    end
+
+    test "returns error when the refresh request fails" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_refresh_fail)
+
+      capture_log(fn ->
+        assert {:error, :invalid_grant} = Integrations.refresh_token(scope, integration)
+      end)
+    end
+
+    test "returns error for unsupported provider" do
+      {_user, scope} = user_with_scope()
+
+      integration = %Integration{
+        id: 0,
+        provider: :nonexistent_provider,
+        access_token: "some-token",
+        refresh_token: "some-refresh-token",
+        expires_at: future_expires_at(),
+        user_id: 0,
+        granted_scopes: [],
+        provider_metadata: %{}
+      }
+
+      capture_log(fn ->
+        assert {:error, :unsupported_provider} = Integrations.refresh_token(scope, integration)
+      end)
+    end
+
+    test "returns :token_refresh_failed when an exception is raised during refresh" do
+      {user, scope} = user_with_scope()
+
+      # Build an integration with the refreshable provider but a nil refresh_token
+      # so the strategy raises on attempted access
+      integration = insert_integration!(user.id, :stub_refreshable, %{refresh_token: nil})
+
+      capture_log(fn ->
+        assert {:error, :token_refresh_failed} = Integrations.refresh_token(scope, integration)
+      end)
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -587,25 +971,25 @@ defmodule MetricFlow.IntegrationsTest do
   describe "get_integration/2" do
     test "returns ok tuple with integration when found" do
       {user, scope} = user_with_scope()
-      integration = insert_integration!(user.id, :google)
+      integration = insert_integration!(user.id, :stub_no_revoke)
 
-      assert {:ok, result} = Integrations.get_integration(scope, :google)
+      assert {:ok, result} = Integrations.get_integration(scope, :stub_no_revoke)
 
       assert result.id == integration.id
-      assert result.provider == :google
+      assert result.provider == :stub_no_revoke
     end
 
     test "returns error tuple with :not_found when not found" do
       {_user, scope} = user_with_scope()
 
-      assert {:error, :not_found} = Integrations.get_integration(scope, :google)
+      assert {:error, :not_found} = Integrations.get_integration(scope, :stub_no_revoke)
     end
 
     test "integration has decrypted tokens via Cloak" do
       {user, scope} = user_with_scope()
-      insert_integration!(user.id, :google)
+      insert_integration!(user.id, :stub_no_revoke)
 
-      assert {:ok, result} = Integrations.get_integration(scope, :google)
+      assert {:ok, result} = Integrations.get_integration(scope, :stub_no_revoke)
 
       assert is_binary(result.access_token)
       assert byte_size(result.access_token) > 0
@@ -619,10 +1003,10 @@ defmodule MetricFlow.IntegrationsTest do
   # ---------------------------------------------------------------------------
 
   describe "list_integrations/1" do
-    test "returns list of integrations for user" do
+    test "returns list of integrations for the user" do
       {user, scope} = user_with_scope()
-      insert_integration!(user.id, :google)
-      insert_integration!(user.id, :github)
+      insert_integration!(user.id, :stub_no_revoke)
+      insert_integration!(user.id, :stub_revoke)
 
       results = Integrations.list_integrations(scope)
 
@@ -638,8 +1022,8 @@ defmodule MetricFlow.IntegrationsTest do
 
     test "integrations are ordered by most recently created" do
       {user, scope} = user_with_scope()
-      first = insert_integration!(user.id, :google)
-      second = insert_integration!(user.id, :github)
+      first = insert_integration!(user.id, :stub_no_revoke)
+      second = insert_integration!(user.id, :stub_revoke)
 
       results = Integrations.list_integrations(scope)
       result_ids = Enum.map(results, & &1.id)
@@ -649,24 +1033,68 @@ defmodule MetricFlow.IntegrationsTest do
   end
 
   # ---------------------------------------------------------------------------
+  # list_all_active_integrations/0 — delegates to IntegrationRepository
+  # ---------------------------------------------------------------------------
+
+  describe "list_all_active_integrations/0" do
+    test "returns all integrations regardless of user" do
+      {user_a, _scope_a} = user_with_scope()
+      {user_b, _scope_b} = user_with_scope()
+
+      insert_integration!(user_a.id, :stub_no_revoke)
+      insert_integration!(user_b.id, :stub_revoke)
+
+      results = Integrations.list_all_active_integrations()
+
+      assert length(results) >= 2
+      user_ids = Enum.map(results, & &1.user_id)
+      assert user_a.id in user_ids
+      assert user_b.id in user_ids
+    end
+
+    test "returns empty list when no integrations exist" do
+      assert Integrations.list_all_active_integrations() == []
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # get_integration_by_id/1 — delegates to IntegrationRepository
+  # ---------------------------------------------------------------------------
+
+  describe "get_integration_by_id/1" do
+    test "returns ok tuple with integration when found" do
+      {user, _scope} = user_with_scope()
+      integration = insert_integration!(user.id, :stub_no_revoke)
+
+      assert {:ok, result} = Integrations.get_integration_by_id(integration.id)
+
+      assert result.id == integration.id
+    end
+
+    test "returns error tuple with :not_found when not found" do
+      assert {:error, :not_found} = Integrations.get_integration_by_id(-1)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # delete_integration/2 — delegates to IntegrationRepository
   # ---------------------------------------------------------------------------
 
   describe "delete_integration/2" do
-    test "returns ok tuple with deleted integration" do
+    test "returns ok tuple with the deleted integration" do
       {user, scope} = user_with_scope()
-      integration = insert_integration!(user.id, :google)
+      integration = insert_integration!(user.id, :stub_no_revoke)
 
-      assert {:ok, deleted} = Integrations.delete_integration(scope, :google)
+      assert {:ok, deleted} = Integrations.delete_integration(scope, :stub_no_revoke)
 
       assert deleted.id == integration.id
       assert Repo.get(Integration, integration.id) == nil
     end
 
-    test "returns error tuple with :not_found when integration doesn't exist" do
+    test "returns error tuple with :not_found when integration does not exist" do
       {_user, scope} = user_with_scope()
 
-      assert {:error, :not_found} = Integrations.delete_integration(scope, :google)
+      assert {:error, :not_found} = Integrations.delete_integration(scope, :stub_no_revoke)
     end
   end
 
@@ -677,15 +1105,15 @@ defmodule MetricFlow.IntegrationsTest do
   describe "connected?/2" do
     test "returns true when integration exists" do
       {user, scope} = user_with_scope()
-      insert_integration!(user.id, :google)
+      insert_integration!(user.id, :stub_no_revoke)
 
-      assert Integrations.connected?(scope, :google)
+      assert Integrations.connected?(scope, :stub_no_revoke)
     end
 
-    test "returns false when integration doesn't exist" do
+    test "returns false when integration does not exist" do
       {_user, scope} = user_with_scope()
 
-      refute Integrations.connected?(scope, :google)
+      refute Integrations.connected?(scope, :stub_no_revoke)
     end
   end
 end

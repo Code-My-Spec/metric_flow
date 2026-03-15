@@ -1,0 +1,51 @@
+#!/bin/bash
+# Authenticate with CodeMySpec via OAuth browser flow.
+# Usage: login
+#
+# Starts the OAuth flow, opens the auth URL in the browser,
+# and polls until authentication is complete.
+#
+# Calls the local CodeMySpec server.
+# Requires the server to be running on localhost:4002.
+set -euo pipefail
+
+PORT="${CODEMYSPEC_PORT:-4002}"
+BASE="http://localhost:${PORT}"
+
+# Start the auth flow
+RESPONSE=$(curl -s -X POST "${BASE}/api/bootstrap/auth/start")
+
+AUTH_URL=$(echo "${RESPONSE}" | grep -o '"auth_url":"[^"]*"' | cut -d'"' -f4 || true)
+
+if [ -z "${AUTH_URL}" ]; then
+  echo "Failed to get auth URL. Response: ${RESPONSE}"
+  exit 1
+fi
+
+echo "Opening browser for authentication..."
+echo "${AUTH_URL}"
+
+# Open in browser (macOS: open, Linux: xdg-open)
+if command -v open &>/dev/null; then
+  open "${AUTH_URL}"
+elif command -v xdg-open &>/dev/null; then
+  xdg-open "${AUTH_URL}"
+else
+  echo "Please open this URL in your browser: ${AUTH_URL}"
+fi
+
+# Poll for auth completion
+echo "Waiting for login to complete..."
+for i in $(seq 1 60); do
+  sleep 2
+  STATUS=$(curl -sf "${BASE}/api/bootstrap/auth/status" 2>/dev/null || echo '{}')
+  AUTHENTICATED=$(echo "${STATUS}" | grep -o '"authenticated":true' || true)
+
+  if [ -n "${AUTHENTICATED}" ]; then
+    echo "Login successful!"
+    exit 0
+  fi
+done
+
+echo "Login timed out after 2 minutes. Please try again."
+exit 1

@@ -1,0 +1,24 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-15T00:00:00.000000Z",
+      "request": {
+        "body": "{\"token\":\"test-access-token\"}",
+        "body_type": "text",
+        "headers": {},
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
+      },
+      "response": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "content-type": ["application/json"]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

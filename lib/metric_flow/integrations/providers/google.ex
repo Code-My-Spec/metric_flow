@@ -23,9 +23,9 @@ defmodule MetricFlow.Integrations.Providers.Google do
   @doc """
   Returns the Assent strategy configuration keyword list for Google OAuth.
 
-  Reads `:google_client_id`, `:google_client_secret`, and `:oauth_base_url`
-  from application config under the `:metric_flow` key at call time, so values
-  can be overridden in tests without recompilation.
+  Reads `:google_client_id` and `:google_client_secret` from application config
+  under the `:metric_flow` key at call time, so values can be overridden in
+  tests without recompilation. The redirect URI is built from `Endpoint.url()`.
   """
   @spec config() :: Keyword.t()
   @impl MetricFlow.Integrations.Providers.Behaviour
@@ -93,8 +93,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
   # ---------------------------------------------------------------------------
 
   defp build_redirect_uri do
-    base_url = Application.fetch_env!(:metric_flow, :oauth_base_url)
-    base_url <> @callback_path
+    MetricFlowWeb.Endpoint.url() <> @callback_path
   end
 
   defp extract_provider_user_id(%{"sub" => sub}) when is_binary(sub) and byte_size(sub) > 0,

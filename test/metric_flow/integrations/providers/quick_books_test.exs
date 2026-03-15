@@ -7,11 +7,10 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
 
   # Captured at module load time — before any setup can install stub credentials.
   # This ensures integration test guards are not fooled by setup putting stub values.
-  @has_real_quickbooks_credentials Application.compile_env(:metric_flow, :quickbooks_client_id) != nil and
-                                     Application.compile_env(
-                                       :metric_flow,
-                                       :quickbooks_client_secret
-                                     ) != nil
+  defp has_real_quickbooks_credentials? do
+    Application.get_env(:metric_flow, :quickbooks_client_id) != nil and
+      Application.get_env(:metric_flow, :quickbooks_client_secret) != nil
+  end
 
   # ---------------------------------------------------------------------------
   # Helpers
@@ -78,7 +77,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     @describetag :integration
 
     test "returns a keyword list with all required OAuth configuration keys" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -97,7 +96,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     test "includes client_id from application config" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -111,7 +110,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     test "includes client_secret from application config" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -125,7 +124,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     test "includes redirect_uri built from the endpoint URL and the callback path" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -140,7 +139,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     test "includes base_url pointing to the Intuit OAuth platform" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -150,8 +149,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       end)
     end
 
-    test ~s(includes authorize_url pointing to "https://appcenter.intuit.com/connect/oauth2") do
-      if not @has_real_quickbooks_credentials,
+    test "includes authorize_url pointing to the Intuit AppCenter OAuth endpoint" do
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -162,8 +161,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       end)
     end
 
-    test ~s(includes token_url pointing to "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer") do
-      if not @has_real_quickbooks_credentials,
+    test "includes token_url pointing to the Intuit OAuth token endpoint" do
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -175,7 +174,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     test "sets auth_method to :client_secret_basic" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -185,8 +184,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       end)
     end
 
-    test ~s(includes authorization_params with scope "com.intuit.quickbooks.accounting") do
-      if not @has_real_quickbooks_credentials,
+    test "includes authorization_params with the QuickBooks accounting scope" do
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -252,7 +251,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
   # ---------------------------------------------------------------------------
 
   describe "normalize_user/1" do
-    test "returns {:ok, map} with normalized user data for valid QuickBooks user data" do
+    test "returns ok map with normalized user data for valid QuickBooks user data" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert is_map(normalized)
@@ -264,38 +263,38 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert normalized.realm_id == "9130349450"
     end
 
-    test ~s(extracts provider_user_id from the "sub" field) do
+    test "extracts provider_user_id from the sub field" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert normalized.provider_user_id == "12345678901234567890"
     end
 
-    test ~s(accepts a string "sub" value as-is) do
+    test "accepts a string sub value as-is" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert is_binary(normalized.provider_user_id)
       assert normalized.provider_user_id == "12345678901234567890"
     end
 
-    test ~s(converts an integer "sub" value to string) do
+    test "converts an integer sub value to string" do
       assert {:ok, normalized} = QuickBooks.normalize_user(integer_sub_user_data())
 
       assert is_binary(normalized.provider_user_id)
     end
 
-    test ~s(extracts email from the "email" field) do
+    test "extracts email from the email field" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert normalized.email == "owner@example-company.com"
     end
 
-    test ~s(extracts name from the "name" field) do
+    test "extracts name from the name field" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert normalized.name == "Jane Doe"
     end
 
-    test ~s(falls back to "givenName" when "name" is absent) do
+    test "falls back to givenName when name is absent" do
       assert {:ok, normalized} = QuickBooks.normalize_user(given_name_only_user_data())
 
       assert normalized.name == "John"
@@ -314,13 +313,13 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert is_nil(normalized.avatar_url)
     end
 
-    test ~s(extracts realm_id from the "realmId" field) do
+    test "extracts realm_id from the realmId field" do
       assert {:ok, normalized} = QuickBooks.normalize_user(valid_user_data())
 
       assert normalized.realm_id == "9130349450"
     end
 
-    test ~s(handles missing optional fields ("name", "givenName", "email", "realmId") gracefully, returning nil for each) do
+    test "handles missing optional fields gracefully returning nil for each" do
       assert {:ok, normalized} = QuickBooks.normalize_user(minimal_user_data())
 
       assert is_nil(normalized.name)
@@ -328,7 +327,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert is_nil(normalized.realm_id)
     end
 
-    test ~s(handles minimal user data containing only the "sub" field) do
+    test "handles minimal user data containing only the sub field" do
       assert {:ok, normalized} = QuickBooks.normalize_user(minimal_user_data())
 
       assert normalized.provider_user_id == "00011122233344455566"
@@ -339,29 +338,29 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert is_nil(normalized.realm_id)
     end
 
-    test ~s(returns {:error, :missing_provider_user_id} when "sub" is nil) do
+    test "returns error missing_provider_user_id when sub is nil" do
       user_data = Map.put(valid_user_data(), "sub", nil)
 
       assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(user_data)
     end
 
-    test ~s(returns {:error, :missing_provider_user_id} when "sub" field is absent) do
+    test "returns error missing_provider_user_id when sub field is absent" do
       user_data = Map.delete(valid_user_data(), "sub")
 
       assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(user_data)
     end
 
-    test "returns {:error, :missing_provider_user_id} for an empty map" do
+    test "returns error missing_provider_user_id for an empty map" do
       assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(%{})
     end
 
-    test ~s(returns {:error, :invalid_provider_user_id} when "sub" is a non-string, non-integer type) do
+    test "returns error invalid_provider_user_id when sub is a non-string non-integer type" do
       user_data = Map.put(valid_user_data(), "sub", %{"nested" => "object"})
 
       assert {:error, :invalid_provider_user_id} = QuickBooks.normalize_user(user_data)
     end
 
-    test "returns {:error, :invalid_user_data} when input is not a map" do
+    test "returns error invalid_user_data when input is not a map" do
       assert {:error, :invalid_user_data} = QuickBooks.normalize_user("not a map")
       assert {:error, :invalid_user_data} = QuickBooks.normalize_user(42)
       assert {:error, :invalid_user_data} = QuickBooks.normalize_user([:list])
@@ -389,7 +388,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       :ok
     end
 
-    test ~s(sends an Authorization header with the value "Basic " <> Base64("client_id:client_secret")) do
+    test "sends an Authorization header with Basic base64 encoded credentials" do
       client_id = Application.fetch_env!(:metric_flow, :quickbooks_client_id)
       client_secret = Application.fetch_env!(:metric_flow, :quickbooks_client_secret)
 
@@ -399,7 +398,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert expected_header_value == "Basic " <> Base.encode64("stub-client-id:stub-client-secret")
     end
 
-    test ~s(sends the token in the request body as a JSON-encoded object with a "token" key) do
+    test "sends the token in the request body as a JSON-encoded object with a token key" do
       token = "my-quickbooks-access-token"
       body = Jason.encode!(%{"token" => token})
       decoded = Jason.decode!(body)
@@ -408,7 +407,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert Map.keys(decoded) == ["token"]
     end
 
-    test ~s(posts to "https://developer.api.intuit.com/v2/oauth2/tokens/revoke") do
+    test "posts to the Intuit OAuth revocation endpoint" do
       revoke_url = "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
 
       assert revoke_url == "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
@@ -416,7 +415,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
 
     @tag :integration
     test "returns :ok when the revocation endpoint responds with HTTP 200" do
-      if not @has_real_quickbooks_credentials,
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       # Intuit returns 200 for a valid token and 400 for invalid/expired tokens.
@@ -430,8 +429,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     @tag :integration
-    test "returns {:error, {:revocation_failed, status}} when the endpoint responds with a non-200 status" do
-      if not @has_real_quickbooks_credentials,
+    test "returns error revocation_failed when the endpoint responds with a non-200 status" do
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
@@ -443,8 +442,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
     end
 
     @tag :integration
-    test "returns {:error, reason} when the HTTP request fails due to a network or transport error" do
-      if not @has_real_quickbooks_credentials,
+    test "returns error reason when the HTTP request fails due to a network or transport error" do
+      unless has_real_quickbooks_credentials?(),
         do: flunk("QuickBooks OAuth credentials not configured in .env.test")
 
       capture_log(fn ->

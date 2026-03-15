@@ -1,0 +1,16 @@
+#!/bin/bash
+# Links a story to an architecture component by module name.
+# Usage: set-story-component <story_id> <module_name>
+#
+# Calls the local CodeMySpec server (no auth needed).
+# Requires the server to be running on localhost:4002.
+set -euo pipefail
+
+STORY_ID="${1:?Usage: set-story-component <story_id> <module_name>}"
+MODULE_NAME="${2:?Usage: set-story-component <story_id> <module_name>}"
+PORT="${CODEMYSPEC_PORT:-4002}"
+
+curl -sf -X POST "http://localhost:${PORT}/api/stories/set-component" \
+  -H "Content-Type: application/json" \
+  -H "X-Working-Dir: ${PWD}" \
+  -d "{\"story_id\": \"${STORY_ID}\", \"module_name\": \"${MODULE_NAME}\"}"

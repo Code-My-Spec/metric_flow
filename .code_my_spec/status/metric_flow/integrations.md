@@ -12,11 +12,31 @@
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing
 - [x] children_designs - Child component designs are complete
-- [ ] children_implementations - Child component implementations are complete
+- [x] children_implementations - Child component implementations are complete
 - [x] dependencies_satisfied - Component dependencies are satisfied
 
 
 ## MetricFlow.Integrations.Providers.Behaviour (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.Facebook (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.Google (module)
 
 - [x] spec_file - Component specification file exists
 - [x] spec_valid - Component specification is valid
@@ -37,6 +57,26 @@
 
 
 ## MetricFlow.Integrations.IntegrationRepository (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.OAuthStateStore (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.QuickBooks (module)
 
 - [x] spec_file - Component specification file exists
 - [x] spec_valid - Component specification is valid

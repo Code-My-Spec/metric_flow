@@ -20,7 +20,6 @@ liveview
 ## Dependencies
 
 - MetricFlow.Ai
-- MetricFlowWeb.Layouts
 
 ## Components
 

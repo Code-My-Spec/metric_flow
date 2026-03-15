@@ -130,7 +130,6 @@ AI chat interface for data exploration. Displays a sidebar of previous chat sess
 
 Dependencies:
 - MetricFlow.Ai
-- MetricFlowWeb.Layouts
 
 ### Confirmation
 **module**
@@ -214,7 +213,6 @@ AI insights panel displaying AI-generated recommendations from correlation analy
 
 Dependencies:
 - MetricFlow.Ai
-- MetricFlowWeb.Layouts
 
 ### IntegrationOAuthController
 **module**
@@ -302,7 +300,6 @@ View sync status and history, shows automated daily sync results.
 
 Dependencies:
 - MetricFlow.DataSync
-- MetricFlowWeb.Layouts
 
 ### Telemetry
 **module**
@@ -318,4 +315,3 @@ Dependencies:
 
 ### WhiteLabelHook
 **module**
-

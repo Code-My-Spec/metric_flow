@@ -17,8 +17,7 @@ Starts the OAuthStateStore GenServer and registers it under its module name.
 2. Return the result of `start_link`
 
 **Test Assertions**:
-- Starts successfully under a supervisor
-- Registers the process under the module name
+- starts successfully and registers under its module name
 
 ### store/2
 
@@ -36,7 +35,7 @@ Stores `session_params` in ETS keyed by the OAuth `state` string, recording the 
 **Test Assertions**:
 - Returns `:ok` for a valid binary state and a map of session params
 - Overwrites an existing entry when called twice with the same state
-- Raises `ArgumentError` when state is not a binary
+- Raises `FunctionClauseError` when state is not a binary
 
 ### fetch/1
 
@@ -59,7 +58,7 @@ Retrieves and atomically removes the `session_params` associated with the given 
 - Returns `:error` for an unknown state
 - Returns `:error` for a state stored more than 300 seconds ago
 - Calling `fetch/1` a second time for the same state returns `:error` (consume-once)
-- Returns `:error` when state is not a binary
+- Raises `FunctionClauseError` when state is not a binary
 
 ## Dependencies
 

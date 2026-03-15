@@ -1,0 +1,12 @@
+#!/bin/bash
+# Analyzes story-component linkage for the current project.
+# Usage: story-linkage
+#
+# Calls the local CodeMySpec server (no auth needed).
+# Requires the server to be running on localhost:4002.
+set -euo pipefail
+
+PORT="${CODEMYSPEC_PORT:-4002}"
+
+curl -sf "http://localhost:${PORT}/api/stories/linkage" \
+  -H "X-Working-Dir: ${PWD}"

@@ -18,6 +18,6 @@ ignored_components:
   - MetricFlowWeb.CoreComponents
   - MetricFlowWeb.ErrorHTML
   - MetricFlowWeb.ErrorJSON
-  - MetricFlowWeb.Layouts
   - MetricFlowWeb.PageController
   - MetricFlowWeb.PageHTML
+  - MetricFlowWeb.Layouts

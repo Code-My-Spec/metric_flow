@@ -10,6 +10,17 @@
 - [ ] dependencies_satisfied - Component dependencies are satisfied
 
 
+## MetricFlowWeb.DashboardLive.Editor (liveview)
+
+- [x] spec_file - LiveView specification file exists
+- [x] spec_valid - LiveView specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+- [x] dependencies_satisfied - Component dependencies are satisfied
+
+
 ## MetricFlowWeb.DashboardLive.Index (liveview)
 
 - [x] spec_file - LiveView specification file exists
@@ -18,4 +29,15 @@
 - [ ] test_file - Component test file exists
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing
-- [ ] dependencies_satisfied - Component dependencies are satisfied
+- [x] dependencies_satisfied - Component dependencies are satisfied
+
+
+## MetricFlowWeb.DashboardLive.Show (liveview)
+
+- [x] spec_file - LiveView specification file exists
+- [x] spec_valid - LiveView specification is valid
+- [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+- [x] dependencies_satisfied - Component dependencies are satisfied

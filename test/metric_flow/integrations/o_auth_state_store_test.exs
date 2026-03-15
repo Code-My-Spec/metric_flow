@@ -28,7 +28,7 @@ defmodule MetricFlow.Integrations.OAuthStateStoreTest do
       assert :ok = OAuthStateStore.store(state, %{token: "abc"})
     end
 
-    test "overwrites an existing entry when called twice with the same state" do
+    test "Overwrites an existing entry when called twice with the same state" do
       state = unique_state()
       OAuthStateStore.store(state, %{token: "first"})
       OAuthStateStore.store(state, %{token: "second"})
@@ -36,9 +36,9 @@ defmodule MetricFlow.Integrations.OAuthStateStoreTest do
       assert {:ok, %{token: "second"}} = OAuthStateStore.fetch(state)
     end
 
-    test "raises ArgumentError when state is not a binary" do
+    test "raises FunctionClauseError when state is not a binary" do
       assert_raise FunctionClauseError, fn ->
-        OAuthStateStore.store(12345, %{token: "abc"})
+        OAuthStateStore.store(12_345, %{token: "abc"})
       end
     end
   end
@@ -77,7 +77,7 @@ defmodule MetricFlow.Integrations.OAuthStateStoreTest do
       assert :error = OAuthStateStore.fetch(state)
     end
 
-    test "returns :error when state is not a binary" do
+    test "raises FunctionClauseError when state is not a binary" do
       assert_raise FunctionClauseError, fn ->
         OAuthStateStore.fetch(42)
       end

@@ -18,7 +18,6 @@ None
 
 - MetricFlow.DataSync
 - MetricFlow.Integrations
-- MetricFlowWeb.Layouts
 
 ## Components
 

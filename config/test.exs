@@ -67,5 +67,11 @@ config :metric_flow, :test_providers, [
   :stub_token_error,
   :stub_norm_error,
   :stub_callback_error,
-  :stub_authorize_error
+  :stub_authorize_error,
+  :stub_revoke,
+  :stub_revoke_fail,
+  :stub_no_revoke,
+  :stub_refreshable,
+  :stub_no_refresh,
+  :stub_refresh_fail
 ]

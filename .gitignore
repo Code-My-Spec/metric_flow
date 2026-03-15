@@ -35,10 +35,6 @@ metric_flow-*.tar
 npm-debug.log
 /assets/node_modules/
 
-# CodeMySpec - machine-specific symlinks and internal state
-.code_my_spec/framework
-.code_my_spec/tools
-.code_my_spec/internal/
 
 # Environment secrets
 .env

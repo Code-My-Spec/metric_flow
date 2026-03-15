@@ -18,7 +18,6 @@ None
 
 - MetricFlow.Accounts
 - MetricFlow.Agencies
-- MetricFlowWeb.Layouts
 
 ## Components
 

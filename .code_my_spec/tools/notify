@@ -1,0 +1,22 @@
+#!/bin/bash
+# Send a push notification with arbitrary text.
+# Usage: notify <message> [title] [type]
+#
+# Arguments:
+#   message  - Notification body text (required)
+#   title    - Notification title (optional, defaults to "CodeMySpec")
+#   type     - Notification type (optional, defaults to "info")
+#
+# Calls the local CodeMySpec server (no auth needed).
+# Requires the server to be running on localhost:4002.
+set -euo pipefail
+
+MESSAGE="${1:?Usage: notify <message> [title] [type]}"
+TITLE="${2:-CodeMySpec}"
+TYPE="${3:-info}"
+PORT="${CODEMYSPEC_PORT:-4002}"
+
+curl -sf -X POST "http://localhost:${PORT}/api/notifications/send" \
+  -H "Content-Type: application/json" \
+  -H "X-Working-Dir: ${PWD}" \
+  -d "{\"message\": \"${MESSAGE}\", \"title\": \"${TITLE}\", \"type\": \"${TYPE}\"}"

@@ -15,6 +15,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
 
   @authorize_url "https://appcenter.intuit.com/connect/oauth2"
   @token_url "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+  @revoke_url "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
 
   # ---------------------------------------------------------------------------
   # Behaviour implementation
@@ -94,6 +95,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
   Revokes a token (access or refresh) with the Intuit revocation endpoint.
 
   Uses Basic Auth (client_id:client_secret) as required by the Intuit API.
+  Intuit's revocation endpoint returns plain text (not JSON), so the response
+  is dispatched via `:httpc` to avoid Assent's JSON-decoding layer.
   """
   @spec revoke_token(String.t()) :: :ok | {:error, term()}
   @impl MetricFlow.Integrations.Providers.Behaviour
@@ -101,22 +104,27 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
     client_id = Application.fetch_env!(:metric_flow, :quickbooks_client_id)
     client_secret = Application.fetch_env!(:metric_flow, :quickbooks_client_secret)
     credentials = Base.encode64("#{client_id}:#{client_secret}")
+    body = Jason.encode!(%{"token" => token})
 
     headers = [
-      {"authorization", "Basic #{credentials}"},
-      {"accept", "application/json"},
-      {"content-type", "application/json"}
+      {~c"authorization", ~c"Basic #{credentials}"},
+      {~c"accept", ~c"application/json"},
+      {~c"content-type", ~c"application/json"}
     ]
 
-    body = Jason.encode!(%{"token" => token})
-    url = "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
+    request = {
+      String.to_charlist(@revoke_url),
+      headers,
+      ~c"application/json",
+      body
+    }
 
-    case Assent.Strategy.http_request(:post, url, body, headers, []) do
-      {:ok, %{status: 200}} ->
+    case :httpc.request(:post, request, [], []) do
+      {:ok, {{_version, 200, _reason}, _headers, _body}} ->
         Logger.info("QuickBooks token revoked successfully")
         :ok
 
-      {:ok, %{status: status, body: resp_body}} ->
+      {:ok, {{_version, status, _reason}, _headers, resp_body}} ->
         Logger.warning("QuickBooks token revocation returned #{status}: #{inspect(resp_body)}")
         {:error, {:revocation_failed, status}}
 

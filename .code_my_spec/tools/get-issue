@@ -1,0 +1,12 @@
+#!/bin/bash
+# Get details of a single issue by ID.
+# Usage: get-issue <id>
+#
+# Calls the local CodeMySpec server (no auth needed).
+set -euo pipefail
+
+ID="${1:?Usage: get-issue <id>}"
+PORT="${CODEMYSPEC_PORT:-4002}"
+
+curl -sf "http://localhost:${PORT}/api/issues/${ID}" \
+  -H "X-Working-Dir: ${PWD}"

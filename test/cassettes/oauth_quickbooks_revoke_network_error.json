@@ -1,0 +1,80 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-15T04:45:04.182350Z",
+      "request": {
+        "body_json": {
+          "token": "test-token"
+        },
+        "body_type": "json",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "authorization": [
+            "Basic c3R1Yi1jbGllbnQtaWQ6c3R1Yi1jbGllbnQtc2VjcmV0"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "user-agent": [
+            "Assent-0.3.1"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke"
+      },
+      "response": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "connection": [
+            "keep-alive"
+          ],
+          "content-length": [
+            "0"
+          ],
+          "content-type": [
+            "text/xml"
+          ],
+          "date": [
+            "Sun, 15 Mar 2026 04:45:04 GMT"
+          ],
+          "intuit_tid": [
+            "1-69b63950-7cfa0f607c5497c67663956b"
+          ],
+          "server": [
+            "istio-envoy"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000"
+          ],
+          "x-amzn-trace-id": [
+            "Root=1-69b63950-7cfa0f607c5497c67663956b"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-envoy-upstream-service-time": [
+            "38"
+          ],
+          "x-intuit-upstream-locality-region": [
+            "us-west-2"
+          ],
+          "x-request-id": [
+            "1-69b63950-7cfa0f607c5497c67663956b"
+          ],
+          "x-spanid": [
+            "be3f5d39-9674-3b08-d282-7314074ede32"
+          ]
+        },
+        "status": 400
+      }
+    }
+  ],
+  "version": "2.0"
+}
