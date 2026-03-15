@@ -79,6 +79,9 @@ Dependencies:
 - MetricFlow.Accounts
 - MetricFlow.Users.Scope
 
+### Mailer
+**module**
+
 ### Metrics
 **context**
 
@@ -89,6 +92,9 @@ Dependencies:
 - MetricFlow.Metrics.MetricRepository
 
 ### Release
+**module**
+
+### Repo
 **module**
 
 ### Users
@@ -106,18 +112,15 @@ User authentication, registration, and session management.
 **module**
 
 ### Accept
-**liveview**
-
-Accept invitation flow. Validates an invitation token from a URL parameter and allows the recipient to accept or decline access to an account. Handles both authenticated users (who accept directly) and unauthenticated users (who are redirected to log in or register before being returned to this page).
-
-Dependencies:
-- MetricFlow.Invitations
-- MetricFlow.Users
+**module**
 
 ### AccountEdit
 **module**
 
 ### ActiveAccountHook
+**module**
+
+### Application
 **module**
 
 ### Chat
@@ -127,25 +130,19 @@ AI chat interface for data exploration. Displays a sidebar of previous chat sess
 
 Dependencies:
 - MetricFlow.Ai
+- MetricFlowWeb.Layouts
 
 ### Confirmation
 **module**
 
 ### Connect
-**liveview**
+**module**
 
-OAuth connection flow for linking marketing platforms to a user account. Displays all supported platforms (Google Ads, Facebook Ads, Google Analytics) with their current connection status and per-platform OAuth initiation links. Also serves as the OAuth callback handler — when the user returns from the provider, the view processes the authorization code, persists the integration, and shows a confirmation or error message.
-
-Dependencies:
-- MetricFlow.Integrations
+### CoreComponents
+**module**
 
 ### Editor
-**liveview**
-
-Create/edit dashboards, arrange visualizations.
-
-Dependencies:
-- MetricFlow.Dashboards
+**module**
 
 ### Editor
 **liveview**
@@ -154,6 +151,18 @@ Create/edit individual visualizations.
 
 Dependencies:
 - MetricFlow.Dashboards
+
+### Endpoint
+**module**
+
+### ErrorHTML
+**module**
+
+### ErrorJSON
+**module**
+
+### Gettext
+**module**
 
 ### Goals
 **liveview**
@@ -176,22 +185,10 @@ Dependencies:
 - MetricFlow.Correlations.CorrelationResult
 
 ### Index
-**liveview**
-
-List and manage integrations, manual sync trigger.
-
-Dependencies:
-- MetricFlow.Integrations
-- MetricFlow.DataSync
+**module**
 
 ### Index
-**liveview**
-
-List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user's role in each, and any agency access level and origination status for client accounts accessed via an agency grant. Highlights the currently active account and allows switching the active account context. Includes an inline form for creating new team accounts. Requires authentication; unauthenticated requests are redirected to `/users/log-in`. Subscribes to PubSub on mount for real-time account updates.
-
-Dependencies:
-- MetricFlow.Accounts
-- MetricFlow.Agencies
+**module**
 
 ### Index
 **liveview**
@@ -217,39 +214,34 @@ AI insights panel displaying AI-generated recommendations from correlation analy
 
 Dependencies:
 - MetricFlow.Ai
+- MetricFlowWeb.Layouts
 
 ### IntegrationOAuthController
 **module**
 
+### Layouts
+**module**
+
 ### Login
-**liveview**
-
-User login and session management. Provides two authentication paths: a magic link sent to the user's email address, and direct password-based login. Also handles re-authentication (sudo mode) when a user who is already signed in needs to confirm their identity before performing a sensitive action.
-
-Dependencies:
-- MetricFlow.Users
+**module**
 
 ### Members
-**liveview**
-
-Manage account members and permissions for the active account. Displays all members with their roles and join dates. Owners and admins can change member roles, remove members, and invite new users. Enforces authorization via `Accounts.Authorization` — only owners/admins see management controls. Protects the last owner from removal or demotion. Subscribes to member PubSub for real-time updates.
-
-Dependencies:
-- MetricFlow.Accounts
+**module**
 
 ### OnboardingLive
+**module**
+
+### PageController
+**module**
+
+### PageHTML
 **module**
 
 ### PromEx
 **module**
 
 ### Registration
-**liveview**
-
-User registration and account creation.
-
-Dependencies:
-- MetricFlow.Users
+**module**
 
 ### ReportGenerator
 **liveview**
@@ -259,14 +251,11 @@ Natural language report generation.
 Dependencies:
 - MetricFlow.Ai
 
+### Router
+**module**
+
 ### Send
-**liveview**
-
-Send email invitations to users or agencies to grant them access to the active account. Displays a send-invitation form and a list of pending invitations. Only owners and admins of the active account may access this page. Invitations are sent to any email address — the recipient does not need to have an existing account. Pending invitations can be cancelled by the inviting user, an owner, or an admin.
-
-Dependencies:
-- MetricFlow.Invitations
-- MetricFlow.Accounts
+**module**
 
 ### Settings
 **liveview**
@@ -287,13 +276,7 @@ Dependencies:
 - MetricFlow.Agencies.WhiteLabelConfig
 
 ### Settings
-**liveview**
-
-Account settings, ownership transfer, and deletion for the active account. Owners and admins can edit account name and slug. Only owners can transfer ownership to another admin/member and delete the account. Deletion requires typing the account name for confirmation and re-entering the user's password. Personal accounts cannot be deleted. Subscribes to account PubSub for real-time updates.
-
-Dependencies:
-- MetricFlow.Accounts
-- MetricFlow.Users
+**module**
 
 ### Show
 **liveview**
@@ -319,6 +302,10 @@ View sync status and history, shows automated daily sync results.
 
 Dependencies:
 - MetricFlow.DataSync
+- MetricFlowWeb.Layouts
+
+### Telemetry
+**module**
 
 ### UserAuth
 **module**

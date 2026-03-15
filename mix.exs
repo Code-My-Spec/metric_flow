@@ -104,7 +104,7 @@ defmodule MetricFlow.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1.15"},
-      {:sexy_spex, git: "https://github.com/Code-My-Spec/spex", branch: "feature/reusable-givens", only: [:dev, :test]},
+      {:sexy_spex, path: "../spex", only: [:dev, :test]},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
   end
@@ -128,7 +128,6 @@ defmodule MetricFlow.MixProject do
         "esbuild metric_flow --minify",
         "phx.digest"
       ],
-      spex: ["spex --quiet"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

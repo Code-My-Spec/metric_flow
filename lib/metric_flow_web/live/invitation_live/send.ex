@@ -65,6 +65,12 @@ defmodule MetricFlowWeb.InvitationLive.Send do
                 <span class="label-text">Access level</span>
               </label>
               <select class="select w-full" name="invitation[role]">
+                <option
+                  value="read_only"
+                  selected={selected_role(@invitation_form, "read_only") || is_nil(@invitation_form.params["role"])}
+                >
+                  Read Only
+                </option>
                 <option value="admin" selected={selected_role(@invitation_form, "admin")}>
                   Admin
                 </option>
@@ -73,12 +79,6 @@ defmodule MetricFlowWeb.InvitationLive.Send do
                   selected={selected_role(@invitation_form, "account_manager")}
                 >
                   Account Manager
-                </option>
-                <option
-                  value="read_only"
-                  selected={selected_role(@invitation_form, "read_only") || is_nil(@invitation_form.params["role"])}
-                >
-                  Read Only
                 </option>
               </select>
               <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error mt-1">

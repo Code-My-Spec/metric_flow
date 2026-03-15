@@ -1,5 +1,9 @@
 # POST /users/log-in with email-only body returns HTTP 500
 
+## Status
+
+accepted
+
 ## Severity
 
 low
@@ -11,7 +15,7 @@ app
 ## Description
 
 Sending  POST /users/log-in  with  user[email]  but no  user[password]  field returns
-HTTP 500. The controller's  create/3  clause at line 34 of  user_session_controller.ex
+HTTP 500. The controller's  create/3  clause at line 34 of  user_session_controller.ex 
 pattern-matches with  %{"email" => email, "password" => password} = user_params , which
 raises a  MatchError  when  "password"  is absent from the map. In normal browser usage this path is never reached: the magic link form uses
  phx-submit="submit_magic"  which is handled by the LiveView process and never POSTs to

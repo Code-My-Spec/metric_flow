@@ -59,10 +59,12 @@ MetricFlow [module]
 │   ├── Invitation [module] Ecto schema representing an account access invitation. An invitation is created by an account owner or admin and sent...
 │   ├── InvitationNotifier [module] Email delivery module using Swoosh. Sends transactional invitation emails via MetricFlow.Mailer. Delivers account inv...
 │   └── InvitationRepository [module] Data access layer for Invitation CRUD operations. All queries filter by account_id for multi-tenant isolation, with t...
+├── Mailer [module]
 ├── Metrics [context] Unified metric storage and retrieval. Persists metrics from external data providers (Google Analytics, Google Ads, Fa...
 │   ├── Metric [module] Ecto schema representing a unified metric data point. Stores metric_type (category like "traffic", "advertising", "fi...
 │   └── MetricRepository [module] Data access layer for Metric CRUD and query operations filtered by user_id. All operations are scoped via Scope struc...
 ├── Release [module]
+├── Repo [module]
 ├── Users [context] User authentication, registration, and session management.
 │   ├── Scope [module] Caller scope struct exported by the Users boundary for use across the application. Holds the current User struct in t...
 │   ├── User [module] Ecto schema representing a registered user in the MetricFlow system. Stores email, bcrypt-hashed password, and accoun...
@@ -71,9 +73,9 @@ MetricFlow [module]
 └── Vault [module]
 MetricFlowWeb [module]
 ├── AccountLive
-│   ├── Index [liveview] List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user'...
-│   ├── Members [liveview] Manage account members and permissions for the active account. Displays all members with their roles and join dates. ...
-│   └── Settings [liveview] Account settings, ownership transfer, and deletion for the active account. Owners and admins can edit account name an...
+│   ├── Index [module]
+│   ├── Members [module]
+│   └── Settings [module]
 ├── ActiveAccountHook [module]
 ├── AgencyLive
 │   └── Settings [liveview] Agency configuration: auto-enrollment, white-label. A function component module rendered within the `/accounts/settin...
@@ -81,35 +83,46 @@ MetricFlowWeb [module]
 │   ├── Chat [liveview] AI chat interface for data exploration. Displays a sidebar of previous chat sessions alongside an active conversation...
 │   ├── Insights [liveview] AI insights panel displaying AI-generated recommendations from correlation analysis, with suggestion type filtering a...
 │   └── ReportGenerator [liveview] Natural language report generation.
+├── Application [module]
+├── CoreComponents [module]
 ├── CorrelationLive
 │   ├── Goals [liveview] Configure goal metrics.
 │   └── Index [liveview] View correlation analysis (Raw and Smart modes), displays automated correlation results.
 ├── DashboardLive
-│   ├── Editor [liveview] Create/edit dashboards, arrange visualizations. Allows authenticated users to build reports by composing visualizatio...
+│   ├── Editor [module]
 │   ├── Index [liveview] List dashboards (user's and canned).
 │   └── Show [liveview] View dashboard with visualizations. Displays unified marketing and financial metrics from all connected platforms via...
+├── Endpoint [module]
+├── ErrorHTML [module]
+├── ErrorJSON [module]
+├── Gettext [module]
 ├── HealthController [module]
 ├── IntegrationLive
 │   ├── AccountEdit [module]
-│   ├── Connect [liveview] OAuth connection flow for linking marketing platforms to a user account. Displays all supported platforms (Google Ads...
-│   ├── Index [liveview] List and manage integrations, manual sync trigger.
+│   ├── Connect [module]
+│   ├── Index [module]
 │   └── SyncHistory [liveview] View sync status and history, shows automated daily sync results.
 ├── IntegrationOAuthController [module]
 ├── InvitationLive
-│   ├── Accept [liveview] Accept invitation flow. Validates an invitation token from a URL parameter and allows the recipient to accept or decl...
-│   └── Send [liveview] Send email invitations to users or agencies to grant them access to the active account. Displays a send-invitation fo...
+│   ├── Accept [module]
+│   └── Send [module]
+├── Layouts [module]
 ├── OnboardingLive [module]
+├── PageController [module]
+├── PageHTML [module]
 ├── Plugs
 │   └── WhiteLabel [module]
 ├── PromEx [module]
 ├── ReportLive
 │   ├── Index [liveview] List and view saved reports. Displays user-created and system-generated reports including review metric summaries, ro...
 │   └── Show [liveview] View a single report with its visualizations and metric summaries. Renders report content including review metrics, r...
+├── Router [module]
+├── Telemetry [module]
 ├── UserAuth [module]
 ├── UserLive
 │   ├── Confirmation [module]
-│   ├── Login [liveview] User login and session management. Provides two authentication paths: a magic link sent to the user's email address, ...
-│   ├── Registration [liveview] User registration and account creation.
+│   ├── Login [module]
+│   ├── Registration [module]
 │   └── Settings [liveview] User settings including password reset.
 ├── UserSessionController [module]
 ├── VisualizationLive

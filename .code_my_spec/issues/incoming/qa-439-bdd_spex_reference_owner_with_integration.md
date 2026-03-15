@@ -1,5 +1,9 @@
 # BDD spex reference :owner_with_integrations given not implemented
 
+## Status
+
+accepted
+
 ## Severity
 
 low

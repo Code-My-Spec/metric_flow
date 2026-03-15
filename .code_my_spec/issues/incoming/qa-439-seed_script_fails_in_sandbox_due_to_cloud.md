@@ -1,5 +1,9 @@
 # seed script fails in sandbox due to Cloudflare tunnel write permission
 
+## Status
+
+dismissed
+
 ## Severity
 
 low

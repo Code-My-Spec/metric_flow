@@ -10,7 +10,7 @@ defmodule MetricFlowWeb.UserLive.Registration do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
+      <div class="mx-auto max-w-sma">
         <div :if={@registered} class="text-center">
           <.header>
             Registration successful

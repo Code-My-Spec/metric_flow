@@ -1,5 +1,3 @@
-<!-- cms:task type="ComponentSpec" component="MetricFlow.Integrations.Providers.QuickBooks" -->
-
 Generate a Phoenix component spec for the following.
 Project: Metric FLow
 Project Description: Metric flow is a multi-account reporting solution that aggregates metrics from multiple platforms, aggregates and correlates them to business goals.

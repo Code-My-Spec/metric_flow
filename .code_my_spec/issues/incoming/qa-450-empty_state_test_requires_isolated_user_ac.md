@@ -1,5 +1,9 @@
 # Empty state test for /insights requires an isolated user account
 
+## Status
+
+dismissed
+
 ## Severity
 
 low

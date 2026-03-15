@@ -17,7 +17,6 @@ None
 ## Dependencies
 
 - MetricFlow.Users
-- MetricFlowWeb.Layouts
 
 ## Components
 

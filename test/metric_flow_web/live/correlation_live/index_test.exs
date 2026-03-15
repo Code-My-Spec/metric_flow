@@ -11,7 +11,6 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Repo
 
-
   # ---------------------------------------------------------------------------
   # Fixtures
   # ---------------------------------------------------------------------------

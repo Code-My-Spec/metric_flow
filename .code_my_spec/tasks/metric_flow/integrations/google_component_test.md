@@ -1,5 +1,3 @@
-<!-- cms:task type="ComponentTest" component="MetricFlow.Integrations.Providers.Google" -->
-
 Generate tests and fixtures for the following Phoenix component.
 The component implementation already exists.
 Write tests that validate the existing implementation against the design specification.
