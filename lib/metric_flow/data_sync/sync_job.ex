@@ -36,7 +36,7 @@ defmodule MetricFlow.DataSync.SyncJob do
           updated_at: DateTime.t() | nil
         }
 
-  @providers [:google, :google_analytics, :google_ads, :facebook_ads, :quickbooks]
+  @providers [:google, :google_analytics, :google_ads, :google_search_console, :google_business, :google_business_reviews, :facebook_ads, :quickbooks]
   @statuses [:pending, :running, :completed, :failed, :cancelled]
 
   schema "sync_jobs" do

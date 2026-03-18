@@ -14,17 +14,20 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   alias MetricFlow.DataSync
   alias MetricFlow.Integrations
 
-  # Data platforms — what you sync from. Each maps to a parent OAuth provider.
+  # Data platforms — each has its own OAuth provider and integration record.
   @data_platforms [
-    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics", provider: :google},
-    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising", provider: :google},
+    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics", provider: :google_analytics},
+    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising", provider: :google_ads},
+    %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data", provider: :google_search_console},
     %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising", provider: :facebook_ads},
     %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data", provider: :quickbooks}
   ]
 
-  # Provider display names for "Connect X first" messages.
+  # Provider display names for messages.
   @provider_names %{
-    google: "Google",
+    google_analytics: "Google Analytics",
+    google_ads: "Google Ads",
+    google_search_console: "Google Search Console",
     facebook_ads: "Facebook",
     quickbooks: "QuickBooks"
   }
@@ -113,13 +116,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                         Connected via {provider_display_name(platform.provider)} on {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
                       </p>
                       <div data-role="integration-selected-accounts" class="mt-2 text-sm text-base-content/60">
-                        <%= case get_in(integration.provider_metadata, ["selected_accounts"]) do %>
-                          <% nil -> %>
-                            <span class="text-xs italic">No accounts selected</span>
-                          <% accounts when is_list(accounts) -> %>
-                            <span class="text-xs">{Enum.join(accounts, ", ")}</span>
-                          <% _ -> %>
-                            <span class="text-xs italic">No accounts selected</span>
+                        <% account_value = selected_account_display(integration) %>
+                        <%= if account_value do %>
+                          <span class="text-xs">{account_value}</span>
+                        <% else %>
+                          <span class="text-xs italic">No accounts selected</span>
                         <% end %>
                       </div>
                     <% end %>
@@ -294,8 +295,16 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
         {:noreply, socket}
 
-      {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Integration not found.")}
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "#{platform_name} integration not found. Please connect it first.")}
+
+      {:error, :not_connected} ->
+        {:noreply, put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
+
+      {:error, reason} ->
+        require Logger
+        Logger.error("Sync failed for #{platform_name}: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Failed to start sync for #{platform_name}: #{inspect(reason)}")}
     end
   end
 
@@ -460,4 +469,25 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     |> String.split()
     |> Enum.map_join(" ", &String.capitalize/1)
   end
+
+  # Looks up the selected account value from provider_metadata using the correct key per provider.
+  defp selected_account_display(%{provider: provider, provider_metadata: meta}) when is_map(meta) do
+    key = metadata_key_for_provider(provider)
+    value = Map.get(meta, key)
+
+    cond do
+      is_binary(value) and value != "" -> value
+      is_list(Map.get(meta, "selected_accounts")) -> Enum.join(Map.get(meta, "selected_accounts"), ", ")
+      true -> nil
+    end
+  end
+
+  defp selected_account_display(_), do: nil
+
+  defp metadata_key_for_provider(:google_analytics), do: "property_id"
+  defp metadata_key_for_provider(:google_ads), do: "customer_id"
+  defp metadata_key_for_provider(:google_search_console), do: "site_url"
+  defp metadata_key_for_provider(:quickbooks), do: "realm_id"
+  defp metadata_key_for_provider(:facebook_ads), do: "ad_account_id"
+  defp metadata_key_for_provider(_), do: "property_id"
 end

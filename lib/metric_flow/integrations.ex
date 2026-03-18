@@ -22,12 +22,17 @@ defmodule MetricFlow.Integrations do
 
   alias Assent.Strategy.OAuth2, as: AssentOAuth2
   alias MetricFlow.Integrations.GoogleAccounts
+  alias MetricFlow.Integrations.GoogleAdsAccounts
+  alias MetricFlow.Integrations.GoogleSearchConsoleSites
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Users.Scope
 
   @default_providers %{
     google: MetricFlow.Integrations.Providers.Google,
+    google_analytics: MetricFlow.Integrations.Providers.GoogleAnalytics,
+    google_ads: MetricFlow.Integrations.Providers.GoogleAds,
+    google_search_console: MetricFlow.Integrations.Providers.GoogleSearchConsole,
     facebook_ads: MetricFlow.Integrations.Providers.Facebook,
     quickbooks: MetricFlow.Integrations.Providers.QuickBooks
   }
@@ -261,6 +266,9 @@ defmodule MetricFlow.Integrations do
 
   # Token endpoints per provider for OAuth2 refresh (not discoverable via OIDC at refresh time)
   defp token_url_for(:google), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(:google_analytics), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(:google_ads), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(:google_search_console), do: "https://oauth2.googleapis.com/token"
   defp token_url_for(:facebook_ads), do: "https://graph.facebook.com/v21.0/oauth/access_token"
   defp token_url_for(:quickbooks), do: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
   defp token_url_for(_), do: "/oauth/token"
@@ -280,11 +288,33 @@ defmodule MetricFlow.Integrations do
 
     * `:http_plug` - A Plug-compatible function for test injection.
   """
-  @spec list_google_accounts(Scope.t(), keyword()) ::
+  @spec list_google_accounts(Scope.t(), atom(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
-  def list_google_accounts(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google) do
+  def list_google_accounts(%Scope{} = scope, provider \\ :google_analytics, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
       GoogleAccounts.list_ga4_properties(integration, opts)
+    end
+  end
+
+  @doc """
+  Lists Google Ads customer accounts accessible to the user's Google Ads integration.
+  """
+  @spec list_google_ads_customers(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_google_ads_customers(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_ads) do
+      GoogleAdsAccounts.list_customers(integration, opts)
+    end
+  end
+
+  @doc """
+  Lists verified sites accessible to the user's Google Search Console integration.
+  """
+  @spec list_search_console_sites(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_search_console_sites(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_search_console) do
+      GoogleSearchConsoleSites.list_sites(integration, opts)
     end
   end
 

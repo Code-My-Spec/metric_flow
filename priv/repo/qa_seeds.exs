@@ -172,36 +172,60 @@ IO.puts("  Cleared #{sync_history_count} sync history + #{sync_jobs_count} sync 
 # 3. Google Ads Integration (with selected_accounts for QA Story 436)
 # ---------------------------------------------------------------------------
 
-IO.puts("\n--- Google Integration ---")
+IO.puts("\n--- Google Integrations (separate per service) ---")
 
 alias MetricFlow.Integrations.Integration
 
-existing_google =
-  Repo.get_by(Integration, user_id: qa_user.id, provider: :google)
+google_access_token = System.get_env("GOOGLE_TEST_ACCESS_TOKEN", "qa_test_token")
+google_refresh_token = System.get_env("GOOGLE_TEST_REFRESH_TOKEN", "qa_test_refresh")
+google_expires_at = DateTime.add(DateTime.utc_now(), 86400, :second)
 
-case existing_google do
-  nil ->
-    %Integration{}
-    |> Integration.changeset(%{
-      user_id: qa_user.id,
-      provider: :google,
-      access_token: System.get_env("GOOGLE_TEST_ACCESS_TOKEN", "qa_test_token"),
-      refresh_token: System.get_env("GOOGLE_TEST_REFRESH_TOKEN", "qa_test_refresh"),
-      expires_at: DateTime.add(DateTime.utc_now(), 86400, :second),
-      granted_scopes: ["https://www.googleapis.com/auth/adwords", "https://www.googleapis.com/auth/analytics.readonly"],
-      provider_metadata: %{
-        "email" => "qa@example.com",
-        "property_id" => System.get_env("GA4_TEST_PROPERTY_ID", "properties/508773792"),
-        "customer_id" => System.get_env("GOOGLE_ADS_TEST_CUSTOMER_ID", "8952788948"),
-        "selected_accounts" => ["GA4 Property", "Google Ads Account"]
-      }
-    })
-    |> Repo.insert!()
+# Google Analytics integration
+unless Repo.get_by(Integration, user_id: qa_user.id, provider: :google_analytics) do
+  %Integration{}
+  |> Integration.changeset(%{
+    user_id: qa_user.id,
+    provider: :google_analytics,
+    access_token: google_access_token,
+    refresh_token: google_refresh_token,
+    expires_at: google_expires_at,
+    granted_scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    provider_metadata: %{
+      "email" => "qa@example.com",
+      "property_id" => System.get_env("GA4_TEST_PROPERTY_ID", "properties/508773792"),
+      "selected_accounts" => ["GA4 Property"]
+    }
+  })
+  |> Repo.insert!()
 
-    IO.puts("  Created google integration for qa@example.com")
+  IO.puts("  Created google_analytics integration")
+end
 
-  _existing ->
-    IO.puts("  Exists: google integration for qa@example.com")
+# Google Ads integration
+unless Repo.get_by(Integration, user_id: qa_user.id, provider: :google_ads) do
+  %Integration{}
+  |> Integration.changeset(%{
+    user_id: qa_user.id,
+    provider: :google_ads,
+    access_token: google_access_token,
+    refresh_token: google_refresh_token,
+    expires_at: google_expires_at,
+    granted_scopes: ["https://www.googleapis.com/auth/adwords"],
+    provider_metadata: %{
+      "email" => "qa@example.com",
+      "customer_id" => System.get_env("GOOGLE_ADS_TEST_CUSTOMER_ID", "8952788948"),
+      "selected_accounts" => ["Google Ads Account"]
+    }
+  })
+  |> Repo.insert!()
+
+  IO.puts("  Created google_ads integration")
+end
+
+# Clean up legacy :google integration if it exists
+case Repo.get_by(Integration, user_id: qa_user.id, provider: :google) do
+  nil -> :ok
+  legacy -> Repo.delete!(legacy); IO.puts("  Removed legacy :google integration")
 end
 
 # ---------------------------------------------------------------------------

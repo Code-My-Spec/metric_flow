@@ -32,7 +32,7 @@ defmodule MetricFlow.Correlations.CorrelationResult do
           updated_at: DateTime.t() | nil
         }
 
-  @providers [:google_analytics, :google_ads, :facebook_ads, :quickbooks]
+  @providers [:google_analytics, :google_ads, :google_search_console, :google_business, :google_business_reviews, :facebook_ads, :quickbooks]
 
   schema "correlation_results" do
     field :metric_name, :string

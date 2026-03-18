@@ -241,8 +241,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
   # ---------------------------------------------------------------------------
 
   describe "strategy/0" do
-    test "returns Assent.Strategy.OAuth2" do
-      assert QuickBooks.strategy() == Assent.Strategy.OAuth2
+    test "returns the custom QuickBooks OAuth2 strategy" do
+      assert QuickBooks.strategy() == MetricFlow.Integrations.Strategies.QuickBooksOAuth2
     end
   end
 
@@ -338,26 +338,30 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       assert is_nil(normalized.realm_id)
     end
 
-    test "returns error missing_provider_user_id when sub is nil" do
+    test "falls back to quickbooks_user when sub is nil" do
       user_data = Map.put(valid_user_data(), "sub", nil)
 
-      assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(user_data)
+      assert {:ok, normalized} = QuickBooks.normalize_user(user_data)
+      assert normalized.provider_user_id == "quickbooks_user"
     end
 
-    test "returns error missing_provider_user_id when sub field is absent" do
+    test "falls back to quickbooks_user when sub field is absent" do
       user_data = Map.delete(valid_user_data(), "sub")
 
-      assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(user_data)
+      assert {:ok, normalized} = QuickBooks.normalize_user(user_data)
+      assert normalized.provider_user_id == "quickbooks_user"
     end
 
-    test "returns error missing_provider_user_id for an empty map" do
-      assert {:error, :missing_provider_user_id} = QuickBooks.normalize_user(%{})
+    test "falls back to quickbooks_user for an empty map" do
+      assert {:ok, normalized} = QuickBooks.normalize_user(%{})
+      assert normalized.provider_user_id == "quickbooks_user"
     end
 
-    test "returns error invalid_provider_user_id when sub is a non-string non-integer type" do
+    test "falls back to quickbooks_user when sub is a non-string non-integer type" do
       user_data = Map.put(valid_user_data(), "sub", %{"nested" => "object"})
 
-      assert {:error, :invalid_provider_user_id} = QuickBooks.normalize_user(user_data)
+      assert {:ok, normalized} = QuickBooks.normalize_user(user_data)
+      assert normalized.provider_user_id == "quickbooks_user"
     end
 
     test "returns error invalid_user_data when input is not a map" do

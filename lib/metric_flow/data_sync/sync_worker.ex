@@ -38,6 +38,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   alias MetricFlow.DataSync.DataProviders.FacebookAds
   alias MetricFlow.DataSync.DataProviders.GoogleAds
   alias MetricFlow.DataSync.DataProviders.GoogleAnalytics
+  alias MetricFlow.DataSync.DataProviders.GoogleSearchConsole
   alias MetricFlow.DataSync.DataProviders.QuickBooks
   alias MetricFlow.DataSync.SyncHistoryRepository
   alias MetricFlow.DataSync.SyncJobRepository
@@ -128,6 +129,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   def providers_for(:google_analytics), do: {:ok, [GoogleAnalytics]}
   def providers_for(:google_ads), do: {:ok, [GoogleAds]}
   def providers_for(:facebook_ads), do: {:ok, [FacebookAds]}
+  def providers_for(:google_search_console), do: {:ok, [GoogleSearchConsole]}
   def providers_for(:quickbooks), do: {:ok, [QuickBooks]}
   def providers_for(_), do: {:error, :unsupported_provider}
 
@@ -136,6 +138,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   def provider_for(:google_analytics), do: {:ok, GoogleAnalytics}
   def provider_for(:google_ads), do: {:ok, GoogleAds}
   def provider_for(:facebook_ads), do: {:ok, FacebookAds}
+  def provider_for(:google_search_console), do: {:ok, GoogleSearchConsole}
   def provider_for(:quickbooks), do: {:ok, QuickBooks}
   def provider_for(_), do: {:error, :unsupported_provider}
 

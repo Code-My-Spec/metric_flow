@@ -24,18 +24,20 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   alias MetricFlow.Integrations
 
-  # Canonical set of OAuth providers always shown in the connection UI.
-  # These are providers (what you authenticate with), not platforms (what you sync from).
-  # Google covers both Google Ads and Google Analytics via a single OAuth connection.
+  # Each platform has its own OAuth connection and integration record.
   @canonical_providers [
-    %{key: :google, name: "Google", description: "Google Ads and Google Analytics"},
+    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising"},
+    %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data"},
     %{key: :facebook_ads, name: "Facebook", description: "Facebook and Instagram advertising"},
     %{key: :quickbooks, name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   ]
 
-  # Display metadata for OAuth providers, keyed by provider atom.
+  # Display metadata for providers, keyed by provider atom.
   @provider_metadata %{
-    google: %{name: "Google", description: "Google Ads and Google Analytics"},
+    google_analytics: %{name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
+    google_search_console: %{name: "Google Search Console", description: "Search performance and indexing data"},
     facebook_ads: %{name: "Facebook", description: "Facebook and Instagram advertising"},
     quickbooks: %{name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   }
@@ -122,9 +124,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           Connected as {@integration.provider_metadata["email"] || "unknown"}
         </p>
 
-        <div :if={@integration.provider_metadata["property_id"]} class="mt-2 p-2 bg-base-200 rounded text-sm">
-          <span class="font-medium">GA4 Property:</span>
-          <span class="text-base-content/70">{@integration.provider_metadata["property_id"]}</span>
+        <% meta_key = metadata_key_for_provider(String.to_existing_atom(@provider)) %>
+        <div :if={@integration.provider_metadata[meta_key]} class="mt-2 p-2 bg-base-200 rounded text-sm">
+          <span class="font-medium">{account_labels(String.to_existing_atom(@provider)).id_label}:</span>
+          <span class="text-base-content/70">{@integration.provider_metadata[meta_key]}</span>
         </div>
 
         <div class="flex flex-col gap-2 mt-3">
@@ -276,7 +279,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span>Could not fetch properties automatically. The Analytics Admin API may not be enabled in your Google Cloud project. You can enter your property ID manually below.</span>
+                <span>Could not fetch accounts automatically. You can enter your account ID manually below.</span>
               </div>
             <% end %>
 
@@ -305,7 +308,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 type="text"
                 name="manual_property_id"
                 value={@manual_property_id}
-                placeholder="properties/123456789"
+                placeholder={account_labels(String.to_existing_atom(@provider)).id_label}
                 data-role="manual-property-input"
                 class="input input-bordered input-sm w-full"
               />
@@ -408,18 +411,20 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     provider_str = socket.assigns.provider
     provider_atom = String.to_existing_atom(provider_str)
 
-    # Determine the property_id from either the radio selection or manual input
-    property_id =
+    # Determine the selected account ID from either the radio selection or manual input
+    account_id =
       case Map.get(params, "property_id") do
         "manual" -> String.trim(Map.get(params, "manual_property_id", ""))
         id when is_binary(id) and id != "" -> id
         _ -> String.trim(Map.get(params, "manual_property_id", ""))
       end
 
-    if property_id == "" do
-      {:noreply, put_flash(socket, :error, "Please select or enter a property ID.")}
+    if account_id == "" do
+      {:noreply, put_flash(socket, :error, "Please select or enter an account ID.")}
     else
-      case Integrations.update_provider_metadata(scope, provider_atom, %{"property_id" => property_id}) do
+      metadata_key = metadata_key_for_provider(provider_atom)
+
+      case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
         {:ok, _integration} ->
           {:noreply,
            socket
@@ -479,8 +484,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         else
           {accounts, accounts_error} = fetch_provider_accounts(socket, provider_atom, integration)
 
+          meta_key = metadata_key_for_provider(provider_atom)
+
           selected_property_id =
-            get_in(integration.provider_metadata || %{}, ["property_id"])
+            get_in(integration.provider_metadata || %{}, [meta_key])
 
           {:noreply,
            socket
@@ -540,22 +547,31 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # Private helpers — account fetching
   # ---------------------------------------------------------------------------
 
-  defp fetch_provider_accounts(socket, :google, _integration) do
+  defp fetch_provider_accounts(socket, :google_analytics, _integration) do
     scope = socket.assigns.current_scope
 
-    case Integrations.list_google_accounts(scope) do
+    case Integrations.list_google_accounts(scope, :google_analytics) do
       {:ok, accounts} -> {accounts, nil}
       {:error, :api_disabled} -> {[], :api_disabled}
       {:error, reason} -> {[], reason}
     end
   end
 
-  defp fetch_provider_accounts(socket, :google_analytics, _integration) do
-    # Google Analytics uses the same Google OAuth token
+  defp fetch_provider_accounts(socket, :google_ads, _integration) do
     scope = socket.assigns.current_scope
 
-    case Integrations.list_google_accounts(scope) do
+    case Integrations.list_google_ads_customers(scope) do
       {:ok, accounts} -> {accounts, nil}
+      {:error, :api_disabled} -> {[], :api_disabled}
+      {:error, reason} -> {[], reason}
+    end
+  end
+
+  defp fetch_provider_accounts(socket, :google_search_console, _integration) do
+    scope = socket.assigns.current_scope
+
+    case Integrations.list_search_console_sites(scope) do
+      {:ok, sites} -> {sites, nil}
       {:error, :api_disabled} -> {[], :api_disabled}
       {:error, reason} -> {[], reason}
     end
@@ -624,6 +640,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # Private helpers — utilities
   # ---------------------------------------------------------------------------
 
+  # Maps provider atoms to the metadata key used to store the selected account ID.
+  defp metadata_key_for_provider(:google_analytics), do: "property_id"
+  defp metadata_key_for_provider(:google_ads), do: "customer_id"
+  defp metadata_key_for_provider(:google_search_console), do: "site_url"
+  defp metadata_key_for_provider(:quickbooks), do: "realm_id"
+  defp metadata_key_for_provider(_), do: "property_id"
+
   defp provider_connected?(integrations, provider_key) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)
   end
@@ -637,12 +660,30 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     ArgumentError -> derive_display_name(provider)
   end
 
-  defp account_labels(:google) do
+  defp account_labels(:google_analytics) do
     %{
       chooser_text: "Choose which GA4 property to sync data from.",
       list_heading: "GA4 Properties",
       id_label: "GA4 Property ID",
       help_text: "Find this in Google Analytics under Admin → Property Settings"
+    }
+  end
+
+  defp account_labels(:google_ads) do
+    %{
+      chooser_text: "Choose which Google Ads customer account to sync data from.",
+      list_heading: "Customer Accounts",
+      id_label: "Customer ID",
+      help_text: "Find this in Google Ads under the account selector (10-digit number)"
+    }
+  end
+
+  defp account_labels(:google_search_console) do
+    %{
+      chooser_text: "Choose which site to sync search data from.",
+      list_heading: "Verified Sites",
+      id_label: "Site URL",
+      help_text: "The property URL as shown in Google Search Console"
     }
   end
 

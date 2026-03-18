@@ -39,6 +39,9 @@ defmodule MetricFlow.Integrations.Integration do
     :google_ads,
     :facebook_ads,
     :google_analytics,
+    :google_search_console,
+    :google_business,
+    :google_business_reviews,
     :quickbooks
   ]
 
