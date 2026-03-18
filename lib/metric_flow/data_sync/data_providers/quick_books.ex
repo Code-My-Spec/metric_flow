@@ -12,7 +12,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
 
   alias MetricFlow.Integrations.Integration
 
-  @base_url "https://quickbooks.api.intuit.com/v3/company"
+  @base_url Application.compile_env(:metric_flow, :quickbooks_api_url, "https://sandbox-quickbooks.api.intuit.com/v3/company")
 
   # ---------------------------------------------------------------------------
   # Public API
@@ -88,7 +88,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
     case Keyword.get(opts, :date_range) do
       nil ->
         today = Date.utc_today()
-        {:ok, {Date.add(today, -30), today}}
+        {:ok, {Date.add(today, -548), today}}
 
       {start_date, end_date} ->
         validate_date_range(start_date, end_date)
@@ -108,7 +108,9 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
   # ---------------------------------------------------------------------------
 
   defp fetch_report(integration, realm_id, report_type, start_date, end_date, opts) do
+    require Logger
     url = "#{@base_url}/#{realm_id}/reports/#{report_type}"
+    Logger.info("QuickBooks fetching: #{url} dates=#{start_date}..#{end_date}")
     accounting_method = Keyword.get(opts, :accounting_method, "Accrual")
     http_plug = Keyword.get(opts, :http_plug)
 
@@ -146,8 +148,17 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
     end
   end
 
-  defp handle_response(%Req.Response{status: 401}, _report_type), do: {:error, :unauthorized}
-  defp handle_response(%Req.Response{status: 403}, _report_type), do: {:error, :insufficient_permissions}
+  defp handle_response(%Req.Response{status: 401, body: body}, _report_type) do
+    require Logger
+    Logger.error("QuickBooks API 401: #{inspect(body)}")
+    {:error, :unauthorized}
+  end
+
+  defp handle_response(%Req.Response{status: 403, body: body}, _report_type) do
+    require Logger
+    Logger.error("QuickBooks API 403: #{inspect(body)}")
+    {:error, :insufficient_permissions}
+  end
   defp handle_response(%Req.Response{status: 404}, _report_type), do: {:error, :company_not_found}
 
   defp handle_response(%Req.Response{status: 400, body: body}, _report_type) do

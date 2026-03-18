@@ -18,7 +18,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
 
   @api_version "v22.0"
   @api_base_url "https://graph.facebook.com"
-  @default_date_range_days 30
+  @default_date_range_days 548
   @page_limit 100
 
   @conversion_action_types ["purchase", "offsite_conversion"]
@@ -74,12 +74,18 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
   # ---------------------------------------------------------------------------
 
   defp resolve_ad_account_id(integration, opts) do
+    meta = integration.provider_metadata || %{}
+
     cond do
       Keyword.has_key?(opts, :ad_account_id) ->
         {:ok, to_string(Keyword.fetch!(opts, :ad_account_id))}
 
-      match?(%{"ad_account_id" => id} when not is_nil(id), integration.provider_metadata) ->
-        {:ok, integration.provider_metadata["ad_account_id"]}
+      is_binary(meta["ad_account_id"]) and meta["ad_account_id"] != "" ->
+        {:ok, meta["ad_account_id"]}
+
+      # Fallback: account selection may have saved under "property_id" before the key fix
+      is_binary(meta["property_id"]) and meta["property_id"] != "" ->
+        {:ok, meta["property_id"]}
 
       true ->
         {:error, :missing_ad_account_id}
@@ -96,7 +102,9 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
   end
 
   defp do_fetch(access_token, ad_account_id, date_range, breakdown, http_plug, after_cursor) do
+    require Logger
     url = "#{@api_base_url}/#{@api_version}/#{ad_account_id}/insights"
+    Logger.info("FacebookAds fetching: #{url} date_range=#{inspect(date_range)}")
 
     fields = build_fields(breakdown)
     level = if breakdown == :adset, do: "adset", else: "campaign"
@@ -153,6 +161,9 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
     with {:ok, decoded} <- decode_body(body),
          :ok <- check_for_oauth_error(decoded) do
       data = Map.get(decoded, "data", [])
+      require Logger
+      Logger.info("FacebookAds API returned #{length(data)} rows for #{ad_account_id}")
+      if data == [], do: Logger.info("FacebookAds API full response: #{inspect(decoded)}")
       metrics = Enum.flat_map(data, &transform_row(&1, ad_account_id))
       fetch_next_page(decoded, metrics, access_token, ad_account_id, date_range, breakdown, http_plug)
     end

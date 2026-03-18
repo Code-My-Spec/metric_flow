@@ -21,6 +21,8 @@ defmodule MetricFlow.Integrations do
   require Logger
 
   alias Assent.Strategy.OAuth2, as: AssentOAuth2
+  alias MetricFlow.Integrations.FacebookAdsAccounts
+  alias MetricFlow.Integrations.QuickBooksAccounts
   alias MetricFlow.Integrations.GoogleAccounts
   alias MetricFlow.Integrations.GoogleAdsAccounts
   alias MetricFlow.Integrations.GoogleSearchConsoleSites
@@ -315,6 +317,28 @@ defmodule MetricFlow.Integrations do
   def list_search_console_sites(%Scope{} = scope, opts \\ []) do
     with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_search_console) do
       GoogleSearchConsoleSites.list_sites(integration, opts)
+    end
+  end
+
+  @doc """
+  Lists Facebook Ad accounts accessible to the user's Facebook Ads integration.
+  """
+  @spec list_facebook_ads_accounts(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_facebook_ads_accounts(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :facebook_ads) do
+      FacebookAdsAccounts.list_accounts(integration, opts)
+    end
+  end
+
+  @doc """
+  Lists income accounts from the QuickBooks Chart of Accounts.
+  """
+  @spec list_quickbooks_accounts(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_quickbooks_accounts(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :quickbooks) do
+      QuickBooksAccounts.list_income_accounts(integration, opts)
     end
   end
 

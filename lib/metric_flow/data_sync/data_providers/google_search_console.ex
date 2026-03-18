@@ -73,7 +73,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsole do
       {start_date, end_date} -> {start_date, end_date}
       nil ->
         today = Date.utc_today()
-        {Date.add(today, -30), Date.add(today, -1)}
+        {Date.add(today, -548), Date.add(today, -1)}
     end
   end
 

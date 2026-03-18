@@ -16,7 +16,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   alias MetricFlow.Integrations.Integration
 
   @base_url "https://googleads.googleapis.com/v23/customers"
-  @default_date_range_days 30
+  @default_date_range_days 548
   @max_pages 100
 
   @impl true

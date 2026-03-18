@@ -476,9 +476,18 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     value = Map.get(meta, key)
 
     cond do
-      is_binary(value) and value != "" -> value
-      is_list(Map.get(meta, "selected_accounts")) -> Enum.join(Map.get(meta, "selected_accounts"), ", ")
-      true -> nil
+      is_binary(value) and value != "" ->
+        value
+
+      # Fallback: old integrations may have saved under "property_id"
+      is_binary(Map.get(meta, "property_id")) and Map.get(meta, "property_id") != "" ->
+        Map.get(meta, "property_id")
+
+      is_list(Map.get(meta, "selected_accounts")) ->
+        Enum.join(Map.get(meta, "selected_accounts"), ", ")
+
+      true ->
+        nil
     end
   end
 

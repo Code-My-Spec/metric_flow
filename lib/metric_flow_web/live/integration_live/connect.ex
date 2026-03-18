@@ -577,6 +577,26 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     end
   end
 
+  defp fetch_provider_accounts(socket, :facebook_ads, _integration) do
+    scope = socket.assigns.current_scope
+
+    case Integrations.list_facebook_ads_accounts(scope) do
+      {:ok, accounts} -> {accounts, nil}
+      {:error, :api_disabled} -> {[], :api_disabled}
+      {:error, reason} -> {[], reason}
+    end
+  end
+
+  defp fetch_provider_accounts(socket, :quickbooks, _integration) do
+    scope = socket.assigns.current_scope
+
+    case Integrations.list_quickbooks_accounts(scope) do
+      {:ok, accounts} -> {accounts, nil}
+      {:error, :api_disabled} -> {[], :api_disabled}
+      {:error, reason} -> {[], reason}
+    end
+  end
+
   defp fetch_provider_accounts(_socket, _provider, _integration) do
     {[], nil}
   end
