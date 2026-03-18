@@ -13,20 +13,30 @@ defmodule MetricFlow.Dashboards do
 
   use Boundary,
     deps: [MetricFlow, MetricFlow.Integrations, MetricFlow.Metrics],
-    exports: [Dashboard]
+    exports: [Dashboard, Visualization]
 
   alias MetricFlow.Dashboards.ChartBuilder
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.DashboardsRepository
+  alias MetricFlow.Dashboards.Visualization
+  alias MetricFlow.Dashboards.VisualizationsRepository
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
-  # Delegated repository functions
+  # Delegated repository functions — Dashboards
   # ---------------------------------------------------------------------------
 
   defdelegate get_dashboard(scope, id), to: DashboardsRepository
+
+  @doc "Returns all dashboards for the scoped user."
+  @spec list_dashboards(Scope.t()) :: list(Dashboard.t())
+  defdelegate list_dashboards(scope), to: DashboardsRepository
+
+  @doc "Returns all system-provided built-in dashboards."
+  @spec list_canned_dashboards() :: list(Dashboard.t())
+  defdelegate list_canned_dashboards(), to: DashboardsRepository
 
   @doc "Creates a new dashboard for the scoped user."
   @spec save_dashboard(Scope.t(), map()) :: {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
@@ -41,11 +51,68 @@ defmodule MetricFlow.Dashboards do
     DashboardsRepository.update_dashboard(dashboard, attrs)
   end
 
+  @doc """
+  Deletes a user-owned dashboard if it belongs to the scoped user.
+
+  Returns `{:ok, dashboard}` on success, `{:error, :not_found}` when the
+  dashboard doesn't exist or belongs to another user, and
+  `{:error, :unauthorized}` when the dashboard is built-in.
+  """
+  @spec delete_dashboard(Scope.t(), integer()) ::
+          {:ok, Dashboard.t()} | {:error, :not_found | :unauthorized}
+  def delete_dashboard(%Scope{} = scope, id) do
+    with {:ok, dashboard} <- DashboardsRepository.get_dashboard(scope, id) do
+      delete_if_not_built_in(dashboard)
+    end
+  end
+
   @doc "Returns an Ecto changeset for a Dashboard."
   @spec dashboard_changeset(Dashboard.t(), map()) :: Ecto.Changeset.t()
   def dashboard_changeset(%Dashboard{} = dashboard, attrs) do
     Dashboard.changeset(dashboard, attrs)
   end
+
+  # ---------------------------------------------------------------------------
+  # Visualization functions
+  # ---------------------------------------------------------------------------
+
+  @doc "Retrieves a single visualization for the scoped user by ID."
+  @spec get_visualization(Scope.t(), integer()) ::
+          {:ok, Visualization.t()} | {:error, :not_found}
+  defdelegate get_visualization(scope, id), to: VisualizationsRepository
+
+  @doc "Returns all visualizations for the scoped user."
+  @spec list_visualizations(Scope.t()) :: list(Visualization.t())
+  defdelegate list_visualizations(scope), to: VisualizationsRepository
+
+  @doc "Creates a new standalone visualization for the scoped user."
+  @spec save_visualization(Scope.t(), map()) ::
+          {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
+  def save_visualization(%Scope{} = scope, attrs) do
+    VisualizationsRepository.create_visualization(scope, attrs)
+  end
+
+  @doc "Updates an existing visualization with the given attributes."
+  @spec update_visualization(Scope.t(), Visualization.t(), map()) ::
+          {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
+  def update_visualization(%Scope{}, %Visualization{} = visualization, attrs) do
+    VisualizationsRepository.update_visualization(visualization, attrs)
+  end
+
+  @doc "Returns an Ecto changeset for validating a Visualization name field."
+  @spec visualization_name_changeset(String.t()) :: Ecto.Changeset.t()
+  def visualization_name_changeset(name) do
+    import Ecto.Changeset
+
+    {%{}, %{name: :string}}
+    |> cast(%{name: name}, [:name])
+    |> validate_required([:name])
+    |> validate_length(:name, min: 1, max: 255)
+  end
+
+  # ---------------------------------------------------------------------------
+  # list_available_metrics/1
+  # ---------------------------------------------------------------------------
 
   @doc "Returns the list of available metric names for the scoped user."
   @spec list_available_metrics(Scope.t()) :: [String.t()]
@@ -141,6 +208,19 @@ defmodule MetricFlow.Dashboards do
   # ---------------------------------------------------------------------------
 
   @doc """
+  Builds a Vega-Lite JSON specification for a multi-series overlay line chart.
+  Multiple metrics appear as differently colored lines on a single chart.
+  Delegates to MetricFlow.Dashboards.ChartBuilder.build_multi_series_spec/2.
+  """
+  @spec build_multi_series_chart_spec(
+          String.t(),
+          list(%{metric_name: String.t(), data: list(%{date: Date.t(), value: float()})})
+        ) :: map()
+  defdelegate build_multi_series_chart_spec(title, time_series),
+    to: ChartBuilder,
+    as: :build_multi_series_spec
+
+  @doc """
   Builds a Vega-Lite JSON specification for a time series line chart for a
   single metric.
 
@@ -234,6 +314,15 @@ defmodule MetricFlow.Dashboards do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp delete_if_not_built_in(%Dashboard{built_in: true}), do: {:error, :unauthorized}
+
+  defp delete_if_not_built_in(%Dashboard{} = dashboard) do
+    case DashboardsRepository.delete_dashboard(dashboard) do
+      {:ok, deleted} -> {:ok, deleted}
+      {:error, _changeset} -> {:error, :not_found}
+    end
+  end
 
   # Resolves the distinct metric names to query, respecting platform and
   # metric_type filters. list_metric_names/2 only supports the :provider

@@ -327,7 +327,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       end)
     end
 
-    test "shows the metric type filter control when user has integrations", %{conn: conn} do
+    test "shows the metric toggles when user has integrations", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -335,7 +335,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        assert has_element?(lv, "[data-role='metric-type-filter']")
+        assert has_element?(lv, "[data-role='metric-toggles']")
       end)
     end
   end
@@ -453,40 +453,40 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   # ---------------------------------------------------------------------------
-  # describe "handle_event filter_metric_type"
+  # describe "handle_event toggle_metric"
   # ---------------------------------------------------------------------------
 
-  describe "handle_event filter_metric_type" do
-    test "filter_metric_type event updates the dashboard without error", %{conn: conn} do
+  describe "handle_event toggle_metric" do
+    test "toggle_metric event hides a metric from the chart and table", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
-      insert_metric!(user, %{metric_type: "traffic"})
+      insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        html = render_click(lv, "filter_metric_type", %{"metric_type" => "traffic"})
+        # Toggle off the "sessions" metric (it's a known enriched metric name won't match,
+        # but the "sessions" metric from insert_metric! will be in the list)
+        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
 
         assert is_binary(html)
         assert has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
 
-    test "filter_metric_type event with all clears the metric type filter", %{conn: conn} do
+    test "toggle_metric event re-enables a previously hidden metric", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
-      insert_metric!(user, %{metric_type: "traffic"})
+      insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        # First select a specific type
-        render_click(lv, "filter_metric_type", %{"metric_type" => "traffic"})
-
-        # Then clear with "all"
-        html = render_click(lv, "filter_metric_type", %{"metric_type" => "all"})
+        # Toggle off then back on
+        render_click(lv, "toggle_metric", %{"metric" => "sessions"})
+        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
 
         assert is_binary(html)
         assert has_element?(lv, "[data-role='metrics-dashboard']")

@@ -9,7 +9,10 @@ defmodule MetricFlowWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {MetricFlowWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers, %{"content-security-policy" => "default-src 'self'"}
+    plug :put_secure_browser_headers, %{
+      "content-security-policy" =>
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
     plug :fetch_current_scope_for_user
     plug MetricFlowWeb.Plugs.WhiteLabel
   end
@@ -86,9 +89,14 @@ defmodule MetricFlowWeb.Router do
 
       # Dashboard routes
       live "/dashboard", DashboardLive.Show, :index
+      live "/dashboards", DashboardLive.Index, :index
       live "/dashboards/new", DashboardLive.Editor, :new
       live "/dashboards/:id/edit", DashboardLive.Editor, :edit
       live "/dashboards/:id", DashboardLive.Show, :show
+
+      # Visualization routes
+      live "/visualizations/new", VisualizationLive.Editor, :new
+      live "/visualizations/:id/edit", VisualizationLive.Editor, :edit
 
       # Correlation routes
       live "/correlations", CorrelationLive.Index, :index

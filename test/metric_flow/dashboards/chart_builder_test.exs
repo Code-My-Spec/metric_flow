@@ -116,6 +116,115 @@ defmodule MetricFlow.Dashboards.ChartBuilderTest do
   end
 
   # ---------------------------------------------------------------------------
+  # build_multi_series_spec/2
+  # ---------------------------------------------------------------------------
+
+  describe "build_multi_series_spec/2" do
+    defp multi_series_data do
+      [
+        %{
+          metric_name: "Impressions",
+          data: [
+            %{date: ~D[2025-01-01], value: 100.0},
+            %{date: ~D[2025-01-02], value: 150.0}
+          ]
+        },
+        %{
+          metric_name: "Clicks",
+          data: [
+            %{date: ~D[2025-01-01], value: 20.0},
+            %{date: ~D[2025-01-02], value: 35.0}
+          ]
+        }
+      ]
+    end
+
+    test "returns a map with a '$schema' key pointing to a Vega-Lite schema URL" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["$schema"] =~ "vega-lite"
+    end
+
+    test "returned map includes a 'mark' key configured for a line chart" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      assert is_map(spec["mark"])
+      assert spec["mark"]["type"] == "line"
+      assert spec["mark"]["point"] == true
+      assert spec["mark"]["tooltip"] == true
+    end
+
+    test "encoding includes 'color' mapped to the 'metric' field with nominal type" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      assert spec["encoding"]["color"]["field"] == "metric"
+      assert spec["encoding"]["color"]["type"] == "nominal"
+    end
+
+    test "flattened data contains entries from all provided metrics with a 'metric' field" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      values = spec["data"]["values"]
+      assert length(values) == 4
+
+      impressions = Enum.filter(values, &(&1["metric"] == "Impressions"))
+      clicks = Enum.filter(values, &(&1["metric"] == "Clicks"))
+
+      assert length(impressions) == 2
+      assert length(clicks) == 2
+    end
+
+    test "title in the returned spec matches the title argument" do
+      spec = ChartBuilder.build_multi_series_spec("Overview", multi_series_data())
+
+      assert spec["title"] == "Overview"
+    end
+
+    test "returns a valid Vega-Lite spec when given an empty metrics list" do
+      spec = ChartBuilder.build_multi_series_spec("Empty", [])
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["data"]["values"] == []
+    end
+
+    test "returns a valid Vega-Lite spec when given a single metric with data" do
+      single = [%{metric_name: "Revenue", data: [%{date: ~D[2025-03-01], value: 500.0}]}]
+      spec = ChartBuilder.build_multi_series_spec("Single", single)
+
+      values = spec["data"]["values"]
+      assert length(values) == 1
+      assert hd(values)["metric"] == "Revenue"
+      assert hd(values)["date"] == "2025-03-01"
+    end
+
+    test "dates in data values are serialized as ISO 8601 strings" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      values = spec["data"]["values"]
+      assert Enum.all?(values, fn v -> is_binary(v["date"]) end)
+      assert Enum.any?(values, fn v -> v["date"] == "2025-01-01" end)
+    end
+
+    test "returns a valid spec with multiple metrics having overlapping date ranges" do
+      overlapping = [
+        %{metric_name: "A", data: [%{date: ~D[2025-01-01], value: 10.0}]},
+        %{metric_name: "B", data: [%{date: ~D[2025-01-01], value: 20.0}]}
+      ]
+
+      spec = ChartBuilder.build_multi_series_spec("Overlap", overlapping)
+
+      values = spec["data"]["values"]
+      assert length(values) == 2
+
+      dates = Enum.map(values, & &1["date"])
+      assert dates == ["2025-01-01", "2025-01-01"]
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # build_bar_chart_spec/2
   # ---------------------------------------------------------------------------
 

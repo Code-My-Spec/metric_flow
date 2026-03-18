@@ -1,6 +1,6 @@
 # MetricFlow.Dashboards.ChartBuilder
 
-Pure module for building Vega-Lite chart specifications. Constructs time series line charts, bar charts, and summary stats visualizations using the vega_lite Elixir package. All functions are pure transformations — they accept data and return a Vega-Lite spec map with no side effects. The generated specs are JSON-encodable and intended to be passed to vega-embed on the client.
+Pure module for building Vega-Lite chart specifications. Constructs single-metric charts (line, bar, area) and multi-series overlay charts using the vega_lite Elixir package. All functions are pure transformations — they accept data and return a Vega-Lite spec map with no side effects. The generated specs are JSON-encodable and intended to be passed to vega-embed on the client.
 
 ## Type
 
@@ -36,6 +36,60 @@ Builds a Vega-Lite line chart spec for a single metric's time series data. The r
 - data values in the spec contain the provided data points with dates serialized as ISO 8601 strings
 - returns a valid Vega-Lite spec when given an empty data list
 - returns a valid Vega-Lite spec when given a single data point
+
+### build_multi_series_spec/2
+
+Builds a Vega-Lite multi-series line chart spec that overlays multiple metrics as differently colored lines on a single chart. Each metric becomes a separate colored line identified by name in the legend. This is the primary chart type for the "All Metrics" dashboard — the Looker Studio replacement.
+
+```elixir
+@spec build_multi_series_spec(String.t(), list(%{metric_name: String.t(), data: list(%{date: Date.t(), value: float()})})) :: map()
+```
+
+**Process**:
+1. Flatten the list of `%{metric_name, data}` entries into a single list of data points, each with keys `date` (ISO 8601 string), `value` (float), and `metric` (the metric_name string)
+2. Create a new VegaLite spec with title set to the title argument
+3. Load the flattened data points via VegaLite.data_from_values/2
+4. Set the mark to :line with point: true and tooltip: true
+5. Encode the x-axis to the "date" field with type: :temporal
+6. Encode the y-axis to the "value" field with type: :quantitative
+7. Encode color to the "metric" field with type: :nominal to create one colored line per metric
+8. Call VegaLite.to_spec/1 to convert the builder struct to a JSON-encodable map and return it
+
+**Test Assertions**:
+- returns a map with a "$schema" key pointing to a Vega-Lite schema URL
+- returned map includes a "mark" key configured for a line chart
+- encoding includes "color" mapped to the "metric" field with nominal type
+- flattened data contains entries from all provided metrics with a "metric" field for each
+- renders one colored line per metric in the legend
+- title in the returned spec matches the title argument
+- returns a valid Vega-Lite spec when given an empty metrics list
+- returns a valid Vega-Lite spec when given a single metric with data
+- returns a valid Vega-Lite spec when given multiple metrics with overlapping date ranges
+- dates in data values are serialized as ISO 8601 strings
+
+### build_area_chart_spec/2
+
+Builds a Vega-Lite area chart spec for a single metric's time series data. Same structure as line chart but with area mark.
+
+```elixir
+@spec build_area_chart_spec(String.t(), list(%{date: Date.t(), value: float()})) :: map()
+```
+
+**Process**:
+1. Convert each data point's date from a Date struct to an ISO 8601 string
+2. Create a new VegaLite spec with title set to the metric_name argument
+3. Load the converted data points via VegaLite.data_from_values/2
+4. Set the mark to :area with line: true and opacity: 0.3
+5. Encode the x-axis to the "date" field with type: :temporal
+6. Encode the y-axis to the "value" field with type: :quantitative
+7. Call VegaLite.to_spec/1 and return
+
+**Test Assertions**:
+- returns a map with a "$schema" key pointing to a Vega-Lite schema URL
+- returned map includes a "mark" key configured for an area chart
+- returned map includes encoding with "x" temporal and "y" quantitative
+- title matches the metric_name argument
+- returns a valid spec for empty data
 
 ### build_bar_chart_spec/2
 

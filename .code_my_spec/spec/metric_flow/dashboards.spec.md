@@ -1,6 +1,6 @@
 # MetricFlow.Dashboards
 
-Public API boundary for the Dashboards bounded context. Aggregates and shapes metric data from the Metrics context into chart-ready structures for the "All Metrics" dashboard view. Delegates Vega-Lite chart construction to ChartBuilder. Delegates integration presence checks to Integrations.
+Public API boundary for the Dashboards bounded context. Manages dashboard collections and standalone visualizations. Aggregates and shapes metric data from the Metrics context into chart-ready structures. Delegates Vega-Lite chart construction (single-metric and multi-series) to ChartBuilder. Delegates structured query building to QueryBuilder. Delegates integration presence checks to Integrations.
 
 All public functions that require user isolation accept a `%Scope{}` as the first parameter. Pure utility functions (default_date_range/0, available_date_ranges/0) require no scope.
 
@@ -11,12 +11,15 @@ context
 ## Delegates
 
 - build_chart_spec/2: MetricFlow.Dashboards.ChartBuilder.build_time_series_spec/2
+- build_multi_series_chart_spec/2: MetricFlow.Dashboards.ChartBuilder.build_multi_series_spec/2
+- build_area_chart_spec/2: MetricFlow.Dashboards.ChartBuilder.build_area_chart_spec/2
+- build_bar_chart_spec/2: MetricFlow.Dashboards.ChartBuilder.build_bar_chart_spec/2
 
 ## Functions
 
 ### get_dashboard_data/2
 
-Retrieves all data needed for the "All Metrics" dashboard view for the scoped user. Calls Metrics for time series data and aggregated summary statistics, and Integrations for the list of connected platforms. Returns a unified map that the LiveView can render directly.
+Retrieves all data needed for a dashboard view for the scoped user. Calls Metrics for time series data and aggregated summary statistics, and Integrations for the list of connected platforms. Returns a unified map that the LiveView can render directly.
 
 Supported options:
 - `:platform` — filter metrics by provider atom (maps to `:provider` in Metrics)
@@ -96,6 +99,24 @@ Builds a Vega-Lite JSON specification for a time series line chart for a single 
 - returns a valid Vega-Lite spec for an empty data list
 - data points in the spec have dates serialized as ISO 8601 strings
 
+### build_multi_series_chart_spec/2
+
+Builds a Vega-Lite JSON specification for a multi-series overlay line chart. Multiple metrics appear as differently colored lines on a single chart. Delegates to MetricFlow.Dashboards.ChartBuilder.build_multi_series_spec/2.
+
+```elixir
+@spec build_multi_series_chart_spec(String.t(), list(%{metric_name: String.t(), data: list(%{date: Date.t(), value: float()})})) :: map()
+```
+
+**Process**:
+1. Delegate directly to `ChartBuilder.build_multi_series_spec/2` with the title and time_series arguments unchanged
+
+**Test Assertions**:
+- returns a map with a "$schema" key pointing to a Vega-Lite schema URL
+- encoding includes "color" mapped to the "metric" field for per-metric line colors
+- flattened data contains entries from all provided metrics
+- returns a valid spec for an empty metrics list
+- returns a valid spec for multiple metrics with overlapping date ranges
+
 ### default_date_range/0
 
 Returns the default date range tuple used when no date range filter is specified. The end date is yesterday (to exclude the incomplete current day) and the start date is 30 days prior to the end date. This is a pure function with no side effects.
@@ -170,11 +191,15 @@ Checks whether the scoped user has any connected integrations. Used by the LiveV
 
 ### MetricFlow.Dashboards.ChartBuilder
 
-Pure module for building Vega-Lite chart specifications. Constructs time series line charts, bar charts, and summary stats visualizations using the vega_lite Elixir package. All functions are pure transformations that accept data and return a JSON-encodable spec map with no side effects.
+Pure module for building Vega-Lite chart specifications. Constructs single-metric line/bar/area charts, multi-series overlay charts with color encoding per metric, and summary stat card maps. All functions are pure transformations that accept data and return a JSON-encodable spec map with no side effects.
+
+### MetricFlow.Dashboards.QueryBuilder
+
+Pure module for building structured query parameters from filter inputs. Takes date range, platform, and metric name selections and returns keyword lists suitable for passing to Metrics context query functions. No side effects.
 
 ### MetricFlow.Dashboards.Dashboard
 
-Ecto schema representing a named dashboard collection. Stores the dashboard name, owner reference, and a boolean flag indicating whether it is a built-in (canned) dashboard.
+Ecto schema representing a named dashboard collection. Stores the dashboard name, owner reference, and a boolean flag indicating whether it is a built-in (canned) dashboard. Has many visualizations through DashboardVisualization.
 
 ### MetricFlow.Dashboards.DashboardVisualization
 
@@ -182,12 +207,12 @@ Ecto schema representing the join between a dashboard and a visualization. Track
 
 ### MetricFlow.Dashboards.Visualization
 
-Ecto schema representing a standalone Vega-Lite visualization. Stores the visualization name, owner reference, the Vega-Lite spec map, and a boolean flag indicating whether the visualization is shareable.
+Ecto schema representing a standalone Vega-Lite visualization. Stores the visualization name, owner reference, the Vega-Lite spec map, query parameters used to generate the spec, and a boolean flag indicating whether the visualization is shareable.
 
 ### MetricFlow.Dashboards.DashboardsRepository
 
-Data access layer for dashboard and visualization persistence. Handles all Repo interactions for Dashboard and Visualization schemas, including CRUD operations and scoped queries.
+Data access layer for dashboard persistence. Handles all Repo interactions for Dashboard schemas, including CRUD operations, scoped queries, and canned dashboard listing.
 
 ### MetricFlow.Dashboards.VisualizationsRepository
 
-Data access layer scoped specifically to Visualization records. Handles listing, creating, updating, and deleting visualizations for a given user scope.
+Data access layer for Visualization records. Handles listing, creating, updating, and deleting visualizations for a given user scope.

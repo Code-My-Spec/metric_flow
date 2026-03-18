@@ -11,6 +11,26 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
 
   alias VegaLite, as: Vl
 
+  # Dark theme config matching DaisyUI dark theme colors
+  @dark_theme %{
+    "background" => "transparent",
+    "title" => %{"color" => "#a6adbb"},
+    "axis" => %{
+      "labelColor" => "#a6adbb",
+      "titleColor" => "#a6adbb",
+      "gridColor" => "#2a323c",
+      "domainColor" => "#3d4451",
+      "tickColor" => "#3d4451"
+    },
+    "legend" => %{
+      "labelColor" => "#a6adbb",
+      "titleColor" => "#a6adbb"
+    },
+    "view" => %{
+      "stroke" => "transparent"
+    }
+  }
+
   @doc """
   Builds a Vega-Lite line chart spec for a single metric's time series data.
 
@@ -25,12 +45,45 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
         %{"date" => Date.to_iso8601(date), "value" => value}
       end)
 
-    Vl.new(title: metric_name)
+    Vl.new(title: metric_name, width: "container", height: 400)
     |> Vl.data_from_values(values)
     |> Vl.mark(:line, point: true)
     |> Vl.encode_field(:x, "date", type: :temporal)
     |> Vl.encode_field(:y, "value", type: :quantitative)
     |> Vl.to_spec()
+    |> apply_dark_theme()
+  end
+
+  @doc """
+  Builds a Vega-Lite multi-series line chart spec that overlays multiple metrics
+  as differently colored lines on a single chart. Each metric becomes a separate
+  colored line identified by name in the legend.
+
+  The input is a title and a list of `%{metric_name, data}` entries (the same
+  shape returned by `Dashboards.get_dashboard_data/2` in its `:time_series` key).
+  Data points are flattened into a single dataset with a "metric" field for color
+  encoding.
+  """
+  @spec build_multi_series_spec(
+          String.t(),
+          list(%{metric_name: String.t(), data: list(%{date: Date.t(), value: float()})})
+        ) :: map()
+  def build_multi_series_spec(title, time_series) do
+    values =
+      Enum.flat_map(time_series, fn %{metric_name: metric_name, data: data} ->
+        Enum.map(data, fn %{date: date, value: value} ->
+          %{"date" => Date.to_iso8601(date), "value" => value, "metric" => metric_name}
+        end)
+      end)
+
+    Vl.new(title: title, width: "container", height: 400)
+    |> Vl.data_from_values(values)
+    |> Vl.mark(:line, point: true, tooltip: true)
+    |> Vl.encode_field(:x, "date", type: :temporal)
+    |> Vl.encode_field(:y, "value", type: :quantitative)
+    |> Vl.encode_field(:color, "metric", type: :nominal)
+    |> Vl.to_spec()
+    |> apply_dark_theme()
   end
 
   @doc """
@@ -64,6 +117,14 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
           max: float(),
           count: integer()
         }) :: map()
+  # ---------------------------------------------------------------------------
+  # Dark theme
+  # ---------------------------------------------------------------------------
+
+  defp apply_dark_theme(spec) do
+    Map.put(spec, "config", @dark_theme)
+  end
+
   def build_summary_card_spec(metric_name, %{
         sum: sum,
         avg: avg,
