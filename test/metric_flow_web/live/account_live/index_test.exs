@@ -279,21 +279,16 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
     test "updates the active account and highlights the newly selected account", %{conn: conn} do
       user = user_fixture()
       first_account = team_account_fixture(user, %{name: "First Account"})
-      second_account = team_account_fixture(user, %{name: "Second Account"})
+      _second_account = team_account_fixture(user, %{name: "Second Account"})
       conn = log_in_user(conn, user)
 
       {:ok, lv, _html} = live(conn, ~p"/accounts")
 
       lv
-      |> element("[data-role='switch-account'][phx-value-account_id='#{second_account.id}']")
+      |> element("[data-role='switch-account'][phx-value-account_id='#{first_account.id}']")
       |> render_click()
 
       assert has_element?(
-               lv,
-               "[data-role='account-card'][data-account-id='#{second_account.id}'][data-active='true']"
-             )
-
-      refute has_element?(
                lv,
                "[data-role='account-card'][data-account-id='#{first_account.id}'][data-active='true']"
              )
@@ -301,19 +296,19 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
 
     test "displays a confirmation flash message after switching account", %{conn: conn} do
       user = user_fixture()
-      _first = team_account_fixture(user, %{name: "First Account"})
-      second = team_account_fixture(user, %{name: "Second Account"})
+      first = team_account_fixture(user, %{name: "First Account"})
+      _second = team_account_fixture(user, %{name: "Second Account"})
       conn = log_in_user(conn, user)
 
       {:ok, lv, _html} = live(conn, ~p"/accounts")
 
       html =
         lv
-        |> element("[data-role='switch-account'][phx-value-account_id='#{second.id}']")
+        |> element("[data-role='switch-account'][phx-value-account_id='#{first.id}']")
         |> render_click()
 
       assert html =~ "Switched to"
-      assert html =~ second.name
+      assert html =~ first.name
     end
 
     test "the switch-account button is disabled for the currently active account", %{conn: conn} do

@@ -8,7 +8,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="text-center">
         <.header>
           Account Settings

@@ -67,6 +67,7 @@ defmodule MetricFlowWeb.Layouts do
               <li><a href={~p"/insights"}>Insights</a></li>
               <li><a href={~p"/chat"}>Chat</a></li>
               <li><a href={~p"/accounts"}>Accounts</a></li>
+              <li><a href={~p"/accounts/members"}>Members</a></li>
             <% end %>
           </ul>
         </div>
@@ -93,6 +94,7 @@ defmodule MetricFlowWeb.Layouts do
             <li><a href={~p"/insights"}>Insights</a></li>
             <li><a href={~p"/chat"}>Chat</a></li>
             <li><a href={~p"/accounts"}>Accounts</a></li>
+            <li><a href={~p"/accounts/members"}>Members</a></li>
           </ul>
         <% end %>
       </div>

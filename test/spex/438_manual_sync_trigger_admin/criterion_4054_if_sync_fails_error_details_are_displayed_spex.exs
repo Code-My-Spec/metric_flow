@@ -47,8 +47,8 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
       given_ "the user is on the integrations page and a sync is in progress for Google", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
 
-        # Trigger sync to put the provider into the syncing state
-        render_click(view, "sync", %{"provider" => "google"})
+        # Trigger sync to put the platform into the syncing state
+        render_click(view, "sync", %{"platform" => "google_analytics", "provider" => "google"})
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
       then_ "the Sync Now button is re-enabled so the user can retry", context do
         refute has_element?(
           context.view,
-          "button[phx-click='sync'][phx-value-provider='google'][disabled]"
+          "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
         ),
         "Expected the Sync Now button to be re-enabled after sync failed, but it was still disabled"
 

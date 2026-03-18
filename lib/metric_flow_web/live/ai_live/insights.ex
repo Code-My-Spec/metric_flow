@@ -45,7 +45,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
     assigns = assign(assigns, :filtered_insights, filter_insights(assigns.insights, assigns.active_type_filter))
 
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="max-w-4xl mx-auto mf-content px-4 py-8">
         <%!-- Page header --%>
         <h1 class="text-2xl font-bold">AI Insights</h1>

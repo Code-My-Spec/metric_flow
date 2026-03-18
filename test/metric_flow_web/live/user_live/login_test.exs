@@ -56,7 +56,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
 
       conn = submit_form(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/integrations"
     end
 
     test "redirects to login page with a flash error if credentials are invalid", %{

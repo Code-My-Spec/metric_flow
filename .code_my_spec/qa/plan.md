@@ -165,6 +165,31 @@ Dev mailbox: http://localhost:4070/dev/mailbox
 
 Run this script before any story that requires a logged-in user. Registration stories that test the form submission flow should use a fresh unique email rather than the seeded user, to avoid duplicate-email conflicts.
 
+### Story 426 — Role State Reset Required
+
+IMPORTANT: Story 426 (Multi-User Account Access) tests role-based permissions and role
+changes. QA test runs that exercise role changes (Scenarios 5, 6, 7) will mutate the
+`account_members` table. Roles can drift between runs — for example, `qa@example.com`
+may end up as `admin` instead of `owner`, or `qa-member@example.com` may be promoted
+to `owner`.
+
+**Always re-run seeds at the start of each Story 426 QA session** to reset roles to
+the known baseline before testing:
+
+```bash
+mix run priv/repo/qa_seeds.exs
+```
+
+The seed script's role-reset section (lines 123–143 of `priv/repo/qa_seeds.exs`)
+explicitly resets:
+- `qa@example.com` → `owner` in "QA Test Account"
+- `qa-member@example.com` → `read_only` in "QA Test Account"
+
+If seeds were skipped and Scenarios 5, 6, or 7 fail with unexpected role errors
+(e.g., "You are not authorized to change roles" or the invite form showing only
+`account_manager`, `read_only`, `member` roles), run the seed script to restore the
+baseline and retry.
+
 ### Switching users
 
 To switch between users during a QA session, clear cookies and re-login via MCP:

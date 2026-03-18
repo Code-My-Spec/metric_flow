@@ -79,7 +79,7 @@ existing_team_account =
     )
   )
 
-_team_account =
+team_account =
   case existing_team_account do
     nil ->
       {:ok, account} =
@@ -97,37 +97,111 @@ _team_account =
   end
 
 # ---------------------------------------------------------------------------
+# 2a. Reset membership roles to expected baseline
+#
+# Roles can drift between QA runs (e.g. a test swaps owner/member roles).
+# We always reset qa@example.com to :owner and qa-member@example.com to
+# :read_only so each QA run starts from a known state.
+# ---------------------------------------------------------------------------
+
+IO.puts("\n--- Reset Membership Roles ---")
+
+# Ensure qa-member@example.com is a member of the team account first
+existing_member_membership =
+  Repo.one(
+    from(m in MetricFlow.Accounts.AccountMember,
+      where: m.account_id == ^team_account.id and m.user_id == ^qa_member.id,
+      limit: 1
+    )
+  )
+
+if is_nil(existing_member_membership) do
+  Accounts.add_user_to_account(scope, qa_member.id, team_account.id, :read_only)
+  IO.puts("  Added qa-member@example.com to QA Test Account as read_only")
+end
+
+# Reset qa@example.com to :owner
+{owner_count, _} =
+  Repo.update_all(
+    from(m in MetricFlow.Accounts.AccountMember,
+      where: m.account_id == ^team_account.id and m.user_id == ^qa_user.id
+    ),
+    set: [role: :owner]
+  )
+
+IO.puts("  Reset qa@example.com to owner (#{owner_count} row(s) updated)")
+
+# Reset qa-member@example.com to :read_only
+{member_count, _} =
+  Repo.update_all(
+    from(m in MetricFlow.Accounts.AccountMember,
+      where: m.account_id == ^team_account.id and m.user_id == ^qa_member.id
+    ),
+    set: [role: :read_only]
+  )
+
+IO.puts("  Reset qa-member@example.com to read_only (#{member_count} row(s) updated)")
+
+# ---------------------------------------------------------------------------
+# 2b. Clear sync history and sync jobs for QA user (clean slate for QA runs)
+# ---------------------------------------------------------------------------
+
+IO.puts("\n--- Clear Sync History ---")
+
+{sync_history_count, _} =
+  Repo.delete_all(
+    from(sh in "sync_history",
+      join: i in "integrations",
+      on: sh.integration_id == i.id,
+      where: i.user_id == ^qa_user.id
+    )
+  )
+
+{sync_jobs_count, _} =
+  Repo.delete_all(
+    from(sj in "sync_jobs",
+      join: i in "integrations",
+      on: sj.integration_id == i.id,
+      where: i.user_id == ^qa_user.id
+    )
+  )
+
+IO.puts("  Cleared #{sync_history_count} sync history + #{sync_jobs_count} sync job records for qa@example.com")
+
+# ---------------------------------------------------------------------------
 # 3. Google Ads Integration (with selected_accounts for QA Story 436)
 # ---------------------------------------------------------------------------
 
-IO.puts("\n--- Google Ads Integration ---")
+IO.puts("\n--- Google Integration ---")
 
 alias MetricFlow.Integrations.Integration
 
-existing_google_ads =
-  Repo.get_by(Integration, user_id: qa_user.id, provider: :google_ads)
+existing_google =
+  Repo.get_by(Integration, user_id: qa_user.id, provider: :google)
 
-case existing_google_ads do
+case existing_google do
   nil ->
     %Integration{}
     |> Integration.changeset(%{
       user_id: qa_user.id,
-      provider: :google_ads,
-      access_token: "qa_test_token",
-      refresh_token: "qa_test_refresh",
+      provider: :google,
+      access_token: System.get_env("GOOGLE_TEST_ACCESS_TOKEN", "qa_test_token"),
+      refresh_token: System.get_env("GOOGLE_TEST_REFRESH_TOKEN", "qa_test_refresh"),
       expires_at: DateTime.add(DateTime.utc_now(), 86400, :second),
-      granted_scopes: ["https://www.googleapis.com/auth/adwords"],
+      granted_scopes: ["https://www.googleapis.com/auth/adwords", "https://www.googleapis.com/auth/analytics.readonly"],
       provider_metadata: %{
         "email" => "qa@example.com",
-        "selected_accounts" => ["Campaign Alpha", "Campaign Beta"]
+        "property_id" => System.get_env("GA4_TEST_PROPERTY_ID", "properties/508773792"),
+        "customer_id" => System.get_env("GOOGLE_ADS_TEST_CUSTOMER_ID", "8952788948"),
+        "selected_accounts" => ["GA4 Property", "Google Ads Account"]
       }
     })
     |> Repo.insert!()
 
-    IO.puts("  Created google_ads integration for qa@example.com")
+    IO.puts("  Created google integration for qa@example.com")
 
   _existing ->
-    IO.puts("  Exists: google_ads integration for qa@example.com")
+    IO.puts("  Exists: google integration for qa@example.com")
 end
 
 # ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
           updated_at: DateTime.t() | nil
         }
 
-  @providers [:google_analytics, :google_ads, :facebook_ads, :quickbooks]
+  @providers [:google, :google_analytics, :google_ads, :facebook_ads, :quickbooks]
   @statuses [:success, :partial_success, :failed]
 
   schema "sync_history" do

@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+resolved
 
 ## Severity
 
@@ -19,3 +19,9 @@ All seven BDD spec files for story 429 navigate to  /invitations/:token/accept  
 ## Source
 
 QA Story 429 — `.code_my_spec/qa/429/result.md`
+
+## Resolution
+
+All seven BDD spex files in `test/spex/429_agency_or_user_accepts_client_invitation/` already use the correct `/invitations/#{token}` route (without the `/accept` suffix). The routes were corrected as part of earlier spec work. No further code changes were required; this issue was already resolved in the codebase.
+
+- **Verified:** Confirmed by inspecting all 7 spex files — none reference `/invitations/:token/accept`.

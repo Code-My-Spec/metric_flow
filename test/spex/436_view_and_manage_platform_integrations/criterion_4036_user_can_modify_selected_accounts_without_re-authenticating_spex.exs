@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the edit accounts page for an existing integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/google_ads/accounts/edit")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/google/accounts/edit")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the edit accounts page for an existing integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/google_ads/accounts/edit")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/google/accounts/edit")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the edit accounts page for an existing integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/google_ads/accounts/edit")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/google/accounts/edit")
         {:ok, Map.put(context, :view, view)}
       end
 

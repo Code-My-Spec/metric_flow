@@ -165,6 +165,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
     )
 
     update_job_status(scope, sync_job_id, :failed)
+
+    case fetch_integration(integration_id) do
+      {:ok, integration} ->
+        broadcast_sync_event(user_id, {:sync_failed, %{
+          provider: integration.provider,
+          reason: format_error(reason)
+        }})
+
+      _ ->
+        :ok
+    end
+
     error
   end
 
@@ -234,15 +246,19 @@ defmodule MetricFlow.DataSync.SyncWorker do
     errors = Enum.filter(results, &match?({:error, _, _}, &1))
 
     if length(errors) == length(provider_mods) do
-      error_message =
-        Enum.map_join(errors, "; ", fn {:error, mod, reason} ->
-          "#{inspect(mod)}: #{format_error(reason)}"
-        end)
+      Enum.each(errors, fn {:error, mod, reason} ->
+        provider = provider_name(mod, integration)
+        error_msg = format_error(reason)
 
-      record_history(scope, integration, sync_job_id, :failed, 0, error_message, started_at)
+        record_history_with_provider(
+          scope, integration, sync_job_id, provider,
+          :failed, 0, error_msg, started_at
+        )
+      end)
+
       {:error, :all_providers_failed}
     else
-      persist_and_record_success(scope, integration, sync_job_id, all_metrics, started_at)
+      persist_and_record_success(scope, integration, sync_job_id, all_metrics, results, started_at)
     end
   end
 
@@ -297,7 +313,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
   defp resolve_plug(_), do: nil
 
-  defp persist_and_record_success(scope, integration, sync_job_id, metrics, started_at) do
+  defp persist_and_record_success(scope, integration, sync_job_id, metrics, results, started_at) do
     {records_synced, _errors} =
       Enum.reduce(metrics, {0, []}, fn metric_attrs, {count, errors} ->
         case Metrics.create_metric(scope, metric_attrs) do
@@ -306,7 +322,28 @@ defmodule MetricFlow.DataSync.SyncWorker do
         end
       end)
 
-    record_history(scope, integration, sync_job_id, :success, records_synced, nil, started_at)
+    # Record a history entry per provider module
+    Enum.each(results, fn
+      {:ok, mod, mod_metrics} ->
+        record_history_with_provider(
+          scope, integration, sync_job_id,
+          provider_name(mod, integration),
+          :success, length(mod_metrics), nil, started_at
+        )
+
+      {:error, mod, reason} ->
+        record_history_with_provider(
+          scope, integration, sync_job_id,
+          provider_name(mod, integration),
+          :failed, 0, format_error(reason), started_at
+        )
+    end)
+
+    broadcast_sync_event(scope.user.id, {:sync_completed, %{
+      provider: integration.provider,
+      records_synced: records_synced,
+      completed_at: DateTime.utc_now()
+    }})
 
     case update_job_status(scope, sync_job_id, :completed) do
       {:ok, _} -> :ok
@@ -320,6 +357,37 @@ defmodule MetricFlow.DataSync.SyncWorker do
         record_history(scope, integration, sync_job_id, :failed, 0, error_message, started_at)
 
       {:error, _} ->
+        :ok
+    end
+  end
+
+  defp provider_name(mod, integration) do
+    if function_exported?(mod, :provider, 0), do: mod.provider(), else: integration.provider
+  end
+
+  defp record_history_with_provider(scope, integration, sync_job_id, provider, status, records_synced, error_message, started_at) do
+    now = DateTime.utc_now()
+
+    attrs = %{
+      integration_id: integration.id,
+      sync_job_id: sync_job_id,
+      provider: provider,
+      status: status,
+      records_synced: records_synced,
+      error_message: error_message,
+      started_at: started_at,
+      completed_at: now
+    }
+
+    case SyncHistoryRepository.create_sync_history(scope, attrs) do
+      {:ok, _history} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.warning(
+          "SyncWorker failed to create SyncHistory integration_id=#{integration.id} sync_job_id=#{sync_job_id} reason=#{inspect(reason)}"
+        )
+
         :ok
     end
   end
@@ -351,6 +419,16 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
+  defp broadcast_sync_event(user_id, message) do
+    Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
+  end
+
+  defp format_error(:missing_property_id), do: "No Google Analytics property configured. Go to the integration's account selection to choose a property."
+  defp format_error(:missing_customer_id), do: "No Google Ads customer ID configured. Go to the integration's account selection to choose an account."
+  defp format_error(:unauthorized), do: "Authorization expired. Please reconnect the integration."
+  defp format_error(:token_expired), do: "Token expired and could not be refreshed. Please reconnect."
+  defp format_error(:all_providers_failed), do: "All data providers failed. Check your integration settings."
+  defp format_error({:exception, _message}), do: "An unexpected error occurred during sync. Please try again."
   defp format_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason), do: inspect(reason)

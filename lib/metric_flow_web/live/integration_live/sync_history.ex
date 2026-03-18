@@ -21,6 +21,9 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
     google_ads: "Google Ads",
     facebook_ads: "Facebook Ads",
     google_analytics: "Google Analytics",
+    google_search_console: "Google Search Console",
+    google_business: "Google Business Profile",
+    google_business_reviews: "Google Business Reviews",
     quickbooks: "QuickBooks",
     google: "Google"
   }
@@ -32,7 +35,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-3xl mf-content px-4 py-8">
         <div class="mb-8">
           <h1 class="text-2xl font-bold">Sync History</h1>
@@ -46,8 +49,8 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
           <p class="mt-1 text-sm text-base-content/60">
             Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
-            Covers marketing providers (Google Ads, Facebook Ads, Google Analytics) and financial
-            providers (QuickBooks). On first sync, all available historical data is backfilled.
+            Covers marketing providers (Google Ads, Facebook Ads, Google Analytics, Google Business Profile,
+            Google Search Console) and financial providers (QuickBooks). On first sync, all available historical data is backfilled.
             Failed syncs are automatically retried up to 3 times with exponential backoff.
           </p>
           <div class="mt-3 flex items-center gap-2 flex-wrap">

@@ -20,7 +20,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mf-content mx-auto max-w-3xl">
         <div class="flex items-center gap-4 mb-6">
           <a href="/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>

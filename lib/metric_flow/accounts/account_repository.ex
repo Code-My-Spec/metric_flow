@@ -33,7 +33,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
     from(a in Account,
       join: m in AccountMember,
       on: m.account_id == a.id and m.user_id == ^user.id,
-      order_by: [desc: m.inserted_at, desc: m.id]
+      order_by: [desc: m.updated_at, desc: m.id]
     )
     |> Repo.all()
   end
@@ -324,6 +324,21 @@ defmodule MetricFlow.Accounts.AccountRepository do
   def get_personal_account_id(%Scope{user: user}) do
     from(m in AccountMember, where: m.user_id == ^user.id, select: m.account_id, limit: 1)
     |> Repo.one()
+  end
+
+  @doc """
+  Touches the `updated_at` timestamp on the user's membership for the given
+  account, so `list_accounts/1` (ordered by `updated_at DESC`) returns this
+  account first on subsequent page loads.
+  """
+  @spec touch_membership(Scope.t(), integer()) :: :ok
+  def touch_membership(%Scope{user: user}, account_id) do
+    from(m in AccountMember,
+      where: m.user_id == ^user.id and m.account_id == ^account_id
+    )
+    |> Repo.update_all(set: [updated_at: DateTime.utc_now()])
+
+    :ok
   end
 
   defp broadcast(topic, message) do

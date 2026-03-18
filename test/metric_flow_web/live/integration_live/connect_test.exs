@@ -193,7 +193,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       capture_log(fn ->
         {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
 
-        assert html =~ "Connect a Platform"
+        assert html =~ "Connect a Provider"
       end)
     end
 

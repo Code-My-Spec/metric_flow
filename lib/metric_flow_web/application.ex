@@ -33,14 +33,18 @@ defmodule MetricFlowWeb.Application do
     defp dev_children(children) do
       tunnel_config = Application.get_env(:metric_flow, :cloudflare_tunnel, [])
 
-      tunnel_opts =
-        Keyword.merge(tunnel_config,
-          endpoint: MetricFlowWeb.Endpoint,
-          otp_app: :metric_flow,
-          origin_url: tunnel_config[:origin_url] || "http://127.0.0.1:#{System.get_env("PORT") || "4000"}"
-        )
+      if tunnel_config[:enabled] do
+        tunnel_opts =
+          Keyword.merge(tunnel_config,
+            endpoint: MetricFlowWeb.Endpoint,
+            otp_app: :metric_flow,
+            origin_url: tunnel_config[:origin_url] || "http://127.0.0.1:#{System.get_env("PORT") || "4000"}"
+          )
 
-      children ++ [{ClientUtils.CloudflareTunnel, tunnel_opts}]
+        children ++ [{ClientUtils.CloudflareTunnel, tunnel_opts}]
+      else
+        children
+      end
     end
   else
     defp dev_children(children), do: children

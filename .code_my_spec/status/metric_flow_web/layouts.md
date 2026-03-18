@@ -1,7 +1,4 @@
-# MetricFlowWeb.Layouts
-
-
-## MetricFlowWeb.Layouts (module)
+# MetricFlowWeb.Layouts (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

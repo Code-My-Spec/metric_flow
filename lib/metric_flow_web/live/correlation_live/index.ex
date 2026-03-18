@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="max-w-5xl mx-auto mf-content px-4 py-8">
         <%!-- Page header --%>
         <div class="flex items-center justify-between mb-6 flex-wrap gap-3">

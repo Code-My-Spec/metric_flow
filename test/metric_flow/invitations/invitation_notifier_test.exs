@@ -1,5 +1,10 @@
 defmodule MetricFlow.Invitations.InvitationNotifierTest do
-  use ExUnit.Case, async: true
+  # Must NOT run async because one test mutates Application env globally
+  # (swapping MetricFlow.Mailer adapter to FailingAdapter). Running async
+  # would cause that window to race with other tests that call the mailer,
+  # e.g. user_fixture/0 calling deliver_login_instructions, resulting in
+  # {:error, :simulated_failure} leaking into unrelated test assertions.
+  use ExUnit.Case, async: false
 
   import Swoosh.TestAssertions
 

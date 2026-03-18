@@ -9,8 +9,8 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
     scenario "user can access account selection without OAuth re-authentication" do
       given_ :user_logged_in_as_owner
 
-      given_ "the user navigates to the integration connect page for Google Ads", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to the integration connect page for Google", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -44,14 +44,14 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
     scenario "modify accounts page provides account selection without OAuth prompt" do
       given_ :user_logged_in_as_owner
 
-      given_ "the user navigates to modify accounts for a connected platform", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to modify accounts for a connected provider", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the page title references account selection or modification", context do
         html = render(context.view)
-        assert html =~ "account" or html =~ "Account" or html =~ "Connect" or html =~ "platform"
+        assert html =~ "account" or html =~ "Account" or html =~ "Connect" or html =~ "provider"
         :ok
       end
 

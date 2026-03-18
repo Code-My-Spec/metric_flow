@@ -29,7 +29,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-lg mf-content px-4 py-8">
         <div class="mb-6">
           <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>

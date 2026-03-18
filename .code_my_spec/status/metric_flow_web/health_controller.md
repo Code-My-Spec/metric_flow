@@ -1,7 +1,4 @@
-# MetricFlowWeb.HealthController
-
-
-## MetricFlowWeb.HealthController (module)
+# MetricFlowWeb.HealthController (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

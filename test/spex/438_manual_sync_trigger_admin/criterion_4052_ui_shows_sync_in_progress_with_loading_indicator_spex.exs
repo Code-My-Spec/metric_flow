@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
 
       when_ "the user clicks the Sync Now button on the connected integration", context do
         context.view
-        |> element("button[phx-click='sync']", "Sync Now")
+        |> element("[data-platform='google_analytics'] button[phx-click='sync']", "Sync Now")
         |> render_click()
 
         {:ok, context}
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
 
       when_ "the user clicks the Sync Now button to start a sync", context do
         context.view
-        |> element("button[phx-click='sync']", "Sync Now")
+        |> element("[data-platform='google_analytics'] button[phx-click='sync']", "Sync Now")
         |> render_click()
 
         {:ok, context}

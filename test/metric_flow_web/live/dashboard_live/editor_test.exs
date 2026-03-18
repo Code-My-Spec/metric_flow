@@ -130,14 +130,14 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
 
-    test "renders a cancel link back to /dashboards", %{conn: conn} do
+    test "renders a cancel link back to /dashboard", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
 
-        assert has_element?(lv, "a[href='/dashboards']", "Cancel")
+        assert has_element?(lv, "a[href='/dashboard']", "Cancel")
       end)
     end
   end
@@ -171,7 +171,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
 
-    test "redirects to /dashboards when the dashboard does not belong to the current account", %{
+    test "redirects to /dashboard when the dashboard does not belong to the current account", %{
       conn: conn
     } do
       owner = user_fixture()
@@ -180,17 +180,17 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, other_user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboards"}}} =
+        assert {:error, {:redirect, %{to: "/dashboard"}}} =
                  live(conn, ~p"/dashboards/#{dashboard.id}/edit")
       end)
     end
 
-    test "redirects to /dashboards when the dashboard id does not exist", %{conn: conn} do
+    test "redirects to /dashboard when the dashboard id does not exist", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboards"}}} =
+        assert {:error, {:redirect, %{to: "/dashboard"}}} =
                  live(conn, ~p"/dashboards/999999/edit")
       end)
     end
@@ -210,8 +210,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
         html =
           lv
-          |> element("[data-role='dashboard-name-input']")
-          |> render_change(%{"dashboard" => invalid_dashboard_attrs()})
+          |> form("form", %{"dashboard" => invalid_dashboard_attrs()})
+          |> render_change()
 
         assert html =~ "can&#39;t be blank"
       end)
@@ -225,13 +225,13 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
 
         lv
-        |> element("[data-role='dashboard-name-input']")
-        |> render_change(%{"dashboard" => invalid_dashboard_attrs()})
+        |> form("form", %{"dashboard" => invalid_dashboard_attrs()})
+        |> render_change()
 
         html =
           lv
-          |> element("[data-role='dashboard-name-input']")
-          |> render_change(%{"dashboard" => valid_dashboard_attrs()})
+          |> form("form", %{"dashboard" => valid_dashboard_attrs()})
+          |> render_change()
 
         refute html =~ "can&#39;t be blank"
       end)
@@ -790,8 +790,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         lv |> element("[data-role='confirm-add-btn']") |> render_click()
 
         lv
-        |> element("[data-role='dashboard-name-input']")
-        |> render_change(%{"dashboard" => valid_dashboard_attrs()})
+        |> form("form", %{"dashboard" => valid_dashboard_attrs()})
+        |> render_change()
 
         lv
         |> element("button", "Save Dashboard")
@@ -815,8 +815,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         lv |> element("[data-role='confirm-add-btn']") |> render_click()
 
         lv
-        |> element("[data-role='dashboard-name-input']")
-        |> render_change(%{"dashboard" => invalid_dashboard_attrs()})
+        |> form("form", %{"dashboard" => invalid_dashboard_attrs()})
+        |> render_change()
 
         html =
           lv
@@ -835,8 +835,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
 
         lv
-        |> element("[data-role='dashboard-name-input']")
-        |> render_change(%{"dashboard" => valid_dashboard_attrs()})
+        |> form("form", %{"dashboard" => valid_dashboard_attrs()})
+        |> render_change()
 
         html =
           lv

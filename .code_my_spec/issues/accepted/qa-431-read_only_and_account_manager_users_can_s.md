@@ -1,5 +1,9 @@
 # Read-only and account_manager users can see the full members list
 
+## Status
+
+resolved
+
 ## Severity
 
 high
@@ -18,9 +22,4 @@ QA Story 431 — `.code_my_spec/qa/431/result.md`
 
 ## Resolution
 
-Added `:if={@can_manage}` guard on the members table card div. Non-admin/owner users now see no members list — the entire section is excluded from the DOM.
-
-Files changed:
-- `lib/metric_flow_web/live/account_live/members.ex` — added `:if={@can_manage}` to members table container
-
-Verified: 450 account/agencies tests pass, 0 failures.
+Already implemented — members list gated by can_manage? which only allows owner/admin. QA likely observed wrong account due to ordering bug (now fixed).

@@ -41,7 +41,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
       client_secret: client_secret,
       redirect_uri: redirect_uri,
       authorization_params: [
-        scope: "email profile https://www.googleapis.com/auth/analytics.readonly",
+        scope: "email profile https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/adwords",
         access_type: "offline",
         prompt: "consent"
       ]

@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
                   disabled={account.id == @active_account_id}
                   class={if account.id == @active_account_id, do: "btn btn-sm btn-ghost", else: "btn btn-sm btn-primary"}
                 >
-                  {if account.id == @active_account_id, do: "Active", else: account.name}
+                  {if account.id == @active_account_id, do: "Active", else: "Switch"}
                 </button>
               </div>
             </div>
@@ -126,10 +126,9 @@ defmodule MetricFlowWeb.AccountLive.Index do
 
     if connected?(socket), do: Accounts.subscribe_account(scope)
 
-    account_ids = Enum.map(accounts, & &1.id)
-    # Default to the oldest account (last in the desc-ordered list). This keeps
-    # the user's original account active rather than the most-recently-added one.
-    active_account_id = List.last(account_ids)
+    # Default to the user's personal account, falling back to the oldest account.
+    primary = MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+    active_account_id = if primary, do: primary.id
 
     {account_roles, agency_grants} = load_account_metadata(scope, accounts)
 
@@ -172,7 +171,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
           |> assign(:active_account_name, active_account_name)
           |> put_flash(:info, "Switched to #{account.name}")
 
-        _ = scope
+        Accounts.touch_membership(scope, account_id)
         {:noreply, socket}
     end
   end

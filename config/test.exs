@@ -73,5 +73,6 @@ config :metric_flow, :test_providers, [
   :stub_no_revoke,
   :stub_refreshable,
   :stub_no_refresh,
-  :stub_refresh_fail
+  :stub_refresh_fail,
+  :stub_refresh_raises
 ]

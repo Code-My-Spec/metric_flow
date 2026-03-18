@@ -9,8 +9,8 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
     scenario "OAuth callback page shows active and ready to sync confirmation" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the Google Ads detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to the Google detail page", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
       end
 
       then_ "the page shows a status indicator for each platform", context do
-        assert has_element?(context.view, "[data-role='integration-status']") or
+        assert has_element?(context.view, "[data-role='integration-sync-status']") or
                  has_element?(context.view, "[data-role='platform-status']") or
                  render(context.view) =~ "status" or
                  render(context.view) =~ "Status"
@@ -49,8 +49,8 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
     scenario "confirmation page includes a call to action after integration setup" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the Google Ads detail page after OAuth", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to the Google detail page after OAuth", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

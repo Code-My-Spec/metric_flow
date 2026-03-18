@@ -9,7 +9,7 @@ defmodule MetricFlowWeb.UserLive.Registration do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-sma">
         <div :if={@registered} class="text-center">
           <.header>

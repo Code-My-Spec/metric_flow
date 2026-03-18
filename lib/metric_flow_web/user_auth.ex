@@ -1,4 +1,10 @@
 defmodule MetricFlowWeb.UserAuth do
+  @moduledoc """
+  Authentication helpers for users.
+
+  Provides plugs and on_mount callbacks for authenticating users
+  in controllers and LiveViews.
+  """
   use MetricFlowWeb, :verified_routes
 
   import Plug.Conn
@@ -56,7 +62,7 @@ defmodule MetricFlowWeb.UserAuth do
     conn
     |> renew_session(nil)
     |> delete_resp_cookie(@remember_me_cookie)
-    |> redirect(to: ~p"/")
+    |> redirect(to: ~p"/users/log-in")
   end
 
   @doc """
@@ -262,7 +268,9 @@ defmodule MetricFlowWeb.UserAuth do
     ~p"/users/settings"
   end
 
-  def signed_in_path(_), do: ~p"/"
+  # Redirect new logins to the integrations LiveView so the flash message is rendered
+  # by Layouts.app which includes <.flash_group>.
+  def signed_in_path(_), do: ~p"/integrations"
 
   @doc """
   Plug for routes that require the user to be authenticated.

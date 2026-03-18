@@ -1,7 +1,4 @@
-# MetricFlowWeb.IntegrationOAuthController
-
-
-## MetricFlowWeb.IntegrationOAuthController (module)
+# MetricFlowWeb.IntegrationOAuthController (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

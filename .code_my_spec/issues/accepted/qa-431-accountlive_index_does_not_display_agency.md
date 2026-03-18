@@ -1,5 +1,9 @@
 # AccountLive.Index does not display agency access level or origination status badges
 
+## Status
+
+resolved
+
 ## Severity
 
 high
@@ -18,11 +22,4 @@ QA Story 431 — `.code_my_spec/qa/431/result.md`
 
 ## Resolution
 
-Mount now calls `load_account_metadata/2` which queries the actual member role per account via `Accounts.get_user_role/3` and looks up any `AgencyClientAccessGrant` per account via `Agencies.find_agency_grant_for_account/3`. The template renders actual role badges and, when a grant exists, access_level and origination_status badges.
-
-Files changed:
-- `lib/metric_flow_web/live/account_live/index.ex` — template and mount updated
-- `lib/metric_flow/agencies.ex` — added `find_agency_grant_for_account/3`
-- `lib/metric_flow/agencies/agencies_repository.ex` — added `find_grant_for_user_client_account/2`
-
-Verified: 450 account/agencies tests pass, 0 failures.
+Already implemented — AccountLive.Index renders agency access level and origination status badges via Agencies.find_agency_grant_for_account/3.

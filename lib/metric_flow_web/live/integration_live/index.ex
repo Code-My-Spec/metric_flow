@@ -11,15 +11,22 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.DataSync
   alias MetricFlow.Integrations
 
-  # Static display metadata for all supported platforms.
-  @platform_metadata %{
-    google: %{name: "Google", description: "Google Ads, Analytics, and Search Console"},
-    google_ads: %{name: "Google Ads", description: "Google Ads campaigns and reporting"},
-    facebook_ads: %{name: "Facebook Ads", description: "Social media advertising"},
-    quickbooks: %{name: "QuickBooks", description: "Accounting and financial data"},
-    stripe: %{name: "Stripe", description: "Payment processing and revenue"}
+  # Data platforms — what you sync from. Each maps to a parent OAuth provider.
+  @data_platforms [
+    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics", provider: :google},
+    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising", provider: :google},
+    %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising", provider: :facebook_ads},
+    %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data", provider: :quickbooks}
+  ]
+
+  # Provider display names for "Connect X first" messages.
+  @provider_names %{
+    google: "Google",
+    facebook_ads: "Facebook",
+    quickbooks: "QuickBooks"
   }
 
   # ---------------------------------------------------------------------------
@@ -28,10 +35,17 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   @impl true
   def render(assigns) do
+    # Split platforms into connected (parent provider exists) and not connected
     assigns =
       assigns
-      |> assign(:connected_platforms, Enum.filter(assigns.platforms, fn p -> connected?(p.key, assigns.integrations) end))
-      |> assign(:available_platforms, Enum.reject(assigns.platforms, fn p -> connected?(p.key, assigns.integrations) end))
+      |> assign(
+        :connected_platforms,
+        Enum.filter(assigns.platforms, fn p -> provider_connected?(p.provider, assigns.integrations) end)
+      )
+      |> assign(
+        :unconnected_platforms,
+        Enum.reject(assigns.platforms, fn p -> provider_connected?(p.provider, assigns.integrations) end)
+      )
 
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={@active_account_name}>
@@ -48,14 +62,16 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
           </.link>
         </div>
 
-        <%= if @connected_platforms == [] do %>
+        <%= if @integrations == [] do %>
           <div class="text-center py-12">
             <p class="text-base-content/60">No platforms connected yet.</p>
             <.link navigate={~p"/integrations/connect"} class="btn btn-primary btn-sm mt-4">
               Connect your first platform
             </.link>
           </div>
-        <% else %>
+        <% end %>
+
+        <%= if @connected_platforms != [] do %>
           <div class="mb-8">
             <h2 class="text-lg font-semibold mb-4">Connected Platforms</h2>
             <div data-role="integrations-list" class="space-y-4">
@@ -91,26 +107,30 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                       </span>
                     </div>
 
-                    <% integration = find_integration(@integrations, platform.key) %>
-                    <p data-role="integration-connected-date" class="text-xs text-base-content/50 mt-1">
-                      Connected {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
-                    </p>
-                    <div data-role="integration-selected-accounts" class="mt-2 text-sm text-base-content/60">
-                      <%= case get_in(integration.provider_metadata, ["selected_accounts"]) do %>
-                        <% nil -> %>
-                          <span class="text-xs italic">No accounts selected</span>
-                        <% accounts when is_list(accounts) -> %>
-                          <span class="text-xs">{Enum.join(accounts, ", ")}</span>
-                        <% _ -> %>
-                          <span class="text-xs italic">No accounts selected</span>
-                      <% end %>
-                    </div>
+                    <% integration = find_integration(@integrations, platform.provider) %>
+                    <%= if integration do %>
+                      <p data-role="integration-connected-date" class="text-xs text-base-content/50 mt-1">
+                        Connected via {provider_display_name(platform.provider)} on {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
+                      </p>
+                      <div data-role="integration-selected-accounts" class="mt-2 text-sm text-base-content/60">
+                        <%= case get_in(integration.provider_metadata, ["selected_accounts"]) do %>
+                          <% nil -> %>
+                            <span class="text-xs italic">No accounts selected</span>
+                          <% accounts when is_list(accounts) -> %>
+                            <span class="text-xs">{Enum.join(accounts, ", ")}</span>
+                          <% _ -> %>
+                            <span class="text-xs italic">No accounts selected</span>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
 
                   <div class="flex flex-col items-end gap-2 ml-4">
                     <button
                       phx-click="sync"
-                      phx-value-provider={Atom.to_string(platform.key)}
+                      phx-value-platform={Atom.to_string(platform.key)}
+                      phx-value-provider={Atom.to_string(platform.provider)}
+                      phx-disable-with="Please wait..."
                       disabled={MapSet.member?(@syncing, platform.key)}
                       class="btn btn-outline btn-sm"
                     >
@@ -118,14 +138,14 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     </button>
                     <.link
                       data-role="edit-integration-accounts"
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}/accounts"}
+                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"}
                       class="btn btn-ghost btn-sm"
                     >
                       Edit Accounts
                     </.link>
                     <.link
                       data-role="integration-detail-link"
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
+                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.provider)}"}
                       class="btn btn-ghost btn-xs"
                     >
                       Manage
@@ -133,7 +153,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     <button
                       data-role="disconnect-integration"
                       phx-click="confirm_disconnect"
-                      phx-value-provider={Atom.to_string(platform.key)}
+                      phx-value-provider={Atom.to_string(platform.provider)}
                       class="btn btn-ghost btn-xs text-error"
                     >
                       Disconnect
@@ -141,45 +161,17 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                   </div>
                 </div>
 
-                <%= if @disconnecting == platform.key do %>
-                  <div
-                    data-role="disconnect-warning"
-                    class="mt-4 p-4 rounded bg-warning/10 border border-warning/30"
-                  >
-                    <p class="text-sm font-semibold text-warning">Disconnect {platform.name}?</p>
-                    <p class="text-sm mt-1">
-                      Historical data will remain available, but no new data will sync after disconnecting.
-                    </p>
-                    <div class="mt-3 flex gap-2">
-                      <button
-                        data-role="confirm-disconnect"
-                        phx-click="disconnect"
-                        phx-value-provider={Atom.to_string(platform.key)}
-                        class="btn btn-error btn-sm"
-                      >
-                        Confirm
-                      </button>
-                      <button
-                        data-role="cancel-disconnect"
-                        phx-click="cancel_disconnect"
-                        class="btn btn-ghost btn-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                <% end %>
               </div>
             </div>
           </div>
         <% end %>
 
-        <%= if @available_platforms != [] do %>
+        <%= if @unconnected_platforms != [] do %>
           <div>
             <h2 class="text-lg font-semibold mb-4">Available Platforms</h2>
             <div data-role="available-platforms-list" class="space-y-4">
               <div
-                :for={platform <- @available_platforms}
+                :for={platform <- @unconnected_platforms}
                 data-role="integration-card"
                 data-platform={Atom.to_string(platform.key)}
                 data-status="available"
@@ -198,35 +190,60 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                       </span>
                     </div>
 
-                    <p data-role="integration-connected-date" class="text-xs text-base-content/40 mt-1 italic">
-                      Not connected
+                    <p class="text-xs text-base-content/40 mt-1 italic">
+                      Connect {provider_display_name(platform.provider)} first
                     </p>
-                    <div data-role="integration-selected-accounts" class="mt-1 text-xs text-base-content/40 italic">
-                      No accounts selected
-                    </div>
                   </div>
 
                   <div class="flex flex-col items-end gap-2 ml-4">
-                    <button
+                    <.link
                       data-role="reconnect-integration"
-                      phx-click="initiate_connect"
-                      phx-value-provider={Atom.to_string(platform.key)}
+                      navigate={~p"/integrations/connect"}
                       class="btn btn-primary btn-sm"
                     >
-                      Connect
-                    </button>
-                    <.link
-                      data-role="integration-detail-link"
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.key)}"}
-                      class="btn btn-ghost btn-xs"
-                    >
-                      Manage
+                      Connect {provider_display_name(platform.provider)}
                     </.link>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        <% end %>
+        <%= if @disconnecting do %>
+          <% disc_provider_name = provider_display_name(@disconnecting) %>
+          <dialog
+            class="modal modal-open"
+            data-role="disconnect-modal"
+          >
+            <div class="modal-box">
+              <h3 class="font-bold text-lg">Disconnect {disc_provider_name}?</h3>
+              <p class="py-4" data-role="disconnect-warning">
+                Are you sure you want to disconnect <strong>{disc_provider_name}</strong>?
+                This will affect all platforms that use this connection.
+                Historical data will remain available, but no new data will sync after disconnecting.
+              </p>
+              <div class="modal-action">
+                <button
+                  data-role="cancel-disconnect"
+                  phx-click="cancel_disconnect"
+                  class="btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  data-role="confirm-disconnect"
+                  phx-click="disconnect"
+                  phx-value-provider={Atom.to_string(@disconnecting)}
+                  class="btn btn-error"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button phx-click="cancel_disconnect">close</button>
+            </form>
+          </dialog>
         <% end %>
       </div>
     </Layouts.app>
@@ -241,14 +258,15 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   def mount(_params, _session, socket) do
     scope = socket.assigns.current_scope
     integrations = Integrations.list_integrations(scope)
-    platforms = build_platform_list()
-    first_available_key = find_first_available_key(platforms, integrations)
+
+    if Phoenix.LiveView.connected?(socket) do
+      Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
+    end
 
     socket =
       socket
       |> assign(:integrations, integrations)
-      |> assign(:platforms, platforms)
-      |> assign(:first_available_key, first_available_key)
+      |> assign(:platforms, @data_platforms)
       |> assign(:syncing, MapSet.new())
       |> assign(:sync_results, %{})
       |> assign(:disconnecting, nil)
@@ -261,25 +279,44 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_event("sync", %{"provider" => provider_str}, socket) do
+  def handle_event("sync", %{"platform" => platform_str, "provider" => provider_str}, socket) do
+    platform_key = String.to_existing_atom(platform_str)
     provider = String.to_existing_atom(provider_str)
-    platform_name = platform_display_name(socket.assigns.platforms, provider)
+    scope = socket.assigns.current_scope
+    platform_name = find_platform_name(platform_key)
 
-    if connected?(provider, socket.assigns.integrations) do
-      socket =
-        socket
-        |> assign(:syncing, MapSet.put(socket.assigns.syncing, provider))
-        |> put_flash(:info, "Sync started for #{platform_name}")
+    case DataSync.sync_integration(scope, provider) do
+      {:ok, _sync_job} ->
+        socket =
+          socket
+          |> assign(:syncing, MapSet.put(socket.assigns.syncing, platform_key))
+          |> put_flash(:info, "Sync started for #{platform_name}")
 
-      {:noreply, socket}
-    else
-      {:noreply, put_flash(socket, :error, "Integration not found.")}
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Integration not found.")}
     end
   end
 
-  @impl true
-  def handle_event("initiate_connect", %{"provider" => provider_str}, socket) do
-    {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider_str}")}
+  # Fallback for legacy sync events that only pass provider
+  def handle_event("sync", %{"provider" => provider_str}, socket) do
+    provider = String.to_existing_atom(provider_str)
+    scope = socket.assigns.current_scope
+    platform_name = find_platform_name(provider)
+
+    case DataSync.sync_integration(scope, provider) do
+      {:ok, _sync_job} ->
+        socket =
+          socket
+          |> assign(:syncing, MapSet.put(socket.assigns.syncing, provider))
+          |> put_flash(:info, "Sync started for #{platform_name}")
+
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Integration not found.")}
+    end
   end
 
   @impl true
@@ -301,16 +338,14 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     case Integrations.disconnect(scope, provider) do
       {:ok, _} ->
         integrations = Integrations.list_integrations(scope)
-        first_available_key = find_first_available_key(socket.assigns.platforms, integrations)
 
         socket =
           socket
           |> assign(:integrations, integrations)
-          |> assign(:first_available_key, first_available_key)
           |> assign(:disconnecting, nil)
           |> put_flash(
             :info,
-            "Disconnected from #{platform_display_name(socket.assigns.platforms, provider)}. Historical data is retained."
+            "Disconnected from #{provider_display_name(provider)}. Historical data is retained; no new data will sync after disconnecting."
           )
 
         {:noreply, socket}
@@ -334,13 +369,22 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
         {:sync_completed, %{provider: provider, records_synced: count, completed_at: completed_at}},
         socket
       ) do
-    sync_results =
-      Map.put(socket.assigns.sync_results, provider, %{
-        records_synced: count,
-        completed_at: completed_at
-      })
+    result = %{records_synced: count, completed_at: completed_at}
 
-    syncing = MapSet.delete(socket.assigns.syncing, provider)
+    # Store result under each platform key that maps to this provider,
+    # since the template looks up by platform key (e.g. :google_analytics),
+    # not by OAuth provider (e.g. :google).
+    platform_keys = platform_keys_for_provider(provider)
+
+    sync_results =
+      Enum.reduce(platform_keys, socket.assigns.sync_results, fn key, acc ->
+        Map.put(acc, key, result)
+      end)
+
+    syncing =
+      socket.assigns.syncing
+      |> MapSet.delete(provider)
+      |> remove_platform_keys_for_provider(provider)
 
     socket =
       socket
@@ -354,12 +398,15 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
         {:sync_failed, %{provider: provider, reason: reason}},
         socket
       ) do
-    syncing = MapSet.delete(socket.assigns.syncing, provider)
+    syncing =
+      socket.assigns.syncing
+      |> MapSet.delete(provider)
+      |> remove_platform_keys_for_provider(provider)
 
     socket =
       socket
       |> assign(:syncing, syncing)
-      |> put_flash(:error, "Sync failed for #{provider}: #{reason}")
+      |> put_flash(:error, build_failure_message(provider, reason))
 
     {:noreply, socket}
   end
@@ -368,43 +415,43 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp build_platform_list do
-    provider_keys = Integrations.list_providers()
-
-    provider_keys
-    |> Enum.map(fn provider_key ->
-      metadata =
-        Map.get(@platform_metadata, provider_key) ||
-          %{
-            name: provider_key |> Atom.to_string() |> derive_display_name(),
-            description: ""
-          }
-
-      Map.put(metadata, :key, provider_key)
-    end)
-    |> Enum.sort_by(& &1.name)
+  defp build_failure_message(provider, reason) when is_binary(reason) and reason != "" do
+    "Sync failed for #{provider_display_name(provider)}: #{reason}"
   end
 
-  defp find_first_available_key(platforms, integrations) do
-    case Enum.find(platforms, fn p -> not connected?(p.key, integrations) end) do
-      nil -> nil
-      platform -> platform.key
-    end
+  defp build_failure_message(provider, _reason) do
+    "Sync failed for #{provider_display_name(provider)}. Please check your connection and try again."
+  end
+
+  defp platform_keys_for_provider(provider) do
+    @data_platforms
+    |> Enum.filter(&(&1.provider == provider))
+    |> Enum.map(& &1.key)
+  end
+
+  defp remove_platform_keys_for_provider(syncing, provider) do
+    @data_platforms
+    |> Enum.filter(&(&1.provider == provider))
+    |> Enum.reduce(syncing, fn p, acc -> MapSet.delete(acc, p.key) end)
   end
 
   defp find_integration(integrations, provider_key) do
     Enum.find(integrations, fn i -> i.provider == provider_key end)
   end
 
-  defp connected?(provider_key, integrations) do
-    not is_nil(find_integration(integrations, provider_key))
+  defp provider_connected?(provider_key, integrations) do
+    Enum.any?(integrations, fn i -> i.provider == provider_key end)
   end
 
-  defp platform_display_name(platforms, provider) do
-    case Enum.find(platforms, fn p -> p.key == provider end) do
-      nil -> provider |> Atom.to_string() |> derive_display_name()
+  defp find_platform_name(platform_key) do
+    case Enum.find(@data_platforms, fn p -> p.key == platform_key end) do
+      nil -> platform_key |> Atom.to_string() |> derive_display_name()
       platform -> platform.name
     end
+  end
+
+  defp provider_display_name(provider_key) do
+    Map.get(@provider_names, provider_key, provider_key |> Atom.to_string() |> derive_display_name())
   end
 
   defp derive_display_name(provider_str) do

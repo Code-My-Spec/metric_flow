@@ -1,5 +1,9 @@
 # Platform filter active state broken for :google provider
 
+## Status
+
+resolved
+
 ## Severity
 
 medium
@@ -18,9 +22,4 @@ QA Story 441 — `.code_my_spec/qa/441/result.md`
 
 ## Resolution
 
-Changed `String.to_existing_atom(platform_key)` to `String.to_atom(platform_key)` in the `filter_platform` event handler. The `:google` atom wasn't in the BEAM atom table at event time, causing `String.to_existing_atom/1` to raise an `ArgumentError` which Phoenix silently handled. Since platform names come from our own controlled list (not user input), `String.to_atom/1` is safe here.
-
-Files changed:
-- `lib/metric_flow_web/live/dashboard_live/show.ex` — line 320, `to_existing_atom` → `to_atom`
-
-Verified: 182 dashboard tests pass, 0 failures.
+Fixed — normalize :google to [:google_analytics, :google_ads] in Dashboards context before querying Metrics. Updated MetricRepository to support list providers.

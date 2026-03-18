@@ -1,5 +1,9 @@
 # Members list and member rows missing data-role attributes
 
+## Status
+
+resolved
+
 ## Severity
 
 medium
@@ -18,10 +22,4 @@ QA Story 431 — `.code_my_spec/qa/431/result.md`
 
 ## Resolution
 
-Added `data-role="members-list"` to the members table container div. Changed `data-role="member"` to `data-role="member-row"` on each `<tr>`. Updated test selectors to match.
-
-Files changed:
-- `lib/metric_flow_web/live/account_live/members.ex` — added/renamed data-role attributes
-- `test/metric_flow_web/live/account_live/members_test.exs` — updated selectors from `member` to `member-row`
-
-Verified: 450 account/agencies tests pass, 0 failures.
+Already implemented — data-role=members-list and data-role=member-row attributes present in AccountLive.Members template.

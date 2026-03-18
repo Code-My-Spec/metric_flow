@@ -18,7 +18,6 @@ liveview
 
 - MetricFlow.Invitations
 - MetricFlow.Users
-- MetricFlowWeb.Layouts
 
 ## Components
 

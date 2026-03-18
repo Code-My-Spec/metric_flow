@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       given_ :user_logged_in_as_owner
 
       given_ "the authenticated user navigates to the integration connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -92,8 +92,8 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
 
       then_ "the page is scoped to the current user's account", context do
         html = render(context.view)
-        assert html =~ "Connect" or html =~ "Google Ads" or html =~ "google_ads" or
-                 html =~ "platform" or html =~ "integration"
+        assert html =~ "Connect" or html =~ "Google" or
+                 html =~ "provider" or html =~ "integration"
         :ok
       end
     end

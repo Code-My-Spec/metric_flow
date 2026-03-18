@@ -18,6 +18,9 @@ import Dotenvy
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 # Load .env files in dev and test via Dotenvy (ADR: dotenvy)
+# In prod, we still call source! with System.get_env() so that env!/3
+# can read OS environment variables (env! only reads the process dictionary
+# populated by source!, it does NOT fall back to System.get_env).
 if config_env() in [:dev, :test] do
   env_dir_prefix = System.get_env("RELEASE_ROOT") || "."
 
@@ -26,6 +29,8 @@ if config_env() in [:dev, :test] do
     Path.absname(".env.#{config_env()}", env_dir_prefix),
     System.get_env()
   ])
+else
+  source!([System.get_env()])
 end
 
 # Cloudflare Tunnel — merge secret from env var (dev only)

@@ -1,5 +1,9 @@
 # BDD spex suite cannot run: owner_with_integrations given not defined in SharedGivens
 
+## Status
+
+resolved
+
 ## Severity
 
 high
@@ -18,9 +22,4 @@ QA Story 495 — `.code_my_spec/qa/495/result.md`
 
 ## Resolution
 
-Added `:owner_with_integrations` given to `test/support/shared_givens.ex`. It follows the same register-then-login pattern as `:user_logged_in_as_owner`, then creates an integration record via `IntegrationsFixtures.integration_fixture/1` (OAuth can't be done through UI in tests). Returns `%{owner_conn: authed_conn, owner_email: email, owner_password: password}`.
-
-Files changed:
-- `test/support/shared_givens.ex` — added `:owner_with_integrations` given
-
-Verified: Story 495 criterion 4611 spex passes (1 test, 0 failures).
+Already implemented — :owner_with_integrations given defined at line 102 of test/support/shared_givens.ex.

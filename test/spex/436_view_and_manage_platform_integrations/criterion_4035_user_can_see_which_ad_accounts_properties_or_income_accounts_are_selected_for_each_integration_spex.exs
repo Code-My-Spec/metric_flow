@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
 
   spex "User can see which ad accounts, properties, or income accounts are selected for each integration" do
     scenario "the integrations page shows selected accounts for each marketing integration" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
     end
 
     scenario "the integrations page shows selected properties for analytics integrations" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
     end
 
     scenario "the integrations page shows selected income accounts for financial integrations" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
     end
 
     scenario "user can navigate to the detail page for an integration to view selected accounts" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")

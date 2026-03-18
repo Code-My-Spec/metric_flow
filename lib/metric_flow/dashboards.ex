@@ -104,13 +104,17 @@ defmodule MetricFlow.Dashboards do
     integrations = Integrations.list_integrations(scope)
     connected_platforms = Enum.map(integrations, & &1.provider)
 
+    # Normalize compound providers (e.g. :google → [:google_analytics, :google_ads])
+    # so the Metrics query uses valid provider enum values.
+    metric_provider = normalize_metric_provider(platform)
+
     metric_query_opts =
       []
-      |> maybe_put(:provider, platform)
+      |> maybe_put(:provider, metric_provider)
       |> maybe_put(:date_range, date_range)
       |> maybe_put(:metric_type, metric_type)
 
-    metric_names = resolve_metric_names(scope, platform, metric_type)
+    metric_names = resolve_metric_names(scope, metric_provider, metric_type)
     all_metric_names = Metrics.list_metric_names(scope)
 
     time_series = build_time_series(scope, metric_names, metric_query_opts)
@@ -264,11 +268,20 @@ defmodule MetricFlow.Dashboards do
   end
 
   defp build_summary_stats(scope, metric_names, opts) do
+    provider_map = Metrics.list_metric_providers(scope, opts)
+
     Enum.map(metric_names, fn name ->
       stats = Metrics.aggregate_metrics(scope, name, opts)
-      %{metric_name: name, stats: stats}
+      provider = Map.get(provider_map, name)
+      %{metric_name: name, stats: stats, provider: provider}
     end)
   end
+
+  # Maps compound Integration providers to their Metric provider equivalents.
+  # :google is an Integration-level provider that covers both google_analytics
+  # and google_ads, but Metrics are stored under the specific sub-providers.
+  defp normalize_metric_provider(:google), do: [:google_analytics, :google_ads]
+  defp normalize_metric_provider(other), do: other
 
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)

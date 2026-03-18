@@ -21,9 +21,9 @@ defmodule MetricFlowWeb.AccountLive.Members do
   # Roles an admin can assign (cannot assign owner)
   @admin_assignable_roles ~w(admin account_manager read_only)
   # Invite form roles for owners (includes "member" alias accepted by BDD spex)
-  @owner_invite_roles ~w(owner admin account_manager read_only member)
-  # Invite form roles for admins (no owner option)
-  @admin_invite_roles ~w(admin account_manager read_only member)
+  @owner_invite_roles ~w(member read_only account_manager admin owner)
+  # Invite form roles for admins (no owner or admin option — admins cannot assign admin)
+  @admin_invite_roles ~w(account_manager read_only member)
 
   # ---------------------------------------------------------------------------
   # Render
@@ -32,7 +32,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-4xl">
         <.header>
           Members
@@ -83,29 +83,41 @@ defmodule MetricFlowWeb.AccountLive.Members do
                       </td>
                       <td :if={@can_manage}>
                         <div class="flex items-center gap-2">
-                          <%!-- Role change select — always visible for managed rows.
-                               The backend enforces the last-owner protection. --%>
-                          <select
-                            phx-change="change_role"
-                            phx-value-user_id={member.user_id}
-                            name="role"
-                            class="select select-sm select-bordered"
-                          >
-                            <option
-                              :for={
-                                role <-
-                                  manageable_roles(
-                                    @current_user_role
-                                  )
-                              }
-                              value={role}
-                              selected={member.role == String.to_existing_atom(role)}
+                          <%!-- Role change form: uses phx-submit (not phx-change) to require
+                               an explicit "Change" button click, preventing accidental role
+                               changes when a select value is altered. The hidden user_id input
+                               ensures the correct member is targeted on submit. --%>
+                          <form phx-submit="change_role">
+                            <input type="hidden" name="user_id" value={member.user_id} />
+                            <select
+                              name="role"
+                              class="select select-sm select-bordered"
                             >
-                              {role_label(String.to_existing_atom(role))}
-                            </option>
-                          </select>
+                              <option
+                                :for={
+                                  role <-
+                                    manageable_roles(
+                                      @current_user_role
+                                    )
+                                }
+                                value={role}
+                                selected={member.role == String.to_existing_atom(role)}
+                              >
+                                {role_label(String.to_existing_atom(role))}
+                              </option>
+                            </select>
+                            <button
+                              :if={not last_owner?(member, @members)}
+                              type="submit"
+                              class="btn btn-ghost btn-xs"
+                            >
+                              Change
+                            </button>
+                          </form>
                           <%!-- Hidden change-role button — used by BDD spex via render_click.
-                               Not rendered for the last owner row (BDD spex asserts it is absent). --%>
+                               Carries phx-click="change_role" with the user_id so spex can
+                               pass the desired role as a click param. Not rendered for the
+                               last owner row (BDD spex asserts it is absent). --%>
                           <button
                             :if={not last_owner?(member, @members)}
                             data-role="change-role"
@@ -144,17 +156,11 @@ defmodule MetricFlowWeb.AccountLive.Members do
             <div class="card-body">
               <h2 class="card-title text-base">Invite Member</h2>
               <%!--
-                Dual-named inputs: flat names (email/role) for unit test compatibility
-                and nested names (invitation[email]/invitation[role]) for BDD spex.
-                The sr-only inputs are visually hidden but present in the DOM.
+                Uses invitation[email] / invitation[role] as the canonical input names.
+                extract_invite_params/1 also accepts flat email/role keys for unit test
+                compatibility (render_submit with flat params merges alongside these).
               --%>
               <form id="invite_member_form" phx-submit="invite_member" class="space-y-4">
-                <input type="text" name="email" class="sr-only" aria-hidden="true" />
-                <select name="role" class="sr-only" aria-hidden="true">
-                  <option :for={role <- invite_roles(@current_user_role)} value={role}>
-                    {role}
-                  </option>
-                </select>
                 <div class="form-control">
                   <label class="label">
                     <span class="label-text">Email address</span>
@@ -202,7 +208,8 @@ defmodule MetricFlowWeb.AccountLive.Members do
       [] ->
         {:ok, redirect(socket, to: "/accounts")}
 
-      [account | _] ->
+      accounts ->
+        account = MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
         members = Accounts.list_account_members(scope, account.id)
         user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
         can_manage = can_manage?(user_role)
@@ -361,7 +368,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
   # Returns the list of role strings available in the invite form select.
   # Includes "member" as an alias (accepted by BDD spex, maps to read_only in parse_role).
   # Owners can invite at any role including owner.
-  # Admins can only invite at admin and below.
+  # Admins can only invite at account_manager and below (not admin — backend rejects it).
   defp invite_roles(:owner), do: @owner_invite_roles
   defp invite_roles(:admin), do: @admin_invite_roles
   defp invite_roles(_role), do: @admin_invite_roles

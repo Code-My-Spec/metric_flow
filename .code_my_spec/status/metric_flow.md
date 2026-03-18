@@ -16,7 +16,7 @@
 - [x] [MetricFlow.Dashboards](.code_my_spec/status/metric_flow/dashboards.md) (38/38)
 - [x] [MetricFlow.DataSync](.code_my_spec/status/metric_flow/data_sync.md) (77/77)
 - [ ] [MetricFlow.Encrypted](.code_my_spec/status/metric_flow/encrypted.md) (3/11)
-- [x] [MetricFlow.Integrations](.code_my_spec/status/metric_flow/integrations.md) (53/53)
+- [ ] [MetricFlow.Integrations](.code_my_spec/status/metric_flow/integrations.md) (58/59)
 - [x] [MetricFlow.Invitations](.code_my_spec/status/metric_flow/invitations.md) (29/29)
 - [ ] [MetricFlow.Mailer](.code_my_spec/status/metric_flow/mailer.md) (3/6)
 - [x] [MetricFlow.Metrics](.code_my_spec/status/metric_flow/metrics.md) (23/23)

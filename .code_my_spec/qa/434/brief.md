@@ -4,138 +4,214 @@ Story 434: Connect Marketing Platform via OAuth
 
 ## Tool
 
-web (vibium MCP browser tools — `IntegrationLive.Connect` is a LiveView)
+web (Vibium MCP browser automation for all LiveView pages; curl for unauthenticated redirect check)
 
 ## Auth
 
-Run seeds first, then launch the browser and log in via the password form:
+Log in as the QA owner user using the password form:
 
-```
-mcp__vibium__browser_launch(headless: true)
-mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")
-mcp__vibium__browser_scroll(selector: "#login_form_password")
-mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa@example.com")
-mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
-mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
-mcp__vibium__browser_wait(selector: "body", timeout: 5000)
-```
+1. Launch browser: `mcp__vibium__browser_launch(headless: true)`
+2. Navigate: `mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")`
+3. Scroll password form into view: `mcp__vibium__browser_scroll(selector: "#login_form_password")`
+4. Fill email: `mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa@example.com")`
+5. Fill password: `mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")`
+6. Click login: `mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")`
+7. Wait for redirect: `mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)`
+8. Verify URL is not the login page: `mcp__vibium__browser_get_url()`
 
 Credentials: `qa@example.com` / `hello world!`
 
 ## Seeds
 
-Run the base QA seed script before testing. It is idempotent.
+Verify login works. If login fails, run:
 
 ```bash
-cd /Users/johndavenport/Documents/github/metric_flow && mix run priv/repo/qa_seeds.exs
+cd /Users/johndavenport/Documents/github/metric_flow
+mix run priv/repo/qa_seeds.exs
 ```
 
-No additional story-specific seeds are needed. The seed creates a QA owner user with no pre-existing integrations, which matches the expected pre-OAuth state for this story.
+If the Phoenix server is already running, use:
+
+```bash
+cd /Users/johndavenport/Documents/github/metric_flow
+mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([])" priv/repo/qa_seeds.exs
+```
+
+No story-specific seeds are required. The base seeds create a QA owner user and "QA Test Account" which is sufficient for all scenarios. The integration tests simulate OAuth by visiting callback URLs with test parameters — no real OAuth provider credentials are needed.
+
+## Setup Notes
+
+The OAuth connect flow uses these provider keys (not individual platforms):
+
+- `google` — covers Google Ads AND Google Analytics under one OAuth connection
+- `facebook_ads` — Facebook advertising
+- `quickbooks` — QuickBooks financial data
+
+Valid routes:
+- `/integrations/connect` — provider selection grid
+- `/integrations/connect/google` — Google provider detail
+- `/integrations/connect/facebook_ads` — Facebook provider detail
+- `/integrations/connect/quickbooks` — QuickBooks provider detail
+- `/integrations/connect/google/accounts` — Google account selection (requires google integration to exist first)
+- `/integrations/oauth/callback/google?error=access_denied` — simulates a denied OAuth callback (no real code needed)
+- `/integrations/oauth/callback/google?code=test_auth_code&state=test_state` — simulates a callback with test credentials (will fail token exchange, showing error result view)
+
+For scenarios that require an existing connected integration (account selection page), use the Google provider after a real or simulated callback. If the QA account already has a google integration from a previous run, account selection will be accessible directly. If not, simulate via the callback URL.
 
 ## What To Test
 
-### Scenario 1 — Platform selection page lists all supported platforms (AC: User can initiate OAuth flow for supported platforms)
+### Scenario 1 — Platform selection page lists all supported providers
 
-- Navigate to `http://localhost:4070/integrations/connect`
-- Verify the page renders without error
-- Verify "Google Ads" appears on the page
-- Verify "Facebook Ads" appears on the page
-- Verify "Google Analytics" appears on the page
-- Verify each platform card has a `data-platform` attribute (`data-platform="google_ads"`, `data-platform="facebook_ads"`, `data-platform="google_analytics"`)
-- Verify each platform card contains an element with `data-role="connect-button"`
-- Take a screenshot of the platform selection page
+Navigate to `http://localhost:4070/integrations/connect` while logged in.
 
-### Scenario 2 — Connect buttons are present for each platform (AC: User can initiate OAuth flow)
+Expected:
+- Page title/heading contains "Connect a Provider"
+- Three provider cards are visible in a grid
+- Card with `data-platform="google"` shows "Google" and "Google Ads and Google Analytics"
+- Card with `data-platform="facebook_ads"` shows "Facebook"
+- Card with `data-platform="quickbooks"` shows "QuickBooks"
+- Each card has a `[data-role='connect-button']` button labeled "Connect" or "Reconnect"
+- No "Re-authenticate" text on the page
 
-- On the platform selection grid at `/integrations/connect`
-- Confirm there is a `[data-platform='google_ads'] [data-role='connect-button']` element
-- Confirm there is a `[data-platform='facebook_ads'] [data-role='connect-button']` element
-- Confirm there is a `[data-platform='google_analytics'] [data-role='connect-button']` element
-- Confirm no "Re-authenticate" text is present on the page
+Take screenshot: `01-platform-selection.png`
 
-### Scenario 3 — Per-platform detail view shows OAuth initiation link (AC: OAuth flow opens in new tab)
+### Scenario 2 — Connect buttons are present for each provider
 
-- Navigate to `http://localhost:4070/integrations/connect/google_ads`
-- Verify the page renders the Google Ads detail card
-- Verify an element with `data-role="oauth-connect-button"` is present
-- Verify that element has `target="_blank"` (opens in a new tab)
-- Verify the element has an `href` attribute pointing to an OAuth authorization URL
-- Take a screenshot of the Google Ads detail page
+On the same `/integrations/connect` page:
 
-### Scenario 4 — Platform detail view does not show re-authenticate option (AC: User can modify selected accounts without re-authenticating)
+Expected:
+- `[data-platform='google'] [data-role='connect-button']` is present
+- `[data-platform='facebook_ads'] [data-role='connect-button']` is present
+- `[data-platform='quickbooks'] [data-role='connect-button']` is present
 
-- On `http://localhost:4070/integrations/connect/google_ads`
-- Verify "Re-authenticate" does not appear on the page
-- Verify "Re-connect" does not appear on the page
-- Verify the page shows "account" or "Connect" or "Google Ads" content (confirming it loaded)
+Take screenshot: `02-connect-buttons.png`
 
-### Scenario 5 — Account selection page renders correctly (AC: User can select which ad accounts or properties to sync)
+### Scenario 3 — Per-provider detail view shows OAuth initiation link
 
-- Navigate to `http://localhost:4070/integrations/connect/google_ads/accounts`
-- Verify the page renders the account selection view
-- Verify `[data-role='account-list']` is present
-- Verify `[data-role='account-selection']` is present
-- Verify `input[type='checkbox'][data-role='account-checkbox']` is present
-- Verify `[data-role='save-selection']` button labeled "Save Selection" is present
-- Take a screenshot of the account selection page
+Navigate to `http://localhost:4070/integrations/connect/google`.
 
-- Repeat for `http://localhost:4070/integrations/connect/google_analytics/accounts`
-- Verify the Google Analytics accounts page renders a similar account/property selection UI
+Expected:
+- Provider name "Google" appears on the page
+- `[data-role='oauth-connect-button']` link is present
+- The link has `target="_blank"` attribute
+- The href points to a Google OAuth authorization URL (starts with `https://accounts.google.com/` or similar)
+- "Connect Google" or "Reconnect" button text is present
+- "Back to integrations" navigation link is present
 
-### Scenario 6 — Integration not saved before OAuth (AC: Integration is saved only after successful OAuth completion)
+Take screenshot: `03-google-detail.png`
 
-- Navigate to `http://localhost:4070/integrations/connect/google_ads`
-- Verify "Integration saved" does not appear on the page
-- Verify "Integration active" does not appear on the page
-- Verify the page does show a connect/authorize option (`data-role="oauth-connect-button"` or a connect button)
+Also navigate to `http://localhost:4070/integrations/connect/facebook_ads` and verify the Facebook detail view renders the same structure.
 
-### Scenario 7 — OAuth callback success state shows confirmation (AC: User sees confirmation integration is active and ready to sync)
+Take screenshot: `03b-facebook-detail.png`
 
-- Navigate to `http://localhost:4070/integrations/oauth/callback/google_ads?code=test_auth_code&state=test_state`
-- Wait for the page to settle (`mcp__vibium__browser_wait_for_load`)
-- Inspect the rendered page content
-- The OAuth token exchange will likely fail (no real provider configured), so look for either:
-  - Success path: "Integration Active", "Active" badge, "connected and ready to sync" text, "View Integrations" button
-  - Error path (acceptable if provider not configured): "Connection Failed" heading, "Try again" link, "Back to integrations" link
-- Verify the page does NOT show "Integration saved" or "successfully connected" if in error state
-- Take a screenshot of the callback result page
+### Scenario 4 — Detail view does not show re-authenticate option
 
-### Scenario 8 — OAuth callback with error parameter shows clear error message (AC: Failed OAuth attempts show clear error messages)
+On `/integrations/connect/google`:
 
-- Navigate to `http://localhost:4070/integrations/oauth/callback/google_ads?error=access_denied`
-- Wait for the page to load
-- Verify "Connection Failed" heading is visible
-- Verify error-related text appears (e.g., "Access was denied", "error", "denied", "failed")
-- Verify "Integration saved" and "successfully connected" do NOT appear
-- Verify a "Try again" link is present pointing back to `/integrations/connect/google_ads`
-- Verify a "Back to integrations" link is present
-- Take a screenshot
+Expected:
+- "Re-authenticate" text does not appear
+- "Re-connect" (with hyphen) text does not appear
+- Page renders without error
 
-- Navigate to `http://localhost:4070/integrations/oauth/callback/google_ads?error=access_denied&error_description=User+denied+access`
-- Verify the page renders an error state with actionable recovery links
+### Scenario 5 — Account selection page renders correctly
 
-### Scenario 9 — Unauthenticated user is redirected (AC: Platform connection belongs to client account)
+The accounts page at `/integrations/connect/google/accounts` requires an existing google integration. If the QA account already has a google integration, navigate directly. If not, first simulate an OAuth callback to create one:
 
-- Clear cookies to simulate a logged-out user
-- Attempt to navigate to `http://localhost:4070/integrations/connect`
-- Verify the user is redirected to the login page (URL should contain `/users/log-in`)
+```
+http://localhost:4070/integrations/oauth/callback/google?code=test_auth_code&state=test_state
+```
 
-### Scenario 10 — Integration page is scoped to the logged-in account (AC: Platform connection belongs to client account and is not transferable to agency)
+This will fail the token exchange and show the error result view — do not try to create a real integration this way. Instead, check `/integrations/connect/google` first. If a google integration already exists (page shows "Connected" badge), navigate to the accounts page:
 
-- Log in as `qa@example.com`
-- Navigate to `http://localhost:4070/integrations`
-- Verify the page renders the integrations list for this user's account
-- Verify no "Transfer to agency", "Assign to agency", or "Move to agency" text appears
-- Navigate to `http://localhost:4070/integrations/connect/google_ads`
-- Confirm none of those transfer phrases appear on the detail page either
-- Take a screenshot of the integrations page
+Navigate to `http://localhost:4070/integrations/connect/google/accounts`.
+
+If no integration exists, this redirects to `/integrations/connect/google` with an error flash — note this as expected behavior and skip accounts-specific assertions.
+
+If the accounts page loads:
+- Page heading contains "Google — Select Accounts"
+- Form element `[data-role='account-selection']` is present
+- `[data-role='save-selection']` button is present (labeled "Save Selection")
+- Either `[data-role='account-list']` with radio inputs OR `[data-role='manual-property-input']` manual entry field is present
+
+Take screenshot: `05-google-accounts.png`
+
+Also navigate to `http://localhost:4070/integrations/connect/facebook_ads/accounts` (if facebook_ads integration exists). Verify the heading shows "Facebook — Select Accounts" and text does NOT contain "GA4 Property ID" (that text is Google-specific and would be a bug).
+
+Take screenshot: `05b-facebook-accounts.png`
+
+### Scenario 6 — Integration not saved before OAuth completion
+
+Navigate to `http://localhost:4070/integrations/connect/google` with a fresh session (no prior google integration in QA account, or use the member user).
+
+Expected:
+- "Integration saved" does not appear
+- "Integration active" does not appear (unless there's an existing integration with the active result view)
+- `[data-role='oauth-connect-button']` labeled "Connect Google" is present (not connected state)
+
+If QA account already has a google integration, log out and log in as `qa-member@example.com` (password: `hello world!`) to test this scenario with a clean account.
+
+Take screenshot: `06-not-saved-before-oauth.png`
+
+### Scenario 7 — OAuth callback success result view
+
+This tests the `:result` view mode that appears when the callback redirects back with a flash.
+
+Navigate to `http://localhost:4070/integrations/connect/google`. Check the current URL. The result view is triggered by the flash from the OAuth controller, not the URL. If the flash has already been consumed, the page shows the detail view.
+
+To test the error result view (which we can trigger without real OAuth), visit:
+
+```
+http://localhost:4070/integrations/oauth/callback/google?error=access_denied
+```
+
+After the redirect lands on `/integrations/connect/google`, verify:
+- "Connection Failed" heading appears
+- Error message text is present
+- "Try again" link is present pointing to `/integrations/connect/google`
+- "Back to integrations" link is present
+- "Integration saved" and "successfully connected" do NOT appear
+
+Take screenshot: `07-callback-error-result.png`
+
+### Scenario 8 — Error callback with error_description
+
+Visit:
+```
+http://localhost:4070/integrations/oauth/callback/google?error=access_denied&error_description=User+denied+access
+```
+
+After the redirect, verify the error result view renders with an error message visible to the user.
+
+Take screenshot: `08-access-denied-error.png`
+
+### Scenario 9 — Unauthenticated user is redirected
+
+Clear cookies to simulate a logged-out state, then navigate to `http://localhost:4070/integrations/connect`.
+
+Verify redirect to `/users/log-in`. Can also verify via curl:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4070/integrations/connect
+```
+
+Expected: `302`
+
+Take screenshot: `09-unauthenticated-redirect.png`
+
+### Scenario 10 — Integration page is scoped to logged-in account
+
+Log in as `qa@example.com` and navigate to `http://localhost:4070/integrations`.
+
+Expected:
+- Page renders without showing another account's data
+- No "Transfer to agency", "Assign to agency", or "Move to agency" text
+
+Also check `/integrations/connect/google`:
+- No transfer options appear
+- Page content contains "Connect" or "Google"
+
+Take screenshot: `10-integrations-scoped.png`
 
 ## Result Path
 
 `.code_my_spec/qa/434/result.md`
-
-## Setup Notes
-
-The OAuth callback route (`/integrations/oauth/callback/:provider`) is a LiveView route, not a controller action. Visiting it in the browser with `?code=...&state=...` will trigger `handle_params/3` with the `:callback` live action, which calls `Integrations.handle_callback/4`. In a test environment without real provider credentials configured, this call will return an error — the callback view will render the error state. This is expected behavior. Test that the error state renders correctly with the "Connection Failed" UI rather than expecting a successful connection.
-
-The OAuth "connect" button on the platform selection page (`phx-click="connect"`) triggers a server-side redirect to the provider authorization URL. Clicking it in a browser session will attempt to redirect to Google/Facebook. Do NOT click the connect button during testing — verify its presence and attributes only. Instead, test the callback result states by navigating directly to the callback URL with simulated parameters.

@@ -1,7 +1,4 @@
-# MetricFlowWeb.WhiteLabelHook
-
-
-## MetricFlowWeb.WhiteLabelHook (module)
+# MetricFlowWeb.WhiteLabelHook (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

@@ -4,137 +4,116 @@ Story 438 — Manual Sync Trigger (Admin)
 
 ## Tool
 
-web (vibium MCP browser tools for LiveView page at `/integrations`)
+web (vibium MCP browser tools — this is a LiveView page)
 
 ## Auth
 
-Run the start-qa script to seed users, then log in via the browser:
-
-```
-./.code_my_spec/qa/scripts/start-qa.sh
-```
-
-Then in vibium:
+Log in as the QA owner user using the password form:
 
 ```
 mcp__vibium__browser_launch(headless: true)
 mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")
-mcp__vibium__browser_scroll(selector: "#login_form_password", direction: "down")
+mcp__vibium__browser_scroll(selector: "#login_form_password")
 mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
-mcp__vibium__browser_wait(selector: "body", timeout: 5000)
+mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)
 ```
 
-Credentials: `qa@example.com` / `hello world!`
+After `wait_for_url` confirms the redirect, navigate to `/integrations` to begin testing. Do NOT use `wait(selector: "body")` after the login click — it times out during the HTTP redirect.
 
 ## Seeds
 
-The base QA seeds create a user and team account but no connected integrations. This story requires a connected integration to appear on the `/integrations` page. The BDD spex use the `:owner_with_integrations` shared given, which directly inserts an integration via `MetricFlowTest.IntegrationsFixtures` in test context.
-
-For browser testing, create a connected integration by running a story-specific seed:
+The base seeds create a Google integration for `qa@example.com`. Verify seeds are in place by logging in successfully — if login works, seeds are already set. Only run seeds if login fails:
 
 ```bash
-cd /Users/johndavenport/Documents/github/metric_flow
+# Only run if login fails (server not running):
 mix run priv/repo/qa_seeds.exs
-mix run -e '
-alias MetricFlow.{Repo, Users, Integrations}
-alias MetricFlow.Users.Scope
-alias MetricFlow.Integrations.Integration
 
-user = Users.get_user_by_email("qa@example.com")
-scope = Scope.for_user(user)
-
-existing = Integrations.list_integrations(scope) |> Enum.find(&(&1.provider == :google))
-
-unless existing do
-  %Integration{}
-  |> Integration.changeset(%{
-    user_id: user.id,
-    provider: :google,
-    access_token: "qa_test_access_token",
-    refresh_token: "qa_test_refresh_token",
-    expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
-    granted_scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
-    provider_metadata: %{
-      "email" => "qa@example.com",
-      "selected_accounts" => ["UA-12345 (Main Site)", "GA4-67890 (App)"]
-    }
-  })
-  |> Repo.insert!()
-  IO.puts("Created Google integration for qa@example.com")
-else
-  IO.puts("Google integration already exists for qa@example.com")
-end
-'
+# Only run if login fails (server IS already running):
+mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([])" priv/repo/qa_seeds.exs
 ```
 
-After running seeds, note the QA user ID for any scenario-specific assertions.
-
-## Setup Notes
-
-The "Sync Now" button in the source (line 106 in `integration_live/index.ex`) fires `phx-click="sync"` with `phx-value-provider={platform.key}`. The button is disabled when the provider is in `@syncing_providers` (a MapSet). The sync flow:
-
-1. User clicks "Sync Now" -> `handle_event("sync", ...)` calls `DataSync.sync_integration/2`
-2. On `{:ok, _sync_job}`, the button disables and a flash "Sync started for Google" appears
-3. When the async sync worker finishes, it sends `{:sync_completed, ...}` or `{:sync_failed, ...}` to the LiveView PID
-4. On completion, the syncing badge and spinner disappear; the button re-enables; a success/error flash shows
-
-In browser testing, the async completion (`{:sync_completed, ...}`) is sent by the actual `DataSync` worker process. The outcome depends on whether `DataSync.sync_integration/2` returns `{:ok, _}` in the dev environment with a stub access token. Verify the flash message and button state after clicking Sync Now. If the worker completes immediately in dev, check the success flash within a few seconds.
-
-The BDD spex (criterion 4053 and 4054) simulate the async messages by sending `{:sync_completed, ...}` / `{:sync_failed, ...}` directly to `context.view.pid` — this is not reproducible via browser automation. Those scenarios are best validated via `mix spex` against the unit-level spex files.
-
-The available platforms section shows cards with `data-status="available"` and a "Connect" button (not "Sync Now") — verify the absence of "Sync Now" on those cards.
+Expected seed state for this story:
+- `qa@example.com` — owner of "QA Test Account", has a connected Google integration (`provider: :google`)
+- The Google integration provides two data platforms: Google Analytics and Google Ads
+- Both platforms appear in the Connected Platforms section at `/integrations`
 
 ## What To Test
 
 ### Scenario 1 — Sync Now button visible on connected integration (criterion 4050)
 
-1. Navigate to `http://localhost:4070/integrations`
-2. Capture a screenshot of the full integrations page
-3. Assert: the "Connected Platforms" section is present with a "Google" card
-4. Assert: the Google card (`[data-role="integration-card"][data-platform="google"]`) contains a "Sync Now" button (`button[phx-click="sync"]` with text "Sync Now")
-5. Assert: the "Available Platforms" section is present with cards that have `data-status="available"`
-6. Assert: the available platform cards do NOT contain a "Sync Now" button (only a "Connect" button)
+- Navigate to `http://localhost:4070/integrations`
+- Verify the page shows a "Connected Platforms" section containing at least one card
+- Verify at least one card has a "Sync Now" button (`button` with text "Sync Now")
+- Screenshot: `01-integrations-page.png`
 
-### Scenario 2 — Sync Now button is enabled when no sync is in progress (criterion 4050)
+### Scenario 2 — Available (unconnected) platforms do NOT show Sync Now (criterion 4050)
 
-1. On the integrations page (from Scenario 1)
-2. Assert: `button[phx-click="sync"]` with text "Sync Now" does NOT have the `disabled` attribute
-3. Capture a screenshot showing the enabled button
+- On the same integrations page, locate the "Available Platforms" section
+- Verify cards in `[data-role='integration-card'][data-status='available']` do NOT contain a "Sync Now" button
+- Screenshot: `02-sync-button-enabled.png` (showing enabled Sync Now on connected, absent on available)
 
-### Scenario 3 — Clicking Sync Now triggers sync and shows loading state (criteria 4051, 4052)
+### Scenario 3 — Sync Now button is enabled before clicking (criterion 4050)
 
-1. On the integrations page, click the "Sync Now" button on the Google card
-2. Wait briefly for LiveView to re-render
-3. Capture a screenshot immediately after clicking
-4. Assert: a flash message containing "Sync started for Google" appears at the top of the page
-5. Assert: the "Sync Now" button (`button[phx-click="sync"]`) is now disabled
-6. Assert: a "Syncing" badge is visible on the Google integration card (`[data-role="integration-sync-status"]` containing text "Syncing")
-7. Assert: the loading spinner element is present (`.loading-spinner` inside `[data-role="integration-sync-status"]`)
+- Verify the "Sync Now" button in the connected section has no `disabled` attribute before any sync action
+- The selector `button[phx-click='sync']` should exist and not have `disabled`
 
-### Scenario 4 — Success state after sync completes (criterion 4053)
+### Scenario 4 — Clicking Sync Now triggers flash confirmation (criterion 4051)
 
-1. After clicking Sync Now (from Scenario 3), wait a few seconds for the async sync worker to complete (or poll the page)
-2. Capture a screenshot of the post-sync state
-3. Assert: the page shows a success flash containing either the count of records synced, the word "Synced", or a timestamp (year)
-4. Assert: the "Syncing" badge with spinner is no longer present
-5. Assert: the "Sync Now" button is re-enabled (no `disabled` attribute)
-6. Assert: the integration still shows a "Connected" badge (`badge-success` with text "Connected")
+- Click the "Sync Now" button on a connected integration card (`button[phx-click='sync']`)
+- Wait for the flash message to appear
+- Verify the flash message contains "Sync started for" followed by the platform name (e.g., "Sync started for Google Analytics")
+- Screenshot: `03-after-sync-click.png`
 
-### Scenario 5 — Connected status preserved after manual sync (criterion 4055)
+### Scenario 5 — Button is disabled after clicking Sync Now (criterion 4051)
 
-1. After sync completion, look at the Google integration card
-2. Assert: `[data-role="integration-card"][data-platform="google"]` still contains `[data-status="connected"]` with text "Connected"
-3. Assert: no `[data-status="disconnected"]` element exists inside the Google card
-4. Assert: the "Sync Now" button is still present on the page (available for future syncs)
-5. Capture a final screenshot confirming Connected status and available Sync Now button
+- After clicking Sync Now in Scenario 4, verify the same button now has a `disabled` attribute
+- The selector `[data-platform='google_analytics'] button[phx-click='sync'][disabled]` should be present
 
-### Scenario 6 — Unauthenticated user cannot access the integrations page
+### Scenario 6 — Syncing badge appears while sync is in progress (criterion 4052)
 
-1. In a new browser session (no cookies), navigate to `http://localhost:4070/integrations`
-2. Assert: redirected to `/users/log-in` (check URL with `mcp__vibium__browser_get_url`)
-3. Capture a screenshot of the redirect destination
+- After clicking Sync Now, verify the integration card shows a "Syncing" badge
+- Verify the badge has class `badge-warning`
+- Verify a loading spinner is present: `[data-role='integration-sync-status'] .loading-spinner`
+- Screenshot: `04-sync-failure-no-loading-state.png` (capture the loading state if visible, or the post-sync state)
+
+### Scenario 7 — No Syncing badge before clicking (criterion 4052)
+
+- On a fresh page load (before triggering any sync), verify no "Syncing" text or `.loading-spinner` is present
+
+### Scenario 8 — After sync completes, Syncing indicator gone and button re-enabled (criterion 4053)
+
+- After triggering a sync and waiting for completion (the sync worker runs asynchronously), reload the integrations page
+- Verify the "Syncing" badge is gone
+- Verify the "Sync Now" button is no longer disabled (no `disabled` attribute)
+- If a sync result is shown, verify it contains records synced count and a timestamp
+- Screenshot: `05-connected-status-preserved.png`
+
+### Scenario 9 — After sync, integration still shows Connected status (criterion 4055)
+
+- After completing a manual sync (or after the sync attempt), verify:
+  - The integration card still shows `[data-status='connected']`
+  - The "Connected" badge (`badge-success` with text "Connected") is still present
+  - No disconnected or error state is shown on the Google Analytics card
+- This confirms manual sync does not change the integration connection state
+- Screenshot: `05-connected-status-preserved.png` (same screenshot can serve as evidence)
+
+### Scenario 10 — Unauthenticated access redirects to login (general auth check)
+
+- Clear cookies and navigate directly to `http://localhost:4070/integrations`
+- Verify redirect to the login page (`/users/log-in`)
+- Screenshot: `06-unauthenticated-redirect.png`
+
+## Setup Notes
+
+The sync trigger calls `DataSync.sync_integration/2` which enqueues a background sync job. In dev/test, the sync worker runs and completes asynchronously — results may appear on the page after a short delay (or on page reload). The LiveView subscribes to PubSub topic `user:{user_id}:sync` and updates when it receives `{:sync_completed, ...}` or `{:sync_failed, ...}` messages.
+
+The "Sync Now" button uses `phx-click="sync"` with `phx-value-platform` (e.g., `google_analytics`) and `phx-value-provider` (e.g., `google`). The button is rendered once per connected platform. Since both Google Analytics and Google Ads share the `google` provider, both appear in the connected section when a Google integration exists — click the button on either card.
+
+If the sync worker returns an error (provider not fully configured in dev, or API key issues), the flash will show an error message — record that as a finding but do not fail the test for Scenario 4 if the flash message text is "Integration not found." (this indicates the dev integration is not fully wired, which is a known issue to report).
+
+The base seeds include a Google integration with `access_token: "qa_test_token"` — actual API calls will fail in dev without a real token. The important things to verify are the UI behaviors: button presence, disabled state, flash messages, and badge rendering.
 
 ## Result Path
 

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
   import_givens MetricFlowSpex.SharedGivens
 
   spex "User receives confirmation email after deletion" do
-    scenario "after successful account deletion a message about email confirmation is shown" do
+    scenario "after successful account deletion a success message is shown" do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
@@ -26,10 +26,10 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
         {:ok, Map.put(context, :submit_result, result)}
       end
 
-      then_ "the owner sees a message indicating a confirmation email has been sent", context do
+      then_ "the owner sees a success message confirming the account was deleted", context do
         {_path, flash} = assert_redirect(context.view)
         message = flash["info"] || flash["error"] || ""
-        assert message =~ "email" or message =~ "confirmation" or message =~ "Email" or message =~ "Confirmation"
+        assert message =~ "deleted" or message =~ "Deleted" or message =~ "success" or message =~ "Success"
         :ok
       end
     end

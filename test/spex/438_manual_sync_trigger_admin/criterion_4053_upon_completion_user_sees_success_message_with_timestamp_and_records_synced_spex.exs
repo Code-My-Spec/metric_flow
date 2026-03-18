@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
         completed_at = DateTime.utc_now()
 
         send(context.view.pid, {:sync_completed, %{
-          provider: :google,
+          provider: :google_analytics,
           records_synced: 42,
           completed_at: completed_at
         }})
@@ -65,8 +65,8 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
       given_ "the user is on the integrations page and a sync is in progress for Google", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
 
-        # Trigger sync to put the provider into the syncing state
-        render_click(view, "sync", %{"provider" => "google"})
+        # Trigger sync to put the platform into the syncing state
+        render_click(view, "sync", %{"platform" => "google_analytics", "provider" => "google"})
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
 
       when_ "the async sync completion message is received by the LiveView", context do
         send(context.view.pid, {:sync_completed, %{
-          provider: :google,
+          provider: :google_analytics,
           records_synced: 17,
           completed_at: DateTime.utc_now()
         }})
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
         # The button should no longer be disabled after sync completion
         refute has_element?(
           context.view,
-          "button[phx-click='sync'][phx-value-provider='google'][disabled]"
+          "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
         ),
         "Expected the Sync Now button to be re-enabled after sync completed, but it was still disabled"
 

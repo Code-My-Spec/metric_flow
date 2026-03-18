@@ -283,7 +283,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   end
 
   # ---------------------------------------------------------------------------
-  # Mount
+  # Mount / handle_params
   # ---------------------------------------------------------------------------
 
   @impl true
@@ -294,28 +294,48 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       [] ->
         {:ok, redirect(socket, to: "/accounts")}
 
-      [account | _] ->
-        user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
-        members = Accounts.list_account_members(scope, account.id)
-        changeset = Accounts.change_account(scope, account)
-
+      accounts ->
         if connected?(socket), do: Accounts.subscribe_account(scope)
 
-        socket =
-          socket
-          |> assign(:account, account)
-          |> assign(:form, build_form(changeset, account))
-          |> assign(:members, members)
-          |> assign(:current_user_role, user_role)
-          |> assign(:is_owner, user_role == :owner)
-          |> assign(:can_edit, user_role in [:owner, :admin])
-          |> assign(:can_save, user_role in [:owner, :admin])
-          |> assign(:active_account_name, account.name)
-          |> assign(:left_account, false)
-          |> assign_agency_data(scope, account, user_role)
-
-        {:ok, socket}
+        {:ok, assign(socket, :accounts, accounts)}
     end
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    scope = socket.assigns.current_scope
+    accounts = socket.assigns[:accounts] || Accounts.list_accounts(scope)
+
+    account =
+      case Map.get(params, "account_id") do
+        nil ->
+          MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+
+        account_id_str ->
+          account_id = String.to_integer(account_id_str)
+          Enum.find(accounts, fn a -> a.id == account_id end) ||
+            MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+      end
+
+    user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
+    members = Accounts.list_account_members(scope, account.id)
+    changeset = Accounts.change_account(scope, account)
+
+    socket =
+      socket
+      |> assign(:accounts, accounts)
+      |> assign(:account, account)
+      |> assign(:form, build_form(changeset, account))
+      |> assign(:members, members)
+      |> assign(:current_user_role, user_role)
+      |> assign(:is_owner, user_role == :owner)
+      |> assign(:can_edit, user_role in [:owner, :admin])
+      |> assign(:can_save, user_role in [:owner, :admin])
+      |> assign(:active_account_name, account.name)
+      |> assign(:left_account, false)
+      |> assign_agency_data(scope, account, user_role)
+
+    {:noreply, socket}
   end
 
   # ---------------------------------------------------------------------------
@@ -577,7 +597,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
           {:ok, _deleted} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Account deleted. A confirmation email has been sent.")
+             |> put_flash(:info, "Account deleted successfully.")
              |> redirect(to: "/accounts")}
 
           {:error, :personal_account} ->

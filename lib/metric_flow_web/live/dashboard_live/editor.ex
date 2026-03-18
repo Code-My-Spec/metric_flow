@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="max-w-5xl mx-auto px-4 py-8">
         <%!-- Header row --%>
         <div class="flex items-center justify-between mb-6">
@@ -64,12 +64,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             >
               Save Dashboard
             </button>
-            <.link navigate="/dashboards" class="btn btn-ghost">Cancel</.link>
+            <.link navigate="/dashboard" class="btn btn-ghost">Cancel</.link>
           </div>
         </div>
 
         <%!-- Dashboard name field --%>
-        <div class="form-control mb-6">
+        <form phx-change="validate_name" phx-submit="save_dashboard" class="form-control mb-6">
           <label class="label">
             <span class="label-text">Dashboard Name</span>
           </label>
@@ -77,7 +77,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             type="text"
             name="dashboard[name]"
             value={@changeset.params["name"] || (@dashboard && @dashboard.name) || ""}
-            phx-change="validate_name"
             data-role="dashboard-name-input"
             class={["input w-full", has_name_error?(@changeset) && "input-error"]}
             placeholder="My Dashboard"
@@ -85,7 +84,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           <p :if={has_name_error?(@changeset)} class="text-sm text-error mt-1">
             {name_error(@changeset)}
           </p>
-        </div>
+        </form>
 
         <%!-- Visualization count error --%>
         <p :if={@viz_error} class="text-sm text-error mb-4">
@@ -302,7 +301,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {:noreply,
          socket
          |> put_flash(:error, "Dashboard not found.")
-         |> redirect(to: "/dashboards")}
+         |> redirect(to: "/dashboard")}
     end
   end
 
@@ -335,7 +334,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   @impl true
   def handle_event("validate_name", %{"dashboard" => %{"name" => name}}, socket) do
     dashboard = socket.assigns.dashboard || %Dashboard{}
-    changeset = Dashboards.dashboard_changeset(dashboard, %{"name" => name, "user_id" => 0})
+
+    changeset =
+      Dashboards.dashboard_changeset(dashboard, %{"name" => name, "user_id" => 0})
+      |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :changeset, changeset)}
   end
@@ -483,6 +485,8 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp page_title_for(:new), do: "New Dashboard"
   defp page_title_for(:edit), do: "Edit Dashboard"
   defp page_title_for(_), do: "Dashboard"
+
+  defp has_name_error?(%Ecto.Changeset{action: nil}), do: false
 
   defp has_name_error?(%Ecto.Changeset{} = changeset) do
     changeset.errors

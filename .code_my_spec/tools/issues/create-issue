@@ -1,0 +1,57 @@
+#!/bin/bash
+# Create a new issue.
+# Usage: create-issue --title "..." --severity high --description "..." [--scope app] [--story-id 123]
+#
+# Required:
+#   --title        Issue title
+#   --severity     Severity level (critical, high, medium, low, info)
+#   --description  Issue description
+#
+# Optional:
+#   --scope        Issue scope (app, qa, docs) — defaults to app
+#   --story-id     Associated story ID
+#
+# Calls the local CodeMySpec server (no auth needed).
+set -euo pipefail
+
+PORT="${CODEMYSPEC_PORT:-4002}"
+TITLE=""
+SEVERITY=""
+DESCRIPTION=""
+SCOPE=""
+STORY_ID=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --title)       TITLE="$2"; shift 2 ;;
+    --severity)    SEVERITY="$2"; shift 2 ;;
+    --description) DESCRIPTION="$2"; shift 2 ;;
+    --scope)       SCOPE="$2"; shift 2 ;;
+    --story-id)    STORY_ID="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
+if [[ -z "$TITLE" || -z "$SEVERITY" || -z "$DESCRIPTION" ]]; then
+  echo "Usage: create-issue --title \"...\" --severity high --description \"...\" [--scope app] [--story-id 123]" >&2
+  exit 1
+fi
+
+JQ_ARGS=(--arg title "$TITLE" --arg severity "$SEVERITY" --arg description "$DESCRIPTION")
+JQ_EXPR='{title: $title, severity: $severity, description: $description}'
+
+if [[ -n "$SCOPE" ]]; then
+  JQ_ARGS+=(--arg scope "$SCOPE")
+  JQ_EXPR='{title: $title, severity: $severity, description: $description, scope: $scope}'
+fi
+if [[ -n "$STORY_ID" ]]; then
+  JQ_ARGS+=(--argjson story_id "$STORY_ID")
+  JQ_EXPR="${JQ_EXPR%\}}, story_id: \$story_id}"
+fi
+
+JSON=$(jq -n "${JQ_ARGS[@]}" "$JQ_EXPR")
+
+curl -sf -X POST "http://localhost:${PORT}/api/issues" \
+  -H "Content-Type: application/json" \
+  -H "X-Working-Dir: ${PWD}" \
+  -d "$JSON"

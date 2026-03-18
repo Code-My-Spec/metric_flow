@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+resolved
 
 ## Severity
 
@@ -30,3 +30,10 @@ error flash. To reproduce: curl -s -o /dev/null -w "%{http_code}" \
 ## Source
 
 QA Story 425 — `.code_my_spec/qa/425/result.md`
+
+## Resolution
+
+Changed the email+password `create/3` private clause in `UserSessionController` to use a pattern match directly in the function head (`%{"email" => email, "password" => password}`) instead of a destructuring assignment inside the body. Added a catch-all `create/3` clause that handles any malformed or incomplete login requests by redirecting to the login page with an "Invalid email or password" flash message, avoiding the `MatchError` 500.
+
+- **File changed:** `lib/metric_flow_web/controllers/user_session_controller.ex`
+- **Verified:** All 9 `UserSessionControllerTest` tests pass.

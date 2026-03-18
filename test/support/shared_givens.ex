@@ -209,7 +209,7 @@ defmodule MetricFlowSpex.SharedGivens do
 
     # Create integration fixture
     user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
-    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_ads})
+    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google})
 
     # Log in through UI
     login_conn = build_conn()

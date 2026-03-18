@@ -210,12 +210,36 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   # ---------------------------------------------------------------------------
+  # list_metric_providers/2
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns a map of metric_name => provider for all distinct metric name/provider
+  pairs for the scoped user.
+
+  When a metric name has data from multiple providers, the first provider
+  (alphabetically) is returned. Used by Dashboards to annotate summary stats
+  with their originating platform.
+  """
+  @spec list_metric_providers(Scope.t(), keyword()) :: %{String.t() => atom()}
+  def list_metric_providers(%Scope{user: user}, opts \\ []) do
+    from(m in Metric, where: m.user_id == ^user.id)
+    |> apply_provider_filter(opts)
+    |> apply_date_range_filter(opts)
+    |> group_by([m], [m.metric_name, m.provider])
+    |> select([m], {m.metric_name, m.provider})
+    |> Repo.all()
+    |> Enum.into(%{}, fn {name, provider} -> {name, provider} end)
+  end
+
+  # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
 
   defp apply_provider_filter(query, opts) do
     case Keyword.get(opts, :provider) do
       nil -> query
+      providers when is_list(providers) -> where(query, [m], m.provider in ^providers)
       provider -> where(query, [m], m.provider == ^provider)
     end
   end

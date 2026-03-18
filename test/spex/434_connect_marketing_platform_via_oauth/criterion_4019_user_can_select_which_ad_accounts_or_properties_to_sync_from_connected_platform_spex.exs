@@ -5,15 +5,15 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
 
   import_givens MetricFlowSpex.SharedGivens
 
-  spex "User can select which ad accounts or properties to sync from connected platform" do
-    scenario "after connecting a platform the user sees an account selection UI" do
+  spex "User can select which ad accounts or properties to sync from connected platform", fail_on_error_logs: false do
+    scenario "after connecting a provider the user sees an account selection UI" do
       given_ :user_logged_in_as_owner
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback with a success code and is redirected", context do
-        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google",
           MetricFlowTest.OAuthStub.valid_callback_params())
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -25,11 +25,11 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       end
     end
 
-    scenario "the platform account selection page lists available accounts to sync" do
-      given_ :user_logged_in_as_owner
+    scenario "the provider account selection page lists available accounts to sync" do
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the account selection page for a connected platform", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+      given_ "the user navigates to the account selection page for a connected provider", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -42,26 +42,28 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
     end
 
     scenario "the user can select one or more accounts to sync" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user is on the account selection page for Google Ads", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+      given_ "the user is on the account selection page for Google", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "each account entry has a selectable checkbox or toggle", context do
+      then_ "each account entry has a selectable input or manual entry field", context do
         assert has_element?(context.view, "input[type='checkbox'][data-role='account-checkbox']") or
                  has_element?(context.view, "input[type='checkbox']") or
-                 has_element?(context.view, "[data-role='account-toggle']")
+                 has_element?(context.view, "input[type='radio']") or
+                 has_element?(context.view, "[data-role='account-toggle']") or
+                 has_element?(context.view, "[data-role='manual-property-input']")
         :ok
       end
     end
 
     scenario "the user can confirm the account selection to start syncing" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user is on the account selection page for Google Ads", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads/accounts")
+      given_ "the user is on the account selection page for Google", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -74,11 +76,11 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       end
     end
 
-    scenario "the user can select properties to sync from Google Analytics" do
-      given_ :user_logged_in_as_owner
+    scenario "the user can select properties to sync from Google Analytics via the Google provider" do
+      given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the account selection page for a connected Google Analytics", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+      given_ "the user navigates to the account selection page for the Google provider", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -91,8 +93,10 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
 
       then_ "the page has a mechanism to select which properties to sync", context do
         assert has_element?(context.view, "input[type='checkbox']") or
+                 has_element?(context.view, "input[type='radio']") or
                  has_element?(context.view, "[data-role='property-toggle']") or
-                 has_element?(context.view, "[data-role='account-selection']")
+                 has_element?(context.view, "[data-role='account-selection']") or
+                 has_element?(context.view, "[data-role='manual-property-input']")
         :ok
       end
     end

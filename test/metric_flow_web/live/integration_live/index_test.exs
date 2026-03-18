@@ -41,8 +41,9 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   @stub_providers %{
-    google_ads: MetricFlowWeb.IntegrationLive.IndexTest.StubProvider,
-    facebook_ads: MetricFlowWeb.IntegrationLive.IndexTest.StubProvider
+    google: MetricFlowWeb.IntegrationLive.IndexTest.StubProvider,
+    facebook_ads: MetricFlowWeb.IntegrationLive.IndexTest.StubProvider,
+    quickbooks: MetricFlowWeb.IntegrationLive.IndexTest.StubProvider
   }
 
   # ---------------------------------------------------------------------------
@@ -166,7 +167,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       end)
     end
 
-    test "renders the Available Platforms section with each configured provider", %{conn: conn} do
+    test "renders the Available Platforms section with each data platform", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -175,7 +176,9 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert html =~ "Available Platforms"
         assert html =~ "Google Ads"
+        assert html =~ "Google Analytics"
         assert html =~ "Facebook Ads"
+        assert html =~ "QuickBooks"
       end)
     end
 
@@ -190,15 +193,16 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       end)
     end
 
-    test "renders a Connect button for each unconnected platform", %{conn: conn} do
+    test "renders a Connect link for each unconnected platform pointing to its provider", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        assert has_element?(lv, "[data-role='reconnect-integration'][phx-value-provider='google_ads']", "Connect")
-        assert has_element?(lv, "[data-role='reconnect-integration'][phx-value-provider='facebook_ads']", "Connect")
+        # Unconnected platforms show a "Connect [Provider]" link to the connect page
+        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Google")
+        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
       end)
     end
 
@@ -206,7 +210,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn: conn
     } do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -216,21 +220,23 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       end)
     end
 
-    test "renders the connected platform name in the Connected Platforms section", %{conn: conn} do
+    test "shows both Google Ads and Google Analytics as connected when Google provider is connected", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, _lv, html} = live(conn, ~p"/integrations")
 
+        # Both Google platforms should be in the Connected section
         assert html =~ "Google Ads"
+        assert html =~ "Google Analytics"
       end)
     end
 
-    test "renders a Connected badge for the connected platform", %{conn: conn} do
+    test "renders a Connected badge for platforms whose provider is connected", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -240,34 +246,36 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       end)
     end
 
-    test "renders a Manage link for each connected integration", %{conn: conn} do
+    test "renders a Manage link pointing to the provider for each connected platform", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        assert has_element?(lv, "a[href='/integrations/connect/google_ads']", "Manage")
+        # Both Google Ads and Google Analytics point to the Google provider manage page
+        assert has_element?(lv, "a[href='/integrations/connect/google']", "Manage")
       end)
     end
 
-    test "moves a connected platform out of the Available Platforms section", %{conn: conn} do
+    test "moves platforms to connected section when their parent provider is connected", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        # google_ads should not appear under the available section grid with a Connect link
-        refute has_element?(lv, "a[href='/integrations/connect/google_ads']", "Connect")
+        # Google Ads and Google Analytics should not appear in available with Connect link
+        refute has_element?(lv, "[data-platform='google_ads'][data-status='available']")
+        refute has_element?(lv, "[data-platform='google_analytics'][data-status='available']")
       end)
     end
 
     test "does not show the empty state when the user has integrations", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -277,25 +285,25 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       end)
     end
 
-    test "shows the Available Platforms section for platforms the user is not connected to", %{
+    test "shows the Available Platforms section for platforms whose provider is not connected", %{
       conn: conn
     } do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        # facebook_ads is not connected, so it should appear in the available grid
-        assert has_element?(lv, "[data-role='reconnect-integration'][phx-value-provider='facebook_ads']", "Connect")
+        # facebook_ads provider is not connected, so Facebook Ads platform should be available
+        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
       end)
     end
 
     test "only shows integrations belonging to the authenticated user", %{conn: conn} do
       user = user_fixture()
       other_user = user_fixture()
-      insert_integration!(other_user.id, :google_ads)
+      insert_integration!(other_user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -313,11 +321,11 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "handle_event sync" do
-    test "adds the provider to syncing_providers and shows an info flash on sync success", %{
+    test "adds the platform to syncing and shows an info flash on sync success", %{
       conn: conn
     } do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -325,7 +333,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         html =
           lv
-          |> element("[phx-click='sync'][phx-value-provider='google_ads']")
+          |> element("[phx-click='sync'][phx-value-platform='google_ads']")
           |> render_click()
 
         assert html =~ "Sync started for"
@@ -340,7 +348,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         # Send sync event directly — no sync button exists for unconnected platforms
-        html = render_click(lv, "sync", %{"provider" => "google_ads"})
+        html = render_click(lv, "sync", %{"provider" => "google", "platform" => "google_ads"})
 
         assert html =~ "Integration not found."
       end)
@@ -354,7 +362,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         # Send sync event directly — no sync button exists for unconnected platforms
-        html = render_click(lv, "sync", %{"provider" => "google_ads"})
+        html = render_click(lv, "sync", %{"provider" => "google", "platform" => "google_ads"})
 
         assert html =~ "Integration not found."
       end)
@@ -368,7 +376,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "handle_event disconnect" do
     test "shows the disconnect confirmation modal when Disconnect is clicked", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -376,7 +384,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         html =
           lv
-          |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+          |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
           |> render_click()
 
         assert html =~ "Disconnect"
@@ -387,30 +395,30 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "does not immediately delete the integration when Disconnect is clicked", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
-        assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google_ads)
+        assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google)
       end)
     end
 
     test "renders confirm and cancel buttons inside the disconnect modal", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         assert has_element?(lv, "[data-role='confirm-disconnect']")
@@ -426,7 +434,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "handle_event confirm_disconnect" do
     test "deletes the integration and shows an info flash on successful disconnect", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -434,7 +442,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         # Open the modal
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         # Confirm the disconnect
@@ -451,34 +459,34 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "removes the integration record from the database after confirmation", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         lv
         |> element("[data-role='confirm-disconnect']")
         |> render_click()
 
-        assert {:error, :not_found} = MetricFlow.Integrations.get_integration(scope, :google_ads)
+        assert {:error, :not_found} = MetricFlow.Integrations.get_integration(scope, :google)
       end)
     end
 
     test "hides the disconnect modal after confirmation", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         html =
@@ -499,7 +507,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "handle_event cancel_disconnect" do
     test "hides the disconnect modal when Cancel is clicked", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -507,7 +515,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         # Open the modal first
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         # Cancel
@@ -522,21 +530,21 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "does not delete the integration when Cancel is clicked", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
         lv
-        |> element("[data-role='disconnect-integration'][phx-value-provider='google_ads']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         lv
         |> element("[data-role='cancel-disconnect']")
         |> render_click()
 
-        assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google_ads)
+        assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google)
       end)
     end
   end

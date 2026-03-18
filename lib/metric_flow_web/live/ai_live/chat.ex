@@ -30,7 +30,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="flex h-[calc(100vh-4rem)] mf-content overflow-hidden">
         <%!-- Sidebar: always visible on desktop, overlay on mobile when show_sidebar=true --%>
         <div

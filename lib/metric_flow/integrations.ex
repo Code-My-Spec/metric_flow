@@ -20,6 +20,8 @@ defmodule MetricFlow.Integrations do
 
   require Logger
 
+  alias Assent.Strategy.OAuth2, as: AssentOAuth2
+  alias MetricFlow.Integrations.GoogleAccounts
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Users.Scope
@@ -157,11 +159,21 @@ defmodule MetricFlow.Integrations do
   # module. If the strategy doesn't return user data (e.g. QuickBooks with
   # OAuth2 strategy and no user_url), we normalize an empty map.
   defp exchange_and_normalize(strategy, config, callback_params, provider_mod) do
+    require Logger
+
     with :ok <- verify_state(config, callback_params),
-         {:ok, %{token: token} = result} <- strategy.callback(config, callback_params),
-         user_data = Map.get(result, :user, %{}),
-         {:ok, normalized} <- provider_mod.normalize_user(user_data) do
-      {:ok, %{token: token, normalized: normalized}}
+         {:ok, %{token: token} = result} <- strategy.callback(config, callback_params) do
+      user_data = Map.get(result, :user) || %{}
+      Logger.warning("[OAuth] strategy.callback result keys=#{inspect(Map.keys(result))}, user_data=#{inspect(user_data)}, type=#{inspect(is_map(user_data))}")
+
+      case provider_mod.normalize_user(user_data) do
+        {:ok, normalized} ->
+          {:ok, %{token: token, normalized: normalized}}
+
+        {:error, reason} = err ->
+          Logger.warning("[OAuth] normalize_user failed: #{inspect(reason)}, user_data=#{inspect(user_data)}")
+          err
+      end
     end
   end
 
@@ -191,17 +203,36 @@ defmodule MetricFlow.Integrations do
   no OAuth provider module registered.
   Returns `{:error, reason}` when the token refresh request fails or the
   provider strategy does not support refresh.
+  Returns `{:error, :token_refresh_failed}` if an unexpected exception is raised.
   """
   @spec refresh_token(Scope.t(), Integration.t()) ::
           {:ok, Integration.t()} | {:error, term()}
   def refresh_token(%Scope{} = scope, %Integration{} = integration) do
     with {:ok, provider_mod} <- fetch_provider(integration.provider) do
-      config = provider_mod.config()
       strategy = provider_mod.strategy()
+      config = provider_mod.config()
+      token = %{"refresh_token" => integration.refresh_token}
 
-      case strategy.refresh_access_token(config, %{"refresh_token" => integration.refresh_token}) do
+      result =
+        if function_exported?(strategy, :refresh_access_token, 2) do
+          strategy.refresh_access_token(config, token)
+        else
+          refresh_config =
+            strategy.default_config([])
+            |> Keyword.merge(config)
+            |> Keyword.put_new(:token_url, token_url_for(integration.provider))
+            |> normalize_auth_method()
+
+          AssentOAuth2.refresh_access_token(refresh_config, token)
+        end
+
+      case result do
         {:ok, token} ->
-          attrs = build_integration_attrs(token, %{})
+          attrs =
+            build_integration_attrs(token, %{})
+            |> maybe_preserve_refresh_token(integration)
+            |> maybe_preserve_provider_metadata(integration)
+
           IntegrationRepository.update_integration(scope, integration.provider, attrs)
 
         {:error, reason} ->
@@ -210,6 +241,67 @@ defmodule MetricFlow.Integrations do
     end
   rescue
     _ -> {:error, :token_refresh_failed}
+  end
+
+  # Assent OIDC strategies use `client_authentication_method` (string) but
+  # OAuth2.grant_access_token expects `:auth_method` (atom).
+  @auth_methods %{
+    "client_secret_post" => :client_secret_post,
+    "client_secret_basic" => :client_secret_basic,
+    "client_secret_jwt" => :client_secret_jwt,
+    "private_key_jwt" => :private_key_jwt
+  }
+
+  defp normalize_auth_method(config) do
+    case Keyword.get(config, :client_authentication_method) do
+      nil -> config
+      method -> Keyword.put_new(config, :auth_method, Map.fetch!(@auth_methods, method))
+    end
+  end
+
+  # Token endpoints per provider for OAuth2 refresh (not discoverable via OIDC at refresh time)
+  defp token_url_for(:google), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(:facebook_ads), do: "https://graph.facebook.com/v21.0/oauth/access_token"
+  defp token_url_for(:quickbooks), do: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+  defp token_url_for(_), do: "/oauth/token"
+
+  # ---------------------------------------------------------------------------
+  # Google account listing
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Lists GA4 properties accessible to the user's Google integration.
+
+  Fetches the integration for the `:google` provider, then queries the Google
+  Analytics Admin API for available properties. Returns `{:error, :not_found}`
+  when no Google integration exists.
+
+  ## Options
+
+    * `:http_plug` - A Plug-compatible function for test injection.
+  """
+  @spec list_google_accounts(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_google_accounts(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google) do
+      GoogleAccounts.list_ga4_properties(integration, opts)
+    end
+  end
+
+  @doc """
+  Updates the provider_metadata for an existing integration.
+
+  Merges the given metadata map into the existing provider_metadata, preserving
+  fields not included in the update. Used for saving account selections (e.g.
+  GA4 property_id) after OAuth connection.
+  """
+  @spec update_provider_metadata(Scope.t(), atom(), map()) ::
+          {:ok, Integration.t()} | {:error, term()}
+  def update_provider_metadata(%Scope{} = scope, provider, new_metadata) when is_map(new_metadata) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
+      merged = Map.merge(integration.provider_metadata || %{}, new_metadata)
+      IntegrationRepository.update_integration(scope, provider, %{provider_metadata: merged})
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -239,6 +331,24 @@ defmodule MetricFlow.Integrations do
       provider_metadata: Map.new(normalized_user)
     }
   end
+
+  # Keep the existing refresh_token if the token response didn't include a new one.
+  # Google only returns refresh_token on the initial authorization, not on refresh.
+  defp maybe_preserve_refresh_token(%{refresh_token: nil} = attrs, %{refresh_token: existing})
+       when is_binary(existing) and existing != "" do
+    %{attrs | refresh_token: existing}
+  end
+
+  defp maybe_preserve_refresh_token(attrs, _integration), do: attrs
+
+  # Keep existing provider_metadata during token refresh — the refresh response
+  # has no user data, so build_integration_attrs produces an empty map.
+  defp maybe_preserve_provider_metadata(%{provider_metadata: meta} = attrs, %{provider_metadata: existing})
+       when meta == %{} and is_map(existing) and existing != %{} do
+    %{attrs | provider_metadata: existing}
+  end
+
+  defp maybe_preserve_provider_metadata(attrs, _integration), do: attrs
 
   defp calculate_expires_at(%{"expires_in" => expires_in}) when is_integer(expires_in) do
     DateTime.add(DateTime.utc_now(), expires_in, :second)

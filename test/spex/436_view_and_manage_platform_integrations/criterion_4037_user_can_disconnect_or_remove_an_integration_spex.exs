@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
       when_ "the user clicks the disconnect button on an integration", context do
         html =
           context.view
-          |> element("[data-role='disconnect-integration']")
+          |> element("[data-platform='google_analytics'] [data-role='disconnect-integration']")
           |> render_click()
 
         {:ok, Map.put(context, :html, html)}
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
       when_ "the user completes the disconnect action for an integration", context do
         html =
           context.view
-          |> element("[data-role='disconnect-integration']")
+          |> element("[data-platform='google_analytics'] [data-role='disconnect-integration']")
           |> render_click()
 
         {:ok, Map.put(context, :html, html)}

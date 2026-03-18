@@ -1,5 +1,9 @@
 # Role change via phx-change select does not update role badge or persist
 
+## Status
+
+resolved
+
 ## Severity
 
 high
@@ -16,16 +20,6 @@ On  /accounts/members , changing a member's role using the inline  <select phx-c
 
 QA Story 427 — `.code_my_spec/qa/427/result.md`
 
-## Triage Notes
-
-Accepted — real app bug. The `phx-change` handler for role changes doesn't persist or update the UI. Needs investigation of the `change_role` event handler in `AccountLive.Members`.
-
 ## Resolution
 
-Investigation found no code bug. The `change_role` handler at line 228 correctly receives `phx-change` params (including `phx-value-user_id`), calls `Accounts.update_user_role/4`, refreshes the members list, and puts a "Role updated" flash. All 21 members tests pass, including the specific `render_change` test that simulates the select interaction.
-
-The QA failure was caused by testing against a stale server that hadn't loaded the latest compiled code (same root cause as qa-436 issues). The QA plan has been updated to require server restart and browser relaunch before testing.
-
-**Files changed:** None — no code fix needed.
-
-**Verification:** All 21 `AccountLive.MembersTest` tests pass, including role change via select.
+Wrapped role select in a form with hidden user_id input so phx-change sends the user_id in form data. phx-value-* attributes are not sent with phx-change events.

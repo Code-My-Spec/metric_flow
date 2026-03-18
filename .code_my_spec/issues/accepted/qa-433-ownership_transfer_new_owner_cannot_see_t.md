@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+resolved
 
 ## Severity
 
@@ -19,3 +19,12 @@ Following from the above issue: after successfully receiving ownership of QA Tes
 ## Source
 
 QA Story 433 — `.code_my_spec/qa/433/result.md`
+
+## Resolution
+
+Added `handle_params/3` to `AccountLive.Settings` so that the page can accept an optional `?account_id=` query parameter. When `account_id` is provided and the user is a member of that account, settings loads for that specific account (showing the Transfer Ownership and Danger Zone sections to owners). When no `account_id` is provided, the page falls back to `primary_account` selection (personal account first, then oldest team account).
+
+The `mount/3` callback was refactored to store the accounts list in assigns and delegate all account-specific setup to `handle_params/3`.
+
+- **File changed:** `lib/metric_flow_web/live/account_live/settings.ex`
+- **Verified:** All 36 `AccountLive.SettingsTest` tests continue to pass. A new owner can navigate to `/accounts/settings?account_id=<id>` to directly manage the transferred account.

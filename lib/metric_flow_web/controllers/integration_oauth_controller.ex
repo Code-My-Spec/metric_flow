@@ -75,34 +75,47 @@ defmodule MetricFlowWeb.IntegrationOAuthController do
     session_params = fetch_session_params(params)
 
     provider =
-      try do
-        String.to_existing_atom(provider_str)
-      rescue
-        ArgumentError -> nil
+      case provider_str do
+        "google" -> :google
+        "google_ads" -> :google_ads
+        "google_analytics" -> :google_analytics
+        "facebook_ads" -> :facebook_ads
+        "quickbooks" -> :quickbooks
+        "google_search_console" -> :google_search_console
+        "google_business" -> :google_business
+        "google_business_reviews" -> :google_business_reviews
+        _ -> nil
       end
 
     case handle_oauth_callback(scope, provider, params, session_params) do
       {:ok, _integration} ->
         conn
         |> put_flash(:info, "Successfully connected!")
-        |> redirect(to: ~p"/integrations")
+        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
         Logger.error("Failed to persist integration: #{inspect(changeset)}")
 
         conn
         |> put_flash(:error, "Failed to save integration")
-        |> redirect(to: ~p"/integrations/connect")
+        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
 
       {:error, reason} ->
         Logger.error("OAuth callback failed for #{provider_str}: #{inspect(reason)}")
 
-        error_message = format_oauth_error(params, reason)
+        error_message = format_oauth_error(params, provider, reason)
 
         conn
         |> put_flash(:error, error_message)
-        |> redirect(to: ~p"/integrations/connect")
+        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
     end
+  rescue
+    e in [KeyError, ArgumentError] ->
+      Logger.error("OAuth callback crashed for #{provider_str}: #{Exception.message(e)}")
+
+      conn
+      |> put_flash(:error, "Could not complete the connection. Please try again.")
+      |> redirect(to: ~p"/integrations/connect")
   end
 
   # Private Helpers
@@ -135,23 +148,27 @@ defmodule MetricFlowWeb.IntegrationOAuthController do
     end
   end
 
-  defp format_oauth_error(%{"error" => "access_denied"}, _reason) do
+  defp format_oauth_error(%{"error" => "access_denied"}, _provider, _reason) do
     "Access was denied. Please try again if you want to connect."
   end
 
-  defp format_oauth_error(%{"error" => error, "error_description" => description}, _reason) do
+  defp format_oauth_error(%{"error" => error, "error_description" => description}, _provider, _reason) do
     "Authorization failed: #{description} (#{error})"
   end
 
-  defp format_oauth_error(%{"error" => error}, _reason) do
+  defp format_oauth_error(%{"error" => error}, _provider, _reason) do
     "Authorization failed: #{error}"
   end
 
-  defp format_oauth_error(_params, :unsupported_provider) do
-    "This platform is not yet supported"
+  defp format_oauth_error(_params, nil, :unsupported_provider) do
+    "This platform is not yet supported."
   end
 
-  defp format_oauth_error(_params, _reason) do
+  defp format_oauth_error(_params, _provider, :unsupported_provider) do
+    "Could not complete the connection. Please try again."
+  end
+
+  defp format_oauth_error(_params, _provider, _reason) do
     "Could not complete the connection. Please try again."
   end
 end

@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
   spex "Each integration shows platform name, connected date, and sync status" do
     scenario "the integrations page renders a platform name for each integration entry" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page shows a connected date for each integration entry" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page shows a sync status for each integration entry" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page groups platform name, connected date, and sync status per integration" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/integrations")

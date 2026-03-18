@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
 
   import_givens MetricFlowSpex.SharedGivens
 
-  spex "User can initiate OAuth flow for supported platforms: Google Ads, Facebook Ads, Google Analytics" do
-    scenario "authenticated user sees the platform connection page with all supported platforms listed" do
+  spex "User can initiate OAuth flow for supported providers: Google, Facebook, QuickBooks" do
+    scenario "authenticated user sees the provider connection page with all supported providers listed" do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
@@ -14,23 +14,23 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the user sees Google Ads as a supported platform", context do
-        assert render(context.view) =~ "Google Ads"
+      then_ "the user sees Google as a supported provider", context do
+        assert render(context.view) =~ "Google"
         :ok
       end
 
-      then_ "the user sees Facebook Ads as a supported platform", context do
-        assert render(context.view) =~ "Facebook Ads"
+      then_ "the user sees Facebook as a supported provider", context do
+        assert render(context.view) =~ "Facebook"
         :ok
       end
 
-      then_ "the user sees Google Analytics as a supported platform", context do
-        assert render(context.view) =~ "Google Analytics"
+      then_ "the user sees QuickBooks as a supported provider", context do
+        assert render(context.view) =~ "QuickBooks"
         :ok
       end
     end
 
-    scenario "authenticated user can initiate OAuth flow for Google Ads" do
+    scenario "authenticated user can initiate OAuth flow for Google" do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
@@ -38,14 +38,13 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the Google Ads platform has a connect button", context do
-        assert has_element?(context.view, "[data-platform='google_ads'] [data-role='connect-button']") or
-                 has_element?(context.view, "[data-role='connect-google-ads']")
+      then_ "the Google provider has a connect button", context do
+        assert has_element?(context.view, "[data-platform='google'] [data-role='connect-button']")
         :ok
       end
     end
 
-    scenario "authenticated user can initiate OAuth flow for Facebook Ads" do
+    scenario "authenticated user can initiate OAuth flow for Facebook" do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
@@ -53,14 +52,13 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the Facebook Ads platform has a connect button", context do
-        assert has_element?(context.view, "[data-platform='facebook_ads'] [data-role='connect-button']") or
-                 has_element?(context.view, "[data-role='connect-facebook-ads']")
+      then_ "the Facebook provider has a connect button", context do
+        assert has_element?(context.view, "[data-platform='facebook_ads'] [data-role='connect-button']")
         :ok
       end
     end
 
-    scenario "authenticated user can initiate OAuth flow for Google Analytics" do
+    scenario "authenticated user can initiate OAuth flow for QuickBooks" do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
@@ -68,9 +66,8 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the Google Analytics platform has a connect button", context do
-        assert has_element?(context.view, "[data-platform='google_analytics'] [data-role='connect-button']") or
-                 has_element?(context.view, "[data-role='connect-google-analytics']")
+      then_ "the QuickBooks provider has a connect button", context do
+        assert has_element?(context.view, "[data-platform='quickbooks'] [data-role='connect-button']")
         :ok
       end
     end
@@ -86,7 +83,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
           {:error, {:redirect, _}} -> :ok
           {:error, {:live_redirect, _}} -> :ok
           {:ok, view, _html} ->
-            refute render(view) =~ "Google Ads"
+            refute render(view) =~ "Google"
             :ok
         end
       end

@@ -4,8 +4,8 @@ defmodule MetricFlowWeb.ActiveAccountHook do
 
   Assigns `active_account_name` to the socket so the navigation layout can
   display which account is currently active. Uses the first account returned
-  by `Accounts.list_accounts/1`, which is the most recently created account
-  (accounts are returned in descending order of insertion).
+  by `Accounts.list_accounts/1`, which is the most recently switched-to account
+  (accounts are returned in descending order of membership `updated_at`).
   """
 
   import Phoenix.Component, only: [assign: 3]
@@ -17,12 +17,17 @@ defmodule MetricFlowWeb.ActiveAccountHook do
 
     active_account_name =
       if scope && scope.user do
-        case Accounts.list_accounts(scope) do
-          [account | _] -> account.name
-          [] -> nil
-        end
+        accounts = Accounts.list_accounts(scope)
+        account = primary_account(accounts)
+        if account, do: account.name
       end
 
     {:cont, assign(socket, :active_account_name, active_account_name)}
+  end
+
+  @doc false
+  def primary_account(accounts) do
+    # First account is the most recently switched-to (ordered by updated_at DESC)
+    List.first(accounts)
   end
 end

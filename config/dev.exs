@@ -86,6 +86,7 @@ config :phoenix_live_view,
 
 # Cloudflare Tunnel — named tunnel to dev.metric-flow.app
 config :metric_flow, :cloudflare_tunnel,
+  enabled: false,
   mode: :named,
   hostname: "dev.metric-flow.app",
   tunnel_id: "087e2228-74d8-437d-bc92-b41c9fc9f253",

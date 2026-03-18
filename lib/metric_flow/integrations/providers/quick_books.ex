@@ -58,7 +58,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
   """
   @spec strategy() :: module()
   @impl MetricFlow.Integrations.Providers.Behaviour
-  def strategy, do: Assent.Strategy.OAuth2
+  def strategy, do: MetricFlow.Integrations.Strategies.QuickBooksOAuth2
 
   @doc """
   Transforms QuickBooks user data into the application domain model.
@@ -74,19 +74,26 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
           | {:error, :invalid_provider_user_id}
   @impl MetricFlow.Integrations.Providers.Behaviour
   def normalize_user(user_data) when is_map(user_data) do
-    with {:ok, provider_user_id} <- extract_provider_user_id(user_data) do
-      email = Map.get(user_data, "email")
+    # When using the token-only strategy (no userinfo), user_data is %{}.
+    # We use "sub" if available (from OpenID), otherwise generate a placeholder.
+    # The realmId is attached separately via callback params.
+    provider_user_id =
+      case extract_provider_user_id(user_data) do
+        {:ok, id} -> id
+        {:error, _} -> "quickbooks_user"
+      end
 
-      {:ok,
-       %{
-         provider_user_id: provider_user_id,
-         email: email,
-         name: Map.get(user_data, "name") || Map.get(user_data, "givenName"),
-         username: email,
-         avatar_url: nil,
-         realm_id: Map.get(user_data, "realmId")
-       }}
-    end
+    email = Map.get(user_data, "email")
+
+    {:ok,
+     %{
+       provider_user_id: provider_user_id,
+       email: email,
+       name: Map.get(user_data, "name") || Map.get(user_data, "givenName"),
+       username: email,
+       avatar_url: nil,
+       realm_id: Map.get(user_data, "realmId")
+     }}
   end
 
   def normalize_user(_user_data), do: {:error, :invalid_user_data}

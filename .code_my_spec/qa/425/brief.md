@@ -147,27 +147,27 @@ No story-specific seeds are needed beyond the base seeds.
 
 ### Scenario 11: Login with Remember Me sets cookie (AC: User can use Remember me option for extended sessions)
 
-- Use curl to POST the login form and capture cookies:
-  ```bash
-  curl -v -c /tmp/qa_cookies_rm.txt \
-    -d "user[email]=qa@example.com&user[password]=hello+world!&user[remember_me]=true" \
-    http://localhost:4070/users/log-in
-  grep _metric_flow_web_user_remember_me /tmp/qa_cookies_rm.txt && echo "PASS: remember_me cookie is set" || echo "FAIL: remember_me cookie not found"
-  ```
-- Verify redirect to `/` (HTTP 302) in the response
-- Verify `_metric_flow_web_user_remember_me` cookie is present
+- Log in via the browser using MCP browser tools:
+  1. Navigate to `http://localhost:4070/users/log-in`
+  2. Fill `#login_form_password_email` with `qa@example.com`
+  3. Fill `#login_form_password_password` with `hello world!`
+  4. Click the "Log in and stay logged in" button (the one with `name="user[remember_me]"`)
+  5. Wait for redirect to `/`
+- After login, use `browser_get_cookies` to check for `_metric_flow_web_user_remember_me` cookie
+- Verify the remember_me cookie is present
+- Take screenshot: `screenshots/14_remember_me_cookie.png`
 
 ### Scenario 12: Login without Remember Me does not set cookie (AC: User can use Remember me option for extended sessions)
 
-- Use curl to POST the login form without remember_me:
-  ```bash
-  curl -v -c /tmp/qa_cookies_no_rm.txt \
-    -d "user[email]=qa@example.com&user[password]=hello+world!" \
-    http://localhost:4070/users/log-in
-  grep _metric_flow_web_user_remember_me /tmp/qa_cookies_no_rm.txt && echo "FAIL: unexpected cookie" || echo "PASS: remember_me cookie not set"
-  ```
-- Verify redirect to `/` (HTTP 302) in the response
-- Verify `_metric_flow_web_user_remember_me` cookie is NOT present
+- Log out first, then log in via the browser using MCP browser tools:
+  1. Navigate to `http://localhost:4070/users/log-in`
+  2. Fill `#login_form_password_email` with `qa@example.com`
+  3. Fill `#login_form_password_password` with `hello world!`
+  4. Click the "Log in only this time" button (the one without `name`)
+  5. Wait for redirect to `/`
+- After login, use `browser_get_cookies` to check for `_metric_flow_web_user_remember_me` cookie
+- Verify the remember_me cookie is NOT present
+- Take screenshot: `screenshots/15_no_remember_me_cookie.png`
 
 ## Setup Notes
 

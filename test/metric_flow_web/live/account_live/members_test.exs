@@ -162,10 +162,11 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
+      # phx-submit is on the form wrapper; submit sends user_id (hidden) and role (select).
       html =
         lv
-        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] select")
-        |> render_change(%{"role" => "admin", "user_id" => target_user.id})
+        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] form")
+        |> render_submit(%{"role" => "admin", "user_id" => target_user.id})
 
       assert html =~ "admin"
     end
@@ -177,10 +178,11 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
+      # phx-submit is on the form wrapper.
       html =
         lv
-        |> element("[data-role='member-row'][data-user-id='#{owner.id}'] select")
-        |> render_change(%{"role" => "admin", "user_id" => owner.id})
+        |> element("[data-role='member-row'][data-user-id='#{owner.id}'] form")
+        |> render_submit(%{"role" => "admin", "user_id" => owner.id})
 
       assert html =~ "last owner"
     end
@@ -262,7 +264,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", %{"email" => invitee.email, "role" => "read_only"})
+        |> form("#invite_member_form", invitation: %{email: invitee.email, role: "read_only"})
         |> render_submit()
 
       assert html =~ invitee.email
@@ -277,9 +279,9 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", %{
-          "email" => "notauser@example.com",
-          "role" => "read_only"
+        |> form("#invite_member_form", invitation: %{
+          email: "notauser@example.com",
+          role: "read_only"
         })
         |> render_submit()
 
@@ -297,9 +299,9 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", %{
-          "email" => existing_member.email,
-          "role" => "read_only"
+        |> form("#invite_member_form", invitation: %{
+          email: existing_member.email,
+          role: "read_only"
         })
         |> render_submit()
 

@@ -1,5 +1,9 @@
 # Navigation missing current-account-name indicator
 
+## Status
+
+resolved
+
 ## Severity
 
 high
@@ -18,10 +22,4 @@ QA Story 431 — `.code_my_spec/qa/431/result.md`
 
 ## Resolution
 
-Added `active_account_name` attr to the `app/1` function component in layouts.ex. When present, renders `<span data-role="current-account-name">` in the navbar. AccountLive.Index passes this assign.
-
-Files changed:
-- `lib/metric_flow_web/components/layouts.ex` — added `active_account_name` attr and rendering
-- `lib/metric_flow_web/live/account_live/index.ex` — passes `active_account_name` to layout
-
-Verified: 450 account/agencies tests pass, 0 failures.
+Already implemented — ActiveAccountHook assigns active_account_name, layout renders data-role=current-account-name in navbar.

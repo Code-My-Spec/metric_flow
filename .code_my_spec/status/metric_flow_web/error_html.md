@@ -1,7 +1,4 @@
-# MetricFlowWeb.ErrorHTML
-
-
-## MetricFlowWeb.ErrorHTML (module)
+# MetricFlowWeb.ErrorHTML (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

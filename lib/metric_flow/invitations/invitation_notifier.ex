@@ -47,7 +47,7 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "contact@example.com"})
+      |> from({"MetricFlow", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 

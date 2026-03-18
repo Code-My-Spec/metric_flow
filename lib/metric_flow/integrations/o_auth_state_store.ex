@@ -29,7 +29,10 @@ defmodule MetricFlow.Integrations.OAuthStateStore do
   """
   @spec store(String.t(), map()) :: :ok
   def store(state, session_params) when is_binary(state) do
+    require Logger
     :ets.insert(@table, {state, session_params, System.system_time(:second)})
+    all_keys = :ets.tab2list(@table) |> Enum.map(fn {k, _, _} -> k end)
+    Logger.warning("[OAuthStateStore] STORED state=#{state}, table_size=#{length(all_keys)}, all_keys=#{inspect(all_keys)}")
     :ok
   end
 
@@ -41,15 +44,24 @@ defmodule MetricFlow.Integrations.OAuthStateStore do
   """
   @spec fetch(String.t()) :: {:ok, map()} | :error
   def fetch(state) when is_binary(state) do
+    require Logger
+    all_keys = :ets.tab2list(@table) |> Enum.map(fn {k, _, _} -> k end)
+    Logger.warning("[OAuthStateStore] FETCH state=#{state}, table_size=#{length(all_keys)}, all_keys=#{inspect(all_keys)}, table_id=#{inspect(:ets.info(@table, :id))}")
+
     case :ets.lookup(@table, state) do
       [{^state, session_params, ts}] ->
         :ets.delete(@table, state)
 
-        if System.system_time(:second) - ts <= @ttl_seconds,
-          do: {:ok, session_params},
-          else: :error
+        if System.system_time(:second) - ts <= @ttl_seconds do
+          Logger.warning("[OAuthStateStore] FOUND state=#{state}, age=#{System.system_time(:second) - ts}s")
+          {:ok, session_params}
+        else
+          Logger.warning("[OAuthStateStore] EXPIRED state=#{state}, age=#{System.system_time(:second) - ts}s")
+          :error
+        end
 
       [] ->
+        Logger.warning("[OAuthStateStore] NOT FOUND state=#{state}")
         :error
     end
   end

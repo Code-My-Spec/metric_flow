@@ -34,6 +34,7 @@ defmodule MetricFlow.IntegrationsTest do
   #   :stub_revoke      — provider exports revoke_token/1
   #   :stub_revoke_fail — provider exports revoke_token/1 but it fails
   #   :stub_no_revoke   — provider does not export revoke_token/1
+  #   :stub_refresh_raises — strategy raises an exception during refresh
   # ---------------------------------------------------------------------------
 
   defmodule StubStrategy do
@@ -41,6 +42,8 @@ defmodule MetricFlow.IntegrationsTest do
 
     @state "test-csrf-state-token"
     @auth_url "https://stub.example.com/oauth/authorize?response_type=code&state=#{@state}"
+
+    def default_config(_config), do: []
 
     def authorize_url(_config) do
       {:ok, %{url: @auth_url, session_params: %{state: @state}}}
@@ -75,6 +78,8 @@ defmodule MetricFlow.IntegrationsTest do
   defmodule StubStrategyNoRefresh do
     @moduledoc false
 
+    def default_config(_config), do: []
+
     def authorize_url(_config) do
       {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
     end
@@ -91,6 +96,8 @@ defmodule MetricFlow.IntegrationsTest do
   defmodule StubStrategyRefreshFail do
     @moduledoc false
 
+    def default_config(_config), do: []
+
     def authorize_url(_config) do
       {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
     end
@@ -104,8 +111,28 @@ defmodule MetricFlow.IntegrationsTest do
     end
   end
 
+  defmodule StubStrategyRaises do
+    @moduledoc false
+
+    def default_config(_config), do: []
+
+    def authorize_url(_config) do
+      {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
+    end
+
+    def callback(_config, _params) do
+      {:ok, %{token: %{"access_token" => "stub-token"}, user: %{}}}
+    end
+
+    def refresh_access_token(_config, _token) do
+      raise RuntimeError, "unexpected failure during token refresh"
+    end
+  end
+
   defmodule StubStrategyTokenError do
     @moduledoc false
+
+    def default_config(_config), do: []
 
     def authorize_url(_config) do
       {:ok, %{url: "https://stub.example.com/oauth/authorize", session_params: %{state: "s"}}}
@@ -417,6 +444,30 @@ defmodule MetricFlow.IntegrationsTest do
     def normalize_user(_), do: {:error, :missing_provider_user_id}
   end
 
+  defmodule StubProviderRefreshRaises do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    def config do
+      [
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "https://localhost/auth/stub_refresh_raises/callback"
+      ]
+    end
+
+    @impl true
+    def strategy, do: MetricFlow.IntegrationsTest.StubStrategyRaises
+
+    @impl true
+    def normalize_user(%{"sub" => sub}) when is_binary(sub) do
+      {:ok, %{provider_user_id: sub, email: nil, name: nil, username: nil, avatar_url: nil}}
+    end
+
+    def normalize_user(_), do: {:error, :missing_provider_user_id}
+  end
+
   @stub_providers %{
     stub: MetricFlow.IntegrationsTest.StubProvider,
     stub_no_expiry: MetricFlow.IntegrationsTest.StubProviderNoExpiry,
@@ -429,7 +480,8 @@ defmodule MetricFlow.IntegrationsTest do
     stub_no_revoke: MetricFlow.IntegrationsTest.StubProviderNoRevoke,
     stub_refreshable: MetricFlow.IntegrationsTest.StubProviderRefreshable,
     stub_no_refresh: MetricFlow.IntegrationsTest.StubProviderRefreshNoSupport,
-    stub_refresh_fail: MetricFlow.IntegrationsTest.StubProviderRefreshFail
+    stub_refresh_fail: MetricFlow.IntegrationsTest.StubProviderRefreshFail,
+    stub_refresh_raises: MetricFlow.IntegrationsTest.StubProviderRefreshRaises
   }
 
   # ---------------------------------------------------------------------------
@@ -510,7 +562,7 @@ defmodule MetricFlow.IntegrationsTest do
         providers = Integrations.list_providers()
 
         assert is_list(providers)
-        assert length(providers) > 0
+        assert providers != []
         assert Enum.all?(providers, &is_atom/1)
         assert :google in providers
       end)
@@ -953,10 +1005,7 @@ defmodule MetricFlow.IntegrationsTest do
 
     test "returns :token_refresh_failed when an exception is raised during refresh" do
       {user, scope} = user_with_scope()
-
-      # Build an integration with the refreshable provider but a nil refresh_token
-      # so the strategy raises on attempted access
-      integration = insert_integration!(user.id, :stub_refreshable, %{refresh_token: nil})
+      integration = insert_integration!(user.id, :stub_refresh_raises)
 
       capture_log(fn ->
         assert {:error, :token_refresh_failed} = Integrations.refresh_token(scope, integration)

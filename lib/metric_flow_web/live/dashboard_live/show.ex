@@ -30,7 +30,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="max-w-5xl mx-auto mf-content px-4 py-8">
         <div class="mb-8 flex items-start justify-between gap-4">
           <div>
@@ -255,7 +255,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
                     {format_number(stat.stats.sum)}
                   </p>
                   <p class="text-xs text-base-content/50" data-role="platform-source">
-                    {stat[:provider] || "Unknown"} only
+                    {format_provider_name(stat[:provider])} only
                   </p>
                 </div>
               </div>
@@ -484,6 +484,9 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   end
 
   defp format_number(nil), do: "0"
+
+  defp format_provider_name(nil), do: "Unknown"
+  defp format_provider_name(provider) when is_atom(provider), do: platform_display_name(provider)
 
   # ---------------------------------------------------------------------------
   # Known metrics enrichment

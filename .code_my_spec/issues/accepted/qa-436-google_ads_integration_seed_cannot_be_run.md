@@ -2,7 +2,7 @@
 
 ## Status
 
-accepted
+resolved
 
 ## Severity
 
@@ -22,9 +22,4 @@ QA Story 436 — `.code_my_spec/qa/436/result.md`
 
 ## Resolution
 
-Added the google_ads integration seed (with `selected_accounts` in `provider_metadata`) as an idempotent step in `priv/repo/qa_seeds.exs`. This avoids the `mix run -e` conflict with an already-running Phoenix server since the seed file is run via `mix run priv/repo/qa_seeds.exs` which shares the application startup.
-
-**Files changed:**
-- `priv/repo/qa_seeds.exs` — added Section 3: Google Ads Integration with `selected_accounts: ["Campaign Alpha", "Campaign Beta"]`
-
-**Verification:** Seed file compiles cleanly. Uses idempotent `Repo.get_by` check before inserting.
+Added google_ads integration seed to priv/repo/qa_seeds.exs as an idempotent step, avoiding the mix run -e conflict with running Phoenix server.

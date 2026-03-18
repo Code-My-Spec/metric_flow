@@ -25,12 +25,12 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
     scenario "integration connect page shows pending state before OAuth" do
       given_ :user_logged_in_as_owner
 
-      given_ "the user navigates to the connect page for Google Ads", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to the connect page for Google", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the platform is not shown as saved or active yet", context do
+      then_ "the provider is not shown as saved or active yet", context do
         html = render(context.view)
         refute html =~ "Integration saved"
         refute html =~ "Integration active"
@@ -49,8 +49,8 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
     scenario "OAuth callback page shows success confirmation after completing OAuth" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the Google Ads detail page after OAuth", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_ads")
+      given_ "the user navigates to the Google detail page after OAuth", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

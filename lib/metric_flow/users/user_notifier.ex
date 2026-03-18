@@ -1,4 +1,11 @@
 defmodule MetricFlow.Users.UserNotifier do
+  @moduledoc """
+  Sends transactional emails to users via the application mailer.
+
+  Handles magic link login instructions, email confirmation, and email
+  update notifications.
+  """
+
   import Swoosh.Email
 
   alias MetricFlow.Mailer
@@ -9,7 +16,7 @@ defmodule MetricFlow.Users.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "contact@example.com"})
+      |> from({"MetricFlow", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 
