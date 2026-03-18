@@ -18,13 +18,30 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns all dashboards for the scoped user, ordered by most recently created.
+  Returns all user-owned (non-built-in) dashboards for the scoped user,
+  ordered by most recently created.
   """
   @spec list_dashboards(Scope.t()) :: list(Dashboard.t())
   def list_dashboards(%Scope{user: user}) do
     from(d in Dashboard,
-      where: d.user_id == ^user.id,
+      where: d.user_id == ^user.id and d.built_in == false,
       order_by: [desc: d.inserted_at, desc: d.id]
+    )
+    |> Repo.all()
+  end
+
+  # ---------------------------------------------------------------------------
+  # list_canned_dashboards/0
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns all system-provided built-in dashboards, ordered by name.
+  """
+  @spec list_canned_dashboards() :: list(Dashboard.t())
+  def list_canned_dashboards do
+    from(d in Dashboard,
+      where: d.built_in == true,
+      order_by: [asc: d.name, asc: d.id]
     )
     |> Repo.all()
   end

@@ -44,7 +44,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
   # ---------------------------------------------------------------------------
 
   describe "changeset/2" do
-    test "creates valid changeset with all required fields provided" do
+    test "creates a valid changeset when all required fields are provided" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -53,7 +53,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert changeset.valid?
     end
 
-    test "casts name, user_id, vega_spec, and shareable correctly" do
+    test "casts `name`, `user_id`, `vega_spec`, and `shareable` correctly into changeset changes" do
       user = user_fixture()
       spec = valid_vega_spec()
 
@@ -72,7 +72,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert get_change(changeset, :shareable) == true
     end
 
-    test "validates name is required" do
+    test "returns an invalid changeset when `name` is absent" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :name)
 
@@ -82,7 +82,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates user_id is required" do
+    test "returns an invalid changeset when `user_id` is absent" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :user_id)
 
@@ -92,7 +92,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{user_id: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates vega_spec is required" do
+    test "returns an invalid changeset when `vega_spec` is absent" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :vega_spec)
 
@@ -102,7 +102,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{vega_spec: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "rejects name shorter than 1 character (empty string)" do
+    test "rejects an empty string for `name` (below minimum length of 1)" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: ""}
 
@@ -112,7 +112,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{name: [_]} = errors_on(changeset)
     end
 
-    test "rejects name longer than 255 characters" do
+    test "rejects a `name` longer than 255 characters" do
       user = user_fixture()
       long_name = String.duplicate("a", 256)
       attrs = %{valid_attrs(user.id) | name: long_name}
@@ -123,7 +123,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{name: [_]} = errors_on(changeset)
     end
 
-    test "accepts name at exactly 1 character (minimum boundary)" do
+    test "accepts a `name` of exactly 1 character (minimum boundary)" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: "A"}
 
@@ -132,7 +132,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts name at exactly 255 characters (maximum boundary)" do
+    test "accepts a `name` of exactly 255 characters (maximum boundary)" do
       user = user_fixture()
       max_name = String.duplicate("a", 255)
       attrs = %{valid_attrs(user.id) | name: max_name}
@@ -142,7 +142,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert changeset.valid?
     end
 
-    test "defaults shareable to false when not provided" do
+    test "defaults `shareable` to false when not provided in attrs" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -151,7 +151,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert visualization.shareable == false
     end
 
-    test "accepts shareable set to true" do
+    test "accepts `shareable: true` explicitly" do
       user = user_fixture()
       attrs = Map.put(valid_attrs(user.id), :shareable, true)
 
@@ -161,7 +161,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert get_change(changeset, :shareable) == true
     end
 
-    test "accepts shareable set to false explicitly" do
+    test "accepts `shareable: false` explicitly" do
       user = user_fixture()
       attrs = Map.put(valid_attrs(user.id), :shareable, false)
 
@@ -170,7 +170,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts any valid map for vega_spec" do
+    test "accepts any valid Elixir map for `vega_spec` (including empty map and nested maps)" do
       user = user_fixture()
 
       for spec <- [%{}, %{"mark" => "line"}, %{"nested" => %{"deep" => true}}] do
@@ -181,7 +181,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       end
     end
 
-    test "validates user association exists (assoc_constraint triggers on insert)" do
+    test "triggers `assoc_constraint` error on insert when `user_id` references a non-existent user" do
       attrs = valid_attrs(-1)
 
       {:error, changeset} =
@@ -192,7 +192,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{user: ["does not exist"]} = errors_on(changeset)
     end
 
-    test "creates valid changeset for updating an existing visualization" do
+    test "produces a valid changeset when updating an existing visualization with a subset of fields" do
       user = user_fixture()
       visualization = insert_visualization!(valid_attrs(user.id))
 
@@ -203,7 +203,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert get_change(changeset, :name) == "Updated Chart Name"
     end
 
-    test "preserves existing fields when updating a subset of attributes" do
+    test "preserves existing field values on the changeset struct when only a subset of attributes are updated" do
       user = user_fixture()
       visualization = insert_visualization!(valid_attrs(user.id))
 
@@ -215,7 +215,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert changeset.data.vega_spec == valid_vega_spec()
     end
 
-    test "handles empty attributes map gracefully" do
+    test "handles an empty attributes map gracefully without marking the changeset invalid" do
       user = user_fixture()
       visualization = insert_visualization!(valid_attrs(user.id))
 
@@ -230,31 +230,31 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
   # ---------------------------------------------------------------------------
 
   describe "shareable?/1" do
-    test "returns true when shareable is true" do
+    test "returns `true` when `shareable` is `true`" do
       visualization = struct!(Visualization, shareable: true)
 
       assert Visualization.shareable?(visualization)
     end
 
-    test "returns false when shareable is false" do
+    test "returns `false` when `shareable` is `false`" do
       visualization = struct!(Visualization, shareable: false)
 
       refute Visualization.shareable?(visualization)
     end
 
-    test "returns false when shareable is nil (unset)" do
+    test "returns `false` when `shareable` is `nil` (field unset)" do
       visualization = struct!(Visualization, shareable: nil)
 
       refute Visualization.shareable?(visualization)
     end
 
-    test "works with a visualization that has a vega_spec map" do
+    test "returns the correct result when the struct also has a populated `vega_spec` map" do
       visualization = struct!(Visualization, shareable: true, vega_spec: valid_vega_spec())
 
       assert Visualization.shareable?(visualization)
     end
 
-    test "works with a visualization that has no dashboard associations" do
+    test "returns `false` for a visualization with no dashboard associations loaded" do
       visualization = struct!(Visualization, shareable: false)
 
       refute Visualization.shareable?(visualization)

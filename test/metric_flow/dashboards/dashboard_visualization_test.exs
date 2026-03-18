@@ -55,7 +55,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
   # ---------------------------------------------------------------------------
 
   describe "changeset/2" do
-    test "creates valid changeset with all required fields present" do
+    test "returns a valid changeset when all required fields are present" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -66,7 +66,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "creates valid changeset when size is omitted, defaulting to medium" do
+    test "defaults size to \"medium\" when size is omitted and the record is inserted" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -77,7 +77,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert dv.size == "medium"
     end
 
-    test "casts dashboard_id attribute correctly" do
+    test "casts `dashboard_id` correctly into the changeset" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -88,7 +88,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :dashboard_id) == dashboard.id
     end
 
-    test "casts visualization_id attribute correctly" do
+    test "casts `visualization_id` correctly into the changeset" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -99,7 +99,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :visualization_id) == visualization.id
     end
 
-    test "casts position attribute correctly" do
+    test "casts `position` correctly into the changeset" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -110,7 +110,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :position) == 5
     end
 
-    test "casts size attribute correctly" do
+    test "casts `size` correctly into the changeset" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -121,7 +121,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :size) == "large"
     end
 
-    test "validates dashboard_id is required" do
+    test "returns an invalid changeset when `dashboard_id` is missing" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -133,7 +133,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{dashboard_id: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates visualization_id is required" do
+    test "returns an invalid changeset when `visualization_id` is missing" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -145,7 +145,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{visualization_id: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates position is required" do
+    test "returns an invalid changeset when `position` is missing" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -157,7 +157,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{position: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "allows size to be omitted (optional field)" do
+    test "accepts size as optional (omitting it still produces a valid changeset)" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -168,7 +168,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts position of 0 as valid" do
+    test "accepts 0 as a valid position value" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -192,7 +192,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :position) == 99
     end
 
-    test "rejects negative values for position" do
+    test "rejects negative integers for position" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -204,7 +204,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{position: [_]} = errors_on(changeset)
     end
 
-    test "accepts small as a valid size value" do
+    test "accepts \"small\" as a valid size value" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -215,7 +215,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts medium as a valid size value" do
+    test "accepts \"medium\" as a valid size value" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -226,7 +226,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts large as a valid size value" do
+    test "accepts \"large\" as a valid size value" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -237,7 +237,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "accepts full as a valid size value" do
+    test "accepts \"full\" as a valid size value" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -248,7 +248,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.valid?
     end
 
-    test "rejects size values outside the permitted set" do
+    test "rejects size values outside the permitted set (e.g. \"gigantic\")" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -260,7 +260,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{size: [_]} = errors_on(changeset)
     end
 
-    test "validates dashboard association exists (assoc_constraint triggers on insert)" do
+    test "returns an association error on insert when `dashboard_id` does not reference an existing dashboard" do
       user = user_fixture()
       visualization = insert_visualization!(user.id)
       attrs = valid_attrs(-1, visualization.id)
@@ -273,7 +273,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{dashboard: ["does not exist"]} = errors_on(changeset)
     end
 
-    test "validates visualization association exists (assoc_constraint triggers on insert)" do
+    test "returns an association error on insert when `visualization_id` does not reference an existing visualization" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       attrs = valid_attrs(dashboard.id, -1)
@@ -286,7 +286,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{visualization: ["does not exist"]} = errors_on(changeset)
     end
 
-    test "enforces unique constraint on dashboard_id and visualization_id (unique_constraint triggers on insert)" do
+    test "returns a unique constraint error on insert when the same `{dashboard_id, visualization_id}` pair already exists" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -302,7 +302,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert %{dashboard_id: ["has already been taken"]} = errors_on(changeset)
     end
 
-    test "creates valid changeset for updating an existing record" do
+    test "returns a valid changeset for updating mutable fields (position, size) on an existing record" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -316,7 +316,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert get_change(changeset, :size) == "large"
     end
 
-    test "preserves existing fields when updating a subset of attributes" do
+    test "preserves existing field values when only a subset of attributes is updated" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)
@@ -330,7 +330,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
       assert changeset.data.size == "medium"
     end
 
-    test "handles empty attributes map gracefully" do
+    test "handles an empty attributes map gracefully when called on a persisted record" do
       user = user_fixture()
       dashboard = insert_dashboard!(user.id)
       visualization = insert_visualization!(user.id)

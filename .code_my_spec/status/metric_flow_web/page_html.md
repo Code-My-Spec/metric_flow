@@ -1,4 +1,7 @@
-# MetricFlowWeb.PageHTML (module)
+# MetricFlowWeb.PageHTML
+
+
+## MetricFlowWeb.PageHTML (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

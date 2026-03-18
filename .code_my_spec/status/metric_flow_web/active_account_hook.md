@@ -1,4 +1,7 @@
-# MetricFlowWeb.ActiveAccountHook (module)
+# MetricFlowWeb.ActiveAccountHook
+
+
+## MetricFlowWeb.ActiveAccountHook (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

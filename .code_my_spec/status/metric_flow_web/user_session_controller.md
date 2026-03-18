@@ -1,4 +1,7 @@
-# MetricFlowWeb.UserSessionController (module)
+# MetricFlowWeb.UserSessionController
+
+
+## MetricFlowWeb.UserSessionController (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid

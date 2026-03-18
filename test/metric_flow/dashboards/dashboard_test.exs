@@ -1,7 +1,6 @@
 defmodule MetricFlow.Dashboards.DashboardTest do
   use MetricFlowTest.DataCase, async: true
 
-  import Ecto.Changeset, only: [get_change: 2, get_field: 2]
   import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Dashboards.Dashboard
@@ -35,7 +34,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
   # ---------------------------------------------------------------------------
 
   describe "changeset/2" do
-    test "creates valid changeset with all required fields" do
+    test "returns a valid changeset when all required fields are present" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -44,7 +43,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.valid?
     end
 
-    test "casts name attribute correctly" do
+    test "casts name correctly" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -53,7 +52,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :name) == "My Dashboard"
     end
 
-    test "casts description attribute correctly" do
+    test "casts description correctly" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -62,7 +61,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :description) == "A description of the dashboard"
     end
 
-    test "casts user_id attribute correctly" do
+    test "casts user_id correctly" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -71,7 +70,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :user_id) == user.id
     end
 
-    test "casts built_in attribute correctly" do
+    test "casts built_in correctly when set to true" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | built_in: true}
 
@@ -80,7 +79,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :built_in) == true
     end
 
-    test "validates name is required" do
+    test "returns an invalid changeset and adds a name error when name is absent" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :name)
 
@@ -90,7 +89,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates user_id is required" do
+    test "returns an invalid changeset and adds a user_id error when user_id is absent" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :user_id)
 
@@ -100,7 +99,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{user_id: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "rejects name shorter than 1 character (empty string)" do
+    test "returns an invalid changeset when name is an empty string" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: ""}
 
@@ -110,7 +109,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{name: [_]} = errors_on(changeset)
     end
 
-    test "rejects name longer than 255 characters" do
+    test "returns an invalid changeset when name exceeds 255 characters" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: String.duplicate("a", 256)}
 
@@ -120,7 +119,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{name: [_]} = errors_on(changeset)
     end
 
-    test "accepts name of exactly 1 character" do
+    test "returns a valid changeset when name is exactly 1 character" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: "X"}
 
@@ -129,7 +128,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.valid?
     end
 
-    test "accepts name of exactly 255 characters" do
+    test "returns a valid changeset when name is exactly 255 characters" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | name: String.duplicate("a", 255)}
 
@@ -138,7 +137,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.valid?
     end
 
-    test "rejects description longer than 1000 characters" do
+    test "returns an invalid changeset when description exceeds 1000 characters" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | description: String.duplicate("a", 1001)}
 
@@ -148,7 +147,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{description: [_]} = errors_on(changeset)
     end
 
-    test "accepts description of exactly 1000 characters" do
+    test "returns a valid changeset when description is exactly 1000 characters" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | description: String.duplicate("a", 1000)}
 
@@ -157,7 +156,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.valid?
     end
 
-    test "allows nil description as optional" do
+    test "returns a valid changeset when description is nil (optional field)" do
       user = user_fixture()
       attrs = Map.put(valid_attrs(user.id), :description, nil)
 
@@ -166,7 +165,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.valid?
     end
 
-    test "defaults built_in to false when not provided" do
+    test "defaults built_in to false when omitted from attrs (enforced at the database level)" do
       user = user_fixture()
       attrs = Map.delete(valid_attrs(user.id), :built_in)
 
@@ -185,7 +184,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :built_in) == true
     end
 
-    test "accepts built_in false for user dashboards" do
+    test "accepts built_in false for user-created dashboards" do
       user = user_fixture()
       attrs = %{valid_attrs(user.id) | built_in: false}
 
@@ -195,7 +194,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_field(changeset, :built_in) == false
     end
 
-    test "validates user association exists (assoc_constraint triggers on insert)" do
+    test "triggers the user assoc_constraint and surfaces \"does not exist\" error on insert with a non-existent user_id" do
       attrs = valid_attrs(-1)
 
       {:error, changeset} =
@@ -206,7 +205,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{user: ["does not exist"]} = errors_on(changeset)
     end
 
-    test "creates valid changeset for updating an existing dashboard" do
+    test "returns a valid changeset when updating an existing dashboard with a subset of fields" do
       user = user_fixture()
       dashboard = insert_dashboard!(valid_attrs(user.id))
 
@@ -217,7 +216,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert get_change(changeset, :name) == "Updated Dashboard"
     end
 
-    test "preserves existing fields when updating a subset of attributes" do
+    test "preserves existing field values on the changeset data when only one field is updated" do
       user = user_fixture()
       dashboard = insert_dashboard!(valid_attrs(user.id))
 
@@ -229,7 +228,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert changeset.data.built_in == false
     end
 
-    test "handles empty attributes map gracefully" do
+    test "returns a valid changeset when attrs is an empty map and the struct already has required fields" do
       user = user_fixture()
       dashboard = insert_dashboard!(valid_attrs(user.id))
 
@@ -256,7 +255,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       refute Dashboard.built_in?(dashboard)
     end
 
-    test "returns false for a dashboard with the default built_in value" do
+    test "returns false for a persisted dashboard that was inserted without explicitly setting built_in (default false)" do
       user = user_fixture()
       dashboard = insert_dashboard!(Map.delete(valid_attrs(user.id), :built_in))
 

@@ -105,6 +105,7 @@ defmodule MetricFlowWeb.Router do
       live "/insights", AiLive.Insights, :index
       live "/chat", AiLive.Chat, :index
       live "/chat/:id", AiLive.Chat, :show
+      live "/reports/generate", AiLive.ReportGenerator, :index
     end
 
     # OAuth provider integration routes (controller — handles session_params)

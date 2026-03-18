@@ -87,6 +87,29 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
   end
 
   @doc """
+  Builds a Vega-Lite area chart spec for a single metric's time series data.
+
+  Same structure as the line chart but uses an area mark with a semi-transparent
+  fill. Dates are converted from Date structs to ISO 8601 strings for Vega-Lite
+  temporal compatibility.
+  """
+  @spec build_area_chart_spec(String.t(), list(%{date: Date.t(), value: float()})) :: map()
+  def build_area_chart_spec(metric_name, data) do
+    values =
+      Enum.map(data, fn %{date: date, value: value} ->
+        %{"date" => Date.to_iso8601(date), "value" => value}
+      end)
+
+    Vl.new(title: metric_name, width: "container", height: 400)
+    |> Vl.data_from_values(values)
+    |> Vl.mark(:area, line: true, opacity: 0.3)
+    |> Vl.encode_field(:x, "date", type: :temporal)
+    |> Vl.encode_field(:y, "value", type: :quantitative)
+    |> Vl.to_spec()
+    |> apply_dark_theme()
+  end
+
+  @doc """
   Builds a Vega-Lite bar chart spec for category comparison, such as metrics
   grouped by platform.
 
@@ -117,14 +140,6 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
           max: float(),
           count: integer()
         }) :: map()
-  # ---------------------------------------------------------------------------
-  # Dark theme
-  # ---------------------------------------------------------------------------
-
-  defp apply_dark_theme(spec) do
-    Map.put(spec, "config", @dark_theme)
-  end
-
   def build_summary_card_spec(metric_name, %{
         sum: sum,
         avg: avg,
@@ -140,5 +155,13 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
       max: max,
       count: count
     }
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private helpers
+  # ---------------------------------------------------------------------------
+
+  defp apply_dark_theme(spec) do
+    Map.put(spec, "config", @dark_theme)
   end
 end

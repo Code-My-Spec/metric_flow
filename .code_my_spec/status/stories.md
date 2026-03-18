@@ -3,7 +3,7 @@
 
 ## Summary
 
-22/42 stories complete (all requirements satisfied)
+27/42 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -215,7 +215,7 @@ Status: in_progress | Priority: 19 | Component: MetricFlowWeb.IntegrationLive.Sy
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #440 — Handle Expired or Invalid OAuth Credentials
@@ -223,10 +223,10 @@ Status: in_progress | Priority: 19 | Component: MetricFlowWeb.IntegrationLive.Sy
 Status: in_progress | Priority: 20 | Component: MetricFlowWeb.IntegrationLive.Connect
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #453 — Agency White-label Configuration
@@ -237,7 +237,7 @@ Status: in_progress | Priority: 21 | Component: MetricFlowWeb.AgencyLive.Setting
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #441 — View All Metrics Dashboard
@@ -278,10 +278,10 @@ Status: in_progress | Priority: 24 | Component: MetricFlowWeb.DashboardLive.Show
 Status: in_progress | Priority: 25 | Component: MetricFlowWeb.DashboardLive.Index
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #442 — Flexible Chart Visualization Options
@@ -289,10 +289,10 @@ Status: in_progress | Priority: 25 | Component: MetricFlowWeb.DashboardLive.Inde
 Status: in_progress | Priority: 26 | Component: MetricFlowWeb.VisualizationLive.Editor
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #452 — LLM-Generated Custom Reports
@@ -300,9 +300,9 @@ Status: in_progress | Priority: 26 | Component: MetricFlowWeb.VisualizationLive.
 Status: in_progress | Priority: 27 | Component: MetricFlowWeb.AiLive.ReportGenerator
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
 
@@ -312,7 +312,7 @@ Status: in_progress | Priority: 28 | Component: MetricFlowWeb.DashboardLive.Inde
 
 - [x] component_linked - Story has a linked surface component
 - [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
+- [x] component_complete - Linked component tree is fully implemented
 - [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 

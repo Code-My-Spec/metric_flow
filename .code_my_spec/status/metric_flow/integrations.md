@@ -12,7 +12,7 @@
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing
 - [x] children_designs - Child component designs are complete
-- [x] children_implementations - Child component implementations are complete
+- [ ] children_implementations - Child component implementations are complete
 - [x] dependencies_satisfied - Component dependencies are satisfied
 
 
@@ -36,6 +36,16 @@
 - [x] tests_passing - Component tests are passing
 
 
+## MetricFlow.Integrations.FacebookAdsAccounts (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
 ## MetricFlow.Integrations.Providers.Google (module)
 
 - [x] spec_file - Component specification file exists
@@ -47,6 +57,56 @@
 
 
 ## MetricFlow.Integrations.GoogleAccounts (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.GoogleAds (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.GoogleAdsAccounts (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.GoogleAnalytics (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Providers.GoogleSearchConsole (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.GoogleSearchConsoleSites (module)
 
 - [x] spec_file - Component specification file exists
 - [x] spec_valid - Component specification is valid
@@ -86,11 +146,41 @@
 - [x] tests_passing - Component tests are passing
 
 
+## MetricFlow.Integrations.OauthStateStore (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [ ] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
 ## MetricFlow.Integrations.Providers.QuickBooks (module)
 
 - [x] spec_file - Component specification file exists
 - [x] spec_valid - Component specification is valid
 - [x] implementation_file - Component implementation file exists
 - [x] test_file - Component test file exists
+- [ ] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.QuickBooksAccounts (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [ ] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.Integrations.Strategies.QuickBooksOAuth2 (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [ ] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing

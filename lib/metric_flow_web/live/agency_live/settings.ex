@@ -299,11 +299,18 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
     param == Atom.to_string(option) or (is_nil(param) and option == :read_only)
   end
 
-  defp white_label_value(%WhiteLabelConfig{} = config, _form, field),
-    do: Map.get(config, field)
+  defp white_label_value(config, form, field) do
+    form_value = Map.get(form.params, Atom.to_string(field), "")
 
-  defp white_label_value(nil, form, field),
-    do: Map.get(form.params, Atom.to_string(field), "")
+    if form_value != "" do
+      form_value
+    else
+      case config do
+        %WhiteLabelConfig{} -> Map.get(config, field) || ""
+        nil -> ""
+      end
+    end
+  end
 
   defp has_form_error?(form, field) do
     form

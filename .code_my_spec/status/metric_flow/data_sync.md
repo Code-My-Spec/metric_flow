@@ -12,7 +12,7 @@
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing
 - [x] children_designs - Child component designs are complete
-- [x] children_implementations - Child component implementations are complete
+- [ ] children_implementations - Child component implementations are complete
 - [x] dependencies_satisfied - Component dependencies are satisfied
 
 
@@ -52,6 +52,26 @@
 - [x] spec_valid - Component specification is valid
 - [x] implementation_file - Component implementation file exists
 - [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.DataSync.DataProviders.GoogleBusinessProfile (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [ ] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
+
+
+## MetricFlow.DataSync.DataProviders.GoogleSearchConsole (module)
+
+- [x] spec_file - Component specification file exists
+- [x] spec_valid - Component specification is valid
+- [x] implementation_file - Component implementation file exists
+- [ ] test_file - Component test file exists
 - [x] test_spec_alignment - Test file implements all spec test assertions
 - [x] tests_passing - Component tests are passing
 

@@ -163,6 +163,20 @@ defmodule MetricFlow.Dashboards.ChartBuilderTest do
       assert spec["encoding"]["color"]["type"] == "nominal"
     end
 
+    test "renders one colored line per metric in the legend" do
+      spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
+
+      distinct_metrics =
+        spec["data"]["values"]
+        |> Enum.map(& &1["metric"])
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      assert distinct_metrics == ["Clicks", "Impressions"]
+      assert spec["encoding"]["color"]["field"] == "metric"
+      assert spec["encoding"]["color"]["type"] == "nominal"
+    end
+
     test "flattened data contains entries from all provided metrics with a 'metric' field" do
       spec = ChartBuilder.build_multi_series_spec("All Metrics", multi_series_data())
 
@@ -221,6 +235,53 @@ defmodule MetricFlow.Dashboards.ChartBuilderTest do
 
       dates = Enum.map(values, & &1["date"])
       assert dates == ["2025-01-01", "2025-01-01"]
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # build_area_chart_spec/2
+  # ---------------------------------------------------------------------------
+
+  describe "build_area_chart_spec/2" do
+    test "returns a map with a '$schema' key pointing to a Vega-Lite schema URL" do
+      spec = ChartBuilder.build_area_chart_spec("Impressions", time_series_data())
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["$schema"] =~ "vega-lite"
+    end
+
+    test "returned map includes a 'mark' key configured for an area chart" do
+      spec = ChartBuilder.build_area_chart_spec("Impressions", time_series_data())
+
+      assert is_map(spec["mark"])
+      assert spec["mark"]["type"] == "area"
+      assert spec["mark"]["line"] == true
+      assert spec["mark"]["opacity"] == 0.3
+    end
+
+    test "returned map includes encoding with 'x' temporal and 'y' quantitative" do
+      spec = ChartBuilder.build_area_chart_spec("Impressions", time_series_data())
+
+      assert is_map(spec["encoding"])
+      assert spec["encoding"]["x"]["field"] == "date"
+      assert spec["encoding"]["x"]["type"] == "temporal"
+      assert spec["encoding"]["y"]["field"] == "value"
+      assert spec["encoding"]["y"]["type"] == "quantitative"
+    end
+
+    test "title matches the metric_name argument" do
+      spec = ChartBuilder.build_area_chart_spec("Monthly Revenue", time_series_data())
+
+      assert spec["title"] == "Monthly Revenue"
+    end
+
+    test "returns a valid spec for empty data" do
+      spec = ChartBuilder.build_area_chart_spec("Empty Metric", [])
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["data"]["values"] == []
     end
   end
 

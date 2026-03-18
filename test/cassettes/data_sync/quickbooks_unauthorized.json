@@ -17,7 +17,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "start_date=2025-12-01&end_date=2026-03-09&accounting_method=Accrual",
+        "query_string": "accounting_method=Accrual&end_date=2026-03-09&start_date=2025-12-01",
         "uri": "https://quickbooks.api.intuit.com/v3/company/9341453083026702/reports/ProfitAndLoss"
       },
       "response": {
@@ -25,8 +25,8 @@
           "Fault": {
             "Error": [
               {
-                "Message": "message=AuthenticationFailed; errorCode=003200; statusCode=401",
                 "Detail": "Token expired or invalid. Please renew.",
+                "Message": "message=AuthenticationFailed; errorCode=003200; statusCode=401",
                 "code": "3200"
               }
             ],
@@ -41,14 +41,102 @@
           "date": [
             "Tue, 10 Mar 2026 14:23:01 GMT"
           ],
+          "intuit_tid": [
+            "abc-123-def-999"
+          ],
           "server": [
             "nginx"
           ],
           "www-authenticate": [
             "Bearer realm=\"Intuit\", error=\"invalid_token\""
+          ]
+        },
+        "status": 401
+      }
+    },
+    {
+      "recorded_at": "2026-03-18T14:09:13.207115Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept": [
+            "application/json"
+          ],
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "accounting_method=Accrual&end_date=2026-03-09&start_date=2025-12-01",
+        "uri": "https://sandbox-quickbooks.api.intuit.com/v3/company/9341453083026702/reports/ProfitAndLoss"
+      },
+      "response": {
+        "body_json": {
+          "attachableResponse": [],
+          "batchItemResponse": [],
+          "cdcresponse": [],
+          "fault": {
+            "error": [
+              {
+                "code": "3200",
+                "detail": "Malformed bearer token: too short or too long",
+                "element": null,
+                "message": "message=AuthenticationFailed; errorCode=003200; statusCode=401"
+              }
+            ],
+            "type": "AUTHENTICATION"
+          },
+          "intuitObject": null,
+          "queryResponse": null,
+          "report": null,
+          "requestId": null,
+          "status": null,
+          "syncErrorResponse": null,
+          "time": 1773842953132,
+          "warnings": null
+        },
+        "body_type": "json",
+        "headers": {
+          "connection": [
+            "keep-alive"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Wed, 18 Mar 2026 14:09:13 GMT"
           ],
           "intuit_tid": [
-            "abc-123-def-999"
+            "1-69bab209-5189753603b359b258db3753"
+          ],
+          "response-by": [
+            "gw-go-filter"
+          ],
+          "server": [
+            "istio-envoy"
+          ],
+          "strict-transport-security": [
+            "max-age=31536000",
+            "max-age=15552000"
+          ],
+          "www-authenticate": [
+            "Bearer realm=\"Intuit\", error=\"invalid_token\""
+          ],
+          "x-amzn-trace-id": [
+            "Root=1-69bab209-5189753603b359b258db3753"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-request-id": [
+            "1-69bab209-5189753603b359b258db3753"
+          ],
+          "x-spanid": [
+            "091ff398-cd3d-e891-31d5-8029ad26e79b"
           ]
         },
         "status": 401

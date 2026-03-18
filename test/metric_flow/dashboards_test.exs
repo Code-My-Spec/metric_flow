@@ -308,6 +308,84 @@ defmodule MetricFlow.DashboardsTest do
   end
 
   # ---------------------------------------------------------------------------
+  # build_multi_series_chart_spec/2
+  # ---------------------------------------------------------------------------
+
+  describe "build_multi_series_chart_spec/2" do
+    defp multi_series_data do
+      [
+        %{
+          metric_name: "Sessions",
+          data: [
+            %{date: ~D[2025-01-01], value: 100.0},
+            %{date: ~D[2025-01-02], value: 150.0}
+          ]
+        },
+        %{
+          metric_name: "Pageviews",
+          data: [
+            %{date: ~D[2025-01-01], value: 300.0},
+            %{date: ~D[2025-01-02], value: 400.0}
+          ]
+        }
+      ]
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.StringSigils
+    test "returns a map with a \"$schema\" key pointing to a Vega-Lite schema URL" do
+      spec = Dashboards.build_multi_series_chart_spec("All Metrics", multi_series_data())
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["$schema"] =~ "vega-lite"
+    end
+
+    # credo:disable-for-next-line Credo.Check.Readability.StringSigils
+    test "encoding includes \"color\" mapped to the \"metric\" field for per-metric line colors" do
+      spec = Dashboards.build_multi_series_chart_spec("All Metrics", multi_series_data())
+
+      assert is_map(spec["encoding"])
+      assert spec["encoding"]["color"]["field"] == "metric"
+    end
+
+    test "flattened data contains entries from all provided metrics" do
+      spec = Dashboards.build_multi_series_chart_spec("All Metrics", multi_series_data())
+
+      values = spec["data"]["values"]
+      assert length(values) == 4
+
+      sessions = Enum.filter(values, &(&1["metric"] == "Sessions"))
+      pageviews = Enum.filter(values, &(&1["metric"] == "Pageviews"))
+
+      assert length(sessions) == 2
+      assert length(pageviews) == 2
+    end
+
+    test "returns a valid spec for an empty metrics list" do
+      spec = Dashboards.build_multi_series_chart_spec("Empty", [])
+
+      assert is_map(spec)
+      assert Map.has_key?(spec, "$schema")
+      assert spec["data"]["values"] == []
+    end
+
+    test "returns a valid spec for multiple metrics with overlapping date ranges" do
+      overlapping = [
+        %{metric_name: "Sessions", data: [%{date: ~D[2025-01-01], value: 100.0}]},
+        %{metric_name: "Pageviews", data: [%{date: ~D[2025-01-01], value: 300.0}]}
+      ]
+
+      spec = Dashboards.build_multi_series_chart_spec("Overlap", overlapping)
+
+      values = spec["data"]["values"]
+      assert length(values) == 2
+
+      dates = Enum.map(values, & &1["date"])
+      assert Enum.all?(dates, &(&1 == "2025-01-01"))
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # default_date_range/0
   # ---------------------------------------------------------------------------
 

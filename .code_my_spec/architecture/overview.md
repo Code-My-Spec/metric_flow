@@ -112,7 +112,13 @@ User authentication, registration, and session management.
 **module**
 
 ### Accept
-**module**
+**liveview**
+
+Accept invitation flow. Validates an invitation token from a URL parameter and allows the recipient to accept or decline access to an account. Handles both authenticated users (who accept directly) and unauthenticated users (who are redirected to log in or register before being returned to this page).
+
+Dependencies:
+- MetricFlow.Users
+- MetricFlow.Invitations
 
 ### AccountEdit
 **module**
@@ -135,18 +141,28 @@ Dependencies:
 **module**
 
 ### Connect
-**module**
+**liveview**
+
+OAuth connection flow for linking providers to a user account. Displays OAuth providers (Google, Facebook, QuickBooks) — not individual data platforms — with their current connection status and per-provider OAuth initiation links. Google covers both Google Ads and Google Analytics via a single OAuth connection.
+
+Dependencies:
+- MetricFlow.Integrations
 
 ### CoreComponents
 **module**
 
 ### Editor
-**module**
+**liveview**
+
+Create/edit dashboards, arrange visualizations.
+
+Dependencies:
+- MetricFlow.Dashboards
 
 ### Editor
 **liveview**
 
-Create/edit individual visualizations.
+Create or edit an individual standalone visualization. Authenticated users can build a named Vega-Lite chart from available metrics, preview it, and save it to their library. The resulting visualization may later be added to any dashboard via the Dashboard editor. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
 
 Dependencies:
 - MetricFlow.Dashboards
@@ -184,15 +200,27 @@ Dependencies:
 - MetricFlow.Correlations.CorrelationResult
 
 ### Index
-**module**
+**liveview**
 
-### Index
-**module**
+Per-platform data management and sync controls for connected integrations. Shows data platforms (Google Analytics, Google Ads, Facebook Ads, QuickBooks) rather than OAuth providers. Each platform maps to a parent OAuth provider (e.g., both Google Analytics and Google Ads map to the Google provider). A platform is "connected" when its parent provider has an active integration. OAuth connection management lives on `/integrations/connect`.
+
+Dependencies:
+- MetricFlow.Integrations
+- MetricFlow.DataSync
 
 ### Index
 **liveview**
 
-List dashboards (user's and canned).
+List all accounts the authenticated user belongs to. Displays personal and team accounts with account type, the user's role in each, and any agency access level and origination status for client accounts accessed via an agency grant. Highlights the currently active account and allows switching the active account context. Includes an inline form for creating new team accounts. Requires authentication; unauthenticated requests are redirected to `/users/log-in`. Subscribes to PubSub on mount for real-time account updates.
+
+Dependencies:
+- MetricFlow.Accounts
+- MetricFlow.Agencies
+
+### Index
+**liveview**
+
+List dashboards available to the authenticated user. Shows both the user's own saved dashboards and system-provided canned dashboards. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
 
 Dependencies:
 - MetricFlow.Dashboards
@@ -221,10 +249,20 @@ Dependencies:
 **module**
 
 ### Login
-**module**
+**liveview**
+
+User login and session management. Provides two authentication paths: a magic link sent to the user's email address, and direct password-based login. Also handles re-authentication (sudo mode) when a user who is already signed in needs to confirm their identity before performing a sensitive action.
+
+Dependencies:
+- MetricFlow.Users
 
 ### Members
-**module**
+**liveview**
+
+Manage account members and permissions for the active account. Displays all members with their roles and join dates. Owners and admins can change member roles, remove members, and invite new users. Enforces authorization via `Accounts.Authorization` — only owners/admins see management controls. Protects the last owner from removal or demotion. Subscribes to member PubSub for real-time updates.
+
+Dependencies:
+- MetricFlow.Accounts
 
 ### OnboardingLive
 **module**
@@ -239,7 +277,12 @@ Dependencies:
 **module**
 
 ### Registration
-**module**
+**liveview**
+
+User registration and account creation.
+
+Dependencies:
+- MetricFlow.Users
 
 ### ReportGenerator
 **liveview**
@@ -253,12 +296,18 @@ Dependencies:
 **module**
 
 ### Send
-**module**
+**liveview**
+
+Send email invitations to users or agencies to grant them access to the active account. Displays a send-invitation form and a list of pending invitations. Only owners and admins of the active account may access this page. Invitations are sent to any email address — the recipient does not need to have an existing account. Pending invitations can be cancelled by the inviting user, an owner, or an admin.
+
+Dependencies:
+- MetricFlow.Accounts
+- MetricFlow.Invitations
 
 ### Settings
 **liveview**
 
-User settings including password reset.
+User account settings page. Allows authenticated users to change their email address and update their password. Requires sudo mode (recent re-authentication) before any changes can be applied.
 
 Dependencies:
 - MetricFlow.Users
@@ -274,7 +323,13 @@ Dependencies:
 - MetricFlow.Agencies.WhiteLabelConfig
 
 ### Settings
-**module**
+**liveview**
+
+Account settings, ownership transfer, and deletion for the active account. Owners and admins can edit account name and slug. Only owners can transfer ownership to another admin/member and delete the account. Deletion requires typing the account name for confirmation and re-entering the user's password. Personal accounts cannot be deleted. Subscribes to account PubSub for real-time updates.
+
+Dependencies:
+- MetricFlow.Accounts
+- MetricFlow.Users
 
 ### Show
 **liveview**
@@ -315,3 +370,4 @@ Dependencies:
 
 ### WhiteLabelHook
 **module**
+

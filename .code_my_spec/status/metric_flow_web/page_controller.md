@@ -1,4 +1,7 @@
-# MetricFlowWeb.PageController (module)
+# MetricFlowWeb.PageController
+
+
+## MetricFlowWeb.PageController (module)
 
 - [ ] spec_file - Component specification file exists
 - [ ] spec_valid - Component specification is valid
