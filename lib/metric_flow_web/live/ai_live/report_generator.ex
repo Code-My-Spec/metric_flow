@@ -95,35 +95,36 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
 
         <%!-- Save section — shown only when vega_spec is present and not yet saved --%>
         <div :if={@vega_spec && !@saved} data-role="save-section" class="mf-card p-5 mb-6">
-          <label class="font-semibold text-sm block">Save this visualization</label>
-          <input
-            type="text"
-            name="save_name"
-            data-role="save-name-input"
-            phx-change="update_save_name"
-            placeholder="Visualization name"
-            value={@save_name}
-            class={[
-              "input input-bordered w-full mt-2",
-              @save_error && "input-error"
-            ]}
-          />
-          <p :if={@save_error} data-role="save-error" class="text-error text-sm mt-1">
-            {@save_error}
-          </p>
-          <button
-            data-role="save-visualization-btn"
-            phx-click="save_visualization"
-            disabled={@saving || is_nil(@vega_spec) || String.trim(@save_name) == ""}
-            class={[
-              "btn btn-primary btn-sm mt-3 w-full sm:w-auto",
-              (@saving || is_nil(@vega_spec) || String.trim(@save_name) == "") && "btn-disabled"
-            ]}
-          >
-            <span :if={@saving} class="loading loading-spinner loading-xs"></span>
-            <span :if={@saving}>Saving…</span>
-            <span :if={!@saving}>Save Visualization</span>
-          </button>
+          <form phx-change="update_save_name" phx-submit="save_visualization">
+            <label class="font-semibold text-sm block">Save this visualization</label>
+            <input
+              type="text"
+              name="save_name"
+              data-role="save-name-input"
+              placeholder="Visualization name"
+              value={@save_name}
+              class={[
+                "input input-bordered w-full mt-2",
+                @save_error && "input-error"
+              ]}
+            />
+            <p :if={@save_error} data-role="save-error" class="text-error text-sm mt-1">
+              {@save_error}
+            </p>
+            <button
+              type="submit"
+              data-role="save-visualization-btn"
+              disabled={@saving || is_nil(@vega_spec) || String.trim(@save_name) == ""}
+              class={[
+                "btn btn-primary btn-sm mt-3 w-full sm:w-auto",
+                (@saving || is_nil(@vega_spec) || String.trim(@save_name) == "") && "btn-disabled"
+              ]}
+            >
+              <span :if={@saving} class="loading loading-spinner loading-xs"></span>
+              <span :if={@saving}>Saving…</span>
+              <span :if={!@saving}>Save Visualization</span>
+            </button>
+          </form>
         </div>
 
         <%!-- Save confirmation — shown only when saved is true --%>
@@ -250,8 +251,10 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
     {:noreply, assign(socket, save_name: name, save_error: nil)}
   end
 
-  def handle_event("save_visualization", _params, socket) do
-    %{save_name: save_name, vega_spec: vega_spec} = socket.assigns
+  def handle_event("save_visualization", params, socket) do
+    # Accept save_name from form submit params or fall back to assigns
+    save_name = Map.get(params, "save_name", socket.assigns.save_name)
+    vega_spec = socket.assigns.vega_spec
 
     with :ok <- validate_save_name(save_name),
          :ok <- validate_vega_spec_present(vega_spec) do

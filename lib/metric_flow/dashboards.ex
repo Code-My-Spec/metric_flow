@@ -99,6 +99,23 @@ defmodule MetricFlow.Dashboards do
     VisualizationsRepository.update_visualization(visualization, attrs)
   end
 
+  @doc """
+  Deletes a visualization owned by the scoped user.
+
+  Returns `{:ok, visualization}` on success, `{:error, :not_found}` when the
+  visualization doesn't exist or belongs to another user.
+  """
+  @spec delete_visualization(Scope.t(), integer()) ::
+          {:ok, Visualization.t()} | {:error, :not_found}
+  def delete_visualization(%Scope{} = scope, id) do
+    with {:ok, visualization} <- VisualizationsRepository.get_visualization(scope, id) do
+      case VisualizationsRepository.delete_visualization(visualization) do
+        {:ok, deleted} -> {:ok, deleted}
+        {:error, _changeset} -> {:error, :not_found}
+      end
+    end
+  end
+
   @doc "Returns an Ecto changeset for validating a Visualization name field."
   @spec visualization_name_changeset(String.t()) :: Ecto.Changeset.t()
   def visualization_name_changeset(name) do

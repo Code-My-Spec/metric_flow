@@ -69,6 +69,14 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                 Smart
               </button>
             </div>
+            <%!-- Configure Goals link --%>
+            <.link
+              navigate={~p"/correlations/goals"}
+              data-role="configure-goals"
+              class="btn btn-ghost btn-sm"
+            >
+              Configure Goals
+            </.link>
             <%!-- Run Now button --%>
             <button
               phx-click="run_correlations"

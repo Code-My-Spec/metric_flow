@@ -1,4 +1,4 @@
-import vegaEmbed from "vega-embed"
+import vegaEmbed from "../../vendor/vega-embed.js"
 
 const VegaLite = {
   mounted() {

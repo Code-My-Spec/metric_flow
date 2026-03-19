@@ -4,7 +4,7 @@ Junction table linking a Dashboard to a Visualization with layout metadata (posi
 
 ## Type
 
-schema
+module
 
 ## Fields
 

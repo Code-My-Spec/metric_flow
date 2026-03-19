@@ -95,11 +95,13 @@ defmodule MetricFlowWeb.Router do
       live "/dashboards/:id", DashboardLive.Show, :show
 
       # Visualization routes
+      live "/visualizations", VisualizationLive.Index, :index
       live "/visualizations/new", VisualizationLive.Editor, :new
       live "/visualizations/:id/edit", VisualizationLive.Editor, :edit
 
       # Correlation routes
       live "/correlations", CorrelationLive.Index, :index
+      live "/correlations/goals", CorrelationLive.Goals, :index
 
       # AI routes
       live "/insights", AiLive.Insights, :index

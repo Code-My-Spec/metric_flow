@@ -4,7 +4,7 @@ Named collection of visualizations owned by a user. A dashboard aggregates one o
 
 ## Type
 
-schema
+module
 
 ## Fields
 

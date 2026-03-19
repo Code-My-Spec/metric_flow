@@ -4,7 +4,7 @@ Standalone Vega-Lite spec with name, owner (user_id), raw vega_spec JSON map, an
 
 ## Type
 
-schema
+module
 
 ## Fields
 

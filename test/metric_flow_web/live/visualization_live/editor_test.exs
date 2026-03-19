@@ -142,7 +142,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
 
-        assert has_element?(lv, "a[href='/visualizations']", "Cancel")
+        assert has_element?(lv, "a[href='/dashboards']", "Cancel")
       end)
     end
 
@@ -220,7 +220,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, other_user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/visualizations"}}} =
+        assert {:error, {:redirect, %{to: "/dashboards"}}} =
                  live(conn, ~p"/visualizations/#{visualization.id}/edit")
       end)
     end
@@ -230,7 +230,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/visualizations"}}} =
+        assert {:error, {:redirect, %{to: "/dashboards"}}} =
                  live(conn, ~p"/visualizations/999999/edit")
       end)
     end
@@ -480,7 +480,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         |> element("[data-role='save-visualization-btn']")
         |> render_click()
 
-        assert_redirect(lv, "/visualizations")
+        assert_redirect(lv, "/dashboards")
       end)
     end
 
@@ -542,7 +542,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         |> element("[data-role='save-visualization-btn']")
         |> render_click()
 
-        assert_redirect(lv, "/visualizations")
+        assert_redirect(lv, "/dashboards")
       end)
     end
   end
