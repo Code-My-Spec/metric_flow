@@ -4,7 +4,7 @@ set -euo pipefail
 
 SERVER="deploy@46.225.105.88"
 APP_DIR="/opt/metric_flow/uat"
-ENV_FILE="/opt/metric_flow/uat.env"
+ENV_FILE="/opt/metric_flow/.env.uat"
 PROJECT="metric-flow-uat"
 
 echo "==> Syncing code to server..."
@@ -12,11 +12,15 @@ rsync -az --delete \
   --exclude='.git' \
   --exclude='_build' \
   --exclude='deps' \
+  --exclude='assets/node_modules' \
   --exclude='.code_my_spec' \
   --exclude='test' \
   --exclude='.env' \
   --exclude='.env.*' \
   ./ "$SERVER:$APP_DIR/"
+
+echo "==> Uploading env file..."
+rsync -az .env.uat "$SERVER:$ENV_FILE"
 
 echo "==> Building and restarting containers..."
 ssh "$SERVER" "cd $APP_DIR && \

@@ -30,8 +30,8 @@ stacks. They share the same Caddy reverse proxy and the `caddy_proxy` Docker net
 │   ├── docker-compose.yml
 │   ├── Dockerfile
 │   └── ...
-├── prod.env                 # prod secrets (TODO: create)
-└── uat.env                  # uat secrets
+├── .env.prod                 # prod secrets (TODO: create)
+└── .env.uat                  # uat secrets
 ```
 
 ---
@@ -44,7 +44,7 @@ The `docker-compose.yml` in the repo is configured for UAT:
 
 ```bash
 # Run UAT stack
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env up -d
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d
 ```
 
 Key points:
@@ -59,7 +59,7 @@ Key points:
 Create a separate `docker-compose.prod.yml` or use the same file with different env:
 
 ```bash
-docker compose -p metric-flow-prod --env-file /opt/metric_flow/prod.env up -d
+docker compose -p metric-flow-prod --env-file /opt/metric_flow/.env.prod up -d
 ```
 
 The prod compose file should be identical to UAT except:
@@ -117,7 +117,7 @@ docker exec fuellytics-prod-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 
 ## 4. Environment Variables
 
-### Required Env Vars (prod.env / uat.env)
+### Required Env Vars (.env.prod / .env.uat)
 
 ```bash
 # Database
@@ -156,7 +156,7 @@ OAUTH_BASE_URL=https://metric-flow.app     # or https://uat.metric-flow.app
 
 ```bash
 # Edit env file directly
-ssh deploy@46.225.105.88 "nano /opt/metric_flow/uat.env"
+ssh deploy@46.225.105.88 "nano /opt/metric_flow/.env.uat"
 
 # Generate a new secret key base locally
 mix phx.gen.secret
@@ -165,13 +165,13 @@ mix phx.gen.secret
 :crypto.strong_rand_bytes(32) |> Base.encode64()
 
 # Verify keys are present (without showing values)
-ssh deploy@46.225.105.88 "grep -o '^[A-Z_]*=' /opt/metric_flow/uat.env"
+ssh deploy@46.225.105.88 "grep -o '^[A-Z_]*=' /opt/metric_flow/.env.uat"
 ```
 
 ### Permissions
 
 ```bash
-chmod 600 /opt/metric_flow/prod.env /opt/metric_flow/uat.env
+chmod 600 /opt/metric_flow/.env.prod /opt/metric_flow/.env.uat
 chown deploy:deploy /opt/metric_flow/*.env
 ```
 
@@ -190,7 +190,7 @@ set -euo pipefail
 
 SERVER="deploy@46.225.105.88"
 APP_DIR="/opt/metric_flow/uat"
-ENV_FILE="/opt/metric_flow/uat.env"
+ENV_FILE="/opt/metric_flow/.env.uat"
 PROJECT="metric-flow-uat"
 
 echo "==> Syncing code to server..."
@@ -224,7 +224,7 @@ set -euo pipefail
 
 SERVER="deploy@46.225.105.88"
 APP_DIR="/opt/metric_flow/app"
-ENV_FILE="/opt/metric_flow/prod.env"
+ENV_FILE="/opt/metric_flow/.env.prod"
 PROJECT="metric-flow-prod"
 
 echo "==> Syncing code to server..."
@@ -277,16 +277,16 @@ docker exec -it metric-flow-prod-db-1 psql -U metric_flow metric_flow_prod
 
 ```bash
 # Run pending migrations
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env \
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
   exec app /app/bin/migrate
 
 # Rollback
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env \
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
   exec app /app/bin/metric_flow eval \
   'MetricFlow.Release.rollback(MetricFlow.Repo, 20260101000000)'
 
 # Remote IEx console
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env \
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
   exec app /app/bin/metric_flow remote
 ```
 
@@ -299,12 +299,12 @@ docker exec metric-flow-uat-db-1 \
   | gzip > /opt/backups/metric-flow-uat-$(date +%Y%m%d-%H%M%S).sql.gz
 
 # Restore
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env stop app
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat stop app
 docker exec metric-flow-uat-db-1 psql -U metric_flow -c "DROP DATABASE metric_flow_uat;"
 docker exec metric-flow-uat-db-1 psql -U metric_flow -c "CREATE DATABASE metric_flow_uat;"
 gunzip -c /opt/backups/metric-flow-uat-YYYYMMDD-HHMMSS.sql.gz \
   | docker exec -i metric-flow-uat-db-1 psql -U metric_flow metric_flow_uat
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env start app
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat start app
 ```
 
 ---
@@ -337,10 +337,10 @@ docker inspect metric-flow-uat-app-1 | jq '.[0].State.Health'
 
 ```bash
 # Restart without rebuild
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env restart app
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat restart app
 
 # Rebuild and restart
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env up -d --build app
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d --build app
 ```
 
 ### Disk Cleanup
@@ -356,7 +356,7 @@ docker builder prune -f
 ## 9. TODO / Outstanding Setup
 
 - [ ] Create `/opt/metric_flow/app/` directory on server for prod
-- [ ] Create `/opt/metric_flow/prod.env` with all required vars
+- [ ] Create `/opt/metric_flow/.env.prod` with all required vars
 - [ ] Create `docker-compose.prod.yml` (or copy UAT compose with prod db name)
 - [ ] Add MetricFlow routes to the Caddyfile on server
 - [ ] Set up DNS records for `metric-flow.app` and `uat.metric-flow.app` in Cloudflare

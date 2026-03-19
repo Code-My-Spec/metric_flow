@@ -21,7 +21,7 @@ config :metric_flow, MetricFlow.Mailer,
 
 | Variable         | Example                    | Where              |
 |------------------|----------------------------|--------------------|
-| `RESEND_API_KEY` | `re_xxxxxxxxxxxxxxxx`      | prod.env, uat.env  |
+| `RESEND_API_KEY` | `re_xxxxxxxxxxxxxxxx`      | .env.prod, .env.uat  |
 
 ### Setup Checklist
 
@@ -72,8 +72,8 @@ config :ex_aws, :s3,
 
 | Variable                | Where              |
 |-------------------------|--------------------|
-| `AWS_ACCESS_KEY_ID`     | prod.env, uat.env  |
-| `AWS_SECRET_ACCESS_KEY` | prod.env, uat.env  |
+| `AWS_ACCESS_KEY_ID`     | .env.prod, .env.uat  |
+| `AWS_SECRET_ACCESS_KEY` | .env.prod, .env.uat  |
 
 ### Notes
 
@@ -107,7 +107,7 @@ config :sentry,
 
 | Variable     | Where              |
 |--------------|--------------------|
-| `SENTRY_DSN` | prod.env, uat.env  |
+| `SENTRY_DSN` | .env.prod, .env.uat  |
 
 ---
 
@@ -139,7 +139,7 @@ end
 
 | Variable    | Where              |
 |-------------|--------------------|
-| `CLOAK_KEY` | prod.env, uat.env  |
+| `CLOAK_KEY` | .env.prod, .env.uat  |
 
 ### Generate a New Key
 
@@ -170,7 +170,7 @@ end
 
 | Variable            | Where                      |
 |---------------------|----------------------------|
-| `ANTHROPIC_API_KEY` | .env (dev), prod.env, uat.env |
+| `ANTHROPIC_API_KEY` | .env (dev), .env.prod, .env.uat |
 
 ---
 
@@ -194,11 +194,11 @@ config :metric_flow,
 
 | Variable                | Where                      |
 |-------------------------|----------------------------|
-| `GITHUB_CLIENT_ID`      | .env (dev), prod.env, uat.env |
-| `GITHUB_CLIENT_SECRET`  | .env (dev), prod.env, uat.env |
-| `GOOGLE_CLIENT_ID`      | .env (dev), prod.env, uat.env |
-| `GOOGLE_CLIENT_SECRET`  | .env (dev), prod.env, uat.env |
-| `OAUTH_BASE_URL`        | .env (dev), prod.env, uat.env |
+| `GITHUB_CLIENT_ID`      | .env (dev), .env.prod, .env.uat |
+| `GITHUB_CLIENT_SECRET`  | .env (dev), .env.prod, .env.uat |
+| `GOOGLE_CLIENT_ID`      | .env (dev), .env.prod, .env.uat |
+| `GOOGLE_CLIENT_SECRET`  | .env (dev), .env.prod, .env.uat |
+| `OAUTH_BASE_URL`        | .env (dev), .env.prod, .env.uat |
 
 The `OAUTH_BASE_URL` should match the environment's public URL:
 - dev: `https://dev.metric-flow.app`

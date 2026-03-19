@@ -1,4 +1,4 @@
-# Run with: docker compose -p metric-flow-uat --env-file /opt/metric_flow/uat.env up -d
+# Run with: docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d
 
 services:
   db:

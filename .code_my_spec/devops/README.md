@@ -64,14 +64,14 @@ The Hetzner server at `46.225.105.88` hosts multiple projects:
 ├── fuellytics/              # Fuellytics project
 │   ├── app/                 # fuellytics prod stack
 │   ├── uat/                 # fuellytics UAT stack
-│   ├── prod.env
-│   └── uat.env
+│   ├── .env.prod
+│   └── .env.uat
 │
 ├── metric_flow/             # MetricFlow project
 │   ├── app/                 # metric_flow prod stack (TODO: set up)
 │   ├── uat/                 # metric_flow UAT stack
-│   ├── prod.env             # (TODO: create)
-│   └── uat.env
+│   ├── .env.prod
+│   └── .env.uat
 │
 └── backups/                 # shared backup directory
 ```
@@ -84,7 +84,7 @@ They share one `caddy_proxy` Docker network so a single Caddy instance routes al
 
 ## Key Conventions
 
-- Secrets live on the server at `/opt/metric_flow/{prod,uat}.env` -- never in the repo
+- Secrets live on the server at `/opt/metric_flow/.env.{prod,uat}` -- never in the repo
 - Deploy via rsync + remote docker compose (no CI/CD pipeline yet)
 - Dev port is `4070` (not 4000) -- see `config/dev.exs`
 - Cloudflare Tunnel GenServer auto-starts in dev for `dev.metric-flow.app`

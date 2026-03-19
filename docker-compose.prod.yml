@@ -1,4 +1,4 @@
-# Run with: docker compose -f docker-compose.prod.yml -p metric-flow-prod --env-file /opt/metric_flow/prod.env up -d
+# Run with: docker compose -f docker-compose.prod.yml -p metric-flow-prod --env-file /opt/metric_flow/.env.prod up -d
 
 services:
   db:

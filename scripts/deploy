@@ -4,7 +4,7 @@ set -euo pipefail
 
 SERVER="deploy@46.225.105.88"
 APP_DIR="/opt/metric_flow/app"
-ENV_FILE="/opt/metric_flow/prod.env"
+ENV_FILE="/opt/metric_flow/.env.prod"
 PROJECT="metric-flow-prod"
 COMPOSE_FILE="docker-compose.prod.yml"
 
@@ -18,8 +18,10 @@ rsync -az --delete \
   --exclude='test' \
   --exclude='.env' \
   --exclude='.env.*' \
-  --exclude='uat.env' \
   ./ "$SERVER:$APP_DIR/"
+
+echo "==> Uploading env file..."
+rsync -az .env.prod "$SERVER:$ENV_FILE"
 
 echo "==> Building and restarting containers..."
 ssh "$SERVER" "cd $APP_DIR && \
