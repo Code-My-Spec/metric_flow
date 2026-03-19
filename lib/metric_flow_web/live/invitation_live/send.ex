@@ -170,7 +170,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       |> assign(:page_title, "Invite Members")
       |> assign(:account, account)
       |> assign(:pending_invitations, pending_invitations)
-      |> assign(:invitation_form, build_invitation_form(invitation_changeset))
+      |> assign(:invitation_form, build_invitation_form(invitation_changeset, %{}, false))
 
     {:ok, socket}
   end
@@ -198,7 +198,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
     scope = socket.assigns.current_scope
     changeset = Invitations.change_invitation(scope, params)
 
-    {:noreply, assign(socket, :invitation_form, build_invitation_form(changeset, params))}
+    {:noreply, assign(socket, :invitation_form, build_invitation_form(changeset, params, true))}
   end
 
   def handle_event("send_invitation", %{"invitation" => params}, socket) do
@@ -214,14 +214,14 @@ defmodule MetricFlowWeb.InvitationLive.Send do
         {:noreply,
          socket
          |> assign(:pending_invitations, pending)
-         |> assign(:invitation_form, build_invitation_form(fresh_changeset))
+         |> assign(:invitation_form, build_invitation_form(fresh_changeset, %{}, false))
          |> put_flash(:info, "Invitation sent to #{email}.")}
 
       {:error, :unauthorized} ->
         {:noreply, put_flash(socket, :error, "You do not have permission to send invitations.")}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, :invitation_form, build_invitation_form(changeset, params))}
+        {:noreply, assign(socket, :invitation_form, build_invitation_form(changeset, params, true))}
     end
   end
 
@@ -249,11 +249,15 @@ defmodule MetricFlowWeb.InvitationLive.Send do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp build_invitation_form(changeset, params \\ %{}) do
+  defp build_invitation_form(changeset, params, show_errors) do
     errors =
-      Enum.map(changeset.errors, fn {field, {msg, opts}} ->
-        {field, {translate_error(msg, opts), opts}}
-      end)
+      if show_errors do
+        Enum.map(changeset.errors, fn {field, {msg, opts}} ->
+          {field, {translate_error(msg, opts), opts}}
+        end)
+      else
+        []
+      end
 
     %{params: params, errors: errors, changeset: changeset}
   end

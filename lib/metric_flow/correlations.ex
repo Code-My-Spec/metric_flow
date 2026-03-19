@@ -92,7 +92,7 @@ defmodule MetricFlow.Correlations do
         }
 
       %CorrelationJob{} = job ->
-        results = CorrelationsRepository.list_correlation_results(scope, [])
+        results = CorrelationsRepository.list_correlation_results(scope, correlation_job_id: job.id)
 
         %{
           results: results,

@@ -18,13 +18,13 @@ mcp__vibium__browser_click(selector: "#login_form_password button[name='user[rem
 mcp__vibium__browser_wait(selector: "body", timeout: 5000)
 ```
 
-To test the empty-insights state, clear cookies and re-login as the member user:
+To test the empty-insights state, clear cookies and re-login as the empty user (no team account, no data):
 
 ```
 mcp__vibium__browser_delete_cookies()
 mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")
 mcp__vibium__browser_scroll_into_view(selector: "#login_form_password")
-mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa-member@example.com")
+mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa-empty@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
 mcp__vibium__browser_wait(selector: "body", timeout: 5000)
@@ -47,7 +47,7 @@ After running, the `qa@example.com` account has:
 - 5 AI insights covering all suggestion types: budget_increase, optimization, monitoring,
   budget_decrease, general
 - One insight (budget_increase) linked to a CorrelationResult (clicks -> revenue, coefficient 0.82)
-- The `qa-member@example.com` account has no insights (use for empty-state testing)
+- `qa-empty@example.com` has no team account and no insights (use for empty-state testing)
 
 ## What To Test
 
@@ -183,7 +183,7 @@ insights page). Test both.
 
 #### Scenario B9: Empty state — no insights (AC: AI analyzes correlation data)
 
-1. Clear cookies and log in as `qa-member@example.com`
+1. Clear cookies and log in as `qa-empty@example.com`
 2. Navigate to `http://localhost:4070/insights`
 3. Take a screenshot
 4. Verify: `[data-role='no-insights-state']` is visible with heading "No Insights Yet"

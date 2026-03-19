@@ -121,29 +121,45 @@ defmodule MetricFlow.Invitations do
           {:ok, AccountMember.t()}
           | {:error, :not_found | :expired | :already_member}
   def accept_invitation(%Scope{user: user}, encoded_token) when is_binary(encoded_token) do
-    with {:ok, invitation} <- get_invitation_by_token(encoded_token),
-         :ok <- check_not_already_member(user.id, invitation.account_id) do
-      multi =
-        Multi.new()
-        |> Multi.insert(:member, fn _changes ->
-          AccountMember.changeset(%AccountMember{}, %{
-            user_id: user.id,
-            account_id: invitation.account_id,
-            role: invitation.role
-          })
-        end)
-        |> Multi.update(:invitation, fn _changes ->
-          Invitation.accept_changeset(invitation)
-        end)
+    with {:ok, invitation} <- get_invitation_by_token(encoded_token) do
+      do_accept(invitation, user)
+    end
+  end
 
-      case Repo.transaction(multi) do
-        {:ok, %{member: member}} ->
-          Phoenix.PubSub.broadcast(@pubsub, "accounts:user:#{user.id}", {:member_added, member})
-          {:ok, member}
+  defp do_accept(invitation, user) do
+    case check_not_already_member(user.id, invitation.account_id) do
+      {:error, :already_member} ->
+        # Invalidate the token even when the user is already a member so that
+        # a second visit to the acceptance URL shows "invalid or already used".
+        _ = Repo.update(Invitation.accept_changeset(invitation))
+        {:error, :already_member}
 
-        {:error, _op, changeset, _changes} ->
-          {:error, changeset}
-      end
+      :ok ->
+        insert_member_and_accept(invitation, user)
+    end
+  end
+
+  defp insert_member_and_accept(invitation, user) do
+    multi =
+      Multi.new()
+      |> Multi.insert(:member, fn _changes ->
+        AccountMember.changeset(%AccountMember{}, %{
+          user_id: user.id,
+          account_id: invitation.account_id,
+          role: invitation.role
+        })
+      end)
+      |> Multi.update(:invitation, fn _changes ->
+        Invitation.accept_changeset(invitation)
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{member: member}} ->
+        Phoenix.PubSub.broadcast(@pubsub, "accounts:user:#{user.id}", {:member_added, member})
+        {:ok, member}
+
+      {:error, _op, changeset, _changes} ->
+        {:error, changeset}
     end
   end
 

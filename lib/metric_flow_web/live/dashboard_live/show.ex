@@ -176,7 +176,18 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
           <%!-- Multi-series chart --%>
           <div data-role="multi-series-chart" class="mf-card p-4 mb-4">
-            <h3 class="text-base font-semibold mb-3">Metrics Over Time</h3>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">Metrics Over Time</h3>
+              <button
+                phx-click="show_ai_insights"
+                phx-value-metric="All Metrics"
+                data-role="ai-info-button"
+                class="btn btn-ghost btn-xs"
+                aria-label="View AI insights"
+              >
+                AI Insights
+              </button>
+            </div>
             <div
               :if={@chart_spec != nil}
               data-role="vega-lite-chart"
@@ -233,6 +244,15 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               <p data-role="stat-avg" class="text-xs text-base-content/50">
                 Avg: {format_number(stat.stats.avg)}
               </p>
+              <button
+                phx-click="show_ai_insights"
+                phx-value-metric={stat.metric_name}
+                data-role="ai-info-button"
+                class="btn btn-ghost btn-xs mt-2 w-full"
+                aria-label={"View AI insights for #{stat.metric_name}"}
+              >
+                AI Insights
+              </button>
             </div>
           </div>
 

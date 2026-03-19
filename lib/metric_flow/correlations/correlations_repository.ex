@@ -20,14 +20,18 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
 
   @spec list_correlation_results(Scope.t(), keyword()) :: list(CorrelationResult.t())
   def list_correlation_results(%Scope{} = scope, opts \\ []) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        []
 
-    CorrelationResult
-    |> where(account_id: ^account_id)
-    |> filter_results(opts)
-    |> order_by([r], fragment("ABS(?) DESC", r.coefficient))
-    |> limit_offset(opts)
-    |> Repo.all()
+      account_id ->
+        CorrelationResult
+        |> where(account_id: ^account_id)
+        |> filter_results(opts)
+        |> order_by([r], fragment("ABS(?) DESC", r.coefficient))
+        |> limit_offset(opts)
+        |> Repo.all()
+    end
   end
 
   @spec get_correlation_result(Scope.t(), integer()) ::
@@ -57,12 +61,16 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
 
   @spec list_correlation_jobs(Scope.t()) :: list(CorrelationJob.t())
   def list_correlation_jobs(%Scope{} = scope) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        []
 
-    CorrelationJob
-    |> where(account_id: ^account_id)
-    |> order_by(desc: :inserted_at)
-    |> Repo.all()
+      account_id ->
+        CorrelationJob
+        |> where(account_id: ^account_id)
+        |> order_by(desc: :inserted_at)
+        |> Repo.all()
+    end
   end
 
   @spec get_correlation_job(Scope.t(), integer()) ::
@@ -96,23 +104,31 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
 
   @spec get_latest_completed_job(Scope.t()) :: CorrelationJob.t() | nil
   def get_latest_completed_job(%Scope{} = scope) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        nil
 
-    CorrelationJob
-    |> where(account_id: ^account_id, status: :completed)
-    |> order_by(desc: :completed_at)
-    |> limit(1)
-    |> Repo.one()
+      account_id ->
+        CorrelationJob
+        |> where(account_id: ^account_id, status: :completed)
+        |> order_by(desc: :completed_at)
+        |> limit(1)
+        |> Repo.one()
+    end
   end
 
   @spec has_running_job?(Scope.t()) :: boolean()
   def has_running_job?(%Scope{} = scope) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        false
 
-    CorrelationJob
-    |> where(account_id: ^account_id)
-    |> where([j], j.status in [:pending, :running])
-    |> Repo.exists?()
+      account_id ->
+        CorrelationJob
+        |> where(account_id: ^account_id)
+        |> where([j], j.status in [:pending, :running])
+        |> Repo.exists?()
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -125,8 +141,15 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
 
   defp filter_results(query, opts) do
     query
+    |> maybe_filter_job(Keyword.get(opts, :correlation_job_id))
     |> maybe_filter_goal(Keyword.get(opts, :goal_metric_name))
     |> maybe_filter_min_coefficient(Keyword.get(opts, :min_coefficient))
+  end
+
+  defp maybe_filter_job(query, nil), do: query
+
+  defp maybe_filter_job(query, job_id) do
+    where(query, correlation_job_id: ^job_id)
   end
 
   defp maybe_filter_goal(query, nil), do: query

@@ -26,18 +26,24 @@
 - [x] tests_passing - Component tests are passing
 
 
-## MetricFlow.Dashboards.Dashboard (schema)
+## MetricFlow.Dashboards.Dashboard (module)
 
 - [x] spec_file - Component specification file exists
-- [x] spec_valid - Schema specification is valid
+- [x] spec_valid - Component specification is valid
 - [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
 
 
-## MetricFlow.Dashboards.DashboardVisualization (schema)
+## MetricFlow.Dashboards.DashboardVisualization (module)
 
 - [x] spec_file - Component specification file exists
-- [x] spec_valid - Schema specification is valid
+- [x] spec_valid - Component specification is valid
 - [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
 
 
 ## MetricFlow.Dashboards.DashboardsRepository (module)
@@ -60,11 +66,14 @@
 - [x] tests_passing - Component tests are passing
 
 
-## MetricFlow.Dashboards.Visualization (schema)
+## MetricFlow.Dashboards.Visualization (module)
 
 - [x] spec_file - Component specification file exists
-- [x] spec_valid - Schema specification is valid
+- [x] spec_valid - Component specification is valid
 - [x] implementation_file - Component implementation file exists
+- [x] test_file - Component test file exists
+- [x] test_spec_alignment - Test file implements all spec test assertions
+- [x] tests_passing - Component tests are passing
 
 
 ## MetricFlow.Dashboards.VisualizationsRepository (module)

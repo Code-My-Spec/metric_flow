@@ -8,6 +8,7 @@
 # Creates:
 #   - QA owner user: qa@example.com / hello world!
 #   - QA member user: qa-member@example.com / hello world!
+#   - QA empty user: qa-empty@example.com / hello world! (isolated, no team account)
 #   - Team account "QA Test Account" (qa@example.com is owner)
 #   - Both users confirmed and able to log in with password
 
@@ -58,6 +59,9 @@ qa_user = QaSeed.find_or_create_user("qa@example.com", "hello world!", "QA Perso
 
 IO.puts("\n--- QA Member User ---")
 qa_member = QaSeed.find_or_create_user("qa-member@example.com", "hello world!", "Member Personal")
+
+IO.puts("\n--- QA Empty User (isolated, no team account) ---")
+_qa_empty = QaSeed.find_or_create_user("qa-empty@example.com", "hello world!", "Empty Personal")
 
 scope = Scope.for_user(qa_user)
 
@@ -240,10 +244,12 @@ IO.puts("""
 
 Owner:    qa@example.com / hello world!
 Member:   qa-member@example.com / hello world!
+Empty:    qa-empty@example.com / hello world! (isolated personal account, no team)
 URL:      http://localhost:4070/users/log-in
 
 Both users are confirmed and can log in with email + password.
 Team account "QA Test Account" — qa@example.com is the owner.
+qa-empty@example.com has its own isolated personal account with no data.
 
 Dev mailbox: http://localhost:4070/dev/mailbox
 ==========================================

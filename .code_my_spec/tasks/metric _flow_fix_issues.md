@@ -44,18 +44,18 @@ Read the failed result and screenshots for each issue's story to understand the 
 
 ## Unresolved Issues
 
-## Scope: qa (1)
+## Scope: app (1)
 
-### `qa-517-spex_criterion_4819_and_4827_fail_to_load.md` (ID: eecb7ced-ce49-4c8d-a9d8-57368ea3fc6c)
+### `qa-428-flash_message_lost_when_revisiting_an_acc.md` (ID: 3f50b411-a0c7-4518-a3ac-60ba8861c4a5)
 
-**Source:** `.code_my_spec/qa/517/result.md`
-**QA evidence:** `.code_my_spec/qa/517/`
-- **Title:** Spex criterion 4819 and 4827 fail to load due to test name length exceeding 255 characters
+**Source:** `.code_my_spec/qa/428/result.md`
+**QA evidence:** `.code_my_spec/qa/428/`
+- **Title:** Flash message lost when revisiting an accepted or invalid invitation link
 - **Severity:** medium
-- **Scope:** qa
-- **Story:** 517
+- **Scope:** app
+- **Story:** 428
 
-Two spex files in  test/spex/517_sync_google_business_profile_performance_metrics/  cannot be loaded by ExUnit because their computed test names exceed the 255-character limit: Criterion 4819: spex title is 258 chars — "The following metrics are fetched as daily time series: BUSINESS_IMPRESSIONS_DESKTOP_MAPS, BUSINESS_IMPRESSIONS_DESKTOP_SEARCH, BUSINESS_IMPRESSIONS_MOBILE_MAPS, BUSINESS_CONVERSATIONS, BUSINESS_DIRECTION_REQUESTS, CALL_CLICKS, WEBSITE_CLICKS, BUSINESS_BOOKINGS, BUSINESS_FOOD_ORDERS, BUSINESS_FOOD_MENU_CLICKS" Criterion 4827: spex title is 265 chars — "Google Business Profile performance integration is distinct from GMB Reviews — both use the same account and location config but call different APIs and store different data under different platformServiceType values ('mybusiness' vs 'mybusiness-reviews')" Error:  the computed name of a test must be shorter than 255 characters . Both files need their  spex "..."  title shortened while preserving the meaning.
+When navigating to an invitation link that has already been accepted (or is otherwise invalid), the  accept.ex  LiveView mount redirects to  /  with  put_flash(:error, "This invitation link is invalid or has already been used.") . However, the error flash message does not appear on the destination page ( / ). The user is silently redirected to the home page with no feedback. Reproduction steps: Accept an invitation (the token is now consumed). Navigate again to  http://localhost:4070/invitations/{same-token} . Observe: browser lands on  http://localhost:4070/  with no visible flash message. Expected: error flash "This invitation link is invalid or has already been used." is visible on the home page after redirect. The code at  lib/metric_flow_web/live/invitation_live/accept.ex  lines 114–118 calls  put_flash  before  redirect(to: "/") . The flash may be lost because the home route ( / ) is a different LiveView that does not carry the flash from the previous socket. This may require using  Phoenix.LiveView.redirect  with flash carried in the session, or switching the destination to a route that processes the LiveView session flash correctly.
 
 ## Directory
 

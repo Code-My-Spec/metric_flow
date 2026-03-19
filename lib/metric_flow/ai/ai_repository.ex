@@ -24,6 +24,8 @@ defmodule MetricFlow.Ai.AiRepository do
   @doc """
   Lists AI insights for the scoped account with optional filtering and pagination.
 
+  Returns an empty list when the user has no personal account (account_id is nil).
+
   Options:
   - suggestion_type: atom — filters by suggestion type
   - correlation_result_id: integer — filters by correlation result
@@ -34,31 +36,39 @@ defmodule MetricFlow.Ai.AiRepository do
   """
   @spec list_insights(Scope.t(), keyword()) :: list(Insight.t())
   def list_insights(%Scope{} = scope, opts \\ []) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        []
 
-    Insight
-    |> where(account_id: ^account_id)
-    |> maybe_filter_suggestion_type(Keyword.get(opts, :suggestion_type))
-    |> maybe_filter_correlation_result(Keyword.get(opts, :correlation_result_id))
-    |> order_by([i], desc: i.generated_at)
-    |> maybe_limit(Keyword.get(opts, :limit))
-    |> maybe_offset(Keyword.get(opts, :offset))
-    |> Repo.all()
+      account_id ->
+        Insight
+        |> where(account_id: ^account_id)
+        |> maybe_filter_suggestion_type(Keyword.get(opts, :suggestion_type))
+        |> maybe_filter_correlation_result(Keyword.get(opts, :correlation_result_id))
+        |> order_by([i], desc: i.generated_at)
+        |> maybe_limit(Keyword.get(opts, :limit))
+        |> maybe_offset(Keyword.get(opts, :offset))
+        |> Repo.all()
+    end
   end
 
   @doc """
   Retrieves a specific insight by ID, scoped to the account.
 
   Returns {:ok, insight} when found or {:error, :not_found} when the insight
-  does not exist or belongs to a different account.
+  does not exist, belongs to a different account, or the user has no personal account.
   """
   @spec get_insight(Scope.t(), integer()) :: {:ok, Insight.t()} | {:error, :not_found}
   def get_insight(%Scope{} = scope, id) do
-    account_id = get_account_id(scope)
+    case get_account_id(scope) do
+      nil ->
+        {:error, :not_found}
 
-    case Repo.get_by(Insight, id: id, account_id: account_id) do
-      nil -> {:error, :not_found}
-      insight -> {:ok, insight}
+      account_id ->
+        case Repo.get_by(Insight, id: id, account_id: account_id) do
+          nil -> {:error, :not_found}
+          insight -> {:ok, insight}
+        end
     end
   end
 

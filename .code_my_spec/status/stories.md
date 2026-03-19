@@ -3,7 +3,7 @@
 
 ## Summary
 
-27/42 stories complete (all requirements satisfied)
+36/42 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -303,7 +303,7 @@ Status: in_progress | Priority: 27 | Component: MetricFlowWeb.AiLive.ReportGener
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #445 — View and Navigate Saved Reports
@@ -311,10 +311,10 @@ Status: in_progress | Priority: 27 | Component: MetricFlowWeb.AiLive.ReportGener
 Status: in_progress | Priority: 28 | Component: MetricFlowWeb.DashboardLive.Index
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #454 — Client Views White-labeled Interface
@@ -336,7 +336,7 @@ Status: in_progress | Priority: 30 | Component: MetricFlowWeb.InvitationLive.Acc
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #446 — Select Goal Metrics for Correlation
@@ -344,10 +344,10 @@ Status: in_progress | Priority: 30 | Component: MetricFlowWeb.InvitationLive.Acc
 Status: in_progress | Priority: 31 | Component: MetricFlowWeb.CorrelationLive.Goals
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #447 — Automated Correlation Analysis
@@ -358,7 +358,7 @@ Status: in_progress | Priority: 32 | Component: MetricFlowWeb.CorrelationLive.In
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #449 — View Correlation Analysis Results (Smart/AI Mode)
@@ -366,10 +366,10 @@ Status: in_progress | Priority: 32 | Component: MetricFlowWeb.CorrelationLive.In
 Status: in_progress | Priority: 33 | Component: MetricFlowWeb.CorrelationLive.Index
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #448 — View Correlation Analysis Results (Raw Mode)
@@ -377,10 +377,10 @@ Status: in_progress | Priority: 33 | Component: MetricFlowWeb.CorrelationLive.In
 Status: in_progress | Priority: 34 | Component: MetricFlowWeb.CorrelationLive.Index
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #450 — AI Insights and Suggestions
@@ -391,7 +391,7 @@ Status: in_progress | Priority: 35 | Component: MetricFlowWeb.AiLive.Insights
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #451 — AI Chat for Data Exploration
@@ -402,7 +402,7 @@ Status: in_progress | Priority: 36 | Component: MetricFlowWeb.AiLive.Chat
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #428 — Client Invites Agency or Individual User Access
