@@ -15,6 +15,115 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
   alias MetricFlow.Agencies.WhiteLabelConfig
 
   # ---------------------------------------------------------------------------
+  # Grant Agency Access section
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Renders the Grant Agency Access section for client accounts.
+
+  Allows account owners/admins to grant agency accounts access to their account
+  and view/revoke existing agency grants.
+
+  Expects the following assigns:
+    - `agency_grants` — list of maps with agency grant data
+    - `grant_agency_form` — a map with `:params` and `:errors` keys
+    - `can_manage_agencies` — boolean, whether user can grant/revoke
+  """
+  attr :agency_grants, :list, required: true
+  attr :grant_agency_form, :map, required: true
+  attr :can_manage_agencies, :boolean, default: false
+
+  def grant_agency_access_section(assigns) do
+    ~H"""
+    <div data-role="agency-access-grants" class="card bg-base-100 shadow mf-card">
+      <div class="card-body">
+        <h2 class="card-title text-base">Agency Access</h2>
+        <p class="text-sm text-base-content/60">
+          Grant agencies access to manage this account. The agency's team members will inherit access.
+        </p>
+
+        <%!-- Current grants list --%>
+        <div :if={@agency_grants != []} class="mt-4 space-y-2">
+          <div
+            :for={grant <- @agency_grants}
+            class="flex items-center justify-between p-3 rounded bg-base-200/50 border border-base-300"
+            data-role="agency-grant"
+          >
+            <div class="flex items-center gap-3">
+              <div>
+                <span class="font-medium text-sm">{grant.agency_account_name}</span>
+                <span class="text-xs text-base-content/50 font-mono ml-1">({grant.agency_account_slug})</span>
+              </div>
+              <span class="badge badge-sm">{access_level_label(grant.access_level)}</span>
+              <span :if={grant.origination_status == :originator} class="badge badge-primary badge-sm">Originator</span>
+            </div>
+            <button
+              :if={@can_manage_agencies and grant.origination_status != :originator}
+              type="button"
+              class="btn btn-ghost btn-sm text-error"
+              data-role="revoke-agency-access"
+              phx-click="revoke_agency_access"
+              phx-value-agency-account-id={grant.agency_account_id}
+            >
+              Revoke
+            </button>
+          </div>
+        </div>
+
+        <div :if={@agency_grants == []} class="mt-4">
+          <p class="text-sm text-base-content/40">No agencies have access to this account.</p>
+        </div>
+
+        <%!-- Grant form (owners/admins only) --%>
+        <form :if={@can_manage_agencies} id="grant-agency-access-form" phx-submit="grant_agency_access" class="space-y-4 mt-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Agency Account Slug</span>
+            </label>
+            <input
+              type="text"
+              name="agency_access[slug]"
+              data-role="agency-slug-input"
+              value={Map.get(@grant_agency_form.params, "slug", "")}
+              class={["input w-full font-mono", has_form_error?(@grant_agency_form, :slug) && "input-error"]}
+              placeholder="e.g., my-agency"
+            />
+            <p :if={has_form_error?(@grant_agency_form, :slug)} class="text-sm text-error mt-1">
+              {first_form_error(@grant_agency_form, :slug)}
+            </p>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Access Level</span>
+            </label>
+            <select
+              name="agency_access[access_level]"
+              data-role="agency-access-level"
+              class="select w-full"
+            >
+              <option
+                :for={level <- [:read_only, :account_manager, :admin]}
+                value={level}
+                selected={Map.get(@grant_agency_form.params, "access_level") == Atom.to_string(level)}
+              >
+                {access_level_label(level)}
+              </option>
+            </select>
+          </div>
+
+          <div class="card-actions justify-end">
+            <button type="submit" class="btn btn-primary w-full sm:w-auto">
+              Grant Access
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    """
+  end
+
+  # ---------------------------------------------------------------------------
   # Auto-Enrollment section
   # ---------------------------------------------------------------------------
 

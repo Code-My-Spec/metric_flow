@@ -341,6 +341,19 @@ defmodule MetricFlow.Accounts.AccountRepository do
     :ok
   end
 
+  @doc """
+  Finds a team account by its slug.
+
+  Returns the account struct or nil when no team account matches the slug.
+  """
+  @spec get_account_by_slug(String.t()) :: Account.t() | nil
+  def get_account_by_slug(slug) do
+    from(a in Account,
+      where: a.slug == ^slug and a.type == "team"
+    )
+    |> Repo.one()
+  end
+
   defp broadcast(topic, message) do
     Phoenix.PubSub.broadcast(@pubsub, topic, message)
   end

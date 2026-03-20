@@ -246,6 +246,64 @@ defmodule MetricFlow.Agencies do
     end
   end
 
+  @doc """
+  Lists all agency access grants for a client account, with agency names.
+
+  Requires read access to the client account. Returns a list of maps with
+  agency account name, access level, and origination status.
+  """
+  @spec list_grants_for_client_account(Scope.t(), integer()) :: list(map()) | {:error, :unauthorized}
+  def list_grants_for_client_account(%Scope{} = scope, client_account_id) do
+    with :ok <- authorize(scope, :read, client_account_id) do
+      AgenciesRepository.list_grants_for_client_account(client_account_id)
+    end
+  end
+
+  @doc """
+  Grants an agency access to a client account, authorized from the client side.
+
+  Requires admin access to the client account (not the agency). Used when a
+  client account owner explicitly grants an agency access from account settings.
+  Propagates access to all agency team members.
+  """
+  @spec grant_agency_access_from_client(Scope.t(), integer(), integer(), atom()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, Ecto.Changeset.t() | :unauthorized | :agency_not_found}
+  def grant_agency_access_from_client(%Scope{} = scope, client_account_id, agency_account_id, access_level) do
+    with :ok <- authorize(scope, :admin, client_account_id),
+         {:ok, grant} <- AgenciesRepository.grant_client_access(agency_account_id, client_account_id, access_level) do
+      propagate_client_access_to_team(agency_account_id, client_account_id, access_level)
+      {:ok, grant}
+    end
+  end
+
+  @doc """
+  Revokes an agency's access to a client account, authorized from the client side.
+
+  Requires admin access to the client account. Originator access cannot be revoked.
+  Also revokes inherited access from all agency team members.
+  """
+  @spec revoke_agency_access_from_client(Scope.t(), integer(), integer()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, atom()}
+  def revoke_agency_access_from_client(%Scope{} = scope, client_account_id, agency_account_id) do
+    with :ok <- authorize(scope, :admin, client_account_id),
+         :ok <- check_not_originator(agency_account_id, client_account_id),
+         {:ok, grant} <- AgenciesRepository.revoke_client_access(agency_account_id, client_account_id) do
+      revoke_team_client_access(agency_account_id, client_account_id)
+      {:ok, grant}
+    end
+  end
+
+  @doc """
+  Returns the white-label config for the originator agency of a client account.
+
+  No authorization required — used by the WhiteLabelHook to auto-apply branding
+  for accounts originated by an agency.
+  """
+  @spec get_originator_white_label_config(integer()) :: WhiteLabelConfig.t() | nil
+  def get_originator_white_label_config(client_account_id) do
+    AgenciesRepository.get_originator_white_label_config(client_account_id)
+  end
+
   # ---------------------------------------------------------------------------
   # WhiteLabelConfig
   # ---------------------------------------------------------------------------

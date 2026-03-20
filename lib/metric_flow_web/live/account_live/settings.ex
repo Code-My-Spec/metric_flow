@@ -146,14 +146,26 @@ defmodule MetricFlowWeb.AccountLive.Settings do
               <div class="card-actions justify-end mt-4">
                 <button
                   data-role="revoke-own-access"
-                  phx-click="leave_account"
-                  data-confirm="Are you sure you want to leave this account? You will lose all access."
+                  phx-click="show_leave_confirm"
                   class="btn btn-warning"
                 >
                   Leave Account
                 </button>
               </div>
             </div>
+
+            <%!-- Leave Account confirmation modal --%>
+            <dialog :if={@show_leave_confirm} id="leave-account-modal" class="modal modal-open">
+              <div class="modal-box">
+                <h3 class="text-lg font-bold">Leave Account</h3>
+                <p class="py-4">Are you sure you want to leave this account? You will lose all access.</p>
+                <div class="modal-action">
+                  <button phx-click="cancel_leave" id="leave-cancel-btn" class="btn">Cancel</button>
+                  <button data-role="confirm-leave" phx-click="leave_account" class="btn btn-warning">Leave Account</button>
+                </div>
+              </div>
+              <div class="modal-backdrop" phx-click="cancel_leave"></div>
+            </dialog>
           </div>
 
           <%!-- Leave Account success state --%>
@@ -162,6 +174,14 @@ defmodule MetricFlowWeb.AccountLive.Settings do
               <p class="text-success">Your access has been revoked. You have left the account.</p>
             </div>
           </div>
+
+          <%!-- Agency Access section (team accounts, all roles can view) --%>
+          <AgencyLive.Settings.grant_agency_access_section
+            :if={@account.type == "team"}
+            agency_grants={@agency_grants}
+            grant_agency_form={@grant_agency_form}
+            can_manage_agencies={@current_user_role in [:owner, :admin]}
+          />
 
           <%!-- Agency sections: auto-enrollment and white-label (team accounts, owner/admin only) --%>
           <%= if @account.type == "team" and @current_user_role in [:owner, :admin] do %>
@@ -333,6 +353,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       |> assign(:can_save, user_role in [:owner, :admin])
       |> assign(:active_account_name, account.name)
       |> assign(:left_account, false)
+      |> assign(:show_leave_confirm, false)
       |> assign_agency_data(scope, account, user_role)
 
     {:noreply, socket}
@@ -405,13 +426,21 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     do_delete_account(name_confirmation, password, socket)
   end
 
+  def handle_event("show_leave_confirm", _params, socket) do
+    {:noreply, assign(socket, :show_leave_confirm, true)}
+  end
+
+  def handle_event("cancel_leave", _params, socket) do
+    {:noreply, assign(socket, :show_leave_confirm, false)}
+  end
+
   def handle_event("leave_account", _params, socket) do
     scope = socket.assigns.current_scope
     account = socket.assigns.account
 
     case Accounts.leave_account(scope, account.id) do
       {:ok, _member} ->
-        {:noreply, assign(socket, :left_account, true)}
+        {:noreply, socket |> assign(:left_account, true) |> assign(:show_leave_confirm, false)}
 
       {:error, :unauthorized} ->
         {:noreply,
@@ -519,6 +548,65 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     end
   end
 
+  def handle_event("grant_agency_access", %{"agency_access" => params}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+    slug = params["slug"] || ""
+    access_level = parse_access_level(params["access_level"])
+
+    case Accounts.get_account_by_slug(slug) do
+      nil ->
+        form = %{params: params, errors: [slug: {"No agency account found with that slug", []}]}
+        {:noreply, assign(socket, :grant_agency_form, form)}
+
+      agency_account ->
+        case Agencies.grant_agency_access_from_client(scope, account.id, agency_account.id, access_level) do
+          {:ok, _grant} ->
+            grants = Agencies.list_grants_for_client_account(scope, account.id)
+            grants = if is_list(grants), do: grants, else: []
+
+            {:noreply,
+             socket
+             |> assign(:agency_grants, grants)
+             |> assign(:grant_agency_form, empty_form())
+             |> put_flash(:info, "Agency access granted to #{agency_account.name}")}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            errors = changeset_to_errors(changeset)
+            {:noreply, assign(socket, :grant_agency_form, %{params: params, errors: errors})}
+
+          {:error, :unauthorized} ->
+            {:noreply, put_flash(socket, :error, "You are not authorized to grant agency access")}
+        end
+    end
+  end
+
+  def handle_event("revoke_agency_access", %{"agency-account-id" => agency_account_id_str}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+    agency_account_id = String.to_integer(agency_account_id_str)
+
+    case Agencies.revoke_agency_access_from_client(scope, account.id, agency_account_id) do
+      {:ok, _grant} ->
+        grants = Agencies.list_grants_for_client_account(scope, account.id)
+        grants = if is_list(grants), do: grants, else: []
+
+        {:noreply,
+         socket
+         |> assign(:agency_grants, grants)
+         |> put_flash(:info, "Agency access revoked")}
+
+      {:error, :cannot_revoke_originator} ->
+        {:noreply, put_flash(socket, :error, "Cannot revoke originator agency access")}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "Agency access grant not found")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to revoke agency access")}
+    end
+  end
+
   def handle_event("verify_dns", _params, socket) do
     {:noreply, put_flash(socket, :info, "DNS verification initiated. Please allow a few minutes.")}
   end
@@ -560,11 +648,36 @@ defmodule MetricFlowWeb.AccountLive.Settings do
         config -> config
       end
 
+    agency_grants =
+      case Agencies.list_grants_for_client_account(scope, account.id) do
+        {:error, _} -> []
+        grants -> grants
+      end
+
     socket
     |> assign(:auto_enrollment_rule, auto_enrollment_rule)
     |> assign(:auto_enrollment_form, empty_form())
     |> assign(:agency_white_label_config, agency_white_label_config)
     |> assign(:white_label_form, empty_form())
+    |> assign(:agency_grants, agency_grants)
+    |> assign(:grant_agency_form, empty_form())
+  end
+
+  defp assign_agency_data(socket, scope, account, _user_role)
+       when account.type == "team" do
+    agency_grants =
+      case Agencies.list_grants_for_client_account(scope, account.id) do
+        {:error, _} -> []
+        grants -> grants
+      end
+
+    socket
+    |> assign(:auto_enrollment_rule, nil)
+    |> assign(:auto_enrollment_form, empty_form())
+    |> assign(:agency_white_label_config, nil)
+    |> assign(:white_label_form, empty_form())
+    |> assign(:agency_grants, agency_grants)
+    |> assign(:grant_agency_form, empty_form())
   end
 
   defp assign_agency_data(socket, _scope, _account, _user_role) do
@@ -573,6 +686,8 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     |> assign(:auto_enrollment_form, empty_form())
     |> assign(:agency_white_label_config, nil)
     |> assign(:white_label_form, empty_form())
+    |> assign(:agency_grants, [])
+    |> assign(:grant_agency_form, empty_form())
   end
 
   defp empty_form, do: %{params: %{}, errors: []}

@@ -9,6 +9,7 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Agencies.AgencyClientAccessGrant
   alias MetricFlow.Agencies.AutoEnrollmentRule
@@ -306,6 +307,53 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
           g.origination_status == :originator
     )
     |> Repo.exists?()
+  end
+
+  @doc """
+  Lists all agency access grants for a specific client account, preloading
+  the agency account name.
+
+  Returns grants ordered with originators first, then by insertion date.
+  """
+  @spec list_grants_for_client_account(integer()) :: list(map())
+  def list_grants_for_client_account(client_account_id) do
+    from(g in AgencyClientAccessGrant,
+      join: a in Account,
+      on: a.id == g.agency_account_id,
+      where: g.client_account_id == ^client_account_id,
+      select: %{
+        id: g.id,
+        agency_account_id: g.agency_account_id,
+        agency_account_name: a.name,
+        agency_account_slug: a.slug,
+        access_level: g.access_level,
+        origination_status: g.origination_status,
+        inserted_at: g.inserted_at
+      },
+      order_by: [
+        asc: fragment("CASE WHEN ? = 'originator' THEN 0 ELSE 1 END", g.origination_status),
+        asc: g.inserted_at
+      ]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Finds the white-label config for the originator agency of a client account.
+
+  Joins AgencyClientAccessGrant with WhiteLabelConfig where the grant has
+  originator status. Returns the config struct or nil.
+  """
+  @spec get_originator_white_label_config(integer()) :: WhiteLabelConfig.t() | nil
+  def get_originator_white_label_config(client_account_id) do
+    from(g in AgencyClientAccessGrant,
+      join: w in WhiteLabelConfig,
+      on: w.agency_id == g.agency_account_id,
+      where: g.client_account_id == ^client_account_id and g.origination_status == :originator,
+      select: w,
+      limit: 1
+    )
+    |> Repo.one()
   end
 
   # ---------------------------------------------------------------------------
