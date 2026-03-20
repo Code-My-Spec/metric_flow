@@ -26,9 +26,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
           {:ok, list(map())} | {:error, term()}
   def list_customers(%Integration{} = integration, opts \\ []) do
     developer_token = Application.get_env(:metric_flow, :google_ads_developer_token)
-    login_customer_id = Application.get_env(:metric_flow, :google_ads_login_customer_id)
 
-    headers = build_headers(integration.access_token, developer_token, login_customer_id)
+    headers = build_headers(integration.access_token, developer_token)
 
     with {:ok, customer_ids} <- fetch_accessible_customers(headers, opts) do
       customers = fetch_customer_names(customer_ids, headers, opts)
@@ -71,17 +70,22 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
     end
   end
 
-  # Step 2: For each customer ID, query their descriptive name
+  # Step 2: For each customer ID, query their descriptive name and manager status.
+  # Manager (MCC) accounts are filtered out — the Google Ads API does not return
+  # metrics for manager accounts.
   defp fetch_customer_names(customer_ids, headers, opts) do
-    Enum.map(customer_ids, fn customer_id ->
-      name = fetch_single_customer_name(customer_id, headers, opts)
-      %{id: customer_id, name: name, account: "Google Ads"}
+    customer_ids
+    |> Enum.map(fn customer_id ->
+      {name, manager?} = fetch_single_customer_info(customer_id, headers, opts)
+      %{id: customer_id, name: name, account: "Google Ads", manager: manager?}
     end)
+    |> Enum.reject(& &1.manager)
+    |> Enum.map(&Map.delete(&1, :manager))
   end
 
-  defp fetch_single_customer_name(customer_id, headers, opts) do
+  defp fetch_single_customer_info(customer_id, headers, opts) do
     url = "#{@search_url}/#{customer_id}/googleAds:searchStream"
-    body = Jason.encode!(%{"query" => "SELECT customer.descriptive_name, customer.id FROM customer LIMIT 1"})
+    body = Jason.encode!(%{"query" => "SELECT customer.descriptive_name, customer.id, customer.manager FROM customer LIMIT 1"})
 
     req_opts =
       [method: :post, url: url, headers: headers ++ [{"content-type", "application/json"}], body: body]
@@ -90,50 +94,54 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
     try do
       case Req.request!(req_opts) do
         %Req.Response{status: 200, body: body} ->
-          extract_customer_name(body, customer_id)
+          extract_customer_info(body, customer_id)
 
         _ ->
-          "Account #{customer_id}"
+          {"Account #{customer_id}", false}
       end
     rescue
-      _ -> "Account #{customer_id}"
+      _ -> {"Account #{customer_id}", false}
     end
   end
 
-  defp extract_customer_name(body, customer_id) when is_list(body) do
+  defp extract_customer_info(body, customer_id) when is_list(body) do
     # searchStream returns an array of result batches
     body
     |> Enum.flat_map(fn batch -> Map.get(batch, "results", []) end)
     |> List.first()
     |> case do
-      %{"customer" => %{"descriptiveName" => name}} when is_binary(name) and name != "" -> name
-      _ -> "Account #{customer_id}"
+      %{"customer" => customer} ->
+        name = case customer["descriptiveName"] do
+          n when is_binary(n) and n != "" -> n
+          _ -> "Account #{customer_id}"
+        end
+        {name, customer["manager"] == true}
+
+      _ ->
+        {"Account #{customer_id}", false}
     end
   end
 
-  defp extract_customer_name(body, customer_id) when is_map(body) do
+  defp extract_customer_info(body, customer_id) when is_map(body) do
     # Sometimes Req auto-decodes a single-element array
-    case get_in(body, ["results", Access.at(0), "customer", "descriptiveName"]) do
-      name when is_binary(name) and name != "" -> name
+    customer = get_in(body, ["results", Access.at(0), "customer"]) || %{}
+    name = case customer["descriptiveName"] do
+      n when is_binary(n) and n != "" -> n
       _ -> "Account #{customer_id}"
     end
+    {name, customer["manager"] == true}
   end
 
-  defp extract_customer_name(_body, customer_id), do: "Account #{customer_id}"
+  defp extract_customer_info(_body, customer_id), do: {"Account #{customer_id}", false}
 
   # Helpers
 
-  defp build_headers(access_token, developer_token, login_customer_id) do
+  defp build_headers(access_token, developer_token) do
     [
       {"authorization", "Bearer #{access_token}"},
       {"developer-token", developer_token || ""}
     ]
-    |> maybe_add_login_customer_id(login_customer_id)
   end
-
-  defp maybe_add_login_customer_id(headers, nil), do: headers
-  defp maybe_add_login_customer_id(headers, ""), do: headers
-  defp maybe_add_login_customer_id(headers, id), do: headers ++ [{"login-customer-id", id}]
 
   defp maybe_put_plug(req_opts, opts) do
     case Keyword.get(opts, :http_plug) do

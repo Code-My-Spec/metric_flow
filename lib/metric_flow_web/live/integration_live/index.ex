@@ -496,7 +496,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   defp metadata_key_for_provider(:google_analytics), do: "property_id"
   defp metadata_key_for_provider(:google_ads), do: "customer_id"
   defp metadata_key_for_provider(:google_search_console), do: "site_url"
-  defp metadata_key_for_provider(:quickbooks), do: "realm_id"
+  defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
   defp metadata_key_for_provider(:facebook_ads), do: "ad_account_id"
   defp metadata_key_for_provider(_), do: "property_id"
 end

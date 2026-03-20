@@ -38,33 +38,26 @@ stacks. They share the same Caddy reverse proxy and the `caddy_proxy` Docker net
 
 ## 2. Docker Compose Configuration
 
-### UAT Stack (current)
+### Single Compose, Multiple Environments
 
-The `docker-compose.yml` in the repo is configured for UAT:
+The same `docker-compose.yml` serves both UAT and prod. The environment is controlled
+by the `--env-file` flag and the `-p` (project name) flag. The database name comes from
+`POSTGRES_DB` in each env file — **never hardcoded** in the compose file.
 
 ```bash
-# Run UAT stack
+# UAT
 docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d
-```
 
-Key points:
-- Project name: `metric-flow-uat`
-- DB container: `metric-flow-uat-db-1` (Postgres 17, user: `metric_flow`, db: `metric_flow_uat`)
-- App container: `metric-flow-uat-app-1` (exposes port 4000 internally)
-- Joins `caddy_proxy` external network so Caddy can route to it
-- Has its own `internal` network isolating the db
-
-### Prod Stack (TODO)
-
-Create a separate `docker-compose.prod.yml` or use the same file with different env:
-
-```bash
+# Prod
 docker compose -p metric-flow-prod --env-file /opt/metric_flow/.env.prod up -d
 ```
 
-The prod compose file should be identical to UAT except:
-- `POSTGRES_DB: metric_flow_prod`
-- `DATABASE_URL: ecto://metric_flow:${POSTGRES_PASSWORD}@db/metric_flow_prod`
+Key points:
+- `POSTGRES_DB` must be set in each env file (`metric_flow_uat` / `metric_flow_prod`)
+- Project name isolates containers: `metric-flow-uat-app-1` vs `metric-flow-prod-app-1`
+- Each stack gets its own Docker volume for Postgres data (namespaced by project name)
+- Joins `caddy_proxy` external network so Caddy can route to it
+- Has its own `internal` network isolating the db
 
 ### Container Names on caddy_proxy Network
 
@@ -122,6 +115,7 @@ docker exec fuellytics-prod-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 ```bash
 # Database
 POSTGRES_PASSWORD=<strong-random-password>
+POSTGRES_DB=metric_flow_prod          # or metric_flow_uat for UAT
 
 # Phoenix
 SECRET_KEY_BASE=<64-byte-hex-from-mix-phx-gen-secret>
@@ -355,11 +349,11 @@ docker builder prune -f
 
 ## 9. TODO / Outstanding Setup
 
-- [ ] Create `/opt/metric_flow/app/` directory on server for prod
-- [ ] Create `/opt/metric_flow/.env.prod` with all required vars
-- [ ] Create `docker-compose.prod.yml` (or copy UAT compose with prod db name)
-- [ ] Add MetricFlow routes to the Caddyfile on server
-- [ ] Set up DNS records for `metric-flow.app` and `uat.metric-flow.app` in Cloudflare
+- [x] Create `/opt/metric_flow/app/` directory on server for prod
+- [x] Create `/opt/metric_flow/.env.prod` with all required vars (incl. `POSTGRES_DB`)
+- [x] Single `docker-compose.yml` with env-driven `POSTGRES_DB` (no separate prod file needed)
+- [x] Add MetricFlow routes to the Caddyfile on server
+- [x] Set up DNS records for `metric-flow.app` and `uat.metric-flow.app` in Cloudflare
 - [ ] Create deploy scripts at `scripts/deploy` and `scripts/deploy-uat`
 - [ ] Set up cron backup jobs for metric_flow databases
 - [ ] Add `/health` route to the Phoenix router

@@ -63,8 +63,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
   defp resolve_login_customer_id(integration, opts) do
     Keyword.get(opts, :login_customer_id) ||
-      get_in(integration.provider_metadata, ["login_customer_id"]) ||
-      Application.get_env(:metric_flow, :google_ads_login_customer_id)
+      get_in(integration.provider_metadata, ["login_customer_id"])
   end
 
   defp default_date_range do

@@ -84,7 +84,8 @@ defmodule MetricFlowTest.CassetteFixtures do
       nil -> nil
       realm_id ->
         build_integration(:quickbooks, %{
-          "realm_id" => realm_id
+          "realm_id" => realm_id,
+          "income_account_id" => test_cred(:quickbooks_income_account_id) || "1"
         })
     end
   end
@@ -132,6 +133,13 @@ defmodule MetricFlowTest.CassetteFixtures do
   defp tokens_for(:facebook_ads) do
     {
       test_cred(:facebook_access_token) || "cassette-token",
+      "cassette-refresh"
+    }
+  end
+
+  defp tokens_for(:quickbooks) do
+    {
+      test_cred(:quickbooks_access_token) || "cassette-token",
       "cassette-refresh"
     }
   end

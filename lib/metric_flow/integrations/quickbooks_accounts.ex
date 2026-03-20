@@ -10,7 +10,9 @@ defmodule MetricFlow.Integrations.QuickBooksAccounts do
 
   alias MetricFlow.Integrations.Integration
 
-  @base_url Application.compile_env(:metric_flow, :quickbooks_api_url, "https://sandbox-quickbooks.api.intuit.com/v3/company")
+  @default_base_url "https://sandbox-quickbooks.api.intuit.com/v3/company"
+
+  defp base_url, do: Application.get_env(:metric_flow, :quickbooks_api_url, @default_base_url)
 
   @spec list_income_accounts(Integration.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
@@ -21,7 +23,7 @@ defmodule MetricFlow.Integrations.QuickBooksAccounts do
       {:error, :missing_realm_id}
     else
       query = "SELECT * FROM Account WHERE AccountType = 'Income' MAXRESULTS 100"
-      url = "#{@base_url}/#{realm_id}/query"
+      url = "#{base_url()}/#{realm_id}/query"
 
       req_opts =
         [
