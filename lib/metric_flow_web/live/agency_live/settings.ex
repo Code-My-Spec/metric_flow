@@ -143,7 +143,7 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
       <div class="card-body">
         <h2 class="card-title text-base">Auto-Enrollment</h2>
         <p class="text-sm text-base-content/60">
-          Automatically add new users to this agency when they register with a matching email domain.
+          Automatically add new users to this account when they register with a matching email domain.
         </p>
 
         <%!-- Active rule status display --%>

@@ -183,17 +183,12 @@ defmodule MetricFlowWeb.AccountLive.Settings do
             can_manage_agencies={@current_user_role in [:owner, :admin]}
           />
 
-          <%!-- Agency sections: auto-enrollment and white-label (team accounts, owner/admin only) --%>
-          <%= if @account.type == "team" and @current_user_role in [:owner, :admin] do %>
-            <AgencyLive.Settings.auto_enrollment_section
-              auto_enrollment_rule={@auto_enrollment_rule}
-              auto_enrollment_form={@auto_enrollment_form}
-            />
-            <AgencyLive.Settings.white_label_section
-              white_label_config={@agency_white_label_config}
-              white_label_form={@white_label_form}
-            />
-          <% end %>
+          <%!-- Auto-enrollment (team accounts, owner/admin only) --%>
+          <AgencyLive.Settings.auto_enrollment_section
+            :if={@account.type == "team" and @current_user_role in [:owner, :admin]}
+            auto_enrollment_rule={@auto_enrollment_rule}
+            auto_enrollment_form={@auto_enrollment_form}
+          />
 
           <%!-- Section 2: Transfer Ownership (owners of team accounts only) --%>
           <div :if={@is_owner and @account.type == "team"} class="card bg-base-100 shadow mf-card">
