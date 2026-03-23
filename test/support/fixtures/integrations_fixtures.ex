@@ -9,13 +9,14 @@ defmodule MetricFlowTest.IntegrationsFixtures do
   def integration_fixture(user, attrs \\ %{}) do
     defaults = %{
       user_id: user.id,
-      provider: :google,
+      provider: :google_analytics,
       access_token: "test_access_token_#{System.unique_integer([:positive])}",
       refresh_token: "test_refresh_token",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
       granted_scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
       provider_metadata: %{
         "email" => user.email,
+        "property_id" => "GA4-67890",
         "selected_accounts" => ["UA-12345 (Main Site)", "GA4-67890 (App)"]
       }
     }

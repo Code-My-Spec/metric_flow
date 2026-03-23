@@ -26,8 +26,8 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
         {:ok, Map.put(context, :login_conn, conn)}
       end
 
-      then_ "the user is redirected to the home page", context do
-        assert redirected_to(context.login_conn) == "/"
+      then_ "the user is redirected to the integrations page", context do
+        assert redirected_to(context.login_conn) == "/integrations"
         :ok
       end
 

@@ -27,7 +27,18 @@ defmodule MetricFlowWeb.ActiveAccountHook do
 
   @doc false
   def primary_account(accounts) do
-    # First account is the most recently switched-to (ordered by updated_at DESC)
+    # First account is the most recently switched-to (ordered by updated_at DESC).
+    # However, we prefer an account the user originated (their own account) over
+    # client accounts they were granted access to, as a sensible default.
     List.first(accounts)
+  end
+
+  @doc """
+  Like `primary_account/1` but given the user, prefers the account they
+  originated (created). Falls back to the first account in the list.
+  """
+  def primary_account(accounts, user) do
+    Enum.find(accounts, fn a -> a.originator_user_id == user.id end) ||
+      List.first(accounts)
   end
 end

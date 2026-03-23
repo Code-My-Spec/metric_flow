@@ -45,7 +45,7 @@ Dependencies:
 ### Dashboards
 **context**
 
-Public API boundary for the Dashboards bounded context. Aggregates and shapes metric data from the Metrics context into chart-ready structures for the "All Metrics" dashboard view. Delegates Vega-Lite chart construction to ChartBuilder. Delegates integration presence checks to Integrations.
+Public API boundary for the Dashboards bounded context. Manages dashboard collections and standalone visualizations. Aggregates and shapes metric data from the Metrics context into chart-ready structures. Delegates Vega-Lite chart construction (single-metric and multi-series) to ChartBuilder. Delegates structured query building to QueryBuilder. Delegates integration presence checks to Integrations.
 
 Dependencies:
 - MetricFlow.Metrics
@@ -162,7 +162,7 @@ Dependencies:
 ### Editor
 **liveview**
 
-Create or edit an individual standalone visualization. Authenticated users can build a named Vega-Lite chart from available metrics, preview it, and save it to their library. The resulting visualization may later be added to any dashboard via the Dashboard editor. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
+Create or edit an individual standalone visualization. Authenticated users can select metrics, pick a chart type (line, bar, area), and preview a Vega-Lite chart built from real synced metric data queried from the Metrics context via the Dashboards context. The resulting visualization is saved with its Vega-Lite spec and query parameters, and may later be added to any dashboard via the Dashboard editor. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
 
 Dependencies:
 - MetricFlow.Dashboards
@@ -182,10 +182,11 @@ Dependencies:
 ### Goals
 **liveview**
 
-Configure goal metrics.
+Configure goal metrics. Allows an authenticated user to select which metric serves as the goal metric against which all other metrics are correlated by the correlation engine.
 
 Dependencies:
 - MetricFlow.Metrics
+- MetricFlow.Correlations
 
 ### HealthController
 **module**
@@ -233,6 +234,9 @@ List and view saved reports. Displays user-created and system-generated reports 
 Dependencies:
 - MetricFlow.Metrics
 - MetricFlow.Dashboards
+
+### Index
+**module**
 
 ### Insights
 **liveview**
@@ -287,10 +291,11 @@ Dependencies:
 ### ReportGenerator
 **liveview**
 
-Natural language report generation.
+Natural language report generation. Allows authenticated users to describe a visualization in plain language, generate a Vega-Lite chart spec via the AI context, preview the rendered chart, and optionally save it as a named visualization. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
 
 Dependencies:
 - MetricFlow.Ai
+- MetricFlow.Dashboards
 
 ### Router
 **module**
@@ -334,7 +339,7 @@ Dependencies:
 ### Show
 **liveview**
 
-View dashboard with visualizations. Displays unified marketing and financial metrics from all connected platforms via Vega-Lite time series charts, summary stat cards, and filter controls. When no integrations are connected, renders an onboarding prompt. Unauthenticated users are redirected to `/users/log-in` by the router's authentication plug.
+View a dashboard with its visualizations. For the default "All Metrics" canned dashboard, renders a single multi-series Vega-Lite line chart (all metrics as colored lines on one chart) plus an HTML data table (rows = months, columns = metric names, cells = values) with date range picker, platform filter, and metric toggles. For custom user dashboards, renders arranged visualizations from the dashboard's visualization collection. When no integrations are connected, renders an onboarding prompt. Unauthenticated users are redirected to `/users/log-in` by the router's authentication plug.
 
 Dependencies:
 - MetricFlow.Dashboards

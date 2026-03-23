@@ -31,6 +31,21 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     scenario "dashboards page displays a Marketing Overview template" do
       given_ :user_logged_in_as_owner
 
+      given_ "canned dashboards exist in the database", context do
+        user = MetricFlow.Users.get_user_by_email(context.owner_email)
+
+        for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
+          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
+            name: name,
+            description: "System-provided #{name} dashboard",
+            built_in: true,
+            user_id: user.id
+          })
+        end
+
+        {:ok, context}
+      end
+
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboards")
         {:ok, Map.put(context, :view, view)}
@@ -50,6 +65,21 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
 
     scenario "dashboards page displays a Revenue Analysis template" do
       given_ :user_logged_in_as_owner
+
+      given_ "canned dashboards exist in the database", context do
+        user = MetricFlow.Users.get_user_by_email(context.owner_email)
+
+        for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
+          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
+            name: name,
+            description: "System-provided #{name} dashboard",
+            built_in: true,
+            user_id: user.id
+          })
+        end
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboards")
@@ -71,6 +101,21 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     scenario "dashboards page displays a Platform Comparison template" do
       given_ :user_logged_in_as_owner
 
+      given_ "canned dashboards exist in the database", context do
+        user = MetricFlow.Users.get_user_by_email(context.owner_email)
+
+        for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
+          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
+            name: name,
+            description: "System-provided #{name} dashboard",
+            built_in: true,
+            user_id: user.id
+          })
+        end
+
+        {:ok, context}
+      end
+
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboards")
         {:ok, Map.put(context, :view, view)}
@@ -91,6 +136,21 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     scenario "dashboards page lists multiple canned templates" do
       given_ :user_logged_in_as_owner
 
+      given_ "canned dashboards exist in the database", context do
+        user = MetricFlow.Users.get_user_by_email(context.owner_email)
+
+        for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
+          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
+            name: name,
+            description: "System-provided #{name} dashboard",
+            built_in: true,
+            user_id: user.id
+          })
+        end
+
+        {:ok, context}
+      end
+
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboards")
         {:ok, Map.put(context, :view, view)}
@@ -99,11 +159,11 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       then_ "the page displays at least one dashboard template for the user to choose from", context do
         html = render(context.view)
 
-        assert has_element?(context.view, "[data-role='dashboard-template']") or
-                 has_element?(context.view, "[data-role='canned-dashboard']") or
+        assert has_element?(context.view, "[data-role='canned-dashboards']") or
+                 has_element?(context.view, "[data-role='dashboard-template']") or
                  has_element?(context.view, "[data-role='template-list']") or
-                 html =~ "template" or
-                 html =~ "Template"
+                 html =~ "Built-in" or
+                 html =~ "System Dashboards"
 
         :ok
       end

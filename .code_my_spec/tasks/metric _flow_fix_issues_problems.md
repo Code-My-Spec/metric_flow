@@ -1,5 +1,7 @@
-1 unresolved medium+ issue(s):
+3 unresolved medium+ issue(s):
 
-- `Flash message lost when revisiting an accepted or invalid invitation link`
+- `Missing-location flagging not implemented (criterion 4862)`
+- `Location row data-role attributes missing from template (criteria 4855–4856)`
+- `save_account_selection saves included_locations as a string instead of an array`
 
 Use `.code_my_spec/tools/issues/resolve-issue <id> "<resolution>"` for each fixed issue.

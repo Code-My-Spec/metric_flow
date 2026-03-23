@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :owner_with_google_ads_integration
 
       given_ "the user navigates to the account selection page for a connected provider", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -44,8 +44,8 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
     scenario "the user can select one or more accounts to sync" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user is on the account selection page for Google", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
+      given_ "the user is on the account selection page for Google Analytics", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -62,8 +62,8 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
     scenario "the user can confirm the account selection to start syncing" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user is on the account selection page for Google", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
+      given_ "the user is on the account selection page for Google Analytics", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -76,11 +76,11 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       end
     end
 
-    scenario "the user can select properties to sync from Google Analytics via the Google provider" do
+    scenario "the user can select properties to sync from Google Analytics" do
       given_ :owner_with_google_ads_integration
 
-      given_ "the user navigates to the account selection page for the Google provider", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google/accounts")
+      given_ "the user navigates to the account selection page for Google Analytics", context do
+        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 

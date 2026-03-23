@@ -39,8 +39,8 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
         {:ok, Map.put(context, :logout_conn, conn)}
       end
 
-      then_ "the user is redirected to the home page", context do
-        assert redirected_to(context.logout_conn) == "/"
+      then_ "the user is redirected to the login page", context do
+        assert redirected_to(context.logout_conn) == "/users/log-in"
         :ok
       end
 

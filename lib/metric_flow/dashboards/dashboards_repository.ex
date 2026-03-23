@@ -10,6 +10,8 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   import Ecto.Query
 
   alias MetricFlow.Dashboards.Dashboard
+  alias MetricFlow.Dashboards.DashboardVisualization
+  alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
@@ -71,6 +73,40 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   end
 
   # ---------------------------------------------------------------------------
+  # get_dashboard_with_visualizations/2
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Retrieves a single dashboard for the scoped user by ID with its
+  dashboard_visualizations and associated visualizations preloaded, ordered
+  by position ascending.
+
+  Returns `{:ok, dashboard}` when found, or `{:error, :not_found}` when the
+  dashboard does not exist or belongs to a different user.
+  """
+  @spec get_dashboard_with_visualizations(Scope.t(), integer()) ::
+          {:ok, Dashboard.t()} | {:error, :not_found}
+  def get_dashboard_with_visualizations(%Scope{user: user}, id) do
+    dvs_query =
+      from(dv in DashboardVisualization,
+        order_by: dv.position,
+        preload: [:visualization]
+      )
+
+    result =
+      from(d in Dashboard,
+        where: d.user_id == ^user.id and d.id == ^id,
+        preload: [dashboard_visualizations: ^dvs_query]
+      )
+      |> Repo.one()
+
+    case result do
+      nil -> {:error, :not_found}
+      dashboard -> {:ok, dashboard}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # create_dashboard/2
   # ---------------------------------------------------------------------------
 
@@ -105,6 +141,66 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
     dashboard
     |> Dashboard.changeset(attrs)
     |> Repo.update()
+  end
+
+  # ---------------------------------------------------------------------------
+  # replace_dashboard_visualizations/3
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Replaces all visualizations for a dashboard in a single transaction.
+
+  Deletes any existing DashboardVisualization records for the given dashboard,
+  then creates a new Visualization record for each entry in `visualizations`
+  and links it to the dashboard via a new DashboardVisualization record.
+
+  Each visualization entry must be a map with `:metric_name`, `:chart_type`,
+  and `:position` keys. The `metric_name` and `chart_type` are stored in the
+  visualization's `vega_spec` so they can be recovered when loading the
+  dashboard for editing.
+
+  Returns `:ok` on success or `{:error, reason}` on failure.
+  """
+  @spec replace_dashboard_visualizations(Scope.t(), Dashboard.t(), list(map())) ::
+          :ok | {:error, term()}
+  def replace_dashboard_visualizations(
+        %Scope{user: user},
+        %Dashboard{id: dashboard_id},
+        visualizations
+      ) do
+    Repo.transaction(fn ->
+      from(dv in DashboardVisualization, where: dv.dashboard_id == ^dashboard_id)
+      |> Repo.delete_all()
+
+      Enum.each(visualizations, fn %{
+                                     metric_name: metric_name,
+                                     chart_type: chart_type,
+                                     position: position
+                                   } ->
+        vega_spec = %{"metric_name" => metric_name, "chart_type" => chart_type}
+
+        {:ok, visualization} =
+          %Visualization{}
+          |> Visualization.changeset(%{
+            name: metric_name,
+            user_id: user.id,
+            vega_spec: vega_spec
+          })
+          |> Repo.insert()
+
+        %DashboardVisualization{}
+        |> DashboardVisualization.changeset(%{
+          dashboard_id: dashboard_id,
+          visualization_id: visualization.id,
+          position: position
+        })
+        |> Repo.insert!()
+      end)
+    end)
+    |> case do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   # ---------------------------------------------------------------------------

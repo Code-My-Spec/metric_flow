@@ -3,7 +3,7 @@
 
 ## Summary
 
-36/42 stories complete (all requirements satisfied)
+41/44 stories complete (all requirements satisfied)
 
 
 ## Stories
@@ -413,7 +413,7 @@ Status: in_progress | Priority: 37 | Component: MetricFlowWeb.InvitationLive.Sen
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #433 — Transfer Account Ownership
@@ -424,7 +424,7 @@ Status: in_progress | Priority: 38 | Component: MetricFlowWeb.AccountLive.Settin
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #432 — User or Agency Self-Revokes Access
@@ -435,7 +435,7 @@ Status: in_progress | Priority: 39 | Component: MetricFlowWeb.InvitationLive.Acc
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #435 — Connect Financial Platform via OAuth
@@ -446,7 +446,7 @@ Status: in_progress | Priority: 40 | Component: MetricFlowWeb.IntegrationLive.Co
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
-- [ ] qa_complete - QA brief and result artifacts valid
+- [x] qa_complete - QA brief and result artifacts valid
 
 
 ### #443 — Create and Save Custom Reports
@@ -457,15 +457,37 @@ Status: in_progress | Priority: 41 | Component: MetricFlowWeb.DashboardLive.Edit
 - [x] bdd_specs_exist - BDD spec files exist for story
 - [x] component_complete - Linked component tree is fully implemented
 - [x] bdd_specs_passing - BDD specs pass
+- [x] qa_complete - QA brief and result artifacts valid
+
+
+### #520 — Fetch and Select Google Business Profile Locations Across Multiple Accounts
+
+Status: in_progress | Priority: 42 | Component: MetricFlowWeb.IntegrationLive.Connect
+
+- [x] component_linked - Story has a linked surface component
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
+- [ ] qa_complete - QA brief and result artifacts valid
+
+
+### #519 — Connect Google Business Profile via OAuth
+
+Status: in_progress | Priority: 43 | Component: MetricFlowWeb.IntegrationLive.Connect
+
+- [x] component_linked - Story has a linked surface component
+- [ ] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [ ] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid
 
 
 ### #515 — Calculate Rolling Review Metrics from Review Table
 
-Status: in_progress | Priority: 42 | Component: MetricFlowWeb.ReportLive.Index
+Status: in_progress | Priority: 44 | Component: MetricFlowWeb.ReportLive.Index
 
 - [x] component_linked - Story has a linked surface component
-- [ ] bdd_specs_exist - BDD spec files exist for story
-- [ ] component_complete - Linked component tree is fully implemented
-- [ ] bdd_specs_passing - BDD specs pass
+- [x] bdd_specs_exist - BDD spec files exist for story
+- [x] component_complete - Linked component tree is fully implemented
+- [x] bdd_specs_passing - BDD specs pass
 - [ ] qa_complete - QA brief and result artifacts valid

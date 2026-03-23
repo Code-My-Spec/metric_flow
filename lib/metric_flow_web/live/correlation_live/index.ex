@@ -306,6 +306,59 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             </button>
           </div>
 
+          <%!-- Top correlations sections (always visible in smart mode) --%>
+          <div class="space-y-6 mb-6">
+            <%!-- Top 5 Positive Correlations --%>
+            <div data-role="top-positive-correlations" class="mf-card p-5">
+              <h3 class="text-lg font-semibold mb-3 text-success">Top Positive Correlations</h3>
+              <div :if={top_positive_correlations(@summary.results) == []} class="text-sm text-base-content/60">
+                No positive correlations found.
+              </div>
+              <div
+                :for={result <- top_positive_correlations(@summary.results)}
+                data-role="correlation-row"
+                data-metric={result.metric_name}
+                class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+              >
+                <div>
+                  <span class="font-medium">{result.metric_name}</span>
+                  <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="mf-metric text-sm text-success">{format_coefficient(result.coefficient)}</span>
+                  <span class={["badge badge-sm", strength_badge_class(result)]}>
+                    {CorrelationResult.strength_label(result)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <%!-- Top 5 Negative Correlations --%>
+            <div data-role="top-negative-correlations" class="mf-card p-5">
+              <h3 class="text-lg font-semibold mb-3 text-error">Top Negative Correlations</h3>
+              <div :if={top_negative_correlations(@summary.results) == []} class="text-sm text-base-content/60">
+                No negative correlations found.
+              </div>
+              <div
+                :for={result <- top_negative_correlations(@summary.results)}
+                data-role="correlation-row"
+                data-metric={result.metric_name}
+                class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+              >
+                <div>
+                  <span class="font-medium">{result.metric_name}</span>
+                  <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="mf-metric text-sm text-error">{format_coefficient(result.coefficient)}</span>
+                  <span class={["badge badge-sm", strength_badge_class(result)]}>
+                    {CorrelationResult.strength_label(result)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <%!-- After AI suggestions enabled --%>
           <div :if={@ai_suggestions_enabled}>
             <div data-role="ai-suggestions-enabled" class="badge badge-success mb-4">
@@ -561,6 +614,20 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
     |> String.replace("_", " ")
     |> String.split()
     |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  defp top_positive_correlations(results) do
+    results
+    |> Enum.filter(fn r -> r.coefficient > 0 end)
+    |> Enum.sort_by(fn r -> r.coefficient end, :desc)
+    |> Enum.take(5)
+  end
+
+  defp top_negative_correlations(results) do
+    results
+    |> Enum.filter(fn r -> r.coefficient < 0 end)
+    |> Enum.sort_by(fn r -> r.coefficient end, :asc)
+    |> Enum.take(5)
   end
 
   defp coefficient_color_class(coefficient) when coefficient > 0, do: "text-success"

@@ -22,12 +22,13 @@ defmodule MetricFlow.Integrations do
 
   alias Assent.Strategy.OAuth2, as: AssentOAuth2
   alias MetricFlow.Integrations.FacebookAdsAccounts
-  alias MetricFlow.Integrations.QuickBooksAccounts
   alias MetricFlow.Integrations.GoogleAccounts
   alias MetricFlow.Integrations.GoogleAdsAccounts
+  alias MetricFlow.Integrations.GoogleBusinessLocations
   alias MetricFlow.Integrations.GoogleSearchConsoleSites
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.IntegrationRepository
+  alias MetricFlow.Integrations.QuickBooksAccounts
   alias MetricFlow.Users.Scope
 
   @default_providers %{
@@ -35,6 +36,7 @@ defmodule MetricFlow.Integrations do
     google_analytics: MetricFlow.Integrations.Providers.GoogleAnalytics,
     google_ads: MetricFlow.Integrations.Providers.GoogleAds,
     google_search_console: MetricFlow.Integrations.Providers.GoogleSearchConsole,
+    google_business: MetricFlow.Integrations.Providers.GoogleBusiness,
     facebook_ads: MetricFlow.Integrations.Providers.Facebook,
     quickbooks: MetricFlow.Integrations.Providers.QuickBooks
   }
@@ -271,6 +273,7 @@ defmodule MetricFlow.Integrations do
   defp token_url_for(:google_analytics), do: "https://oauth2.googleapis.com/token"
   defp token_url_for(:google_ads), do: "https://oauth2.googleapis.com/token"
   defp token_url_for(:google_search_console), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(:google_business), do: "https://oauth2.googleapis.com/token"
   defp token_url_for(:facebook_ads), do: "https://graph.facebook.com/v21.0/oauth/access_token"
   defp token_url_for(:quickbooks), do: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
   defp token_url_for(_), do: "/oauth/token"
@@ -339,6 +342,30 @@ defmodule MetricFlow.Integrations do
   def list_quickbooks_accounts(%Scope{} = scope, opts \\ []) do
     with {:ok, integration} <- IntegrationRepository.get_integration(scope, :quickbooks) do
       QuickBooksAccounts.list_income_accounts(integration, opts)
+    end
+  end
+
+  @doc """
+  Lists all locations across configured Google Business Profile accounts.
+
+  Reads `google_business_account_ids` from the integration's provider_metadata
+  and fetches locations for each, handling pagination automatically.
+  """
+  @spec list_google_business_locations(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_google_business_locations(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_business),
+         {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
+      GoogleBusinessLocations.list_locations(fresh, opts)
+    end
+  end
+
+  # Refreshes the token if expired, returns the integration as-is if still valid.
+  defp ensure_fresh_integration(scope, %Integration{} = integration) do
+    if Integration.expired?(integration) and is_binary(integration.refresh_token) do
+      refresh_token(scope, integration)
+    else
+      {:ok, integration}
     end
   end
 

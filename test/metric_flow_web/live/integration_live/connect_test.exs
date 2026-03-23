@@ -221,7 +221,8 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
     test "shows Connected badge for a platform that has an existing integration", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google)
+      # Use a canonical provider (not the OAuth parent :google which is filtered out)
+      insert_integration!(user.id, :google_analytics)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -246,7 +247,8 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
     test "renders a Reconnect button for a platform that is already connected", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google)
+      # Use a canonical provider (not the OAuth parent :google which is filtered out)
+      insert_integration!(user.id, :google_analytics)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->

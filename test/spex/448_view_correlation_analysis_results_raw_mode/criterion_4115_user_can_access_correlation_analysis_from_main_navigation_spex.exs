@@ -1,6 +1,6 @@
 defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
   use SexySpex
-  use MetricFlowWeb.ConnCase
+  use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
   import_givens MetricFlowSpex.SharedGivens

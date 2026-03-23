@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.IntegrationOAuthController do
 
       conn
       |> put_flash(:error, "Could not complete the connection. Please try again.")
-      |> redirect(to: ~p"/integrations/connect")
+      |> redirect(to: ~p"/integrations/connect/#{provider_str}")
   end
 
   # Private Helpers

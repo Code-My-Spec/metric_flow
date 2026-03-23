@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.UserCanSelectFromMultipleChartTypesSpex do
           context.view
           |> element("[data-role='add-visualization-btn']")
           |> render_click()
-          |> then_(fn _ -> context.view end)
+          |> then(fn _ -> context.view end)
 
         {:ok, Map.put(context, :view, view)}
       end

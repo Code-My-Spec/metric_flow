@@ -190,6 +190,13 @@ defmodule MetricFlowWeb.AccountLive.Settings do
             auto_enrollment_form={@auto_enrollment_form}
           />
 
+          <%!-- White-Label Branding (team accounts, owner/admin only) --%>
+          <AgencyLive.Settings.white_label_section
+            :if={@account.type == "team" and @current_user_role in [:owner, :admin]}
+            white_label_config={@agency_white_label_config}
+            white_label_form={@white_label_form}
+          />
+
           <%!-- Section 2: Transfer Ownership (owners of team accounts only) --%>
           <div :if={@is_owner and @account.type == "team"} class="card bg-base-100 shadow mf-card">
             <div class="card-body">
@@ -555,24 +562,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
         {:noreply, assign(socket, :grant_agency_form, form)}
 
       agency_account ->
-        case Agencies.grant_agency_access_from_client(scope, account.id, agency_account.id, access_level) do
-          {:ok, _grant} ->
-            grants = Agencies.list_grants_for_client_account(scope, account.id)
-            grants = if is_list(grants), do: grants, else: []
-
-            {:noreply,
-             socket
-             |> assign(:agency_grants, grants)
-             |> assign(:grant_agency_form, empty_form())
-             |> put_flash(:info, "Agency access granted to #{agency_account.name}")}
-
-          {:error, %Ecto.Changeset{} = changeset} ->
-            errors = changeset_to_errors(changeset)
-            {:noreply, assign(socket, :grant_agency_form, %{params: params, errors: errors})}
-
-          {:error, :unauthorized} ->
-            {:noreply, put_flash(socket, :error, "You are not authorized to grant agency access")}
-        end
+        do_grant_agency_access(scope, account.id, agency_account, access_level, params, socket)
     end
   end
 
@@ -604,6 +594,27 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
   def handle_event("verify_dns", _params, socket) do
     {:noreply, put_flash(socket, :info, "DNS verification initiated. Please allow a few minutes.")}
+  end
+
+  defp do_grant_agency_access(scope, account_id, agency_account, access_level, params, socket) do
+    case Agencies.grant_agency_access_from_client(scope, account_id, agency_account.id, access_level) do
+      {:ok, _grant} ->
+        grants = Agencies.list_grants_for_client_account(scope, account_id)
+        grants = if is_list(grants), do: grants, else: []
+
+        {:noreply,
+         socket
+         |> assign(:agency_grants, grants)
+         |> assign(:grant_agency_form, empty_form())
+         |> put_flash(:info, "Agency access granted to #{agency_account.name}")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        errors = changeset_to_errors(changeset)
+        {:noreply, assign(socket, :grant_agency_form, %{params: params, errors: errors})}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to grant agency access")}
+    end
   end
 
   # ---------------------------------------------------------------------------

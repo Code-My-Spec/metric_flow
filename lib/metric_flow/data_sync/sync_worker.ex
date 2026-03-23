@@ -38,6 +38,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   alias MetricFlow.DataSync.DataProviders.FacebookAds
   alias MetricFlow.DataSync.DataProviders.GoogleAds
   alias MetricFlow.DataSync.DataProviders.GoogleAnalytics
+  alias MetricFlow.DataSync.DataProviders.GoogleBusiness
   alias MetricFlow.DataSync.DataProviders.GoogleSearchConsole
   alias MetricFlow.DataSync.DataProviders.QuickBooks
   alias MetricFlow.DataSync.SyncHistoryRepository
@@ -130,6 +131,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   def providers_for(:google_ads), do: {:ok, [GoogleAds]}
   def providers_for(:facebook_ads), do: {:ok, [FacebookAds]}
   def providers_for(:google_search_console), do: {:ok, [GoogleSearchConsole]}
+  def providers_for(:google_business), do: {:ok, [GoogleBusiness]}
   def providers_for(:quickbooks), do: {:ok, [QuickBooks]}
   def providers_for(_), do: {:error, :unsupported_provider}
 
@@ -139,6 +141,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   def provider_for(:google_ads), do: {:ok, GoogleAds}
   def provider_for(:facebook_ads), do: {:ok, FacebookAds}
   def provider_for(:google_search_console), do: {:ok, GoogleSearchConsole}
+  def provider_for(:google_business), do: {:ok, GoogleBusiness}
   def provider_for(:quickbooks), do: {:ok, QuickBooks}
   def provider_for(_), do: {:error, :unsupported_provider}
 
@@ -319,7 +322,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp persist_and_record_success(scope, integration, sync_job_id, metrics, results, started_at) do
     {records_synced, _errors} =
       Enum.reduce(metrics, {0, []}, fn metric_attrs, {count, errors} ->
-        case Metrics.create_metric(scope, metric_attrs) do
+        # Ensure all top-level keys are atoms to avoid mixed-key maps after
+        # Map.put(:user_id, ...) in the repository layer.
+        safe_attrs = atomize_keys(metric_attrs)
+
+        case Metrics.create_metric(scope, safe_attrs) do
           {:ok, _metric} -> {count + 1, errors}
           {:error, reason} -> {count, [reason | errors]}
         end
@@ -420,6 +427,17 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
         :ok
     end
+  end
+
+  # Converts string keys to atoms at the top level only. Nested maps (e.g.
+  # dimensions) are left as-is since Ecto stores them as JSON.
+  defp atomize_keys(map) when is_map(map) do
+    Map.new(map, fn
+      {k, v} when is_binary(k) -> {String.to_existing_atom(k), v}
+      {k, v} -> {k, v}
+    end)
+  rescue
+    ArgumentError -> map
   end
 
   defp broadcast_sync_event(user_id, message) do

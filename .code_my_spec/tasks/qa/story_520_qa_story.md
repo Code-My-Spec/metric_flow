@@ -1,4 +1,4 @@
-# QA Story 432: Execute Tests
+# QA Story 520: Execute Tests
 
 **App URL:** Run `mix run -e 'IO.puts(MetricFlowWeb.Endpoint.url())'` to get the app URL.
 
@@ -16,46 +16,55 @@ Reference existing scripts by path rather than inlining raw curl commands.
 - **NEVER** use curl with session cookies or CSRF tokens for browser-authenticated routes.
   If a route is behind `:require_authenticated_user`, test it with MCP browser tools, not curl.
 
-## Story: User or Agency Self-Revokes Access
+## Story: Fetch and Select Google Business Profile Locations Across Multiple Accounts
 
-As a user with access to a client account, I want to revoke my own access so that I can cleanly end the relationship.
+As a client user, I want the system to fetch and display all locations across my connected Google Business Profile accounts so that I can select which locations to include in syncing, with full support for customers who have locations spread across multiple GBP accounts.
 
 ### Testing Approach
 
 - Navigate the feature and capture a screenshot at each key state (initial load, after interactions, success/error states)
 - After the scripted scenarios, explore freely: try unexpected inputs, edge cases, empty states, and anything that feels off
-- Save all screenshots to `.code_my_spec/qa/432/screenshots/` — they are evidence and must be committed
+- Save all screenshots to `.code_my_spec/qa/520/screenshots/` — they are evidence and must be committed
 
-## Linked Component: Accept
+## Linked Component: Connect
 
-This story is implemented by `MetricFlowWeb.InvitationLive.Accept` (liveview).
+This story is implemented by `MetricFlowWeb.IntegrationLive.Connect` (liveview).
 Reading the source code and spec will help you understand what to test
 and how the feature works.
 
-- Spec: `.code_my_spec/spec/metric_flow_web/invitation_live/accept.spec.md`
-- Tests: `test/metric_flow_web/live/invitation_live/accept_test.exs`
-- Source: `lib/metric_flow_web/live/invitation_live/accept.ex`
+- Spec: `.code_my_spec/spec/metric_flow_web/integration_live/connect.spec.md`
+- Tests: `test/metric_flow_web/live/integration_live/connect_test.exs`
+- Source: `lib/metric_flow_web/live/integration_live/connect.ex`
 
 ## Available Scripts
 
 These scripts handle auth and seeds — reference them in the brief instead
 of writing inline commands:
 
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/exchange_facebook_token.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/exchange_google_token.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/exchange_quickbooks_token.sh`
 - `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/login.sh`
 - `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/logout.sh`
 - `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/start-qa.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_anthropic.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_cloudflare_tunnel.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_facebook_ads.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_google_oauth.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_quickbooks.sh`
+- `/Users/johndavenport/Documents/github/metric_flow/.code_my_spec/qa/scripts/verify_resend.sh`
 
 ## Instructions
 
-1. Read the brief at `.code_my_spec/qa/432/brief.md` for the complete testing plan
+1. Read the brief at `.code_my_spec/qa/520/brief.md` for the complete testing plan
 2. Read `.code_my_spec/qa/plan.md` for auth strategy, seed commands, and login steps
 3. Read `.code_my_spec/framework/qa-tooling.md` for tool usage patterns and `.code_my_spec/framework/qa-tooling/` for tool-specific cheat sheets
 4. Run seed scripts to set up test data before testing
 5. If a linked component is listed above, read its source to understand the feature's implementation
 6. Execute each test scenario from the brief
-7. Capture a screenshot at each key state — save to `.code_my_spec/qa/432/screenshots/`
+7. Capture a screenshot at each key state — save to `.code_my_spec/qa/520/screenshots/`
 8. Attempt to resolve any issues with the plan or the QA scripts before finishing
-9. Write the result to `.code_my_spec/qa/432/result.md` following the format below
+9. Write the result to `.code_my_spec/qa/520/result.md` following the format below
 
 Stop the session after writing the result.
 

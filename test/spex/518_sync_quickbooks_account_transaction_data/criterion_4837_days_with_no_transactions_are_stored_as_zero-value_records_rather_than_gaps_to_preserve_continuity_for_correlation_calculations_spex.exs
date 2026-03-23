@@ -48,10 +48,10 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
       end
 
       then_ "no failure entry appears in the history due to empty transaction days", context do
-        html = render(context.view)
-
-        refute html =~ "Failed" or html =~ "failed",
-               "Expected no failure entries — zero-transaction days should be stored as zero-value records, not cause failures"
+        # Check that no sync history entries have a failed status — the filter buttons
+        # contain the word "Failed" so we check for failed entries via data attributes instead
+        refute has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
+               "Expected no failed sync history entries — zero-transaction days should be stored as zero-value records, not cause failures"
 
         :ok
       end
@@ -144,10 +144,9 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
       end
 
       then_ "no failure entries appear — zero-transaction days cause no failures", context do
-        html = render(context.view)
-
-        refute String.contains?(html, "Failed"),
-               "Expected no failed sync entries — zero-transaction days should produce zero-value records, not failures"
+        # Check for failed entries via data attributes — the filter buttons contain "Failed" text
+        refute has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
+               "Expected no failed sync history entries — zero-transaction days should produce zero-value records, not failures"
 
         :ok
       end

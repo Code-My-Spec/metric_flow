@@ -38,6 +38,17 @@ defmodule MetricFlow.Dashboards do
   @spec list_canned_dashboards() :: list(Dashboard.t())
   defdelegate list_canned_dashboards(), to: DashboardsRepository
 
+  @doc """
+  Retrieves a single dashboard for the scoped user by ID with its
+  dashboard_visualizations and associated visualizations preloaded.
+
+  Returns `{:ok, dashboard}` when found, or `{:error, :not_found}` when the
+  dashboard does not exist or belongs to a different user.
+  """
+  @spec get_dashboard_with_visualizations(Scope.t(), integer()) ::
+          {:ok, Dashboard.t()} | {:error, :not_found}
+  defdelegate get_dashboard_with_visualizations(scope, id), to: DashboardsRepository
+
   @doc "Creates a new dashboard for the scoped user."
   @spec save_dashboard(Scope.t(), map()) :: {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
   def save_dashboard(%Scope{} = scope, attrs) do
@@ -50,6 +61,19 @@ defmodule MetricFlow.Dashboards do
   def update_dashboard(%Scope{}, %Dashboard{} = dashboard, attrs) do
     DashboardsRepository.update_dashboard(dashboard, attrs)
   end
+
+  @doc """
+  Replaces all visualizations for a dashboard in a single transaction.
+
+  Each visualization entry must be a map with `:metric_name`, `:chart_type`,
+  and `:position` keys. Existing visualizations for the dashboard are deleted
+  and replaced with new records. Returns `:ok` on success or
+  `{:error, reason}` on failure.
+  """
+  @spec replace_dashboard_visualizations(Scope.t(), Dashboard.t(), list(map())) ::
+          :ok | {:error, term()}
+  defdelegate replace_dashboard_visualizations(scope, dashboard, visualizations),
+    to: DashboardsRepository
 
   @doc """
   Deletes a user-owned dashboard if it belongs to the scoped user.

@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             >
               Save Dashboard
             </button>
-            <.link navigate="/dashboard" class="btn btn-ghost">Cancel</.link>
+            <.link navigate="/dashboards" class="btn btn-ghost">Cancel</.link>
           </div>
         </div>
 
@@ -276,15 +276,16 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     scope = socket.assigns.current_scope
     id_int = String.to_integer(id)
 
-    case Dashboards.get_dashboard(scope, id_int) do
+    case Dashboards.get_dashboard_with_visualizations(scope, id_int) do
       {:ok, dashboard} ->
         changeset = Dashboards.dashboard_changeset(dashboard, %{})
+        visualizations = load_visualizations_from_dashboard(dashboard)
 
         socket =
           socket
           |> assign(:dashboard, dashboard)
           |> assign(:changeset, changeset)
-          |> assign(:visualizations, [])
+          |> assign(:visualizations, visualizations)
           |> assign(:picker_open, false)
           |> assign(:picker_selected_metric, nil)
           |> assign(:picker_selected_chart_type, "line")
@@ -301,7 +302,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {:noreply,
          socket
          |> put_flash(:error, "Dashboard not found.")
-         |> redirect(to: "/dashboard")}
+         |> redirect(to: "/dashboards")}
     end
   end
 
@@ -454,33 +455,54 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     scope = socket.assigns.current_scope
     name = extract_name(socket.assigns.changeset)
     attrs = %{"name" => name}
+    visualizations = socket.assigns.visualizations
 
     case socket.assigns.dashboard do
       nil ->
-        case Dashboards.save_dashboard(scope, attrs) do
-          {:ok, dashboard} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Dashboard created.")
-             |> push_navigate(to: ~p"/dashboards/#{dashboard.id}")}
-
-          {:error, changeset} ->
+        with {:ok, dashboard} <- Dashboards.save_dashboard(scope, attrs),
+             :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
+          {:noreply,
+           socket
+           |> put_flash(:info, "Dashboard created.")
+           |> push_navigate(to: ~p"/dashboards/#{dashboard.id}")}
+        else
+          {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}
+
+          {:error, _reason} ->
+            {:noreply, put_flash(socket, :error, "Failed to save dashboard. Please try again.")}
         end
 
       dashboard ->
-        case Dashboards.update_dashboard(scope, dashboard, attrs) do
-          {:ok, updated} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Dashboard updated.")
-             |> push_navigate(to: ~p"/dashboards/#{updated.id}")}
-
-          {:error, changeset} ->
+        with {:ok, updated} <- Dashboards.update_dashboard(scope, dashboard, attrs),
+             :ok <- Dashboards.replace_dashboard_visualizations(scope, updated, visualizations) do
+          {:noreply,
+           socket
+           |> put_flash(:info, "Dashboard updated.")
+           |> push_navigate(to: ~p"/dashboards/#{updated.id}")}
+        else
+          {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}
+
+          {:error, _reason} ->
+            {:noreply, put_flash(socket, :error, "Failed to save dashboard. Please try again.")}
         end
     end
   end
+
+  defp load_visualizations_from_dashboard(%Dashboard{dashboard_visualizations: dvs})
+       when is_list(dvs) do
+    dvs
+    |> Enum.sort_by(& &1.position)
+    |> Enum.map(fn dv ->
+      vega_spec = dv.visualization.vega_spec || %{}
+      metric_name = Map.get(vega_spec, "metric_name") || dv.visualization.name
+      chart_type = Map.get(vega_spec, "chart_type") || "line"
+      %{metric_name: metric_name, chart_type: chart_type, position: dv.position}
+    end)
+  end
+
+  defp load_visualizations_from_dashboard(%Dashboard{}), do: []
 
   defp page_title_for(:new), do: "New Dashboard"
   defp page_title_for(:edit), do: "Edit Dashboard"

@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
       end
 
       then_ "the first user is logged in successfully", context do
-        assert redirected_to(context.first_user_conn) == "/"
+        assert redirected_to(context.first_user_conn) == "/integrations"
         :ok
       end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
       end
 
       then_ "the second user is also logged in successfully", context do
-        assert redirected_to(context.second_user_conn) == "/"
+        assert redirected_to(context.second_user_conn) == "/integrations"
         :ok
       end
     end

@@ -550,7 +550,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
       assert String.contains?(conn.query_string, "time_range")
     end
 
-    test "defaults to last 30 days when date_range not provided" do
+    test "defaults to last 548 days when date_range not provided" do
       test_pid = self()
       plug = capture_request_plug(test_pid)
 
@@ -560,7 +560,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
 
       assert_receive {:request, conn}
       today = Date.utc_today()
-      expected_start = Date.add(today, -30)
+      expected_start = Date.add(today, -548)
 
       assert String.contains?(conn.query_string, Date.to_iso8601(today))
       assert String.contains?(conn.query_string, Date.to_iso8601(expected_start))

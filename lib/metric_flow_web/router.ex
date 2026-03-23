@@ -107,6 +107,10 @@ defmodule MetricFlowWeb.Router do
       live "/insights", AiLive.Insights, :index
       live "/chat", AiLive.Chat, :index
       live "/chat/:id", AiLive.Chat, :show
+
+      # Report routes
+      live "/reports", ReportLive.Index, :index
+      live "/reports/new", ReportLive.Index, :new
       live "/reports/generate", AiLive.ReportGenerator, :index
     end
 

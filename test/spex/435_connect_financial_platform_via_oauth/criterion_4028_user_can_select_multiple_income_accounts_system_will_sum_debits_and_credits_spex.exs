@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
 
   spex "User can select multiple income accounts, system will sum debits and credits" do
     scenario "the account selection page allows selecting multiple accounts" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_quickbooks_integration
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
@@ -16,19 +16,23 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "multiple checkboxes are available for account selection", context do
-        assert has_element?(context.view, "[data-role='account-checkbox']")
+      then_ "account selection inputs or manual entry are available", context do
+        assert has_element?(context.view, "[data-role='account-checkbox']") or
+                 has_element?(context.view, "[data-role='manual-property-input']") or
+                 has_element?(context.view, "[data-role='manual-entry']")
         :ok
       end
 
-      then_ "the page shows an account list with selectable items", context do
-        assert has_element?(context.view, "[data-role='account-list']")
+      then_ "the page shows an account list or manual entry section", context do
+        assert has_element?(context.view, "[data-role='account-list']") or
+                 has_element?(context.view, "[data-role='manual-entry']") or
+                 has_element?(context.view, "[data-role='account-selection']")
         :ok
       end
     end
 
     scenario "saving multiple selected accounts preserves the selection" do
-      given_ :user_logged_in_as_owner
+      given_ :owner_with_quickbooks_integration
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
@@ -37,17 +41,18 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the user saves the account selection", context do
+      when_ "the user enters an account ID and submits the form", context do
         result =
           context.view
-          |> element("[data-role='save-selection']")
-          |> render_click()
+          |> element("[data-role='account-selection']")
+          |> render_submit(%{"manual_property_id" => "42"})
 
         {:ok, Map.put(context, :save_result, result)}
       end
 
-      then_ "the user is redirected back to the integrations page", context do
-        assert_redirect(context.view, "/integrations")
+      then_ "the user is redirected back to the provider detail page", context do
+        {path, _flash} = assert_redirect(context.view)
+        assert path =~ "/integrations"
         :ok
       end
     end

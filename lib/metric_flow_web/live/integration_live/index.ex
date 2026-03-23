@@ -19,6 +19,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics", provider: :google_analytics},
     %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising", provider: :google_ads},
     %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data", provider: :google_search_console},
+    %{key: :google_business, name: "Google Business", description: "Business profile locations and reviews", provider: :google_business},
     %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising", provider: :facebook_ads},
     %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data", provider: :quickbooks}
   ]
@@ -28,6 +29,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     google_analytics: "Google Analytics",
     google_ads: "Google Ads",
     google_search_console: "Google Search Console",
+    google_business: "Google Business",
     facebook_ads: "Facebook",
     quickbooks: "QuickBooks"
   }
@@ -476,6 +478,9 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     value = Map.get(meta, key)
 
     cond do
+      is_list(value) and value != [] ->
+        Enum.join(value, ", ")
+
       is_binary(value) and value != "" ->
         value
 
@@ -496,6 +501,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   defp metadata_key_for_provider(:google_analytics), do: "property_id"
   defp metadata_key_for_provider(:google_ads), do: "customer_id"
   defp metadata_key_for_provider(:google_search_console), do: "site_url"
+  defp metadata_key_for_provider(:google_business), do: "included_locations"
   defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
   defp metadata_key_for_provider(:facebook_ads), do: "ad_account_id"
   defp metadata_key_for_provider(_), do: "property_id"

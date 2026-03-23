@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
   spex "Chat history is saved per user" do
     scenario "user's messages persist after navigating away and returning to chat" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page and sends a message", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -68,6 +69,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
     scenario "chat page shows a chat history section or previous messages list" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user has previously sent a message in chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -128,6 +130,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
     scenario "a second user does not see the first user's chat history" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the first user sends a uniquely identifiable message in chat", context do
         unique_token = "UNIQUE_MSG_#{System.unique_integer([:positive])}"

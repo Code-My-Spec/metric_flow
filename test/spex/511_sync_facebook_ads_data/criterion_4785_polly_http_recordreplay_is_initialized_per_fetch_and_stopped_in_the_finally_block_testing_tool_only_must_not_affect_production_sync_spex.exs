@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         refute html =~ "cassette",
                "Expected no 'cassette' testing tool reference in sync history, got: #{html}"
 
-        refute html =~ "record/replay" or not (html =~ "record/replay"),
+        refute html =~ "record/replay",
                "Expected no 'record/replay' testing tool reference in sync history"
 
         :ok

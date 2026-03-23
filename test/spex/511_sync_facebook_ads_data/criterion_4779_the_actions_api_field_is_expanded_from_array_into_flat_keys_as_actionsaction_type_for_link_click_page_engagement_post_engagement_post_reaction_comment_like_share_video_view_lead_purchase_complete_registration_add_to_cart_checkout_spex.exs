@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
     "checkout"
   ]
 
-  spex "The 'actions' API field is expanded from array into flat keys as 'actions:{action_type}' for: link_click, page_engagement, post_engagement, post_reaction, comment, like, share, video_view, lead, purchase, complete_registration, add_to_cart, checkout" do
+  spex "The actions API field is expanded from array into flat keys as actions:{action_type}" do
     scenario "a Facebook Ads sync with all 13 action types shows a higher records count in sync history than a sync without actions" do
       given_ :owner_with_integrations
 

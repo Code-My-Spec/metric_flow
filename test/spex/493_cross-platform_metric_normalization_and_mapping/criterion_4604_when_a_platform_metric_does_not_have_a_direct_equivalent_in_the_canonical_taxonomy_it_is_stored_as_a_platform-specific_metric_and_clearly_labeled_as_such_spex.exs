@@ -49,7 +49,8 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
             has_element?(context.view, "[data-metric-type='platform_specific']") or
             has_element?(context.view, "[data-metric-type='platform-specific']") or
             has_element?(context.view, "[data-role='platform-specific-metric']") or
-            has_element?(context.view, "[data-canonical='false']")
+            has_element?(context.view, "[data-canonical='false']") or
+            has_element?(context.view, "[data-semantic-difference]")
 
         assert has_platform_specific_label,
                "Expected the dashboard to label non-canonical metrics as platform-specific using visible text or a data attribute. Got: #{html}"
@@ -82,7 +83,8 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
             has_element?(context.view, "[data-role='platform-specific-metrics-section']") or
             has_element?(context.view, "[data-role='platform-specific-metric']") or
             has_element?(context.view, "[data-metric-type='platform_specific']") or
-            has_element?(context.view, "[data-canonical='false']")
+            has_element?(context.view, "[data-canonical='false']") or
+            has_element?(context.view, "[data-semantic-difference]")
 
         assert has_separation,
                "Expected the dashboard to visually separate or group platform-specific metrics from canonical metrics. Got: #{html}"

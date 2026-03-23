@@ -130,14 +130,14 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
 
-    test "renders a cancel link back to /dashboard", %{conn: conn} do
+    test "renders a cancel link back to /dashboards", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
 
-        assert has_element?(lv, "a[href='/dashboard']", "Cancel")
+        assert has_element?(lv, "a[href='/dashboards']", "Cancel")
       end)
     end
   end
@@ -171,7 +171,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
 
-    test "redirects to /dashboard when the dashboard does not belong to the current account", %{
+    test "redirects to /dashboards when the dashboard does not belong to the current account", %{
       conn: conn
     } do
       owner = user_fixture()
@@ -180,17 +180,17 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, other_user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboard"}}} =
+        assert {:error, {:redirect, %{to: "/dashboards"}}} =
                  live(conn, ~p"/dashboards/#{dashboard.id}/edit")
       end)
     end
 
-    test "redirects to /dashboard when the dashboard id does not exist", %{conn: conn} do
+    test "redirects to /dashboards when the dashboard id does not exist", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboard"}}} =
+        assert {:error, {:redirect, %{to: "/dashboards"}}} =
                  live(conn, ~p"/dashboards/999999/edit")
       end)
     end

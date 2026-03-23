@@ -209,7 +209,7 @@ defmodule MetricFlowSpex.SharedGivens do
 
     # Create integration fixture
     user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
-    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google})
+    MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_analytics})
 
     # Log in through UI
     login_conn = build_conn()
@@ -285,5 +285,10 @@ defmodule MetricFlowSpex.SharedGivens do
   given :with_oauth_stub_providers do
     MetricFlowTest.OAuthStub.setup_oauth_providers()
     {:ok, %{oauth_state: MetricFlowTest.OAuthStub.state_token()}}
+  end
+
+  given :with_ai_stubs do
+    MetricFlowTest.AiStub.setup_ai_stubs()
+    {:ok, %{}}
   end
 end

@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
   spex "AI can suggest visualizations or reports based on questions" do
     scenario "user asks about data trends and AI response includes a visualization suggestion" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -73,6 +74,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
 
     scenario "AI response contains actionable links or references to dashboards or reports" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -141,6 +143,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
 
     scenario "AI response includes visualization-related language when data questions are asked" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")

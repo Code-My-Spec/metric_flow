@@ -44,18 +44,40 @@ Read the failed result and screenshots for each issue's story to understand the 
 
 ## Unresolved Issues
 
-## Scope: app (1)
+## Scope: app (3)
 
-### `qa-428-flash_message_lost_when_revisiting_an_acc.md` (ID: 3f50b411-a0c7-4518-a3ac-60ba8861c4a5)
+### `qa-520-missing_location_flagging_not_implemented.md` (ID: 89a75a3f-74b4-41b8-b9b1-d8006f2e0a43)
 
-**Source:** `.code_my_spec/qa/428/result.md`
-**QA evidence:** `.code_my_spec/qa/428/`
-- **Title:** Flash message lost when revisiting an accepted or invalid invitation link
+**Source:** `.code_my_spec/qa/520/result.md`
+**QA evidence:** `.code_my_spec/qa/520/`
+- **Title:** Missing-location flagging not implemented (criterion 4862)
+- **Severity:** high
+- **Scope:** app
+- **Story:** 520
+
+When a previously configured location ID is no longer returned by the GBP API (e.g., a deleted or revoked location), the accounts page shows no warning, flag, or indicator. The manual entry field is pre-filled with the old location ID with no UI feedback that it may be invalid. The acceptance criterion requires the system to flag missing/unavailable locations rather than silently pre-filling the stale ID. Reproduced by setting  included_locations  to  ["accounts/123/locations/deleted-loc-1"]  in the integration's  provider_metadata , then navigating to  /integrations/connect/google_business/accounts . The field shows the stale ID with no warning. This requires the GBP API fetch to return results in order to compare configured locations against live ones. The feature is blocked until  list_google_business_locations  returns data.
+
+### `qa-520-location_row_data_role_attributes_missing.md` (ID: 1910f142-6df3-4693-b23b-c387587087c8)
+
+**Source:** `.code_my_spec/qa/520/result.md`
+**QA evidence:** `.code_my_spec/qa/520/`
+- **Title:** Location row data-role attributes missing from template (criteria 4855–4856)
 - **Severity:** medium
 - **Scope:** app
-- **Story:** 428
+- **Story:** 520
 
-When navigating to an invitation link that has already been accepted (or is otherwise invalid), the  accept.ex  LiveView mount redirects to  /  with  put_flash(:error, "This invitation link is invalid or has already been used.") . However, the error flash message does not appear on the destination page ( / ). The user is silently redirected to the home page with no feedback. Reproduction steps: Accept an invitation (the token is now consumed). Navigate again to  http://localhost:4070/invitations/{same-token} . Observe: browser lands on  http://localhost:4070/  with no visible flash message. Expected: error flash "This invitation link is invalid or has already been used." is visible on the home page after redirect. The code at  lib/metric_flow_web/live/invitation_live/accept.ex  lines 114–118 calls  put_flash  before  redirect(to: "/") . The flash may be lost because the home route ( / ) is a different LiveView that does not carry the flash from the previous socket. This may require using  Phoenix.LiveView.redirect  with flash carried in the session, or switching the destination to a route that processes the LiveView session flash correctly.
+The  render_account_selection/1  template in  connect.ex  uses generic field bindings ( property.name ,  property.account ,  property.id ) in  data-role="account-option"  items. The acceptance criteria specify distinct  data-role  attributes for GBP-specific location fields:  data-role="location-title" ,  data-role="location-address" ,  data-role="location-store-code" , and  data-role="location-account-name" . These attributes are absent from the current template, meaning automated tests based on the acceptance criteria selectors will fail when location data is available.
+
+### `qa-520-save_account_selection_saves_included_loc.md` (ID: 89408cce-c215-47d5-b920-4cd10278fc34)
+
+**Source:** `.code_my_spec/qa/520/result.md`
+**QA evidence:** `.code_my_spec/qa/520/`
+- **Title:** save_account_selection saves included_locations as a string instead of an array
+- **Severity:** medium
+- **Scope:** app
+- **Story:** 520
+
+The  save_account_selection  handler in  connect.ex  saves the manual entry text as a single string to the  included_locations  key (via  metadata_key_for_provider(:google_business)  returning  "included_locations" ). The acceptance criteria describe  included_locations  as an array of location IDs to support multi-location selection. When the metadata is externally set to a JSON array and then loaded by the LiveView,  get_in(integration.provider_metadata, ["included_locations"])  returns the array, which is passed to  @manual_property_id . The form's  value  attribute then receives a list. After saving via the UI, the array is overwritten with a single string. For multi-location selection (described in the acceptance criteria), the save handler must collect and store an array of IDs rather than a single string.
 
 ## Directory
 

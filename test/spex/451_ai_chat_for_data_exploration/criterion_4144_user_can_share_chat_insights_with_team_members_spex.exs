@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
   spex "User can share chat insights with team members" do
     scenario "each AI message or insight in chat has a share action" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the chat page and sends a question to get an AI response",
              context do
@@ -63,6 +64,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
 
     scenario "clicking the share action opens a share dialog or shows share options" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the chat page and submits a question", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -149,6 +151,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
 
     scenario "share functionality indicates who the insight can be shared with" do
       given_ :user_logged_in_as_owner
+      given_ :with_ai_stubs
 
       given_ "the user navigates to the chat page and gets an AI response", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")

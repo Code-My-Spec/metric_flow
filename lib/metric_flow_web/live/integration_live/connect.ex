@@ -22,6 +22,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   use MetricFlowWeb, :live_view
 
+  require Logger
+
   alias MetricFlow.Integrations
 
   # Each platform has its own OAuth connection and integration record.
@@ -29,6 +31,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics"},
     %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising"},
     %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data"},
+    %{key: :google_business, name: "Google Business", description: "Business profile locations and reviews"},
     %{key: :facebook_ads, name: "Facebook", description: "Facebook and Instagram advertising"},
     %{key: :quickbooks, name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   ]
@@ -38,9 +41,15 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     google_analytics: %{name: "Google Analytics", description: "Website traffic and user behavior analytics"},
     google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
     google_search_console: %{name: "Google Search Console", description: "Search performance and indexing data"},
+    google_business: %{name: "Google Business", description: "Business profile locations and reviews"},
     facebook_ads: %{name: "Facebook", description: "Facebook and Instagram advertising"},
     quickbooks: %{name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   }
+
+  # Base OAuth provider keys that are not real integration providers — they are
+  # OAuth parents whose child-specific providers (google_ads, google_analytics,
+  # etc.) are the actual entries shown in the grid.
+  @oauth_parent_keys MapSet.new([:google])
 
   # ---------------------------------------------------------------------------
   # Render
@@ -237,6 +246,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_account_selection(assigns) do
     assigns = assign(assigns, :account_labels, account_labels(String.to_existing_atom(assigns.provider)))
+    is_gbp = assigns.provider == "google_business"
+    assigns = assign(assigns, :is_google_business, is_gbp)
 
     ~H"""
     <div class="mf-card max-w-lg mx-auto p-6">
@@ -249,25 +260,63 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <%= if @accounts != [] do %>
           <div data-role="account-list" class="space-y-2">
             <p class="text-sm font-medium mb-2">{"Available #{@account_labels.list_heading}:"}</p>
-            <div
-              :for={property <- @accounts}
-              class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
-              data-role="account-option"
-            >
-              <input
-                type="radio"
-                name="property_id"
-                value={property.id}
-                data-role="account-checkbox"
-                class="radio radio-sm radio-primary"
-                checked={@selected_property_id == property.id}
-                phx-click="select_property"
-                phx-value-property_id={property.id}
-              />
-              <div>
-                <span class="text-sm font-medium">{property.name}</span>
-                <span class="text-xs text-base-content/60 block">{property.account} &mdash; {property.id}</span>
+            <%= if @is_google_business do %>
+              <div
+                :for={property <- @accounts}
+                class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+                data-role="account-option"
+              >
+                <input
+                  type="checkbox"
+                  name="location_ids[]"
+                  value={property.id}
+                  data-role="account-checkbox"
+                  class="checkbox checkbox-sm checkbox-primary"
+                  checked={property.id in @selected_location_ids}
+                />
+                <div>
+                  <span data-role="location-title" class="text-sm font-medium">{property.name}</span>
+                  <span data-role="location-account-name" class="text-xs text-base-content/60 block">{property.account}</span>
+                  <span :if={property[:address]} data-role="location-address" class="text-xs text-base-content/50 block">{property.address}</span>
+                  <span :if={property[:store_code]} data-role="location-store-code" class="text-xs text-base-content/40 block">Store: {property.store_code}</span>
+                </div>
               </div>
+            <% else %>
+              <div
+                :for={property <- @accounts}
+                class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+                data-role="account-option"
+              >
+                <input
+                  type="radio"
+                  name="property_id"
+                  value={property.id}
+                  data-role="account-checkbox"
+                  class="radio radio-sm radio-primary"
+                  checked={@selected_property_id == property.id}
+                  phx-click="select_property"
+                  phx-value-property_id={property.id}
+                />
+                <div>
+                  <span class="text-sm font-medium">{property.name}</span>
+                  <span class="text-xs text-base-content/60 block">{property.account} &mdash; {property.id}</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%= if @missing_locations != [] do %>
+          <div data-role="missing-location" class="alert alert-warning text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <p class="font-medium">Previously configured location(s) are no longer available:</p>
+              <ul class="mt-1 list-disc list-inside">
+                <li :for={loc_id <- @missing_locations} data-role="location-unavailable" class="text-xs">{loc_id}</li>
+              </ul>
+              <p class="mt-1 text-xs">These locations may have been removed or access revoked. Please select a new location.</p>
             </div>
           </div>
         <% end %>
@@ -364,6 +413,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       |> assign(:accounts_error, nil)
       |> assign(:selected_property_id, nil)
       |> assign(:manual_property_id, "")
+      |> assign(:selected_location_ids, [])
+      |> assign(:missing_locations, [])
 
     {:ok, socket}
   end
@@ -411,28 +462,48 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     provider_str = socket.assigns.provider
     provider_atom = String.to_existing_atom(provider_str)
 
-    # Determine the selected account ID from either the radio selection or manual input
-    account_id =
-      case Map.get(params, "property_id") do
-        "manual" -> String.trim(Map.get(params, "manual_property_id", ""))
-        id when is_binary(id) and id != "" -> id
-        _ -> String.trim(Map.get(params, "manual_property_id", ""))
+    if provider_atom == :google_business do
+      # Multi-select: collect checked location IDs
+      location_ids = Map.get(params, "location_ids", [])
+
+      if location_ids == [] do
+        {:noreply, put_flash(socket, :error, "Please select at least one location.")}
+      else
+        case Integrations.update_provider_metadata(scope, provider_atom, %{"included_locations" => location_ids}) do
+          {:ok, _integration} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "#{length(location_ids)} location(s) saved successfully.")
+             |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+
+          {:error, reason} ->
+            {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+        end
       end
-
-    if account_id == "" do
-      {:noreply, put_flash(socket, :error, "Please select or enter an account ID.")}
     else
-      metadata_key = metadata_key_for_provider(provider_atom)
+      # Single-select: radio or manual input
+      account_id =
+        case Map.get(params, "property_id") do
+          "manual" -> String.trim(Map.get(params, "manual_property_id", ""))
+          id when is_binary(id) and id != "" -> id
+          _ -> String.trim(Map.get(params, "manual_property_id", ""))
+        end
 
-      case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
-        {:ok, _integration} ->
-          {:noreply,
-           socket
-           |> put_flash(:info, "Account selection saved successfully.")
-           |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+      if account_id == "" do
+        {:noreply, put_flash(socket, :error, "Please select or enter an account ID.")}
+      else
+        metadata_key = metadata_key_for_provider(provider_atom)
 
-        {:error, reason} ->
-          {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+        case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
+          {:ok, _integration} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Account selection saved successfully.")
+             |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+
+          {:error, reason} ->
+            {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+        end
       end
     end
   end
@@ -486,8 +557,22 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
           meta_key = metadata_key_for_provider(provider_atom)
 
-          selected_property_id =
-            get_in(integration.provider_metadata || %{}, [meta_key])
+          raw_selection = get_in(integration.provider_metadata || %{}, [meta_key])
+
+          # Normalize the stored value for display. Google Business stores an
+          # array; other providers store a plain string.
+          {selected_property_id, manual_property_id} =
+            normalize_selection_for_display(provider_atom, raw_selection)
+
+          # For google_business, track selected location IDs as a list
+          selected_location_ids =
+            if provider_atom == :google_business and is_list(raw_selection),
+              do: raw_selection,
+              else: []
+
+          # Detect configured locations that are no longer returned by the API.
+          missing_locations =
+            compute_missing_locations(provider_atom, raw_selection, accounts)
 
           {:noreply,
            socket
@@ -498,7 +583,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
            |> assign(:accounts, accounts)
            |> assign(:accounts_error, accounts_error)
            |> assign(:selected_property_id, selected_property_id)
-           |> assign(:manual_property_id, selected_property_id || "")}
+           |> assign(:manual_property_id, manual_property_id)
+           |> assign(:selected_location_ids, selected_location_ids)
+           |> assign(:missing_locations, missing_locations)}
         end
     end
   end
@@ -597,6 +684,17 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     end
   end
 
+  defp fetch_provider_accounts(socket, :google_business, _integration) do
+    scope = socket.assigns.current_scope
+
+    case Integrations.list_google_business_locations(scope) do
+      {:ok, locations} -> {locations, nil}
+      {:error, :no_accounts_configured} -> {[], :no_accounts_configured}
+      {:error, :api_disabled} -> {[], :api_disabled}
+      {:error, reason} -> {[], reason}
+    end
+  end
+
   defp fetch_provider_accounts(_socket, _provider, _integration) do
     {[], nil}
   end
@@ -607,13 +705,15 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   # Build the union of:
   # 1. All canonical OAuth providers (always shown)
-  # 2. Providers configured via Application env
+  # 2. Providers configured via Application env (excluding OAuth parent keys
+  #    like :google that are not standalone integration providers)
   # 3. Providers with existing user integrations
-  #
-  # This shows OAuth providers (Google, Facebook, QuickBooks), not individual
-  # data platforms (Google Ads, Google Analytics).
   defp build_provider_list(integrations) do
-    configured_keys = MapSet.new(Integrations.list_providers())
+    configured_keys =
+      Integrations.list_providers()
+      |> MapSet.new()
+      |> MapSet.difference(@oauth_parent_keys)
+
     canonical_keys = MapSet.new(Enum.map(@canonical_providers, & &1.key))
     integration_keys = MapSet.new(Enum.map(integrations, & &1.provider))
 
@@ -621,6 +721,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       configured_keys
       |> MapSet.union(canonical_keys)
       |> MapSet.union(integration_keys)
+      |> MapSet.difference(@oauth_parent_keys)
 
     all_keys
     |> Enum.map(fn key ->
@@ -657,6 +758,55 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   end
 
   # ---------------------------------------------------------------------------
+  # Private helpers — selection normalization
+  # ---------------------------------------------------------------------------
+
+  # Google Business stores included_locations as an array. For display purposes,
+  # show the first (or only) location ID in the manual input field.
+  defp normalize_selection_for_display(:google_business, value) when is_list(value) do
+    first = List.first(value) || ""
+    {first, first}
+  end
+
+  defp normalize_selection_for_display(_provider, value) when is_binary(value) do
+    {value, value}
+  end
+
+  defp normalize_selection_for_display(_provider, nil) do
+    {nil, ""}
+  end
+
+  defp normalize_selection_for_display(_provider, value) do
+    display = to_string(value)
+    {display, display}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private helpers — missing location detection
+  # ---------------------------------------------------------------------------
+
+  # Compare configured location IDs against the live fetched accounts list.
+  # Only meaningful for google_business when the API returns results.
+  defp compute_missing_locations(:google_business, configured, fetched_accounts)
+       when is_list(configured) and fetched_accounts != [] do
+    fetched_ids = MapSet.new(fetched_accounts, & &1.id)
+
+    Enum.reject(configured, fn loc_id ->
+      MapSet.member?(fetched_ids, loc_id)
+    end)
+  end
+
+  defp compute_missing_locations(_provider, _configured, _fetched), do: []
+
+  # ---------------------------------------------------------------------------
+  # Private helpers — metadata value builder
+  # ---------------------------------------------------------------------------
+
+  defp build_metadata_value(_provider, account_id) do
+    account_id
+  end
+
+  # ---------------------------------------------------------------------------
   # Private helpers — utilities
   # ---------------------------------------------------------------------------
 
@@ -664,6 +814,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp metadata_key_for_provider(:google_analytics), do: "property_id"
   defp metadata_key_for_provider(:google_ads), do: "customer_id"
   defp metadata_key_for_provider(:google_search_console), do: "site_url"
+  defp metadata_key_for_provider(:google_business), do: "included_locations"
   defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
   defp metadata_key_for_provider(_), do: "property_id"
 
@@ -713,6 +864,15 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       list_heading: "Ad Accounts",
       id_label: "Ad Account ID",
       help_text: "Find this in Facebook Business Manager under Ad Accounts"
+    }
+  end
+
+  defp account_labels(:google_business) do
+    %{
+      chooser_text: "Choose which business locations to sync reviews and metrics from.",
+      list_heading: "Business Locations",
+      id_label: "Location ID",
+      help_text: "Locations are fetched from your connected Google Business Profile accounts"
     }
   end
 

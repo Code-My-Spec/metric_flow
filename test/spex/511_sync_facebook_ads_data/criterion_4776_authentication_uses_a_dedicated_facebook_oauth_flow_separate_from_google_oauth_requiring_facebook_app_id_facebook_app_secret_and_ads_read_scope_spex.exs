@@ -82,39 +82,23 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
       end
 
       when_ "the user clicks the Connect button for Facebook Ads", context do
-        result =
-          try do
-            view
-            |> element("[data-platform='facebook_ads'] [data-role='connect-button']")
-            |> render_click()
+        # The connect event triggers redirect/2 to /integrations/oauth/facebook_ads.
+        # render_click returns the HTML; assert_redirect captures the redirect path.
+        context.view
+        |> element("[data-platform='facebook_ads'] [data-role='connect-button']")
+        |> render_click()
 
-            {:navigated, render(context.view)}
-          catch
-            :exit, {:shutdown, {:redirect, %{to: path}}} ->
-              {:redirect, path}
-          rescue
-            _ ->
-              {:navigated, render(context.view)}
-          end
-
-        {:ok, Map.put(context, :click_result, result)}
+        {:ok, context}
       end
 
       then_ "the OAuth redirect targets the Facebook-specific OAuth endpoint, not Google", context do
-        case context.click_result do
-          {:redirect, path} ->
-            assert path =~ "facebook_ads",
-                   "Expected redirect to target the facebook_ads OAuth endpoint, got path: #{path}"
+        {path, _flash} = assert_redirect(context.view)
 
-            refute path =~ "google",
-                   "Expected redirect to not target the Google OAuth endpoint, got path: #{path}"
+        assert path =~ "facebook_ads",
+               "Expected redirect to target the facebook_ads OAuth endpoint, got path: #{path}"
 
-          {:navigated, html} ->
-            # LiveView may have navigated internally rather than redirecting;
-            # verify the rendered HTML does not show a Google OAuth URL
-            refute html =~ "/integrations/oauth/google",
-                   "Expected no reference to Google OAuth endpoint after clicking Facebook Ads connect, got: #{html}"
-        end
+        refute path =~ "google",
+               "Expected redirect to not target the Google OAuth endpoint, got path: #{path}"
 
         :ok
       end

@@ -598,7 +598,9 @@ defmodule MetricFlowWeb.AiLive.Chat do
       |> assign(:streaming, true)
       |> assign(:streaming_content, "")
 
-    case Ai.send_chat_message(scope, active_session.id, content) do
+    llm_opts = Application.get_env(:metric_flow, :test_llm_options, [])
+
+    case Ai.send_chat_message(scope, active_session.id, content, llm_opts) do
       {:ok, _pid} ->
         {:noreply, socket}
 

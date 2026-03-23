@@ -116,9 +116,13 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the second user clicks the revoke access button", context do
+      when_ "the second user clicks the revoke access button and confirms", context do
         context.view
         |> element("[data-role='revoke-own-access']")
+        |> render_click()
+
+        context.view
+        |> element("[data-role='confirm-leave']")
         |> render_click()
 
         {:ok, context}

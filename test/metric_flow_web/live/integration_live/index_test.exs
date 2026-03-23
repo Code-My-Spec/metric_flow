@@ -356,7 +356,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         # Send sync event directly — no sync button exists for unconnected platforms
         html = render_click(lv, "sync", %{"provider" => "google_ads", "platform" => "google_ads"})
 
-        assert html =~ "Integration not found."
+        assert html =~ "Google Ads integration not found. Please connect it first."
       end)
     end
 
@@ -364,13 +364,18 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
+      # Create an expired integration with no refresh token to trigger :not_connected
+      insert_integration!(user.id, :google_analytics, %{
+        expires_at: DateTime.add(DateTime.utc_now(), -3600, :second),
+        refresh_token: nil
+      })
+
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        # Send sync event directly — no sync button exists for unconnected platforms
         html = render_click(lv, "sync", %{"provider" => "google_analytics", "platform" => "google_analytics"})
 
-        assert html =~ "Integration not found."
+        assert html =~ "Google Analytics token has expired. Please reconnect."
       end)
     end
   end

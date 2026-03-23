@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
                   disabled={account.id == @active_account_id}
                   class={if account.id == @active_account_id, do: "btn btn-sm btn-ghost", else: "btn btn-sm btn-primary"}
                 >
-                  {if account.id == @active_account_id, do: "Active", else: "Switch"}
+                  {if account.id == @active_account_id, do: "#{account.name} (Active)", else: "Switch to #{account.name}"}
                 </button>
               </div>
             </div>
@@ -126,8 +126,8 @@ defmodule MetricFlowWeb.AccountLive.Index do
 
     if connected?(socket), do: Accounts.subscribe_account(scope)
 
-    # Default to the user's personal account, falling back to the oldest account.
-    primary = MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+    # Default to the user's own account, falling back to the most recent.
+    primary = MetricFlowWeb.ActiveAccountHook.primary_account(accounts, scope.user)
     active_account_id = if primary, do: primary.id
 
     {account_roles, agency_grants} = load_account_metadata(scope, accounts)

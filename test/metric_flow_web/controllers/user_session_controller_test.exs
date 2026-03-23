@@ -21,7 +21,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
       assert redirected_to(conn) == ~p"/integrations"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/integrations")
       response = html_response(conn, 200)
       assert response =~ user.email
       assert response =~ ~p"/users/settings"
@@ -85,7 +85,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
       assert redirected_to(conn) == ~p"/integrations"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/integrations")
       response = html_response(conn, 200)
       assert response =~ user.email
       assert response =~ ~p"/users/settings"
@@ -109,7 +109,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
       assert Users.get_user!(user.id).confirmed_at
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/integrations")
       response = html_response(conn, 200)
       assert response =~ user.email
       assert response =~ ~p"/users/settings"
