@@ -39,6 +39,7 @@ npm-debug.log
 # Environment secrets
 .env
 .env.*
+*.env
 !.env.example
 
 # Diagnostics
