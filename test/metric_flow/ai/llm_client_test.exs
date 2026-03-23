@@ -6,6 +6,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
   alias MetricFlow.Ai.LlmClient
 
   @cassette_dir "test/cassettes/ai"
+  @filter_headers [filter_request_headers: ["x-api-key", "authorization"]]
 
   # ---------------------------------------------------------------------------
   # chat_model/0
@@ -76,7 +77,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
 
   describe "generate_insights/3" do
     test "returns ok tuple with structured insight data on success" do
-      with_cassette "generate_insights", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "generate_insights", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result =
           LlmClient.generate_insights(
             LlmClient.base_system_prompt(),
@@ -90,7 +91,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
     end
 
     test "returned data contains suggestions field" do
-      with_cassette "generate_insights", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "generate_insights", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, data} =
           LlmClient.generate_insights(
             LlmClient.base_system_prompt(),
@@ -109,7 +110,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
 
   describe "stream_chat/3" do
     test "returns ok tuple with StreamResponse on success" do
-      with_cassette "stream_chat", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "stream_chat", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result =
           LlmClient.stream_chat(
             LlmClient.base_system_prompt(),
@@ -129,7 +130,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
 
   describe "generate_vega_spec/3" do
     test "returns ok tuple with a Vega-Lite spec map on success" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result =
           LlmClient.generate_vega_spec(
             LlmClient.base_system_prompt(),
@@ -143,7 +144,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
     end
 
     test "returned map contains required Vega-Lite fields" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} =
           LlmClient.generate_vega_spec(
             LlmClient.base_system_prompt(),
@@ -158,7 +159,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
     end
 
     test "dollar-schema field points to a Vega-Lite v5 URL" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} =
           LlmClient.generate_vega_spec(
             LlmClient.base_system_prompt(),

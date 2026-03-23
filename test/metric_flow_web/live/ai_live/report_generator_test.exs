@@ -10,6 +10,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   alias MetricFlow.Repo
 
   @cassette_dir "test/cassettes/ai"
+  @filter_headers [filter_request_headers: ["x-api-key", "authorization"]]
 
   # ---------------------------------------------------------------------------
   # ReqCassette helpers
@@ -135,7 +136,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "shows chart preview and save section after successful generation", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->
@@ -154,7 +155,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "vega-lite chart container carries the encoded spec", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->
@@ -172,7 +173,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "shows error message when API call fails", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]], fn plug ->
+      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->
@@ -209,7 +210,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "saves the visualization and shows confirmation", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->
@@ -230,7 +231,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "shows save error when name is blank", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->
@@ -255,7 +256,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "resets the page to the initial empty state", %{conn: conn} do
       user = user_fixture()
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         setup_cassette_plug(plug)
 
         capture_log(fn ->

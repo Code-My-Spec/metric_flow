@@ -1,7 +1,7 @@
 {
   "interactions": [
     {
-      "recorded_at": "2026-02-25T15:20:43.128304Z",
+      "recorded_at": "2026-03-23T16:25:19.601268Z",
       "request": {
         "body_json": {
           "max_tokens": 4096,
@@ -46,9 +46,6 @@
           ],
           "user-agent": [
             "req/0.5.17"
-          ],
-          "x-api-key": [
-            "REDACTED_API_KEY"
           ]
         },
         "method": "POST",
@@ -63,7 +60,7 @@
               "type": "text"
             }
           ],
-          "id": "msg_01Kdr7eSa8UxS1bjqwCmRjxk",
+          "id": "msg_01SRfd19pk76VZknJZuw7iHh",
           "model": "claude-sonnet-4-5-20250929",
           "role": "assistant",
           "stop_reason": "end_turn",
@@ -94,7 +91,7 @@
             "2000000"
           ],
           "anthropic-ratelimit-input-tokens-reset": [
-            "2026-02-25T15:20:42Z"
+            "2026-03-23T16:25:18Z"
           ],
           "anthropic-ratelimit-output-tokens-limit": [
             "400000"
@@ -103,7 +100,7 @@
             "400000"
           ],
           "anthropic-ratelimit-output-tokens-reset": [
-            "2026-02-25T15:20:43Z"
+            "2026-03-23T16:25:19Z"
           ],
           "anthropic-ratelimit-requests-limit": [
             "4000"
@@ -112,7 +109,7 @@
             "3999"
           ],
           "anthropic-ratelimit-requests-reset": [
-            "2026-02-25T15:20:39Z"
+            "2026-03-23T16:25:17Z"
           ],
           "anthropic-ratelimit-tokens-limit": [
             "2400000"
@@ -121,13 +118,13 @@
             "2400000"
           ],
           "anthropic-ratelimit-tokens-reset": [
-            "2026-02-25T15:20:42Z"
+            "2026-03-23T16:25:18Z"
           ],
           "cf-cache-status": [
             "DYNAMIC"
           ],
           "cf-ray": [
-            "9d38301e9e2da2ce-YUL"
+            "9e0eca8b0b20a27f-YUL"
           ],
           "connection": [
             "keep-alive"
@@ -139,176 +136,19 @@
             "application/json"
           ],
           "date": [
-            "Wed, 25 Feb 2026 15:20:43 GMT"
+            "Mon, 23 Mar 2026 16:25:19 GMT"
           ],
           "request-id": [
-            "req_011CYV1kSy5rmAf1ZM2ymcE3"
+            "req_011CZLKi7MMDydnnvUhjdQuk"
           ],
           "server": [
             "cloudflare"
           ],
-          "strict-transport-security": [
-            "max-age=31536000; includeSubDomains; preload"
+          "server-timing": [
+            "x-originResponse;dur=2321"
           ],
-          "transfer-encoding": [
-            "chunked"
-          ],
-          "x-envoy-upstream-service-time": [
-            "3743"
-          ],
-          "x-robots-tag": [
-            "none"
-          ]
-        },
-        "status": 200
-      }
-    },
-    {
-      "recorded_at": "2026-03-10T21:42:56.729139Z",
-      "request": {
-        "body_json": {
-          "max_tokens": 4096,
-          "messages": [
-            {
-              "content": "Show me a bar chart of revenue over time\n\nAvailable Metrics: revenue, sessions, ad_spend\n\n\nReturn the COMPLETE Vega-Lite v5 specification as a valid JSON string in the vega_lite_json field. The JSON must include $schema, mark, and encoding keys.",
-              "role": "user"
-            }
-          ],
-          "model": "claude-sonnet-4-5-20250929",
-          "output_format": {
-            "schema": {
-              "additionalProperties": false,
-              "properties": {
-                "vega_lite_json": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "vega_lite_json"
-              ],
-              "type": "object"
-            },
-            "type": "json_schema"
-          },
-          "stream": false,
-          "system": "You are a marketing analytics assistant specialising in multi-platform\nperformance data. You help users understand their marketing metrics across\nGoogle Analytics, Google Ads, Facebook Ads, and QuickBooks revenue data.\n\nWhen analysing data, focus on actionable insights that connect marketing\nspend and activity to measurable business outcomes. Be concise, precise,\nand data-driven in your responses.\n\nYou are generating Vega-Lite v5 JSON specifications for data visualizations.\n\nAlways include:\n- \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\"\n- \"mark\": the chart type (bar, line, point, area, etc.)\n- \"encoding\": field mappings with types (temporal, quantitative, nominal, ordinal)\n\nUse the available metric names provided to map data fields correctly.\nReturn a complete, valid Vega-Lite v5 spec as a JSON object."
-        },
-        "body_type": "json",
-        "headers": {
-          "accept-encoding": [
-            "gzip"
-          ],
-          "anthropic-beta": [
-            "structured-outputs-2025-11-13"
-          ],
-          "anthropic-version": [
-            "2023-06-01"
-          ],
-          "content-type": [
-            "application/json"
-          ],
-          "user-agent": [
-            "req/0.5.17"
-          ],
-          "x-api-key": [
-            "REDACTED_API_KEY"
-          ]
-        },
-        "method": "POST",
-        "query_string": "",
-        "uri": "https://api.anthropic.com/v1/messages"
-      },
-      "response": {
-        "body_json": {
-          "content": [
-            {
-              "text": "{\"vega_lite_json\":\"{\\\"$schema\\\":\\\"https://vega.github.io/schema/vega-lite/v5.json\\\",\\\"mark\\\":\\\"bar\\\",\\\"encoding\\\":{\\\"x\\\":{\\\"field\\\":\\\"date\\\",\\\"type\\\":\\\"temporal\\\",\\\"title\\\":\\\"Date\\\"},\\\"y\\\":{\\\"field\\\":\\\"revenue\\\",\\\"type\\\":\\\"quantitative\\\",\\\"title\\\":\\\"Revenue\\\"}},\\\"title\\\":\\\"Revenue Over Time\\\"}\"}",
-              "type": "text"
-            }
-          ],
-          "id": "msg_016ygVwz2hHewpRN1WT7NRUd",
-          "model": "claude-sonnet-4-5-20250929",
-          "role": "assistant",
-          "stop_reason": "end_turn",
-          "stop_sequence": null,
-          "type": "message",
-          "usage": {
-            "cache_creation": {
-              "ephemeral_1h_input_tokens": 0,
-              "ephemeral_5m_input_tokens": 0
-            },
-            "cache_creation_input_tokens": 0,
-            "cache_read_input_tokens": 0,
-            "inference_geo": "not_available",
-            "input_tokens": 430,
-            "output_tokens": 112,
-            "service_tier": "standard"
-          }
-        },
-        "body_type": "json",
-        "headers": {
-          "anthropic-organization-id": [
-            "1fc62d6b-229c-4681-aa24-571557a26024"
-          ],
-          "anthropic-ratelimit-input-tokens-limit": [
-            "2000000"
-          ],
-          "anthropic-ratelimit-input-tokens-remaining": [
-            "2000000"
-          ],
-          "anthropic-ratelimit-input-tokens-reset": [
-            "2026-03-10T21:42:54Z"
-          ],
-          "anthropic-ratelimit-output-tokens-limit": [
-            "400000"
-          ],
-          "anthropic-ratelimit-output-tokens-remaining": [
-            "400000"
-          ],
-          "anthropic-ratelimit-output-tokens-reset": [
-            "2026-03-10T21:42:56Z"
-          ],
-          "anthropic-ratelimit-requests-limit": [
-            "4000"
-          ],
-          "anthropic-ratelimit-requests-remaining": [
-            "3999"
-          ],
-          "anthropic-ratelimit-requests-reset": [
-            "2026-03-10T21:42:51Z"
-          ],
-          "anthropic-ratelimit-tokens-limit": [
-            "2400000"
-          ],
-          "anthropic-ratelimit-tokens-remaining": [
-            "2400000"
-          ],
-          "anthropic-ratelimit-tokens-reset": [
-            "2026-03-10T21:42:54Z"
-          ],
-          "cf-cache-status": [
-            "DYNAMIC"
-          ],
-          "cf-ray": [
-            "9da57dd99a42a2b4-YUL"
-          ],
-          "connection": [
-            "keep-alive"
-          ],
-          "content-security-policy": [
-            "default-src 'none'; frame-ancestors 'none'"
-          ],
-          "content-type": [
-            "application/json"
-          ],
-          "date": [
-            "Tue, 10 Mar 2026 21:42:56 GMT"
-          ],
-          "request-id": [
-            "req_011CYv8Qk7pM4NTqXieqNEam"
-          ],
-          "server": [
-            "cloudflare"
+          "set-cookie": [
+            "_cfuvid=lUWjemFMdcqNPhUvV7p0Ik4KtpbCk9B_7i6yh9gsHlY-1774283117.288716-1.0.1.1-RmOOhk3CBU6OTG5E74NPkteDk9AgvH9edGp5GlyGJxs; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com"
           ],
           "strict-transport-security": [
             "max-age=31536000; includeSubDomains; preload"
@@ -320,7 +160,7 @@
             "Accept-Encoding"
           ],
           "x-envoy-upstream-service-time": [
-            "5534"
+            "2317"
           ],
           "x-robots-tag": [
             "none"
@@ -330,7 +170,7 @@
       }
     },
     {
-      "recorded_at": "2026-03-18T21:09:03.800907Z",
+      "recorded_at": "2026-03-23T16:25:38.839609Z",
       "request": {
         "body_json": {
           "max_tokens": 4096,
@@ -375,9 +215,6 @@
           ],
           "user-agent": [
             "req/0.5.17"
-          ],
-          "x-api-key": [
-            "REDACTED_API_KEY"
           ]
         },
         "method": "POST",
@@ -388,11 +225,11 @@
         "body_json": {
           "content": [
             {
-              "text": "{\"vega_lite_json\":\"{\\\"$schema\\\":\\\"https://vega.github.io/schema/vega-lite/v5.json\\\",\\\"mark\\\":\\\"bar\\\",\\\"encoding\\\":{\\\"x\\\":{\\\"field\\\":\\\"week\\\",\\\"type\\\":\\\"temporal\\\",\\\"title\\\":\\\"Week\\\"},\\\"y\\\":{\\\"field\\\":\\\"revenue\\\",\\\"type\\\":\\\"quantitative\\\",\\\"title\\\":\\\"Revenue\\\"}},\\\"title\\\":\\\"Weekly Revenue\\\"}\"}",
+              "text": "{\"vega_lite_json\": \"{\\\"$schema\\\":\\\"https://vega.github.io/schema/vega-lite/v5.json\\\",\\\"mark\\\":\\\"bar\\\",\\\"encoding\\\":{\\\"x\\\":{\\\"field\\\":\\\"week\\\",\\\"type\\\":\\\"temporal\\\",\\\"title\\\":\\\"Week\\\"},\\\"y\\\":{\\\"field\\\":\\\"revenue\\\",\\\"type\\\":\\\"quantitative\\\",\\\"title\\\":\\\"Revenue\\\"}},\\\"title\\\":\\\"Weekly Revenue\\\"}\"}",
               "type": "text"
             }
           ],
-          "id": "msg_01CXKmMxUpXjsK9n7TSVaiNU",
+          "id": "msg_01ELj2xiedPAPkrcuu6ra66h",
           "model": "claude-sonnet-4-5-20250929",
           "role": "assistant",
           "stop_reason": "end_turn",
@@ -423,7 +260,7 @@
             "2000000"
           ],
           "anthropic-ratelimit-input-tokens-reset": [
-            "2026-03-18T21:09:02Z"
+            "2026-03-23T16:25:37Z"
           ],
           "anthropic-ratelimit-output-tokens-limit": [
             "400000"
@@ -432,7 +269,7 @@
             "400000"
           ],
           "anthropic-ratelimit-output-tokens-reset": [
-            "2026-03-18T21:09:03Z"
+            "2026-03-23T16:25:38Z"
           ],
           "anthropic-ratelimit-requests-limit": [
             "4000"
@@ -441,7 +278,7 @@
             "3999"
           ],
           "anthropic-ratelimit-requests-reset": [
-            "2026-03-18T21:09:01Z"
+            "2026-03-23T16:25:36Z"
           ],
           "anthropic-ratelimit-tokens-limit": [
             "2400000"
@@ -450,13 +287,13 @@
             "2400000"
           ],
           "anthropic-ratelimit-tokens-reset": [
-            "2026-03-18T21:09:02Z"
+            "2026-03-23T16:25:37Z"
           ],
           "cf-cache-status": [
             "DYNAMIC"
           ],
           "cf-ray": [
-            "9de7374c7d7da2d4-YUL"
+            "9e0ecb055dc3a2db-YUL"
           ],
           "connection": [
             "keep-alive"
@@ -468,19 +305,19 @@
             "application/json"
           ],
           "date": [
-            "Wed, 18 Mar 2026 21:09:03 GMT"
+            "Mon, 23 Mar 2026 16:25:38 GMT"
           ],
           "request-id": [
-            "req_011CZBEJTU3M4pGTFuUorX6H"
+            "req_011CZLKjYopZq9xoRYjvjydy"
           ],
           "server": [
             "cloudflare"
           ],
           "server-timing": [
-            "proxy;dur=2291"
+            "x-originResponse;dur=2011"
           ],
           "set-cookie": [
-            "_cfuvid=FnSvOZ4PxnvgpQ50hYFITh_gSekX4xEaELq4lZNeKWg-1773868141.5130394-1.0.1.1-dDiDWusYyhZT8AQS5hqe7P.X9ytOanruTmmI566pB7o; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com"
+            "_cfuvid=4YmP_YeTcni6b_YYgZdTCT1LkLR1hJrhnihSIJ49RWw-1774283136.8555937-1.0.1.1-YnwuZElUgCCYDS2sA4Qc2ev5SXWLu1YOqzQCqj0tYmE; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com"
           ],
           "strict-transport-security": [
             "max-age=31536000; includeSubDomains; preload"
@@ -492,7 +329,7 @@
             "Accept-Encoding"
           ],
           "x-envoy-upstream-service-time": [
-            "2291"
+            "2008"
           ],
           "x-robots-tag": [
             "none"

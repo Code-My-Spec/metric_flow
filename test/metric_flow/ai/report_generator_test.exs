@@ -6,6 +6,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
   alias MetricFlow.Ai.ReportGenerator
 
   @cassette_dir "test/cassettes/ai"
+  @filter_headers [filter_request_headers: ["x-api-key", "authorization"]]
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -73,7 +74,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
 
   describe "generate/3" do
     test "returns ok tuple with Vega-Lite spec map on success" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result = ReportGenerator.generate(
           user_prompt(),
           metric_names(),
@@ -86,7 +87,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     end
 
     test "returned map contains dollar-schema key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} = ReportGenerator.generate(
           user_prompt(),
           metric_names(),
@@ -98,7 +99,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     end
 
     test "returned map contains mark key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} = ReportGenerator.generate(
           user_prompt(),
           metric_names(),
@@ -110,7 +111,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     end
 
     test "returned map contains encoding key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} = ReportGenerator.generate(
           user_prompt(),
           metric_names(),
@@ -122,7 +123,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     end
 
     test "dollar-schema field points to a Vega-Lite v5 URL" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, spec} = ReportGenerator.generate(
           user_prompt(),
           metric_names(),
@@ -135,7 +136,7 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     end
 
     test "returns error tuple when API call fails" do
-      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]], fn plug ->
+      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
         result = ReportGenerator.generate(
           user_prompt(),
           metric_names(),

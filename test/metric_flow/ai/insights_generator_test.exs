@@ -6,6 +6,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
   alias MetricFlow.Ai.InsightsGenerator
 
   @cassette_dir "test/cassettes/ai"
+  @filter_headers [filter_request_headers: ["x-api-key", "authorization"]]
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -153,7 +154,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
 
   describe "generate/3" do
     test "returns ok tuple with list of insight attribute maps on success" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -167,7 +168,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "each map in the list contains required insight field: content" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, insights} = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -182,7 +183,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "each map in the list contains required insight field: summary" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, insights} = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -194,7 +195,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "each map in the list contains required insight field: suggestion_type" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, insights} = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -206,7 +207,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "each map in the list contains required insight field: confidence" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, insights} = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -220,7 +221,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "handles single correlation result" do
-      with_cassette "insights_generator_single", [cassette_dir: @cassette_dir], fn plug ->
+      with_cassette "insights_generator_single", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result = InsightsGenerator.generate(
           correlation_data_with_single_result(),
           available_metric_names(),
@@ -233,7 +234,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "returns empty list when LLM returns empty suggestions" do
-      with_cassette "insights_generator_empty", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]], fn plug ->
+      with_cassette "insights_generator_empty", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
         {:ok, insights} = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
@@ -245,7 +246,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "returns error tuple when API call fails" do
-      with_cassette "insights_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]], fn plug ->
+      with_cassette "insights_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
         result = InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
