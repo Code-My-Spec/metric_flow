@@ -1,0 +1,520 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-03-31T16:11:33.328956Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/102071280510983396749/locations"
+      },
+      "response": {
+        "body_json": {
+          "locations": [
+            {
+              "name": "locations/10802898290516887436",
+              "storefrontAddress": {
+                "administrativeArea": "VA",
+                "languageCode": "en",
+                "locality": "Yorktown",
+                "postalCode": "23693",
+                "regionCode": "US"
+              },
+              "title": "Tidewater Firewood",
+              "websiteUri": "http://tidewaterfirewood.com/"
+            },
+            {
+              "name": "locations/4842584637917076901",
+              "storefrontAddress": {
+                "addressLines": [
+                  "743 East Broadway Suite 153"
+                ],
+                "administrativeArea": "KY",
+                "languageCode": "en",
+                "locality": "Louisville",
+                "postalCode": "40202",
+                "regionCode": "US"
+              },
+              "title": "UserDocs",
+              "websiteUri": "http://user-docs.com/"
+            },
+            {
+              "name": "locations/13342875221580615303",
+              "storeCode": "07573470512274310233",
+              "storefrontAddress": {
+                "addressLines": [
+                  "1226 1801 East Camelback Road Ste 102"
+                ],
+                "administrativeArea": "AZ",
+                "languageCode": "en",
+                "locality": "Phoenix",
+                "postalCode": "85016",
+                "regionCode": "US"
+              },
+              "title": "Desert First Cleaning",
+              "websiteUri": "https://desertfirstcleaning.com/"
+            },
+            {
+              "name": "locations/8931415028605870892",
+              "title": "Desert First Cleaning",
+              "websiteUri": "http://desertfirstcleaning.com/"
+            },
+            {
+              "name": "locations/8051607927961582602",
+              "storeCode": "02516046574809796528",
+              "title": "Installation Boxing",
+              "websiteUri": "https://installationboxing.com/"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:11:33 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:20.267671Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "",
+        "uri": "https://mybusinessaccountmanagement.googleapis.com/v1/accounts"
+      },
+      "response": {
+        "body_json": {
+          "accounts": [
+            {
+              "accountName": "John Davenport",
+              "name": "accounts/102071280510983396749",
+              "type": "PERSONAL",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            },
+            {
+              "accountName": "Albany Firewood",
+              "name": "accounts/101278802778449119998",
+              "permissionLevel": "OWNER_LEVEL",
+              "role": "PRIMARY_OWNER",
+              "type": "LOCATION_GROUP",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            },
+            {
+              "accountName": "Boston Firewood",
+              "accountNumber": "5730161284",
+              "name": "accounts/108126458178788284065",
+              "permissionLevel": "OWNER_LEVEL",
+              "role": "PRIMARY_OWNER",
+              "type": "LOCATION_GROUP",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            },
+            {
+              "accountName": "Montpelier Firewood",
+              "name": "accounts/116111111699025841107",
+              "permissionLevel": "OWNER_LEVEL",
+              "role": "PRIMARY_OWNER",
+              "type": "LOCATION_GROUP",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            },
+            {
+              "accountName": "Pittsburgh Firewood",
+              "accountNumber": "5592049992",
+              "name": "accounts/103187461587544587917",
+              "permissionLevel": "OWNER_LEVEL",
+              "role": "PRIMARY_OWNER",
+              "type": "LOCATION_GROUP",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            },
+            {
+              "accountName": "Syracuse Firewood",
+              "name": "accounts/112744062439041474778",
+              "permissionLevel": "OWNER_LEVEL",
+              "role": "PRIMARY_OWNER",
+              "type": "LOCATION_GROUP",
+              "verificationState": "UNVERIFIED",
+              "vettedState": "NOT_VETTED"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:20 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:20.537438Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/101278802778449119998/locations"
+      },
+      "response": {
+        "body_json": {},
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:20 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:20.716190Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/108126458178788284065/locations"
+      },
+      "response": {
+        "body_json": {},
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:20 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:20.959070Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/116111111699025841107/locations"
+      },
+      "response": {
+        "body_json": {
+          "locations": [
+            {
+              "name": "locations/1059769807119162662",
+              "title": "Montpelier Firewood",
+              "websiteUri": "http://montpelierfirewood.com/"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:20 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:21.232556Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/103187461587544587917/locations"
+      },
+      "response": {
+        "body_json": {
+          "locations": [
+            {
+              "name": "locations/572194274659042217",
+              "title": "Pittsburgh Firewood"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:21 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-03-31T16:27:21.496429Z",
+      "request": {
+        "body": "",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "GET",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/112744062439041474778/locations"
+      },
+      "response": {
+        "body_json": {
+          "locations": [
+            {
+              "name": "locations/3614793026119190877",
+              "title": "Syracuse Firewood",
+              "websiteUri": "http://syracusefirewood.store/"
+            }
+          ]
+        },
+        "body_type": "json",
+        "headers": {
+          "alt-svc": [
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+          ],
+          "content-type": [
+            "application/json; charset=UTF-8"
+          ],
+          "date": [
+            "Tue, 31 Mar 2026 16:27:21 GMT"
+          ],
+          "server": [
+            "ESF"
+          ],
+          "transfer-encoding": [
+            "chunked"
+          ],
+          "vary": [
+            "Origin",
+            "X-Origin",
+            "Referer"
+          ],
+          "x-content-type-options": [
+            "nosniff"
+          ],
+          "x-frame-options": [
+            "SAMEORIGIN"
+          ],
+          "x-xss-protection": [
+            "0"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

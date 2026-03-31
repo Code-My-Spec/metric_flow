@@ -224,7 +224,11 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   defp format_address(_), do: nil
 
   defp maybe_put_plug(req_opts, opts) do
-    case Keyword.get(opts, :http_plug) do
+    plug =
+      Keyword.get(opts, :http_plug) ||
+        Application.get_env(:metric_flow, :req_http_options, [])[:plug]
+
+    case plug do
       nil -> req_opts
       plug -> Keyword.put(req_opts, :plug, plug)
     end

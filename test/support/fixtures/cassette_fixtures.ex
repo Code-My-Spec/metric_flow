@@ -123,7 +123,24 @@ defmodule MetricFlowTest.CassetteFixtures do
     )
   end
 
-  defp tokens_for(provider) when provider in [:google_ads, :google_analytics] do
+  @doc """
+  Returns a valid Integration struct for Google Business Profile with test credentials.
+  Uses the same Google OAuth tokens as GA4/Ads. Returns `nil` if no account IDs configured.
+  """
+  def google_business_integration do
+    build_integration(:google_business, %{
+      "email" => "test@example.com",
+      "google_business_account_ids" =>
+        (test_cred(:google_business_account_ids) || "")
+        |> String.split(",", trim: true)
+        |> case do
+          [] -> ["accounts/102071280510983396749"]
+          ids -> ids
+        end
+    })
+  end
+
+  defp tokens_for(provider) when provider in [:google_ads, :google_analytics, :google_business] do
     {
       test_cred(:google_access_token) || "cassette-token",
       test_cred(:google_refresh_token) || "cassette-refresh"
