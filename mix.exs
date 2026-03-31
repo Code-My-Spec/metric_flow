@@ -105,8 +105,7 @@ defmodule MetricFlow.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1.15"},
       {:sexy_spex, path: "../spex", only: [:dev, :test]},
-      {:boundary, "~> 0.10.4", runtime: false},
-      {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false}
+      {:boundary, "~> 0.10.4", runtime: false}
     ]
   end
 
