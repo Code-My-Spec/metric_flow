@@ -58,7 +58,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]} codemyspec_connected={assigns[:codemyspec_connected]}>
       <div class="mx-auto max-w-3xl mf-content px-4 py-8">
         <div class="mb-8">
           <h1 class="text-2xl font-bold">Connect a Provider</h1>
@@ -571,8 +571,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
               else: []
 
           # Detect configured locations that are no longer returned by the API.
+          # When the API errors or returns empty, all configured locations are unverifiable.
           missing_locations =
-            compute_missing_locations(provider_atom, raw_selection, accounts)
+            compute_missing_locations(provider_atom, raw_selection, accounts, accounts_error)
 
           {:noreply,
            socket
@@ -786,9 +787,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
 
   # Compare configured location IDs against the live fetched accounts list.
-  # Only meaningful for google_business when the API returns results.
-  defp compute_missing_locations(:google_business, configured, fetched_accounts)
-       when is_list(configured) and fetched_accounts != [] do
+  # When the API returns results, check each configured ID against the live list.
+  # When the API errors or returns empty, all configured locations are unverifiable.
+  defp compute_missing_locations(:google_business, configured, fetched_accounts, _error)
+       when is_list(configured) and configured != [] and fetched_accounts != [] do
     fetched_ids = MapSet.new(fetched_accounts, & &1.id)
 
     Enum.reject(configured, fn loc_id ->
@@ -796,7 +798,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     end)
   end
 
-  defp compute_missing_locations(_provider, _configured, _fetched), do: []
+  defp compute_missing_locations(:google_business, configured, [], error)
+       when is_list(configured) and configured != [] and error != nil do
+    # API failed — all configured locations are unverifiable
+    configured
+  end
+
+  defp compute_missing_locations(_provider, _configured, _fetched, _error), do: []
 
   # ---------------------------------------------------------------------------
   # Private helpers — metadata value builder
