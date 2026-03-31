@@ -161,7 +161,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
                 </span>
               </div>
               <p class="text-xs text-base-content/50 mb-3">
-                {format_report_type(report.chart_type)}
+                {format_report_type(get_in(report.vega_spec, ["chart_type"]))}
               </p>
               <div class="flex items-center gap-2 mt-3">
                 <.link
