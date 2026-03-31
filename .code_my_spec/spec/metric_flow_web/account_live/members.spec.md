@@ -20,9 +20,6 @@ None
 
 ## Components
 
-- AccountLive.Components.Navigation - sidebar or tab navigation with active tab indicator for the accounts section
-- AccountLive.Components.RoleBadge - displays a styled badge for a member's role (owner, admin, account_manager, read_only)
-
 ## User Interactions
 
 - **phx-click="change_role"**: Triggered when an owner or admin selects a new role from the role dropdown on a member row. Calls `Accounts.update_user_role/4`. On success, reloads the member list and shows a success flash. On error (e.g., demoting the last owner), shows an error flash. Only visible to owners and admins.

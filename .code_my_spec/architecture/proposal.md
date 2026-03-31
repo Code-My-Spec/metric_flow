@@ -38,7 +38,7 @@
 
 - MetricFlow.Integrations.Integration (schema): OAuth integration record with tokens and metadata
 - MetricFlow.Integrations.IntegrationRepository (module): Integration CRUD
-- MetricFlow.Integrations.OauthStateStore (module): OAuth state parameter persistence
+- MetricFlow.Integrations.OAuthStateStore (module): OAuth state parameter persistence
 - MetricFlow.Integrations.GoogleAccounts (module): Google account picker
 - MetricFlow.Integrations.FacebookAdsAccounts (module): Facebook Ads account picker
 - MetricFlow.Integrations.GoogleAdsAccounts (module): Google Ads account picker

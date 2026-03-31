@@ -7,17 +7,20 @@ name: Metric Flow
 project_id: 5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c
 current_user_email: "johns10@gmail.com"
 account_id: 1cf53ab2-14ea-4e5f-9560-f16c1ed310fa
-ignored_components:
-  - MetricFlow.Repo
-  - MetricFlow.Mailer
-  - MetricFlowWeb.Application
-  - MetricFlowWeb.Endpoint
-  - MetricFlowWeb.Router
-  - MetricFlowWeb.Telemetry
-  - MetricFlowWeb.Gettext
-  - MetricFlowWeb.CoreComponents
-  - MetricFlowWeb.ErrorHTML
-  - MetricFlowWeb.ErrorJSON
-  - MetricFlowWeb.PageController
-  - MetricFlowWeb.PageHTML
-  - MetricFlowWeb.Layouts
+ignored_paths:
+  - lib/metric_flow/repo.ex
+  - lib/metric_flow/mailer.ex
+  - lib/metric_flow/users.ex
+  - lib/metric_flow/vault.ex
+  - lib/metric_flow/users/*
+  - lib/metric_flow_web/application.ex
+  - lib/metric_flow_web/endpoint.ex
+  - lib/metric_flow_web/router.ex
+  - lib/metric_flow_web/telemetry.ex
+  - lib/metric_flow_web/gettext.ex
+  - lib/metric_flow_web/components/core_components.ex
+  - lib/metric_flow_web/components/layouts.ex
+  - lib/metric_flow_web/controllers/error_*
+  - lib/metric_flow_web/controllers/page_*
+  - lib/metric_flow.ex
+  - lib/metric_flow_web.ex
