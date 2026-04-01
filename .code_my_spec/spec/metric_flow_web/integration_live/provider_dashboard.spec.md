@@ -33,16 +33,6 @@ None
 
 - **phx-click="refresh"**: Re-fetches all dashboard data (metrics, reviews, sync history) without triggering a new sync.
 
-## Context Access
-
-- `Integrations.get_integration(scope, provider)` — fetch connection status and metadata
-- `Metrics.query_time_series(scope, metric_name, opts)` — fetch time series data for charts
-- `Metrics.list_metric_names(scope, provider: provider)` — discover available metrics for this provider
-- `Reviews.list_reviews(scope, provider: provider, limit: 10)` — recent reviews (GBP only)
-- `Reviews.query_rolling_review_metrics(scope, opts)` — rolling review aggregates (GBP only)
-- `DataSync.list_sync_history(scope, provider: provider, limit: 5)` — recent sync runs
-- `DataSync.enqueue_sync(scope, integration)` — trigger manual sync
-
 ## Design
 
 Layout: Full-width page with `max-w-5xl` container, wrapped in `mf-content`.
@@ -110,20 +100,3 @@ When the provider param is not a recognized provider:
 
 Responsive: On mobile, metric cards stack single-column. Action bar wraps below the header.
 
-## Data Flow
-
-1. User navigates to `/integrations/:provider/dashboard`
-2. Mount validates the provider param and fetches the integration
-3. If no integration, renders empty state with connect link
-4. If connected, fetches metric names available for this provider
-5. Queries time series data for each key metric (default: last 30 days)
-6. For google_business, also fetches recent reviews and rolling review metrics
-7. Fetches last 5 sync history entries for this provider
-8. Renders charts, reviews, and sync history
-9. Subscribes to PubSub for sync completion events to live-update
-
-## Security
-
-- Requires authentication via `:require_authenticated_user` pipeline
-- All data queries scoped via `%Scope{}` — users only see their own data
-- Sync Now button only visible when integration is connected and not currently syncing
