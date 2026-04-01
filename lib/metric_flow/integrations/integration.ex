@@ -42,7 +42,8 @@ defmodule MetricFlow.Integrations.Integration do
     :google_search_console,
     :google_business,
     :google_business_reviews,
-    :quickbooks
+    :quickbooks,
+    :codemyspec
   ]
 
   @test_providers Application.compile_env(:metric_flow, :test_providers, [])

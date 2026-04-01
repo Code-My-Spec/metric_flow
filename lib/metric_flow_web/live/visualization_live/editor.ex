@@ -29,6 +29,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
+     
     >
       <div class="max-w-3xl mx-auto px-4 py-8">
         <%!-- Page header --%>

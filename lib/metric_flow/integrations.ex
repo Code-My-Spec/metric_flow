@@ -38,7 +38,8 @@ defmodule MetricFlow.Integrations do
     google_search_console: MetricFlow.Integrations.Providers.GoogleSearchConsole,
     google_business: MetricFlow.Integrations.Providers.GoogleBusiness,
     facebook_ads: MetricFlow.Integrations.Providers.Facebook,
-    quickbooks: MetricFlow.Integrations.Providers.QuickBooks
+    quickbooks: MetricFlow.Integrations.Providers.QuickBooks,
+    codemyspec: MetricFlow.Integrations.Providers.Codemyspec
   }
 
   # ---------------------------------------------------------------------------

@@ -84,14 +84,17 @@ defmodule MetricFlowWeb.IntegrationOAuthController do
         "google_search_console" -> :google_search_console
         "google_business" -> :google_business
         "google_business_reviews" -> :google_business_reviews
+        "codemyspec" -> :codemyspec
         _ -> nil
       end
+
+    redirect_to = if provider == :codemyspec, do: ~p"/users/settings", else: ~p"/integrations/connect/#{provider_str}"
 
     case handle_oauth_callback(scope, provider, params, session_params) do
       {:ok, _integration} ->
         conn
         |> put_flash(:info, "Successfully connected!")
-        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
+        |> redirect(to: redirect_to)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         Logger.error("Failed to persist integration: #{inspect(changeset)}")

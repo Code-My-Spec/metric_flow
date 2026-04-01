@@ -3,6 +3,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
 
   on_mount {MetricFlowWeb.UserAuth, :require_sudo_mode}
 
+  alias MetricFlow.Integrations
   alias MetricFlow.Users
 
   @impl true
@@ -62,6 +63,41 @@ defmodule MetricFlowWeb.UserLive.Settings do
           Save Password
         </.button>
       </.form>
+      <div class="divider" />
+
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold">Connected Services</h3>
+
+        <div class="border rounded-lg p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div>
+              <div class="font-medium">CodeMySpec</div>
+              <%= if @codemyspec_connected do %>
+                <div class="text-sm text-success">Connected</div>
+              <% else %>
+                <div class="text-sm text-base-content/50">Not connected</div>
+              <% end %>
+            </div>
+          </div>
+
+          <%= if @codemyspec_connected do %>
+            <button
+              phx-click="disconnect_codemyspec"
+              data-confirm="Are you sure you want to disconnect CodeMySpec?"
+              class="btn btn-sm btn-outline btn-error"
+            >
+              Disconnect
+            </button>
+          <% else %>
+            <.link href={~p"/integrations/oauth/codemyspec"} class="btn btn-sm btn-primary">
+              Connect
+            </.link>
+          <% end %>
+        </div>
+      </div>
     </Layouts.app>
     """
   end
@@ -82,6 +118,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
+    scope = socket.assigns.current_scope
     email_changeset = Users.change_user_email(user, %{}, validate_unique: false)
     password_changeset = Users.change_user_password(user, %{}, hash_password: false)
 
@@ -91,6 +128,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
+      |> assign(:codemyspec_connected, Integrations.connected?(scope, :codemyspec))
 
     {:ok, socket}
   end
@@ -139,6 +177,21 @@ defmodule MetricFlowWeb.UserLive.Settings do
       |> to_form()
 
     {:noreply, assign(socket, password_form: password_form)}
+  end
+
+  def handle_event("disconnect_codemyspec", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    case Integrations.disconnect(scope, :codemyspec) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> assign(:codemyspec_connected, false)
+         |> put_flash(:info, "Disconnected from CodeMySpec.")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to disconnect.")}
+    end
   end
 
   def handle_event("update_password", params, socket) do

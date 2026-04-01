@@ -24,6 +24,7 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
+     
     >
       <div class="max-w-5xl mx-auto mf-content px-4 py-8">
         <%!-- Page header --%>

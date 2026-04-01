@@ -159,7 +159,7 @@ defmodule MetricFlowWeb.Layouts do
               <li class="menu-title text-xs">{@current_scope.user.email}</li>
               <li><a href={~p"/users/settings"}>Settings</a></li>
               <li>
-                <a href={~p"/users/log-out"} method="delete">Log out</a>
+                <.link href={~p"/users/log-out"} method="delete">Log out</.link>
               </li>
             </ul>
           </div>
@@ -186,6 +186,12 @@ defmodule MetricFlowWeb.Layouts do
     </footer>
 
     <.flash_group flash={@flash} />
+
+    <.live_component
+      module={MetricFlowWeb.FeedbackWidget}
+      id="codemyspec-feedback"
+      current_scope={@current_scope}
+    />
     """
   end
 

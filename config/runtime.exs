@@ -53,7 +53,11 @@ config :metric_flow,
   quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, nil),
   facebook_app_id: env!("FACEBOOK_APP_ID", :string, nil),
   facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, nil),
-  quickbooks_api_url: env!("QUICKBOOKS_API_URL", :string, "https://sandbox-quickbooks.api.intuit.com/v3/company")
+  quickbooks_api_url: env!("QUICKBOOKS_API_URL", :string, "https://sandbox-quickbooks.api.intuit.com/v3/company"),
+  codemyspec_url: env!("CODEMYSPEC_URL", :string, "https://app.codemyspec.com"),
+  codemyspec_client_id: env!("CODEMYSPEC_CLIENT_ID", :string, nil),
+  codemyspec_client_secret: env!("CODEMYSPEC_CLIENT_SECRET", :string, nil),
+  codemyspec_project_id: env!("CODEMYSPEC_PROJECT_ID", :string, nil)
 
 # Test-only: expose cassette recording credentials via Application config
 # so test fixtures can read them without relying on System.get_env.
