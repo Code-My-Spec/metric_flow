@@ -24,3 +24,4 @@ ignored_paths:
   - lib/metric_flow_web/controllers/page_*
   - lib/metric_flow.ex
   - lib/metric_flow_web.ex
+  - lib/metric_flow_web/prom_ex.ex
