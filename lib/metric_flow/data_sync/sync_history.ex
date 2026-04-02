@@ -4,9 +4,9 @@ defmodule MetricFlow.DataSync.SyncHistory do
 
   Stores the result of a sync operation including the provider, final status
   (success, partial_success, failed), number of records synced, any error
-  details, and start/completion timestamps. Belongs to a User, Integration,
-  and SyncJob. Provides helper functions for checking success and computing
-  elapsed duration.
+  details, and start/completion timestamps. Belongs to a User, and optionally
+  an Integration and SyncJob. Provides helper functions for checking success
+  and computing elapsed duration.
   """
 
   use Ecto.Schema
@@ -56,9 +56,10 @@ defmodule MetricFlow.DataSync.SyncHistory do
   @doc """
   Creates an Ecto changeset for creating or updating a SyncHistory record.
 
-  Validates all required fields, type constraints, associations, and ensures
-  records_synced is non-negative. Enforces association constraints on user,
-  integration, and sync_job to ensure referenced records exist in the database.
+  Validates required fields, type constraints, and ensures records_synced is
+  non-negative. integration_id and sync_job_id are optional to allow lightweight
+  sync history records created outside of a full sync job lifecycle (e.g.,
+  manual imports, test fixtures, dashboard refreshes).
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(sync_history, attrs) do
@@ -76,8 +77,6 @@ defmodule MetricFlow.DataSync.SyncHistory do
     ])
     |> validate_required([
       :user_id,
-      :integration_id,
-      :sync_job_id,
       :provider,
       :status,
       :records_synced,

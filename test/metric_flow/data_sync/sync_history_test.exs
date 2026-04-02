@@ -127,7 +127,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
       assert %{user_id: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "validates integration_id is required" do
+    test "allows integration_id to be optional" do
       user = user_fixture()
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id)
@@ -135,11 +135,10 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       changeset = SyncHistory.changeset(new_sync_history(), attrs)
 
-      refute changeset.valid?
-      assert %{integration_id: ["can't be blank"]} = errors_on(changeset)
+      assert changeset.valid?
     end
 
-    test "validates sync_job_id is required" do
+    test "allows sync_job_id to be optional" do
       user = user_fixture()
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id)
@@ -147,8 +146,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       changeset = SyncHistory.changeset(new_sync_history(), attrs)
 
-      refute changeset.valid?
-      assert %{sync_job_id: ["can't be blank"]} = errors_on(changeset)
+      assert changeset.valid?
     end
 
     test "validates provider is required" do
