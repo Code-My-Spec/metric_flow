@@ -26,7 +26,9 @@ ignored_paths:
   - lib/metric_flow_web.ex
   - lib/metric_flow_web/prom_ex.ex
   - lib/metric_flow_web/user_auth.ex
+  - lib/metric_flow_web/controllers/user_session_controller.ex
   - lib/metric_flow/release.ex
+  - lib/metric_flow/encrypted/*
   - lib/metric_flow_web/live/user_live/confirmation.ex
   - lib/metric_flow_web/controllers/health_controller.ex
   - lib/metric_flow_web/live/feedback_widget.ex
