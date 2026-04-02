@@ -34,7 +34,7 @@ None
 
 - **phx-click="connect"**: Triggered when a user clicks the Connect button for a provider on the `/integrations/connect` listing page. Redirects the browser to `/integrations/oauth/:provider` which generates the OAuth authorization URL and redirects to the provider. On return, the OAuth callback controller processes the code and redirects back to `/integrations/connect/:provider`.
 
-- **OAuth callback (controller)**: The `IntegrationOAuthController` handles `/integrations/oauth/callback/:provider`. It exchanges the authorization code for tokens via `Integrations.handle_callback/4`, persists the integration, and redirects to `/integrations/connect/:provider` with a success or error flash.
+- **OAuth callback (controller)**: The `IntegrationOauthController` handles `/integrations/oauth/callback/:provider`. It exchanges the authorization code for tokens via `Integrations.handle_callback/4`, persists the integration, and redirects to `/integrations/connect/:provider` with a success or error flash.
 
 ## Design
 

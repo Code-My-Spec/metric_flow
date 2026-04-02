@@ -169,6 +169,8 @@ An invitation is created by an account owner or admin and sent to a target email
 
 - MetricFlow.Metrics.Metric (module): Ecto schema representing a unified metric data point. Stores metric_type (category like "traffic", "advertising", "financial"), metric_name (specific metric like "sessions", "clicks", "revenue"), value as float, recorded_at timestamp, provider atom matching Integration provider enum, and dimensions as embedded map for dimension breakdowns (source, campaign, page, etc.). Belongs to User. Indexed on [user_id, provider], [user_id, metric_name, recorded_at], and [user_id, metric_type].
 - MetricFlow.Metrics.MetricRepository (module): Data access layer for Metric CRUD and query operations filtered by user_id. All operations are scoped via Scope struct for multi-tenant isolation. Provides list_metrics/2 with filter options (provider, metric_type, metric_name, date_range, limit, offset), get_metric/2, create_metric/2, create_metrics/2 for bulk insert, delete_metrics_by_provider/2, query_time_series/3 for date-grouped aggregation, aggregate_metrics/3 for summary statistics, and list_metric_names/2 for distinct name discovery.
+- MetricFlow.Metrics.ReviewMetrics (module)
+
 ### MetricFlow.Reviews
 
 - **Type:** context
@@ -177,8 +179,8 @@ An invitation is created by an account owner or admin and sent to a target email
 #### Children
 
 - MetricFlow.Reviews.Review (schema): Ecto schema representing an individual customer review. Stores integration_id, provider, external_review_id, reviewer_name, star_rating (1-5), comment text, review_date, location_id, and metadata map for provider-specific fields. Belongs to User via integration. Indexed on [user_id, provider], [user_id, review_date], and [external_review_id] for deduplication during sync.
-- MetricFlow.Reviews.ReviewRepository (module): Data access layer for Review CRUD and query operations. All queries are scoped via Scope struct for multi-tenant isolation. Provides create_reviews/2 for bulk upsert (deduplicates on external_review_id), list_reviews/2 with filter options (provider, location_id, date_range, limit, offset), and delete_reviews_by_provider/2.
 - MetricFlow.Reviews.ReviewMetrics (module): Computes rolling review metrics from the reviews table. Provides query_rolling_review_metrics/2 which returns daily review count, running total count, and rolling average star rating as date-keyed time series. Platform-agnostic — aggregates across all providers. Used by provider dashboards and the correlation engine.
+- MetricFlow.Reviews.ReviewRepository (module): Data access layer for Review CRUD and query operations. All queries are scoped via Scope struct for multi-tenant isolation. Provides create_reviews/2 for bulk upsert (deduplicates on external_review_id), list_reviews/2 with filter options (provider, location_id, date_range, limit, offset), and delete_reviews_by_provider/2.
 
 ## Surface Components
 
@@ -271,7 +273,7 @@ Allows authenticated users to build reports by composing visualizations from con
 ### MetricFlowWeb.IntegrationLive.ProviderDashboard
 
 - **Type:** liveview
-- **Description:** Per-provider data dashboard at `/integrations/:provider/dashboard`. Shows provider-specific synced data in a dedicated control panel: line charts of key metrics over time, recent sync history for this provider, sync now button, connection status, and last synced timestamp. For Google Business Profile, displays review count trend, average rating trend, recent reviews list, and performance metrics. For Google Analytics, shows traffic metrics. For Google Ads, shows ad performance. For QuickBooks, shows financial summary. Each provider dashboard gives users a focused view of their synced data and a concrete surface for QA.
+- **Description:** Per-provider data dashboard showing synced data in a focused control panel. Each provider gets a dedicated view with key metrics charted over time, recent sync history, sync controls, and connection status. Gives users a concrete place to verify their data is flowing and to monitor provider health.
 - **Stories:** 515
 
 ### MetricFlowWeb.IntegrationLive.SyncHistory
@@ -402,6 +404,11 @@ Allows authenticated users to build reports by composing visualizations from con
 - MetricFlow.Invitations.InvitationRepository -> MetricFlow.Invitations.Invitation
 - MetricFlow.Metrics -> MetricFlow.Metrics.MetricRepository
 - MetricFlow.Metrics.MetricRepository -> MetricFlow.Metrics.Metric
+- MetricFlow.Reviews -> MetricFlow.Reviews.ReviewMetrics
+- MetricFlow.Reviews -> MetricFlow.Reviews.ReviewRepository
+- MetricFlow.Reviews.Review -> MetricFlow.Integrations.Integration
+- MetricFlow.Reviews.ReviewMetrics -> MetricFlow.Reviews.Review
+- MetricFlow.Reviews.ReviewRepository -> MetricFlow.Reviews.Review
 - MetricFlowWeb.AccountLive.Index -> MetricFlow.Accounts
 - MetricFlowWeb.AccountLive.Index -> MetricFlow.Agencies
 - MetricFlowWeb.AccountLive.Members -> MetricFlow.Accounts
@@ -423,6 +430,10 @@ Allows authenticated users to build reports by composing visualizations from con
 - MetricFlowWeb.IntegrationLive.Connect -> MetricFlow.Integrations
 - MetricFlowWeb.IntegrationLive.Index -> MetricFlow.DataSync
 - MetricFlowWeb.IntegrationLive.Index -> MetricFlow.Integrations
+- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.DataSync
+- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Integrations
+- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Metrics
+- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Reviews
 - MetricFlowWeb.IntegrationLive.SyncHistory -> MetricFlow.DataSync
 - MetricFlowWeb.InvitationLive.Accept -> MetricFlow.Invitations
 - MetricFlowWeb.InvitationLive.Send -> MetricFlow.Accounts
@@ -431,15 +442,4 @@ Allows authenticated users to build reports by composing visualizations from con
 - MetricFlowWeb.ReportLive.Index -> MetricFlow.Metrics
 - MetricFlowWeb.ReportLive.Show -> MetricFlow.Dashboards
 - MetricFlowWeb.ReportLive.Show -> MetricFlow.Metrics
-- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.DataSync
-- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Integrations
-- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Metrics
-- MetricFlowWeb.IntegrationLive.ProviderDashboard -> MetricFlow.Reviews
-- MetricFlow.Correlations -> MetricFlow.Reviews
-- MetricFlow.Reviews.Review -> MetricFlow.Integrations.Integration
-- MetricFlow.Reviews.ReviewRepository -> MetricFlow.Reviews.Review
-- MetricFlow.Reviews -> MetricFlow.Reviews.ReviewRepository
-- MetricFlow.Reviews -> MetricFlow.Reviews.ReviewMetrics
-- MetricFlow.Reviews.ReviewMetrics -> MetricFlow.Reviews.Review
-- MetricFlow.DataSync.SyncWorker -> MetricFlow.Reviews
 - MetricFlowWeb.VisualizationLive.Editor -> MetricFlow.Dashboards
