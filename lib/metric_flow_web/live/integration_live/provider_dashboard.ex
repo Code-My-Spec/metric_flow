@@ -14,14 +14,15 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
 
-  @valid_providers ~w(google_business google_analytics google_ads facebook_ads quickbooks)
+  @valid_providers ~w(google_business google_analytics google_ads facebook_ads quickbooks google_search_console)
 
   @provider_display_names %{
     "google_business" => "Google Business Profile",
     "google_analytics" => "Google Analytics",
     "google_ads" => "Google Ads",
     "facebook_ads" => "Facebook Ads",
-    "quickbooks" => "QuickBooks"
+    "quickbooks" => "QuickBooks",
+    "google_search_console" => "Google Search Console"
   }
 
   @provider_metrics %{
