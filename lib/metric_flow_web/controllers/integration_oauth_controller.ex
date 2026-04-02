@@ -1,4 +1,4 @@
-defmodule MetricFlowWeb.IntegrationOAuthController do
+defmodule MetricFlowWeb.IntegrationOauthController do
   @moduledoc """
   Handles OAuth provider integration flows.
 

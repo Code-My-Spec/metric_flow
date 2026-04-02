@@ -116,8 +116,8 @@ defmodule MetricFlowWeb.Router do
     end
 
     # OAuth provider integration routes (controller — handles session_params)
-    get "/integrations/oauth/:provider", IntegrationOAuthController, :request
-    get "/integrations/oauth/callback/:provider", IntegrationOAuthController, :callback
+    get "/integrations/oauth/:provider", IntegrationOauthController, :request
+    get "/integrations/oauth/callback/:provider", IntegrationOauthController, :callback
 
     post "/users/update-password", UserSessionController, :update_password
   end

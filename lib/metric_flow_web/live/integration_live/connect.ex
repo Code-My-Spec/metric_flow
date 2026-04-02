@@ -16,7 +16,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   - `:accounts` (`/integrations/connect/:provider/accounts`) — account
     selection view for choosing which ad accounts or properties to sync.
 
-  OAuth callback handling is performed by `IntegrationOAuthController`, which
+  OAuth callback handling is performed by `IntegrationOauthController`, which
   can write to the Phoenix session (required for Assent state verification).
   """
 

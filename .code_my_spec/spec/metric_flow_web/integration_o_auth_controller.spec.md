@@ -1,4 +1,4 @@
-# MetricFlowWeb.IntegrationOAuthController
+# MetricFlowWeb.IntegrationOauthController
 
 OAuth callback handler for all providers. Manages the two-phase OAuth flow: request phase (generate authorization URL, store session params in server-side ETS) and callback phase (exchange authorization code for tokens, persist integration). Session params are stored server-side via OAuthStateStore to avoid cookie stripping by reverse proxies during 302 redirects.
 
