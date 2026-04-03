@@ -163,3 +163,4 @@ Data access layer for Invitation CRUD operations. All queries filter by `account
 ### MetricFlow.Invitations.InvitationNotifier
 
 Delivers invitation emails to recipients using Swoosh. Accepts the invitation struct, the inviting account name string, and a URL-building function that receives the raw token and returns the full invitation URL string. Formats and sends a plain-text email containing the invitation link. Returns `{:ok, email}` on successful delivery.
+
