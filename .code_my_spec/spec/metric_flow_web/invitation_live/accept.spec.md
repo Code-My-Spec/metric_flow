@@ -57,3 +57,14 @@ Main content:
 
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.avatar`, `.placeholder`, `.divider`
 Responsive: Card is full-width on mobile with `p-4`, and max-width `md` on larger screens. Buttons stack vertically in both layouts.
+
+## Test Assertions
+
+- renders invitation details with account name, inviting user, and role for authenticated user
+- shows accept and decline buttons for authenticated user
+- shows log in and register buttons for unauthenticated user
+- accepts invitation and redirects to accounts with success flash
+- declines invitation and redirects to root with info flash
+- shows error and redirects for invalid or already-used token
+- shows error and redirects for expired invitation token
+- shows already a member flash when accepting a duplicate invitation
