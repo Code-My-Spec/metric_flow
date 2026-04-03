@@ -67,3 +67,16 @@ Layout: Two stacked cards rendered inside the parent `/accounts/settings` page. 
 
 Components: `.card`, `.card-body`, `.card-title`, `.badge-success`, `.badge-ghost`, `.badge-warning`, `.form-control`, `.input`, `.input-error`, `.select`, `.btn-primary`, `.btn-ghost`, `.btn-sm`
 Responsive: Submit buttons stack full-width on mobile, shrink to auto on `sm:` breakpoint
+
+## Test Assertions
+
+- renders auto-enrollment and white-label cards for team account owners
+- hides agency settings cards for non-owner/admin roles and personal accounts
+- enables auto-enrollment with domain and access level and shows success flash
+- shows validation errors on auto-enrollment form with invalid data
+- disables active auto-enrollment rule and updates status badge
+- saves white-label branding settings and shows success flash
+- shows validation errors on white-label form with invalid data
+- live-validates white-label fields and shows color preview
+- resets white-label config to default on reset click
+- shows DNS verification panel when subdomain is saved
