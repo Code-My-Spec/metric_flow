@@ -86,3 +86,4 @@ Renders the account edit form with checkboxes and save button.
 - renders account checkboxes with data-role attribute
 - renders save button
 - renders back link to integrations
+
