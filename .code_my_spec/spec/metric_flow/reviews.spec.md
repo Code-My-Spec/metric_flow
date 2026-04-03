@@ -96,3 +96,4 @@ Data access layer for Review CRUD and query operations. All queries are scoped v
 ### MetricFlow.Reviews.ReviewMetrics
 
 Pure computation module for rolling review metrics. Queries daily review aggregates from the database and computes running totals and rolling averages in Elixir. No side effects — takes query results and returns computed time series.
+
