@@ -87,3 +87,17 @@ Shown when `vega_spec` is nil and `generating` is false and no error is present.
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.btn-disabled`, `.textarea`, `.textarea-bordered`, `.input`, `.input-bordered`, `.input-error`, `.badge`, `.badge-success`, `.loading`, `.loading-spinner`, `.loading-xs`, `.text-error`, `.link`
 
 Responsive: All cards stack vertically. Textarea and inputs span full width. Generate and save buttons span full width on mobile (`w-full sm:w-auto`).
+
+## Test Assertions
+
+- renders report generator page with prompt form and Generate Chart button
+- shows empty state when no chart has been generated
+- updates prompt text on change without calling any context
+- disables generate button when prompt is blank or generation is in progress
+- shows chart preview section with Vega-Lite container after successful generation
+- shows error message when generation fails
+- shows save section with name input after chart is generated
+- saves visualization and shows confirmation with link to visualizations
+- shows save error when save name is blank
+- disables save button when vega_spec is nil or save name is blank
+- resets state when Generate Another is clicked after saving
