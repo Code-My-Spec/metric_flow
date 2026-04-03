@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "codemyspec-issues": {
+      "type": "http",
+      "url": "https://dev.codemyspec.com/mcp/issues"
+    }
+  }
+}

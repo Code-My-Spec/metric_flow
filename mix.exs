@@ -104,6 +104,7 @@ defmodule MetricFlow.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1.15"},
+      {:code_my_spec_generators, path: "../code_my_spec_generators", only: :dev, runtime: false},
       {:sexy_spex, path: "../spex", only: [:dev, :test]},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
