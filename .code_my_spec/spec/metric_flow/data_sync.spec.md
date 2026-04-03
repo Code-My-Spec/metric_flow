@@ -197,3 +197,4 @@ Facebook Ads provider implementation using Facebook Marketing API. Fetches ad ca
 ### MetricFlow.DataSync.DataProviders.QuickBooks
 
 QuickBooks provider implementation using QuickBooks Online API. Fetches financial metrics (revenue, expenses, profit, accounts_receivable, accounts_payable) from Profit and Loss and Balance Sheet reports. Transforms API response to unified metric format. Handles date range filtering and account hierarchy. Stores metrics with provider :quickbooks.
+
