@@ -31,3 +31,4 @@ Reads white-label config from session and assigns it to the socket.
 **Test Assertions**:
 - assigns white_label_config from session when present
 - assigns nil when no white_label_config in session
+
