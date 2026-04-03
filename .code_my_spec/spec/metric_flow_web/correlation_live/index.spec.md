@@ -97,3 +97,19 @@ After `ai_suggestions_enabled`:
 Components: `.mf-card`, `.mf-card-cyan`, `.mf-card-accent`, `.table.table-zebra`, `.badge`, `.btn.btn-primary`, `.btn.btn-ghost`, `.loading-spinner`, `.mf-metric`, `.mf-content`
 
 Responsive: Page header wraps with `flex-wrap gap-3`. Summary bar and filter buttons wrap with `flex-wrap`. Results table scrolls horizontally via `overflow-x-auto`.
+
+## Test Assertions
+
+- renders correlations page with header, mode toggle, and Run Now button
+- shows no-data empty state when no correlation results exist
+- displays raw mode results table with metric, coefficient, lag, and platform columns
+- shows correlation summary bar with goal metric and data window
+- switches between Raw and Smart modes on mode toggle click
+- sorts results table when column header is clicked
+- filters results by platform when platform filter button is clicked
+- shows empty filter state when no results match selected platform
+- triggers correlation run and shows job running banner
+- shows insufficient data warning when correlation run fails due to insufficient data
+- shows Smart mode opt-in card before AI suggestions are enabled
+- enables AI suggestions and shows recommendations panel
+- submits AI feedback and shows confirmation message
