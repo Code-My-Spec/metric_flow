@@ -51,3 +51,4 @@ Extracts subdomain from request host and loads white-label config into session.
 - loads config into session for matching subdomain
 - session config contains subdomain, logo_url, primary_color, secondary_color
 - handles localhost and IP addresses gracefully (no subdomain extracted)
+
