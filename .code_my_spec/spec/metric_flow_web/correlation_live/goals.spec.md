@@ -58,3 +58,15 @@ When `metric_names` is empty the card body shows a muted paragraph "No metrics a
 Components: `.mf-card`, `.form-control`, `.select.select-bordered`, `.btn.btn-primary`, `.btn.btn-ghost`, `.mf-content`
 
 Responsive: Single-column card stacks naturally on mobile within `max-w-2xl`.
+
+## Test Assertions
+
+- renders goals page with goal metric form and dropdown
+- pre-selects the current goal metric from the latest correlation summary
+- shows empty state with connect integrations link when no metrics exist
+- disables save button when no metrics are available
+- updates selected goal on dropdown change
+- saves goal metric and redirects to correlations with success flash
+- shows error flash when saving with no metric selected
+- shows error flash when insufficient data for correlation
+- navigates back to correlations on cancel click
