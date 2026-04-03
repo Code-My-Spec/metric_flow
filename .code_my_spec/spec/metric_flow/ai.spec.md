@@ -195,3 +195,4 @@ Calls the LLM to produce a Vega-Lite v5 JSON specification from a natural langua
 ### MetricFlow.Ai.LlmClient
 
 Low-level HTTP client for the LLM provider API. Provides `stream_chat/3` for sending a conversation history and receiving a streaming response, and `base_system_prompt/0` for retrieving the shared system prompt string. Wraps Req and handles token streaming via server-sent events.
+
