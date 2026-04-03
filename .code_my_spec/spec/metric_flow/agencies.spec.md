@@ -273,3 +273,4 @@ Ecto schema for agency white-label branding configuration. Stores logo URL, prim
 ### MetricFlow.Agencies.AgenciesRepository
 
 Data access layer for agency-specific operations. Provides CRUD for AutoEnrollmentRule and WhiteLabelConfig. Manages agency-client account relationships and access grants. Handles queries for agency team members and client account listings with access metadata. All operations scoped via Scope struct for authorization.
+
