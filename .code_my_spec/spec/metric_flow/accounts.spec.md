@@ -359,3 +359,4 @@ Role-based authorization module providing can?/3 predicate functions for all acc
 | role        | atom         | Yes        | Member's role in the account                          | Enum: owner, admin, account_manager, read_only; not null |
 | inserted_at | utc_datetime | Yes (auto) | Record creation timestamp                             | Auto-generated                                           |
 | updated_at  | utc_datetime | Yes (auto) | Record last-update timestamp                          | Auto-generated                                           |
+
