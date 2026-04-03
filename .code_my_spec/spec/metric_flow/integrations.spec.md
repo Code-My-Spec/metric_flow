@@ -266,3 +266,4 @@ Facebook provider implementation using Assent.Strategy.Facebook. Configures OAut
 ### MetricFlow.Integrations.Providers.QuickBooks
 
 QuickBooks Online OAuth provider implementation using Assent.Strategy.OAuth2. Configures OAuth with the `com.intuit.quickbooks.accounting` scope using Intuit OAuth 2.0 endpoints. Normalizes QuickBooks user data to the domain model including provider_user_id, email, name, username, avatar_url, and realm_id for the connected company. Supports token revocation via the Intuit OAuth revocation endpoint.
+
