@@ -46,3 +46,4 @@ Renders the onboarding page with welcome message and future setup steps.
 **Test Assertions**:
 - displays "Welcome to MetricFlow" heading
 - renders within the app layout
+
