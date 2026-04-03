@@ -120,3 +120,4 @@ Oban worker that performs the actual correlation calculations for a single user.
 ### MetricFlow.Correlations.Math
 
 Pure functional module implementing statistical calculations. Provides `pearson/2` (Pearson correlation coefficient from two float lists), `cross_correlate/3` (time-lagged cross-correlation testing lags 0 to 30, returning the optimal lag and coefficient), and `extract_values/2` (converts metric time series to aligned float lists). Has no external dependencies.
+
