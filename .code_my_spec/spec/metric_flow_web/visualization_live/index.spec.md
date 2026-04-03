@@ -98,3 +98,4 @@ Renders the visualization index page with grid of cards or empty state.
 - renders new visualization button
 - renders edit and delete buttons per card
 - shows inline confirmation when confirming_delete is set
+
