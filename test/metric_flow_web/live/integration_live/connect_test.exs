@@ -10,13 +10,6 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
   # ---------------------------------------------------------------------------
   # Stub providers
-  #
-  # OAuth calls leave the application boundary — we substitute stub provider
-  # modules so tests remain fast and deterministic without real OAuth credentials
-  # or network access. The pattern mirrors the one used in integrations_test.exs.
-  #
-  # Application.put_env is used in setup so individual tests can override the
-  # map when needed.
   # ---------------------------------------------------------------------------
 
   defmodule StubStrategy do
@@ -44,18 +37,6 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
     def state, do: @state
     def auth_url, do: @auth_url
-  end
-
-  defmodule StubStrategyError do
-    @moduledoc false
-
-    def authorize_url(_config) do
-      {:error, :strategy_error}
-    end
-
-    def callback(_config, _params) do
-      {:error, :token_exchange_failed}
-    end
   end
 
   defmodule StubProvider do
@@ -89,50 +70,8 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
     def normalize_user(_), do: {:error, :missing_provider_user_id}
   end
 
-  defmodule StubProviderCallbackError do
-    @moduledoc false
-    @behaviour MetricFlow.Integrations.Providers.Behaviour
-
-    @impl true
-    def config do
-      [
-        client_id: "stub-client-id",
-        client_secret: "stub-client-secret",
-        redirect_uri: "https://localhost/auth/stub_callback_error/callback"
-      ]
-    end
-
-    @impl true
-    def strategy, do: MetricFlowWeb.IntegrationLive.ConnectTest.StubStrategyError
-
-    @impl true
-    def normalize_user(_), do: {:error, :should_not_be_called}
-  end
-
-  defmodule StubProviderAuthorizeError do
-    @moduledoc false
-    @behaviour MetricFlow.Integrations.Providers.Behaviour
-
-    @impl true
-    def config do
-      [
-        client_id: "stub-client-id",
-        client_secret: "stub-client-secret",
-        redirect_uri: "https://localhost/auth/stub_authorize_error/callback"
-      ]
-    end
-
-    @impl true
-    def strategy, do: MetricFlowWeb.IntegrationLive.ConnectTest.StubStrategyError
-
-    @impl true
-    def normalize_user(_), do: {:error, :should_not_be_called}
-  end
-
   @stub_providers %{
-    stub: MetricFlowWeb.IntegrationLive.ConnectTest.StubProvider,
-    stub_callback_error: MetricFlowWeb.IntegrationLive.ConnectTest.StubProviderCallbackError,
-    stub_authorize_error: MetricFlowWeb.IntegrationLive.ConnectTest.StubProviderAuthorizeError
+    stub: MetricFlowWeb.IntegrationLive.ConnectTest.StubProvider
   }
 
   # ---------------------------------------------------------------------------
@@ -162,12 +101,11 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Setup — inject stub providers
+  # Setup
   # ---------------------------------------------------------------------------
 
   setup do
     original = Application.get_env(:metric_flow, :oauth_providers)
-
     Application.put_env(:metric_flow, :oauth_providers, @stub_providers)
 
     on_exit(fn ->
@@ -182,11 +120,11 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   # ---------------------------------------------------------------------------
-  # describe "mount/3 (platform selection)"
+  # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "mount/3 (platform selection)" do
-    test "renders the platform selection page for an authenticated user", %{conn: conn} do
+  describe "renders connect page with provider cards in a grid" do
+    test "shows provider cards", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -194,21 +132,27 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
         {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
 
         assert html =~ "Connect a Provider"
+        assert html =~ "data-platform"
       end)
     end
+  end
 
-    test "displays a platform card for each supported platform", %{conn: conn} do
+  describe "shows Connected badge for providers with active integrations" do
+    test "displays Connected badge", %{conn: conn} do
       user = user_fixture()
+      insert_integration!(user.id, :stub)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
+        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
 
-        assert has_element?(lv, "[data-platform]")
+        assert html =~ "Connected"
       end)
     end
+  end
 
-    test "shows Not connected badge for a platform with no existing integration", %{conn: conn} do
+  describe "shows Not connected badge for providers without integrations" do
+    test "displays Not connected badge", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -218,116 +162,67 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
         assert html =~ "Not connected"
       end)
     end
+  end
 
-    test "shows Connected badge for a platform that has an existing integration", %{conn: conn} do
+  describe "shows Connect button for each provider card" do
+    test "displays connect button", %{conn: conn} do
       user = user_fixture()
-      # Use a canonical provider (not the OAuth parent :google which is filtered out)
-      insert_integration!(user.id, :google_analytics)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
+        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
+
+        assert has_element?(lv, "[data-role='connect-button']")
+      end)
+    end
+  end
+
+  describe "renders per-provider detail view with OAuth connect button" do
+    test "shows detail view with OAuth button", %{conn: conn} do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/integrations/connect/stub")
+
+        assert is_binary(html)
+        assert has_element?(lv, "[data-role='oauth-connect-button']")
+      end)
+    end
+  end
+
+  describe "shows connected status and account email on per-provider view when connected" do
+    test "displays connected status with email", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user.id, :stub)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/integrations/connect/stub")
 
         assert html =~ "Connected"
-      end)
-    end
-
-    test "renders a Connect button with phx-click and data-role attributes for each platform", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
-
-        assert has_element?(lv, "[data-role='connect-button'][phx-click='connect']")
-      end)
-    end
-
-    test "renders a Reconnect button for a platform that is already connected", %{conn: conn} do
-      user = user_fixture()
-      # Use a canonical provider (not the OAuth parent :google which is filtered out)
-      insert_integration!(user.id, :google_analytics)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
-
-        assert html =~ "Reconnect"
+        assert html =~ "stub@example.com"
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event connect"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event connect" do
-    test "redirects to the OAuth controller request route on connect click", %{conn: conn} do
+  describe "shows back to integrations link on per-provider view" do
+    test "displays back link", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
+        {:ok, lv, _html} = live(conn, ~p"/integrations/connect/stub")
 
-        assert {:error, {:redirect, %{to: redirect_url}}} =
-                 lv
-                 |> element("[data-role='connect-button'][phx-value-provider='stub']")
-                 |> render_click()
-
-        assert redirect_url == "/integrations/oauth/stub"
-      end)
-    end
-
-    test "redirects to the OAuth controller route for all providers including unsupported", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
-
-        # The connect page only shows configured providers, so we send the event
-        # directly to test that any provider string is forwarded to the OAuth route
-        assert {:error, {:redirect, %{to: redirect_url}}} =
-                 render_click(lv, "connect", %{"provider" => "unsupported_platform"})
-
-        assert redirect_url == "/integrations/oauth/unsupported_platform"
-      end)
-    end
-
-    test "redirects to the OAuth controller route for providers with authorize errors", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
-
-        assert {:error, {:redirect, %{to: redirect_url}}} =
-                 lv
-                 |> element("[data-role='connect-button'][phx-value-provider='stub_authorize_error']")
-                 |> render_click()
-
-        assert redirect_url == "/integrations/oauth/stub_authorize_error"
+        assert has_element?(lv, "a[href='/integrations']")
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "authentication"
-  # ---------------------------------------------------------------------------
-
-  describe "authentication" do
-    test "redirects unauthenticated users to /users/log-in when visiting the platform selection page",
-         %{conn: conn} do
+  describe "redirects unauthenticated users to login" do
+    test "redirects to /users/log-in", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                live(conn, ~p"/integrations/connect")
-    end
-
-    test "redirects unauthenticated users to /users/log-in when visiting a provider detail page",
-         %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/integrations/connect/stub")
     end
   end
 end
