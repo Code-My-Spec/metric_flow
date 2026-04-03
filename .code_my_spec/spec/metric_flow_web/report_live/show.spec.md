@@ -8,11 +8,11 @@ liveview
 
 ## Route
 
-`/reports/:id` — view a specific report
+`/reports/:id`
 
 ## Params
 
-- `id` - integer, the report ID; required
+- `id` - integer, the report ID
 
 ## Dependencies
 
@@ -25,8 +25,24 @@ None
 
 ## User Interactions
 
-TODO — define interactions during implementation
+- **mount**: Loads the report by ID via `Dashboards.get_visualization/2`. If not found, redirects to `/reports` with error flash. Assigns report data and metric summaries.
+- **phx-click=share**: Copies a shareable URL to clipboard and shows info flash.
 
 ## Design
 
-TODO — define layout during implementation
+Layout: Centered single-column page, `max-w-5xl mx-auto`, `.mf-content` wrapper.
+
+Header: Report name as H1, Back to Reports link, Share button.
+
+Report content: Vega-Lite chart rendered via VegaLite hook, metric summary cards below.
+
+Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`
+
+Responsive: Single column on all viewports.
+
+## Test Assertions
+
+- renders report show page with report name and chart
+- shows back to reports link
+- redirects with error flash when report ID not found
+- displays metric summary cards below the chart
