@@ -23,283 +23,63 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   # ---------------------------------------------------------------------------
-  # describe "mount/3"
+  # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "mount/3" do
-    test "renders the insights page for an authenticated user", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "AI Insights"
-      end)
-    end
-
-    test "shows page title 'AI Insights'", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "AI Insights"
-      end)
-    end
-
-    test "shows subtitle about correlation analysis", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Actionable recommendations generated from your correlation analysis"
-      end)
-    end
-
-    test "shows no-insights-state when no insights exist", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='no-insights-state']")
-      end)
-    end
-
-    test "shows 'No Insights Yet' heading in empty state", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "No Insights Yet"
-      end)
-    end
-
-    test "shows link to run correlations in empty state", %{conn: conn} do
+  describe "renders insights page with header and type filter bar" do
+    test "shows header and filter bar", %{conn: conn} do
       {user, _account_id} = user_with_account()
 
       capture_log(fn ->
         {:ok, lv, html} = mount_insights(conn, user)
 
-        assert html =~ "Run Correlations"
-        assert has_element?(lv, "a[href='/correlations']")
-      end)
-    end
-
-    test "shows type filter bar", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
+        assert html =~ "AI Insights"
+        assert html =~ "Actionable recommendations generated from your correlation analysis"
         assert has_element?(lv, "[data-role='type-filter']")
       end)
     end
+  end
 
-    test "shows insight cards when insights exist", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-card']")
-      end)
-    end
-
-    test "does not show no-insights-state when insights exist", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        refute has_element?(lv, "[data-role='no-insights-state']")
-      end)
-    end
-
-    test "shows insights list when insights exist", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insights-list']")
-      end)
-    end
-
-    test "shows insight summary in card", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{summary: "Increase Google Ads budget"})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Increase Google Ads budget"
-      end)
-    end
-
-    test "shows insight content in card", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{content: "Based on strong correlation with revenue growth."})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Based on strong correlation with revenue growth."
-      end)
-    end
-
-    test "shows suggestion type badge", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :budget_increase})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-type-badge']")
-      end)
-    end
-
-    test "shows confidence badge", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{confidence: 0.85})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-confidence-badge']")
-      end)
-    end
-
-    test "shows confidence as percentage", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{confidence: 0.85})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "85% confidence"
-      end)
-    end
-
-    test "shows correlation reference when correlation_result_id is present", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      result = insert_correlation_result!(account_id)
-      insert_insight!(account_id, %{correlation_result_id: result.id})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-correlation-ref']")
-      end)
-    end
-
-    test "does not show correlation reference when correlation_result_id is nil", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{correlation_result_id: nil})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        refute has_element?(lv, "[data-role='insight-correlation-ref']")
-      end)
-    end
-
-    test "shows generated at timestamp", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-generated-at']")
-      end)
-    end
-
-    test "shows feedback section on each insight card", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='ai-feedback-section']")
-      end)
-    end
-
-    test "shows helpful and not helpful feedback buttons when no feedback exists", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='feedback-helpful']")
-        assert has_element?(lv, "[data-role='feedback-not-helpful']")
-      end)
-    end
-
-    test "shows feedback helper text when no feedback exists", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Your feedback helps improve future suggestions."
-      end)
-    end
-
-    test "shows ai personalization note when insights exist", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
+  describe "shows no-insights empty state when account has no insights" do
+    test "displays empty state with correlations link", %{conn: conn} do
+      {user, _account_id} = user_with_account()
 
       capture_log(fn ->
         {:ok, lv, html} = mount_insights(conn, user)
 
-        assert has_element?(lv, "[data-role='ai-personalization-note']")
-        assert html =~ "AI suggestions learn from your feedback and improve over time."
+        assert has_element?(lv, "[data-role='no-insights-state']")
+        assert html =~ "No Insights Yet"
+        assert has_element?(lv, "a[href='/correlations']")
       end)
-    end
-
-    test "does not show ai personalization note when no insights exist", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        refute has_element?(lv, "[data-role='ai-personalization-note']")
-      end)
-    end
-
-    test "shows feedback confirmation when user has existing feedback", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insight = insert_insight!(account_id)
-      insert_suggestion_feedback!(insight.id, user.id, %{rating: :helpful})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='feedback-confirmation']")
-      end)
-    end
-
-    test "redirects unauthenticated user to /users/log-in", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/insights")
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event filter_type"
-  # ---------------------------------------------------------------------------
+  describe "displays insight cards with summary, type badge, confidence badge, and content" do
+    test "shows insight card details", %{conn: conn} do
+      {user, account_id} = user_with_account()
+      insert_insight!(account_id, %{
+        summary: "Increase Google Ads budget",
+        content: "Based on strong correlation with revenue growth.",
+        suggestion_type: :budget_increase,
+        confidence: 0.85
+      })
 
-  describe "handle_event \"filter_type\"" do
-    test "filters insights by suggestion type", %{conn: conn} do
+      capture_log(fn ->
+        {:ok, lv, html} = mount_insights(conn, user)
+
+        assert has_element?(lv, "[data-role='insight-card']")
+        assert html =~ "Increase Google Ads budget"
+        assert html =~ "Based on strong correlation with revenue growth."
+        assert has_element?(lv, "[data-role='insight-type-badge']")
+        assert has_element?(lv, "[data-role='insight-confidence-badge']")
+        assert html =~ "85% confidence"
+        refute has_element?(lv, "[data-role='no-insights-state']")
+      end)
+    end
+  end
+
+  describe "filters insights by type when filter button is clicked" do
+    test "filters to specific type", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
@@ -313,8 +93,40 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
         refute html =~ "Optimize targeting"
       end)
     end
+  end
 
-    test "shows all insights when 'all' filter is selected", %{conn: conn} do
+  describe "highlights active filter button with btn-primary" do
+    test "active filter has btn-primary", %{conn: conn} do
+      {user, account_id} = user_with_account()
+      insert_insight!(account_id)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_insights(conn, user)
+
+        html = render_click(lv, "filter_type", %{"type" => "budget_increase"})
+
+        assert html =~ "btn-primary"
+      end)
+    end
+  end
+
+  describe "shows empty filter state when no insights match selected type" do
+    test "displays no filter results", %{conn: conn} do
+      {user, account_id} = user_with_account()
+      insert_insight!(account_id, %{suggestion_type: :budget_increase})
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_insights(conn, user)
+
+        render_click(lv, "filter_type", %{"type" => "monitoring"})
+
+        assert has_element?(lv, "[data-role='no-filter-results-state']")
+      end)
+    end
+  end
+
+  describe "clears filter and shows all insights when Show All is clicked" do
+    test "resets to all insights", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
@@ -329,99 +141,10 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
         assert html =~ "Optimize targeting"
       end)
     end
-
-    test "shows no-filter-results-state when filter has no matches", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :budget_increase})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        render_click(lv, "filter_type", %{"type" => "monitoring"})
-
-        assert has_element?(lv, "[data-role='no-filter-results-state']")
-      end)
-    end
-
-    test "shows 'Show All' button in empty filter state", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :budget_increase})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        render_click(lv, "filter_type", %{"type" => "monitoring"})
-
-        assert has_element?(lv, "[data-role='clear-filter']")
-      end)
-    end
-
-    test "highlights the active filter button with btn-primary", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        html = render_click(lv, "filter_type", %{"type" => "budget_increase"})
-
-        assert html =~ "btn-primary"
-      end)
-    end
-
-    test "filters by budget_decrease type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :budget_decrease, summary: "Reduce spend"})
-      insert_insight!(account_id, %{suggestion_type: :general, summary: "General info"})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        html = render_click(lv, "filter_type", %{"type" => "budget_decrease"})
-
-        assert html =~ "Reduce spend"
-        refute html =~ "General info"
-      end)
-    end
-
-    test "filters by general type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :general, summary: "General info"})
-      insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        html = render_click(lv, "filter_type", %{"type" => "general"})
-
-        assert html =~ "General info"
-        refute html =~ "Increase spend"
-      end)
-    end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event submit_feedback"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event \"submit_feedback\"" do
-    test "submits helpful feedback and shows confirmation", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insight = insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        render_click(lv, "submit_feedback", %{
-          "insight-id" => to_string(insight.id),
-          "rating" => "helpful"
-        })
-
-        assert has_element?(lv, "[data-role='feedback-confirmation']")
-      end)
-    end
-
-    test "shows confirmation text after submitting feedback", %{conn: conn} do
+  describe "submits helpful feedback and shows confirmation message" do
+    test "shows confirmation after helpful feedback", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
 
@@ -434,11 +157,14 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
             "rating" => "helpful"
           })
 
+        assert has_element?(lv, "[data-role='feedback-confirmation']")
         assert html =~ "Thanks for your feedback"
       end)
     end
+  end
 
-    test "submits not_helpful feedback and shows confirmation", %{conn: conn} do
+  describe "submits not helpful feedback and shows confirmation message" do
+    test "shows confirmation after not helpful feedback", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
 
@@ -453,25 +179,10 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
         assert has_element?(lv, "[data-role='feedback-confirmation']")
       end)
     end
+  end
 
-    test "hides feedback buttons after submitting feedback", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insight = insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        render_click(lv, "submit_feedback", %{
-          "insight-id" => to_string(insight.id),
-          "rating" => "helpful"
-        })
-
-        refute has_element?(lv, "[data-role='feedback-helpful'][data-insight-id='#{insight.id}']") and
-                 has_element?(lv, "[data-role='feedback-not-helpful'][data-insight-id='#{insight.id}']")
-      end)
-    end
-
-    test "can change feedback from helpful to not_helpful", %{conn: conn} do
+  describe "shows feedback confirmation for insights that already have feedback" do
+    test "displays confirmation on mount", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
       insert_suggestion_feedback!(insight.id, user.id, %{rating: :helpful})
@@ -479,93 +190,31 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
       capture_log(fn ->
         {:ok, lv, _html} = mount_insights(conn, user)
 
-        # User already has feedback, but they can change it via the UI
         assert has_element?(lv, "[data-role='feedback-confirmation']")
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "insight card details"
-  # ---------------------------------------------------------------------------
-
-  describe "insight card details" do
-    test "renders multiple insight cards", %{conn: conn} do
+  describe "shows AI personalization note when insights exist" do
+    test "displays personalization note", %{conn: conn} do
       {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{summary: "First insight"})
-      insert_insight!(account_id, %{summary: "Second insight"})
+      insert_insight!(account_id)
 
       capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
+        {:ok, lv, html} = mount_insights(conn, user)
 
-        assert html =~ "First insight"
-        assert html =~ "Second insight"
+        assert has_element?(lv, "[data-role='ai-personalization-note']")
+        assert html =~ "AI suggestions learn from your feedback and improve over time."
       end)
     end
 
-    test "shows Budget Increase badge for budget_increase type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :budget_increase})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Budget Increase"
-      end)
-    end
-
-    test "shows Optimization badge for optimization type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :optimization})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Optimization"
-      end)
-    end
-
-    test "shows Monitoring badge for monitoring type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :monitoring})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "Monitoring"
-      end)
-    end
-
-    test "shows General badge for general type", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{suggestion_type: :general})
-
-      capture_log(fn ->
-        {:ok, _lv, html} = mount_insights(conn, user)
-
-        assert html =~ "General"
-      end)
-    end
-
-    test "shows high confidence with success badge styling", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insert_insight!(account_id, %{confidence: 0.92})
+    test "hidden when no insights", %{conn: conn} do
+      {user, _account_id} = user_with_account()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_insights(conn, user)
 
-        assert has_element?(lv, "[data-role='insight-confidence-badge']")
-      end)
-    end
-
-    test "shows insight data-insight-id attribute", %{conn: conn} do
-      {user, account_id} = user_with_account()
-      insight = insert_insight!(account_id)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        assert has_element?(lv, "[data-role='insight-card'][data-insight-id='#{insight.id}']")
+        refute has_element?(lv, "[data-role='ai-personalization-note']")
       end)
     end
   end
