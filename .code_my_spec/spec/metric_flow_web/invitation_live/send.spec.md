@@ -82,3 +82,14 @@ Page header:
 Components: `.mf-card`, `.mf-content`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.btn-xs`, `.btn-error`, `.form-control`, `.input`, `.select`, `.label`, `.label-text`, `.badge`, `.badge-secondary`, `.badge-accent`, `.badge-ghost`, `.divider`
 
 Responsive: Form fields and invitation rows stack to full-width on mobile. The cancel button is always visible and does not collapse. On small screens the submit button spans full width (`w-full sm:w-auto`).
+
+## Test Assertions
+
+- renders invitation page with send form and pending invitations for owner
+- redirects non-owner/admin users to members page with error flash
+- live-validates invitation form fields on change
+- sends invitation and shows success flash with recipient email
+- shows changeset errors when submitting invalid invitation data
+- displays pending invitations list with email, role badge, and cancel button
+- cancels a pending invitation and removes it from the list
+- shows empty state when no pending invitations exist
