@@ -79,3 +79,18 @@ Conversation area (`data-role="conversation-area"`, `flex-1 flex flex-col overfl
 
 Components: `.mf-card-cyan`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-xs`, `.btn-sm`, `.badge`, `.badge-ghost`, `.badge-xs`, `.badge-sm`, `.textarea`, `.textarea-bordered`, `.loading`, `.loading-dots`, `.loading-spinner`
 Responsive: Sidebar collapses to a mobile overlay below `sm` breakpoint; message bubbles shrink from 75% max-width to 85% on mobile; sidebar toggle button visible only on mobile.
+
+## Test Assertions
+
+- renders chat page with session sidebar and conversation area
+- shows empty state with example prompts when no sessions exist
+- shows no-session-selected state when sessions exist but none is active
+- creates a new session and displays it when a message is sent
+- loads an existing session and displays its messages
+- streams assistant response tokens into the conversation
+- shows streaming indicator while waiting for response
+- updates input value on change and disables send when blank
+- navigates to a session when sidebar item is clicked
+- starts a new chat when new chat button is clicked
+- shows error flash when loading a non-existent session ID
+- shows context indicator when context_type query param is set
