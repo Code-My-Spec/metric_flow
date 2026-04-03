@@ -216,3 +216,4 @@ Data access layer for dashboard persistence. Handles all Repo interactions for D
 ### MetricFlow.Dashboards.VisualizationsRepository
 
 Data access layer for Visualization records. Handles listing, creating, updating, and deleting visualizations for a given user scope.
+
