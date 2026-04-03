@@ -48,3 +48,20 @@ Main content:
 Components: `.card`, `.card-body`, `.table`, `.badge`, `.badge-primary`, `.badge-secondary`, `.badge-accent`, `.badge-ghost`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-xs`, `.btn-error`, `.form-control`, `.input`, `.select`, `.label`
 
 Responsive: Table scrolls horizontally on mobile via `overflow-x-auto`. Invite form fields stack vertically on small screens.
+
+## Test Assertions
+
+- renders members page with member list for owner
+- displays member email, role badge, and join date in each row
+- shows role change dropdown and remove button for owners and admins
+- hides management controls for read_only and account_manager roles
+- owner can change a member role and sees success flash
+- shows error when attempting to demote the last owner
+- owner can remove a member and sees success flash
+- hides remove button for the last owner row
+- hides remove button for the current user row
+- owner can invite a new member by email and sees success flash
+- shows error when inviting a non-existent user
+- shows error when inviting an already existing member
+- subscribes to member PubSub and refreshes on real-time updates
+- redirects to /accounts when user has no accounts

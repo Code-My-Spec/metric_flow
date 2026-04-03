@@ -4,15 +4,39 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
-  describe "Registration page" do
-    test "renders registration page", %{conn: conn} do
+  describe "renders registration form with email, password, account name, and account type fields" do
+    test "all fields are present", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
-      assert html =~ "Register"
+      assert html =~ ~s(type="email")
+      assert html =~ ~s(type="password")
+      assert html =~ "Account name"
+      assert html =~ "Account type"
+      assert html =~ "Client"
+      assert html =~ "Agency"
+    end
+  end
+
+  describe "autofocuses email input on mount" do
+    test "email input has phx-mounted focus hook", %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/users/register")
+
+      assert html =~ "phx-mounted"
+    end
+  end
+
+  describe "shows Already registered? subtitle with link to log in page" do
+    test "subtitle and link are present", %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/users/register")
+
+      assert html =~ "Already registered?"
+      assert html =~ ~s(href="/users/log-in")
       assert html =~ "Log in"
     end
+  end
 
-    test "redirects if already logged in", %{conn: conn} do
+  describe "redirects to signed-in path if user is already logged in" do
+    test "redirects authenticated user", %{conn: conn} do
       result =
         conn
         |> log_in_user(user_fixture())
@@ -21,8 +45,10 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
 
       assert {:ok, _conn} = result
     end
+  end
 
-    test "renders errors for invalid data", %{conn: conn} do
+  describe "live-validates email format on change and shows inline error for invalid email" do
+    test "shows error for invalid email", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       result =
@@ -30,13 +56,27 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces"})
 
-      assert result =~ "Register"
       assert result =~ "must have the @ sign and no spaces"
     end
   end
 
-  describe "register user" do
-    test "creates account and shows confirmation message", %{conn: conn} do
+  describe "shows has already been taken error when submitting a duplicate email" do
+    test "renders duplicate email error", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      user = user_fixture(%{email: "test@email.com"})
+
+      result =
+        lv
+        |> form("#registration_form", user: %{"email" => user.email})
+        |> render_submit()
+
+      assert result =~ "has already been taken"
+    end
+  end
+
+  describe "creates user and shows success screen with confirmation email message on valid submit" do
+    test "shows success screen after registration", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()
@@ -44,27 +84,40 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
 
       render_submit(form)
 
+      assert render(lv) =~ "Registration successful"
       assert render(lv) =~ "An email was sent to #{email}"
-    end
-
-    test "renders errors for duplicated email", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/register")
-
-      user = user_fixture(%{email: "test@email.com"})
-
-      result =
-        lv
-        |> form("#registration_form",
-          user: %{"email" => user.email}
-        )
-        |> render_submit()
-
-      assert result =~ "has already been taken"
+      assert render(lv) =~ "Please confirm your account to get started"
     end
   end
 
-  describe "registration navigation" do
-    test "redirects to login page when the Log in button is clicked", %{conn: conn} do
+  describe "displays account name confirmation on success screen when account name was provided" do
+    test "shows account name on success", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      email = unique_user_email()
+
+      form =
+        form(lv, "#registration_form",
+          user: valid_user_attributes(email: email, account_name: "My Company")
+        )
+
+      render_submit(form)
+
+      assert render(lv) =~ "My Company"
+      assert render(lv) =~ "has been created"
+    end
+  end
+
+  describe "shows Creating account... on submit button while form is processing" do
+    test "submit button has disable-with text", %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/users/register")
+
+      assert html =~ "Creating account..."
+    end
+  end
+
+  describe "navigates to login page when Log in link is clicked" do
+    test "Log in link navigates to login page", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       {:ok, _login_live, login_html} =

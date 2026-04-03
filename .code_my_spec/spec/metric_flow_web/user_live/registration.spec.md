@@ -16,8 +16,8 @@ None
 
 ## User Interactions
 
-- **phx-change="validate"**: Live-validate form fields on each keystroke. Calls `Users.change_user_email/3` with `validate_unique: false` and sets `:validate` action on the changeset so inline errors render without a full submission attempt.
-- **phx-submit="save"**: Submit the registration form. Calls `Users.register_user/1` with email, password, account_name, and account_type. On success, creates user and account, delivers login instructions via `Users.deliver_login_instructions/2`, and shows the registration success screen with account name and email confirmation prompt. On failure, re-renders the form with changeset errors.
+- **phx-change=validate**: Live-validate form fields on each keystroke. Calls `Users.change_user_registration/3` with `validate_unique: false` and sets `:validate` action on the changeset so inline errors render without a full submission attempt.
+- **phx-submit=save**: Submit the registration form. Calls `Users.register_user/1` with email, password, account_name, and account_type. On success, creates user and account, delivers login instructions via `Users.deliver_login_instructions/2`, and shows the registration success screen with account name and email confirmation prompt. On failure, re-renders the form with changeset errors.
 
 ## Dependencies
 
@@ -51,8 +51,21 @@ Form section (id: `registration_form`):
 
 **Success screen (shown after registration):**
 
-- Header "Registration successful"
-- Account name confirmation: "Account {name} has been created."
-- Email confirmation prompt: "An email was sent to {email}. Please confirm your account to get started."
+- Header: Registration successful
+- Account name confirmation: Account {name} has been created.
+- Email confirmation prompt: An email was sent to {email}. Please confirm your account to get started.
 
 Responsive: Single-column layout stacks naturally. `max-w-sm` caps width on larger screens.
+
+## Test Assertions
+
+- renders registration form with email, password, account name, and account type fields
+- autofocuses email input on mount
+- shows Already registered? subtitle with link to log in page
+- redirects to signed-in path if user is already logged in
+- live-validates email format on change and shows inline error for invalid email
+- shows has already been taken error when submitting a duplicate email
+- creates user and shows success screen with confirmation email message on valid submit
+- displays account name confirmation on success screen when account name was provided
+- shows Creating account... on submit button while form is processing
+- navigates to login page when Log in link is clicked

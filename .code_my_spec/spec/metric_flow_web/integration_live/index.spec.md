@@ -68,3 +68,16 @@ Disconnect confirmation modal (shown when `disconnecting` is set):
 Components: `.mf-card`, `.btn-primary`, `.btn-ghost`, `.btn-error`, `.btn-outline`, `.badge-success`, `.badge-ghost`, `.badge-warning`, `.modal`
 
 Responsive: Stack cards vertically on mobile.
+
+## Test Assertions
+
+- renders integrations page with header and Connect a Platform link
+- shows empty state when no integrations are connected
+- displays connected platforms with name, description, and Connected badge
+- shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms
+- displays available platforms section for unconnected providers
+- triggers sync and shows success flash on Sync Now click
+- shows error flash when syncing a non-existent integration
+- opens disconnect confirmation modal on Disconnect click
+- disconnects provider and shows success flash on confirm
+- cancels disconnect modal without modifying data

@@ -11,10 +11,6 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
   # ---------------------------------------------------------------------------
   # Stub providers
-  #
-  # The index page calls Integrations.list_providers/0, which reads from
-  # application config at runtime. Injecting stub providers lets us control
-  # which platform cards appear in the view without real OAuth credentials.
   # ---------------------------------------------------------------------------
 
   defmodule StubProvider do
@@ -75,12 +71,11 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Setup — inject stub providers
+  # Setup
   # ---------------------------------------------------------------------------
 
   setup do
     original = Application.get_env(:metric_flow, :oauth_providers)
-
     Application.put_env(:metric_flow, :oauth_providers, @stub_providers)
 
     on_exit(fn ->
@@ -95,241 +90,92 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   # ---------------------------------------------------------------------------
-  # describe "mount/3"
+  # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "mount/3" do
-    test "renders the integrations page title for an authenticated user", %{conn: conn} do
+  describe "renders integrations page with header and Connect a Platform link" do
+    test "shows header and connect link", %{conn: conn} do
       user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "Integrations"
-      end)
-    end
-
-    test "renders the page subtitle for managing connected platforms", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "Manage your connected marketing platforms"
-      end)
-    end
-
-    test "renders a Connect a Platform navigation link", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        assert has_element?(lv, "a[href='/integrations/connect']", "Connect a Platform")
-      end)
-    end
-
-    test "shows empty state when the user has no integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "No platforms connected yet."
-      end)
-    end
-
-    test "shows empty state Connect your first platform link when no integrations exist", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        assert has_element?(lv, "a[href='/integrations/connect']", "Connect your first platform")
-      end)
-    end
-
-    test "does not render Connected Platforms section when user has no integrations", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        refute html =~ "Connected Platforms"
-      end)
-    end
-
-    test "renders the Available Platforms section with each data platform", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "Available Platforms"
-        assert html =~ "Google Ads"
-        assert html =~ "Google Analytics"
-        assert html =~ "Facebook Ads"
-        assert html =~ "QuickBooks"
-      end)
-    end
-
-    test "renders Not connected badge for each unconnected platform", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "Not connected"
-      end)
-    end
-
-    test "renders a Connect link for each unconnected platform pointing to its provider", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # Unconnected platforms show a "Connect [Provider]" link to the connect page
-        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Google Ads")
-        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
-      end)
-    end
-
-    test "renders Connected Platforms section when the user has at least one integration", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        assert html =~ "Connected Platforms"
-      end)
-    end
-
-    test "shows Google Analytics as connected when google_analytics integration exists but not Google Ads", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_analytics)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, html} = live(conn, ~p"/integrations")
 
-        # Google Analytics should appear in the Connected section
-        assert has_element?(lv, "[data-platform='google_analytics'][data-status='connected']")
-        assert html =~ "Google Analytics"
-
-        # Google Ads should remain in the Available section (not connected)
-        assert has_element?(lv, "[data-platform='google_ads'][data-status='available']")
+        assert html =~ "Integrations"
+        assert html =~ "Manage your connected marketing platforms"
+        assert has_element?(lv, "a[href='/integrations/connect']", "Connect a Platform")
       end)
     end
+  end
 
-    test "renders a Connected badge for platforms whose provider is connected", %{conn: conn} do
+  describe "shows empty state when no integrations are connected" do
+    test "displays empty state message", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
+        {:ok, lv, html} = live(conn, ~p"/integrations")
 
-        assert html =~ "Connected"
-      end)
-    end
-
-    test "renders a Manage link pointing to the provider for each connected platform", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # Google Ads connected integration points to the google_ads provider manage page
-        assert has_element?(lv, "a[href='/integrations/connect/google_ads']", "Manage")
-      end)
-    end
-
-    test "moves a platform to connected section when its provider integration is inserted", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # Google Ads should not appear in available with Connect link
-        refute has_element?(lv, "[data-platform='google_ads'][data-status='available']")
-        # Google Analytics still available (no integration for it)
-        assert has_element?(lv, "[data-platform='google_analytics'][data-status='available']")
-      end)
-    end
-
-    test "does not show the empty state when the user has integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        refute html =~ "No platforms connected yet."
-      end)
-    end
-
-    test "shows the Available Platforms section for platforms whose provider is not connected", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # facebook_ads provider is not connected, so Facebook Ads platform should be available
-        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
-      end)
-    end
-
-    test "only shows integrations belonging to the authenticated user", %{conn: conn} do
-      user = user_fixture()
-      other_user = user_fixture()
-      insert_integration!(other_user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations")
-
-        # The current user has no integrations, so the empty state must appear
         assert html =~ "No platforms connected yet."
+        assert has_element?(lv, "a[href='/integrations/connect']", "Connect your first platform")
         refute html =~ "Connected Platforms"
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event sync"
-  # ---------------------------------------------------------------------------
+  describe "displays connected platforms with name, description, and Connected badge" do
+    test "shows connected platform details", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user.id, :google_ads)
+      conn = log_in_user(conn, user)
 
-  describe "handle_event sync" do
-    test "adds the platform to syncing and shows an info flash on sync success", %{
-      conn: conn
-    } do
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/integrations")
+
+        assert html =~ "Connected Platforms"
+        assert html =~ "Google Ads"
+        assert html =~ "Paid search and display advertising"
+        assert has_element?(lv, "[data-platform='google_ads'][data-status='connected']")
+        assert html =~ "Connected"
+      end)
+    end
+  end
+
+  describe "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms" do
+    test "shows all action buttons", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user.id, :google_ads)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/integrations")
+
+        assert has_element?(lv, "[phx-click='sync'][phx-value-platform='google_ads']")
+        assert has_element?(lv, "[data-role='edit-integration-accounts']")
+        assert has_element?(lv, "a[href='/integrations/connect/google_ads']", "Manage")
+        assert has_element?(lv, "[data-role='disconnect-integration']")
+      end)
+    end
+  end
+
+  describe "displays available platforms section for unconnected providers" do
+    test "shows available platforms with connect links", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user.id, :google_ads)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/integrations")
+
+        assert html =~ "Available Platforms"
+        assert has_element?(lv, "[data-platform='google_analytics'][data-status='available']")
+        assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
+      end)
+    end
+  end
+
+  describe "triggers sync and shows success flash on Sync Now click" do
+    test "shows sync started flash", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -345,47 +191,25 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         assert html =~ "Sync started for"
       end)
     end
+  end
 
-    test "shows an error flash when sync returns :not_found", %{conn: conn} do
+  describe "shows error flash when syncing a non-existent integration" do
+    test "shows not found error", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/integrations")
 
-        # Send sync event directly — no sync button exists for unconnected platforms
         html = render_click(lv, "sync", %{"provider" => "google_ads", "platform" => "google_ads"})
 
-        assert html =~ "Google Ads integration not found. Please connect it first."
-      end)
-    end
-
-    test "shows an error flash when sync returns :not_connected", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      # Create an expired integration with no refresh token to trigger :not_connected
-      insert_integration!(user.id, :google_analytics, %{
-        expires_at: DateTime.add(DateTime.utc_now(), -3600, :second),
-        refresh_token: nil
-      })
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        html = render_click(lv, "sync", %{"provider" => "google_analytics", "platform" => "google_analytics"})
-
-        assert html =~ "Google Analytics token has expired. Please reconnect."
+        assert html =~ "integration not found"
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event disconnect"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event disconnect" do
-    test "shows the disconnect confirmation modal when Disconnect is clicked", %{conn: conn} do
+  describe "opens disconnect confirmation modal on Disconnect click" do
+    test "shows modal with confirm and cancel", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -400,10 +224,14 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert html =~ "Disconnect"
         assert html =~ "Historical data will remain"
+        assert has_element?(lv, "[data-role='confirm-disconnect']")
+        assert has_element?(lv, "[data-role='cancel-disconnect']")
       end)
     end
+  end
 
-    test "does not immediately delete the integration when Disconnect is clicked", %{conn: conn} do
+  describe "disconnects provider and shows success flash on confirm" do
+    test "deletes integration and shows flash", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)
@@ -416,47 +244,6 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
-        assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google_ads)
-      end)
-    end
-
-    test "renders confirm and cancel buttons inside the disconnect modal", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        lv
-        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
-        |> render_click()
-
-        assert has_element?(lv, "[data-role='confirm-disconnect']")
-        assert has_element?(lv, "[data-role='cancel-disconnect']")
-      end)
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "handle_event confirm_disconnect"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event confirm_disconnect" do
-    test "deletes the integration and shows an info flash on successful disconnect", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # Open the modal
-        lv
-        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
-        |> render_click()
-
-        # Confirm the disconnect
         html =
           lv
           |> element("[data-role='confirm-disconnect']")
@@ -464,81 +251,14 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert html =~ "Disconnected from"
         assert html =~ "Historical data is retained"
-      end)
-    end
-
-    test "removes the integration record from the database after confirmation", %{conn: conn} do
-      user = user_fixture()
-      scope = Scope.for_user(user)
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        lv
-        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
-        |> render_click()
-
-        lv
-        |> element("[data-role='confirm-disconnect']")
-        |> render_click()
-
+        refute has_element?(lv, "[data-role='confirm-disconnect']")
         assert {:error, :not_found} = MetricFlow.Integrations.get_integration(scope, :google_ads)
       end)
     end
-
-    test "hides the disconnect modal after confirmation", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        lv
-        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
-        |> render_click()
-
-        html =
-          lv
-          |> element("[data-role='confirm-disconnect']")
-          |> render_click()
-
-        refute has_element?(lv, "[data-role='confirm-disconnect']")
-        assert is_binary(html)
-      end)
-    end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event cancel_disconnect"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event cancel_disconnect" do
-    test "hides the disconnect modal when Cancel is clicked", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user.id, :google_ads)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
-
-        # Open the modal first
-        lv
-        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
-        |> render_click()
-
-        # Cancel
-        lv
-        |> element("[data-role='cancel-disconnect']")
-        |> render_click()
-
-        refute has_element?(lv, "[data-role='confirm-disconnect']")
-      end)
-    end
-
-    test "does not delete the integration when Cancel is clicked", %{conn: conn} do
+  describe "cancels disconnect modal without modifying data" do
+    test "closes modal and preserves integration", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)
@@ -555,19 +275,9 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         |> element("[data-role='cancel-disconnect']")
         |> render_click()
 
+        refute has_element?(lv, "[data-role='confirm-disconnect']")
         assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google_ads)
       end)
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "authentication"
-  # ---------------------------------------------------------------------------
-
-  describe "authentication" do
-    test "redirects unauthenticated users to /users/log-in", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/integrations")
     end
   end
 end

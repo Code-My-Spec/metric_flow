@@ -46,3 +46,19 @@ Main content (top to bottom):
 Components: `.alert`, `.alert-info`, `.form-control`, `.input`, `.btn`, `.btn-primary`, `.btn-soft`, `.divider`, `.header`
 
 Responsive: Single-column layout works on all screen sizes; max-width constrains wide-screen display.
+
+## Test Assertions
+
+- renders login page with magic link form and password form
+- autofocuses email input on mount
+- shows Sign up link for unauthenticated users
+- sends magic link email and shows ambiguous confirmation flash when user exists
+- shows same ambiguous confirmation flash when user does not exist
+- triggers password form submission to UserSessionController on submit_password event
+- redirects to signed-in path with valid password credentials
+- shows invalid email or password error with invalid credentials
+- navigates to registration page when Sign up link is clicked
+- shows reauthentication notice in sudo mode with email pre-filled
+- hides Sign up link in sudo mode
+- makes email input readonly in sudo mode
+- shows local mail adapter info banner when using Swoosh.Adapters.Local

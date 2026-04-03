@@ -89,3 +89,16 @@ Persisted partial success entry (`data-status="partial_success"`):
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.badge`, `.badge-info`, `.badge-success`, `.badge-error`, `.badge-warning`, `.badge-ghost`
 
 Responsive: Single-column layout on all screen sizes. Entry cards stack vertically.
+
+## Test Assertions
+
+- renders sync history page with header and schedule section
+- shows date range ending at yesterday with today excluded
+- shows empty state when no sync history or events exist
+- displays persisted success entries with provider name, badge, and records count
+- displays persisted failed entries with provider name, badge, and error message
+- filters entries by status when filter buttons are clicked
+- highlights the active filter button with btn-primary
+- prepends live sync_completed events to the top of the history list
+- prepends live sync_failed events with error reason and optional retry info
+- shows Initial Sync badge for entries with sync_type initial

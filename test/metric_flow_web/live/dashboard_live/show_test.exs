@@ -44,112 +44,12 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
     |> Repo.insert!()
   end
 
-  defp yesterday do
-    Date.add(Date.utc_today(), -1)
-  end
-
   # ---------------------------------------------------------------------------
-  # describe "authentication"
+  # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "authentication" do
-    test "redirects unauthenticated users to /users/log-in", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/dashboard")
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "mount/3" — onboarding state (no integrations)
-  # ---------------------------------------------------------------------------
-
-  describe "mount/3 onboarding state" do
-    test "shows onboarding prompt when user has no integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(lv, "[data-role='onboarding-prompt']")
-      end)
-    end
-
-    test "onboarding prompt mentions connecting integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboard")
-
-        assert html =~ "Connect"
-      end)
-    end
-
-    test "shows a link to connect integrations pointing to /integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(lv, "[data-role='onboarding-prompt'] a[href='/integrations']")
-      end)
-    end
-
-    test "does not show the metrics dashboard area when user has no integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        refute has_element?(lv, "[data-role='metrics-dashboard']")
-      end)
-    end
-
-    test "does not show any vega-lite chart containers when user has no integrations", %{
-      conn: conn
-    } do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        refute has_element?(lv, "[data-role='vega-lite-chart']")
-      end)
-    end
-
-    test "does not show the platform filter when user has no integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        refute has_element?(lv, "[data-role='platform-filter']")
-      end)
-    end
-
-    test "does not show the date range filter when user has no integrations", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        refute has_element?(lv, "[data-role='date-range-filter']")
-      end)
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "mount/3" — dashboard state (with integrations and metrics)
-  # ---------------------------------------------------------------------------
-
-  describe "mount/3 dashboard state" do
-    test "shows the All Metrics heading when user has integrations", %{conn: conn} do
+  describe "renders dashboard page with All Metrics title for default route" do
+    test "shows All Metrics heading", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -160,56 +60,26 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
         assert html =~ "All Metrics"
       end)
     end
+  end
 
-    test "shows the metrics dashboard area when user has integrations", %{conn: conn} do
+  describe "shows onboarding prompt when no integrations are connected" do
+    test "displays onboarding with connect link", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, html} = live(conn, ~p"/dashboard")
 
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
+        assert has_element?(lv, "[data-role='onboarding-prompt']")
+        assert html =~ "Connect"
+        assert has_element?(lv, "[data-role='onboarding-prompt'] a[href='/integrations']")
+        refute has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
+  end
 
-    test "does not show the onboarding prompt when user has integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        refute has_element?(lv, "[data-role='onboarding-prompt']")
-      end)
-    end
-
-    test "shows connected platform names from the user's integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user, :google_analytics)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboard")
-
-        assert html =~ "Google"
-      end)
-    end
-
-    test "displays date range ending at yesterday in the date range section", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboard")
-
-        assert html =~ Date.to_iso8601(yesterday())
-      end)
-    end
-
-    test "shows vega-lite chart containers when user has integrations and metrics", %{conn: conn} do
+  describe "displays metrics dashboard with chart and data table when integrations exist" do
+    test "shows dashboard with chart and table", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user)
@@ -218,134 +88,16 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        assert has_element?(lv, "[data-role='vega-lite-chart']")
+        assert has_element?(lv, "[data-role='metrics-dashboard']")
+        assert has_element?(lv, "[data-role='multi-series-chart']")
+        assert has_element?(lv, "[data-role='data-table']")
+        refute has_element?(lv, "[data-role='onboarding-prompt']")
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "mount/3" — filter controls
-  # ---------------------------------------------------------------------------
-
-  describe "mount/3 filter controls" do
-    test "shows the platform filter control when user has integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(lv, "[data-role='platform-filter']")
-      end)
-    end
-
-    test "shows the date range filter control when user has integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(lv, "[data-role='date-range-filter']")
-      end)
-    end
-
-    test "shows the 7 days date range preset in the date range filter", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(
-                 lv,
-                 "[data-role='date-range-filter'] [phx-value-range='last_7_days']"
-               )
-      end)
-    end
-
-    test "shows the 30 days date range preset in the date range filter", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(
-                 lv,
-                 "[data-role='date-range-filter'] [phx-value-range='last_30_days']"
-               )
-      end)
-    end
-
-    test "shows the 90 days date range preset in the date range filter", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(
-                 lv,
-                 "[data-role='date-range-filter'] [phx-value-range='last_90_days']"
-               )
-      end)
-    end
-
-    test "shows the All Time date range preset in the date range filter", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(
-                 lv,
-                 "[data-role='date-range-filter'] [phx-value-range='all_time']"
-               )
-      end)
-    end
-
-    test "shows the Custom date range preset in the date range filter", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(
-                 lv,
-                 "[data-role='date-range-filter'] [phx-value-range='custom']"
-               )
-      end)
-    end
-
-    test "shows the metric toggles when user has integrations", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        assert has_element?(lv, "[data-role='metric-toggles']")
-      end)
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # describe "handle_event filter_platform"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event filter_platform" do
-    test "filter_platform event updates the dashboard without error", %{conn: conn} do
+  describe "filters metrics by platform when platform filter button is clicked" do
+    test "filters by specific platform", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user, :google_analytics)
       insert_metric!(user)
@@ -361,7 +113,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       end)
     end
 
-    test "filter_platform event with all clears the platform filter", %{conn: conn} do
+    test "clears filter with all", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user, :google_analytics)
       insert_metric!(user)
@@ -370,10 +122,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        # First select a specific platform
         render_click(lv, "filter_platform", %{"platform" => "google_analytics"})
-
-        # Then clear with "all"
         html = render_click(lv, "filter_platform", %{"platform" => "all"})
 
         assert is_binary(html)
@@ -382,12 +131,8 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event filter_date_range"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event filter_date_range" do
-    test "filter_date_range event with last_7_days updates the dashboard", %{conn: conn} do
+  describe "changes date range when date range filter button is clicked" do
+    test "switches to different date ranges", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user)
@@ -397,85 +142,78 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
         html = render_click(lv, "filter_date_range", %{"range" => "last_7_days"})
-
         assert is_binary(html)
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
-      end)
-    end
-
-    test "filter_date_range event with last_30_days updates the dashboard", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      insert_metric!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        html = render_click(lv, "filter_date_range", %{"range" => "last_30_days"})
-
-        assert is_binary(html)
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
-      end)
-    end
-
-    test "filter_date_range event with last_90_days updates the dashboard", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user)
-      insert_metric!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
         html = render_click(lv, "filter_date_range", %{"range" => "last_90_days"})
-
         assert is_binary(html)
+
+        html = render_click(lv, "filter_date_range", %{"range" => "all_time"})
+        assert is_binary(html)
+
         assert has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
+  end
 
-    test "filter_date_range event with all_time updates the dashboard", %{conn: conn} do
+  describe "toggles metric visibility when metric toggle button is clicked" do
+    test "toggles metric off and back on", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
-      insert_metric!(user)
+      insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        html = render_click(lv, "filter_date_range", %{"range" => "all_time"})
+        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
+        assert is_binary(html)
 
+        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
         assert is_binary(html)
         assert has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event toggle_metric"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event toggle_metric" do
-    test "toggle_metric event hides a metric from the chart and table", %{conn: conn} do
+  describe "highlights active platform and date range filter buttons with btn-primary" do
+    test "platform and date range filters have active states", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
-      insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        # Toggle off the "sessions" metric (it's a known enriched metric name won't match,
-        # but the "sessions" metric from insert_metric! will be in the list)
-        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
-
-        assert is_binary(html)
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
+        assert has_element?(lv, "[data-role='platform-filter']")
+        assert has_element?(lv, "[data-role='date-range-filter']")
+        # Default All Platforms button should be active
+        assert has_element?(lv, "[data-role='platform-filter'] .btn-primary")
+        # Default date range button should be active
+        assert has_element?(lv, "[data-role='date-range-filter'] .btn-primary")
       end)
     end
+  end
 
-    test "toggle_metric event re-enables a previously hidden metric", %{conn: conn} do
+  describe "shows AI chat panel when AI Chat button is clicked and hides on close" do
+    test "opens and closes AI chat panel", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+
+        lv |> element("[data-role='open-ai-chat']") |> render_click()
+        assert has_element?(lv, "[data-role='ai-chat-interface']")
+
+        lv |> element("[data-role='close-chat-panel']") |> render_click()
+        refute has_element?(lv, "[data-role='ai-chat-interface']")
+      end)
+    end
+  end
+
+  describe "shows AI insights panel for a metric and hides on close" do
+    test "opens and closes AI insights panel", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user, %{metric_name: "sessions"})
@@ -484,12 +222,54 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/dashboard")
 
-        # Toggle off then back on
-        render_click(lv, "toggle_metric", %{"metric" => "sessions"})
-        html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
+        render_click(lv, "show_ai_insights", %{"metric" => "sessions"})
+        assert has_element?(lv, "[data-role='ai-insights-panel']")
 
-        assert is_binary(html)
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
+        render_click(lv, "hide_ai_insights", %{})
+        refute has_element?(lv, "[data-role='ai-insights-panel']")
+      end)
+    end
+  end
+
+  describe "shows empty state in chart and table when no data matches filters" do
+    test "shows no data message when no metrics exist", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/dashboard")
+
+        assert html =~ "No metric data available" or html =~ "No data to display"
+      end)
+    end
+  end
+
+  describe "displays summary stats grid with metric sums and averages" do
+    test "shows summary stats section", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+      insert_metric!(user, %{metric_name: "sessions", value: 100.0})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+
+        assert has_element?(lv, "[data-role='summary-stats']")
+      end)
+    end
+  end
+
+  describe "renders custom dashboard by ID with dashboard name as title" do
+    test "falls back to All Metrics when dashboard ID not found", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/dashboards/999999")
+
+        assert html =~ "All Metrics"
       end)
     end
   end

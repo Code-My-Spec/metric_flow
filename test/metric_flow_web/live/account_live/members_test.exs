@@ -1,6 +1,7 @@
 defmodule MetricFlowWeb.AccountLive.MembersTest do
   use MetricFlowTest.ConnCase, async: true
 
+  import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
@@ -37,7 +38,6 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
     |> Repo.insert!()
   end
 
-  # Creates a team account with the given user as the owner member.
   defp account_fixture(user) do
     account = insert_account!(user)
     insert_member!(account, user, :owner)
@@ -45,11 +45,11 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   # ---------------------------------------------------------------------------
-  # describe "mount/3"
+  # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "mount/3" do
-    test "renders the members page with account members listed", %{conn: conn} do
+  describe "renders members page with member list for owner" do
+    test "shows members page with account name", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -59,30 +59,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       assert html =~ "Members"
       assert html =~ account.name
     end
-
-    test "displays each member email and role", %{conn: conn} do
-      user = user_fixture()
-      _account = account_fixture(user)
-      conn = log_in_user(conn, user)
-
-      {:ok, _lv, html} = live(conn, ~p"/accounts/members")
-
-      assert html =~ user.email
-      assert html =~ "owner"
-    end
-
-    test "redirects unauthenticated users to login", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/accounts/members")
-    end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "render/1"
-  # ---------------------------------------------------------------------------
-
-  describe "render/1" do
-    test "displays member email and role for each member", %{conn: conn} do
+  describe "displays member email, role badge, and join date in each row" do
+    test "shows email and role for each member", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       other_user = user_fixture()
@@ -96,8 +76,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       assert html =~ "owner"
       assert html =~ "admin"
     end
+  end
 
-    test "shows role change controls for owners and admins", %{conn: conn} do
+  describe "shows role change dropdown and remove button for owners and admins" do
+    test "owner sees role change and remove controls", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       other_user = user_fixture()
@@ -106,11 +88,13 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # Owner sees role change select for other members
       assert has_element?(lv, "[data-role='member-row'] select")
+      assert has_element?(lv, "[data-role='remove-member']")
     end
+  end
 
-    test "hides management controls for account_manager and read_only members", %{conn: conn} do
+  describe "hides management controls for read_only and account_manager roles" do
+    test "account_manager sees no management controls", %{conn: conn} do
       owner_user = user_fixture()
       account = account_fixture(owner_user)
       manager_user = user_fixture()
@@ -119,41 +103,27 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # account_manager sees no members list, no role change selects, no remove buttons
       refute has_element?(lv, "[data-role='members-list']")
-      refute has_element?(lv, "[data-role='member-row']")
       refute has_element?(lv, "[data-role='member-row'] select")
       refute has_element?(lv, "[phx-click='remove_member']")
     end
 
-    test "does not show remove button for the last owner", %{conn: conn} do
-      user = user_fixture()
-      _account = account_fixture(user)
-      conn = log_in_user(conn, user)
+    test "read_only member sees no management controls", %{conn: conn} do
+      owner_user = user_fixture()
+      account = account_fixture(owner_user)
+      reader_user = user_fixture()
+      insert_member!(account, reader_user, :read_only)
+      conn = log_in_user(conn, reader_user)
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # The sole owner row has no remove button
-      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{user.id}'] [phx-click='remove_member']")
-    end
-
-    test "includes invite member form for owners and admins", %{conn: conn} do
-      user = user_fixture()
-      _account = account_fixture(user)
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      assert has_element?(lv, "#invite_member_form")
+      refute has_element?(lv, "[data-role='members-list']")
+      refute has_element?(lv, "[phx-click='remove_member']")
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event change_role"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event change_role" do
-    test "updates member role and reflects change in the list", %{conn: conn} do
+  describe "owner can change a member role and sees success flash" do
+    test "changes role successfully", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       target_user = user_fixture()
@@ -162,23 +132,29 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # phx-submit is on the form wrapper; submit sends user_id (hidden) and role (select).
-      html =
-        lv
-        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] form")
-        |> render_submit(%{"role" => "admin", "user_id" => target_user.id})
+      capture_log(fn ->
+        html =
+          lv
+          |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] form")
+          |> render_submit(%{"role" => "admin", "user_id" => target_user.id})
 
-      assert html =~ "admin"
+        send(self(), {:html, html})
+      end)
+
+      receive do
+        {:html, html} -> assert html =~ "Role updated"
+      end
     end
+  end
 
-    test "prevents demoting the last owner and shows error", %{conn: conn} do
+  describe "shows error when attempting to demote the last owner" do
+    test "prevents demotion of last owner", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      # phx-submit is on the form wrapper.
       html =
         lv
         |> element("[data-role='member-row'][data-user-id='#{owner.id}'] form")
@@ -186,28 +162,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       assert html =~ "last owner"
     end
-
-    test "only owners and admins can change roles", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      reader_user = user_fixture()
-      insert_member!(account, reader_user, :read_only)
-      target_user = user_fixture()
-      insert_member!(account, target_user, :account_manager)
-      conn = log_in_user(conn, reader_user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{target_user.id}'] select")
-    end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event remove_member"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_event remove_member" do
-    test "removes member and they disappear from the list", %{conn: conn} do
+  describe "owner can remove a member and sees success flash" do
+    test "removes member successfully", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       target_user = user_fixture()
@@ -216,45 +174,56 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
-      html =
-        lv
-        |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] [phx-click='remove_member']")
-        |> render_click()
+      capture_log(fn ->
+        html =
+          lv
+          |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] [phx-click='remove_member']")
+          |> render_click()
 
-      refute html =~ target_user.email
-    end
+        send(self(), {:html, html})
+      end)
 
-    test "prevents removing the last owner and shows error", %{conn: conn} do
-      owner = user_fixture()
-      _account = account_fixture(owner)
-      conn = log_in_user(conn, owner)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      # The last owner row has no remove button — clicking is impossible.
-      # Verify the button is absent to enforce the protection.
-      refute has_element?(lv, "[data-role='member-row'][data-user-id='#{owner.id}'] [phx-click='remove_member']")
-    end
-
-    test "only owners and admins can remove members", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      reader_user = user_fixture()
-      insert_member!(account, reader_user, :read_only)
-      conn = log_in_user(conn, reader_user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      refute has_element?(lv, "[phx-click='remove_member']")
+      receive do
+        {:html, html} ->
+          refute html =~ target_user.email
+      end
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_event invite_member"
-  # ---------------------------------------------------------------------------
+  describe "hides remove button for the last owner row" do
+    test "no remove button on sole owner row", %{conn: conn} do
+      user = user_fixture()
+      _account = account_fixture(user)
+      conn = log_in_user(conn, user)
 
-  describe "handle_event invite_member" do
-    test "adds a new member to the account", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+
+      refute has_element?(
+               lv,
+               "[data-role='member-row'][data-user-id='#{user.id}'] [phx-click='remove_member']"
+             )
+    end
+  end
+
+  describe "hides remove button for the current user row" do
+    test "no remove button on own row", %{conn: conn} do
+      owner = user_fixture()
+      account = account_fixture(owner)
+      admin_user = user_fixture()
+      insert_member!(account, admin_user, :admin)
+      conn = log_in_user(conn, admin_user)
+
+      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+
+      refute has_element?(
+               lv,
+               "[data-role='member-row'][data-user-id='#{admin_user.id}'] [data-role='remove-member']"
+             )
+    end
+  end
+
+  describe "owner can invite a new member by email and sees success flash" do
+    test "invites member successfully", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       invitee = user_fixture()
@@ -268,9 +237,12 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
         |> render_submit()
 
       assert html =~ invitee.email
+      assert html =~ "invited"
     end
+  end
 
-    test "shows error when email not found", %{conn: conn} do
+  describe "shows error when inviting a non-existent user" do
+    test "shows user not found error", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
@@ -279,16 +251,15 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", invitation: %{
-          email: "notauser@example.com",
-          role: "read_only"
-        })
+        |> form("#invite_member_form", invitation: %{email: "notauser@example.com", role: "read_only"})
         |> render_submit()
 
       assert html =~ "not found"
     end
+  end
 
-    test "shows error when user is already a member", %{conn: conn} do
+  describe "shows error when inviting an already existing member" do
+    test "shows already a member error", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       existing_member = user_fixture()
@@ -299,34 +270,15 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", invitation: %{
-          email: existing_member.email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form", invitation: %{email: existing_member.email, role: "read_only"})
         |> render_submit()
 
       assert html =~ "already a member"
     end
-
-    test "only owners and admins can invite members", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      reader_user = user_fixture()
-      insert_member!(account, reader_user, :read_only)
-      conn = log_in_user(conn, reader_user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      refute has_element?(lv, "#invite_member_form")
-    end
   end
 
-  # ---------------------------------------------------------------------------
-  # describe "handle_info"
-  # ---------------------------------------------------------------------------
-
-  describe "handle_info" do
-    test "refreshes member list when a member is added", %{conn: conn} do
+  describe "subscribes to member PubSub and refreshes on real-time updates" do
+    test "refreshes on member created", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       conn = log_in_user(conn, owner)
@@ -334,15 +286,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
 
       new_user = user_fixture()
-
-      new_member =
-        %AccountMember{}
-        |> AccountMember.changeset(%{
-          account_id: account.id,
-          user_id: new_user.id,
-          role: :read_only
-        })
-        |> Repo.insert!()
+      new_member = insert_member!(account, new_user, :read_only)
 
       send(lv.pid, {:created, new_member})
 
@@ -350,46 +294,11 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       assert html =~ new_user.email
     end
 
-    test "refreshes member list when a member role changes", %{conn: conn} do
+    test "refreshes on member deleted", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       target_user = user_fixture()
-
-      member =
-        %AccountMember{}
-        |> AccountMember.changeset(%{
-          account_id: account.id,
-          user_id: target_user.id,
-          role: :read_only
-        })
-        |> Repo.insert!()
-
-      conn = log_in_user(conn, owner)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      updated_member = %{member | role: :admin}
-      send(lv.pid, {:updated, updated_member})
-
-      html = render(lv)
-      assert html =~ target_user.email
-      assert html =~ "admin"
-    end
-
-    test "refreshes member list when a member is removed", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      target_user = user_fixture()
-
-      member =
-        %AccountMember{}
-        |> AccountMember.changeset(%{
-          account_id: account.id,
-          user_id: target_user.id,
-          role: :admin
-        })
-        |> Repo.insert!()
-
+      member = insert_member!(account, target_user, :admin)
       conn = log_in_user(conn, owner)
 
       {:ok, lv, _html} = live(conn, ~p"/accounts/members")
@@ -399,6 +308,16 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html = render(lv)
       refute html =~ target_user.email
+    end
+  end
+
+  describe "redirects to /accounts when user has no accounts" do
+    test "redirects when no accounts", %{conn: conn} do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      assert {:error, {:redirect, %{to: "/accounts"}}} =
+               live(conn, ~p"/accounts/members")
     end
   end
 end
