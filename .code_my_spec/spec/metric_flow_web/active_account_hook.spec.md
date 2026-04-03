@@ -66,3 +66,4 @@ Returns the account the user originated, falling back to the first account.
 - returns the account originated by the user when present
 - falls back to first account when user did not originate any
 - returns nil for an empty list
+
