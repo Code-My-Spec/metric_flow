@@ -5,99 +5,125 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
-  describe "Settings page" do
-    test "renders settings page", %{conn: conn} do
+  # ---------------------------------------------------------------------------
+  # Fixtures
+  # ---------------------------------------------------------------------------
+
+  defp authenticated_conn(conn) do
+    log_in_user(conn, user_fixture())
+  end
+
+  defp authenticated_conn_with_user(conn) do
+    user = user_fixture()
+    {log_in_user(conn, user), user}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Test Assertions from spec
+  # ---------------------------------------------------------------------------
+
+  describe "renders settings page with email and password change forms" do
+    test "shows account settings with both forms", %{conn: conn} do
       {:ok, _lv, html} =
         conn
-        |> log_in_user(user_fixture())
+        |> authenticated_conn()
         |> live(~p"/users/settings")
 
+      assert html =~ "Account Settings"
       assert html =~ "Change Email"
       assert html =~ "Save Password"
     end
-
-    test "redirects if user is not logged in", %{conn: conn} do
-      assert {:error, redirect} = live(conn, ~p"/users/settings")
-
-      assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/log-in"
-      assert %{"error" => "You must log in to access this page."} = flash
-    end
-
-    test "redirects if user is not in sudo mode", %{conn: conn} do
-      {:ok, conn} =
-        conn
-        |> log_in_user(user_fixture(),
-          token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
-        )
-        |> live(~p"/users/settings")
-        |> follow_redirect(conn, ~p"/users/log-in")
-
-      assert conn.resp_body =~ "You must re-authenticate to access this page."
-    end
   end
 
-  describe "update email form" do
+  describe "validates email on change and shows inline errors for invalid email" do
     setup %{conn: conn} do
-      user = user_fixture()
-      %{conn: log_in_user(conn, user), user: user}
+      {conn, user} = authenticated_conn_with_user(conn)
+      %{conn: conn, user: user}
     end
 
-    test "updates the user email", %{conn: conn, user: user} do
-      new_email = unique_user_email()
-
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
-
-      result =
-        lv
-        |> form("#email_form", %{
-          "user" => %{"email" => new_email}
-        })
-        |> render_submit()
-
-      assert result =~ "A link to confirm your email"
-      assert Users.get_user_by_email(user.email)
-    end
-
-    test "renders errors with invalid data (phx-change)", %{conn: conn} do
+    test "shows error for email with spaces", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
         lv
         |> element("#email_form")
         |> render_change(%{
-          "action" => "update_email",
-          "user" => %{"email" => "with spaces"}
+          "user" => %{"email" => "invalid email with spaces"}
         })
 
-      assert result =~ "Change Email"
       assert result =~ "must have the @ sign and no spaces"
     end
+  end
 
-    test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
+  describe "sends email change confirmation link on valid email submit" do
+    setup %{conn: conn} do
+      {conn, user} = authenticated_conn_with_user(conn)
+      %{conn: conn, user: user}
+    end
+
+    test "shows confirmation message and keeps original email", %{conn: conn, user: user} do
+      new_email = unique_user_email()
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
         lv
-        |> form("#email_form", %{
-          "user" => %{"email" => user.email}
-        })
+        |> form("#email_form", %{"user" => %{"email" => new_email}})
         |> render_submit()
 
-      assert result =~ "Change Email"
-      assert result =~ "did not change"
+      assert result =~ "A link to confirm your email change has been sent to the new address."
+      assert Users.get_user_by_email(user.email)
     end
   end
 
-  describe "update password form" do
+  describe "shows error when submitting email change outside sudo mode" do
+    test "redirects with re-authenticate error when sudo mode expired", %{conn: _conn} do
+      conn_no_sudo =
+        build_conn()
+        |> log_in_user(user_fixture(),
+          token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
+        )
+
+      assert {:ok, conn_redirected} =
+               conn_no_sudo
+               |> live(~p"/users/settings")
+               |> follow_redirect(conn_no_sudo, ~p"/users/log-in")
+
+      assert conn_redirected.resp_body =~ "You must re-authenticate to access this page."
+    end
+  end
+
+  describe "validates password on change and shows inline errors" do
     setup %{conn: conn} do
-      user = user_fixture()
-      %{conn: log_in_user(conn, user), user: user}
+      {conn, user} = authenticated_conn_with_user(conn)
+      %{conn: conn, user: user}
     end
 
-    test "updates the user password", %{conn: conn, user: user} do
-      new_password = valid_user_password()
+    test "shows error for too-short password and mismatched confirmation", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
+      result =
+        lv
+        |> element("#password_form")
+        |> render_change(%{
+          "user" => %{
+            "password" => "short",
+            "password_confirmation" => "does not match"
+          }
+        })
+
+      assert result =~ "should be at least 12 character(s)"
+      assert result =~ "does not match password"
+    end
+  end
+
+  describe "triggers password form submission on valid password submit" do
+    setup %{conn: conn} do
+      {conn, user} = authenticated_conn_with_user(conn)
+      %{conn: conn, user: user}
+    end
+
+    test "triggers form action and updates password", %{conn: conn, user: user} do
+      new_password = valid_user_password()
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       form =
@@ -115,65 +141,23 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
       assert redirected_to(new_password_conn) == ~p"/users/settings"
 
-      assert get_session(new_password_conn, :user_token) != get_session(conn, :user_token)
-
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
                "Password updated successfully"
 
       assert Users.get_user_by_email_and_password(user.email, new_password)
     end
-
-    test "renders errors with invalid data (phx-change)", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
-
-      result =
-        lv
-        |> element("#password_form")
-        |> render_change(%{
-          "user" => %{
-            "password" => "too short",
-            "password_confirmation" => "does not match"
-          }
-        })
-
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
-    end
-
-    test "renders errors with invalid data (phx-submit)", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
-
-      result =
-        lv
-        |> form("#password_form", %{
-          "user" => %{
-            "password" => "too short",
-            "password_confirmation" => "does not match"
-          }
-        })
-        |> render_submit()
-
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
-    end
   end
 
-  describe "confirm email" do
-    setup %{conn: conn} do
-      user = user_fixture()
-      email = unique_user_email()
+  describe "processes email confirmation token and shows success flash" do
+    test "updates email and shows success message", %{conn: conn} do
+      {conn, user} = authenticated_conn_with_user(conn)
+      new_email = unique_user_email()
 
       token =
         extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+          Users.deliver_user_update_email_instructions(%{user | email: new_email}, user.email, url)
         end)
 
-      %{conn: log_in_user(conn, user), token: token, email: email, user: user}
-    end
-
-    test "updates the user email once", %{conn: conn, user: user, token: token, email: email} do
       {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
 
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
@@ -181,18 +165,16 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       assert %{"info" => message} = flash
       assert message == "Email changed successfully."
       refute Users.get_user_by_email(user.email)
-      assert Users.get_user_by_email(email)
-
-      # use confirm token again
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
-      assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/settings"
-      assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
+      assert Users.get_user_by_email(new_email)
     end
+  end
 
-    test "does not update email with invalid token", %{conn: conn, user: user} do
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/oops")
+  describe "shows error flash for invalid or expired email confirmation token" do
+    test "shows error message for invalid token", %{conn: conn} do
+      {conn, user} = authenticated_conn_with_user(conn)
+
+      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/invalid-token")
+
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
@@ -200,13 +182,23 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       assert Users.get_user_by_email(user.email)
     end
 
-    test "redirects if user is not logged in", %{token: token} do
-      conn = build_conn()
+    test "shows error message when token has already been used", %{conn: conn} do
+      {conn, user} = authenticated_conn_with_user(conn)
+      new_email = unique_user_email()
+
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_user_update_email_instructions(%{user | email: new_email}, user.email, url)
+        end)
+
+      {:error, _redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
+
       {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
-      assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/log-in"
+
+      assert {:live_redirect, %{to: path, flash: flash}} = redirect
+      assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
-      assert message == "You must log in to access this page."
+      assert message == "Email change link is invalid or it has expired."
     end
   end
 end

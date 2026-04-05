@@ -5,7 +5,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   import MetricFlowTest.UsersFixtures
 
   describe "renders login page with magic link form and password form" do
-    test "both forms are present", %{conn: conn} do
+    test "renders login page with magic link form and password form", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "Log in"
@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "autofocuses email input on mount" do
-    test "email input has phx-mounted focus hook", %{conn: conn} do
+    test "autofocuses email input on mount", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "phx-mounted"
@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "shows Sign up link for unauthenticated users" do
-    test "Sign up link is visible", %{conn: conn} do
+    test "shows Sign up link for unauthenticated users", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "Sign up"
@@ -35,7 +35,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "sends magic link email and shows ambiguous confirmation flash when user exists" do
-    test "sends magic link and shows flash", %{conn: conn} do
+    test "sends magic link email and shows ambiguous confirmation flash when user exists", %{conn: conn} do
       user = user_fixture()
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
@@ -53,7 +53,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "shows same ambiguous confirmation flash when user does not exist" do
-    test "does not disclose if user is registered", %{conn: conn} do
+    test "shows same ambiguous confirmation flash when user does not exist", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
       {:ok, _lv, html} =
@@ -66,7 +66,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "triggers password form submission to UserSessionController on submit_password event" do
-    test "sets trigger_submit to true", %{conn: conn} do
+    test "triggers password form submission to UserSessionController on submit_password event", %{conn: conn} do
       user = user_fixture() |> set_password()
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
@@ -83,7 +83,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "redirects to signed-in path with valid password credentials" do
-    test "redirects on valid login", %{conn: conn} do
+    test "redirects to signed-in path with valid password credentials", %{conn: conn} do
       user = user_fixture() |> set_password()
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
@@ -100,7 +100,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "shows invalid email or password error with invalid credentials" do
-    test "shows error flash", %{conn: conn} do
+    test "shows invalid email or password error with invalid credentials", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
       form =
@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "navigates to registration page when Sign up link is clicked" do
-    test "Sign up navigates to registration", %{conn: conn} do
+    test "navigates to registration page when Sign up link is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
       {:ok, _reg_live, reg_html} =
@@ -134,7 +134,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       %{user: user, conn: log_in_user(conn, user)}
     end
 
-    test "shows reauth notice and pre-fills email", %{conn: conn, user: user} do
+    test "shows reauthentication notice in sudo mode with email pre-filled", %{conn: conn, user: user} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "You need to reauthenticate"
@@ -148,7 +148,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       %{conn: log_in_user(conn, user)}
     end
 
-    test "Sign up link is not visible", %{conn: conn} do
+    test "hides Sign up link in sudo mode", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       refute html =~ ">Sign up<"
@@ -161,7 +161,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       %{conn: log_in_user(conn, user)}
     end
 
-    test "email input is readonly", %{conn: conn} do
+    test "makes email input readonly in sudo mode", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "readonly"
@@ -176,7 +176,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       :ok
     end
 
-    test "shows info banner when local adapter is configured", %{conn: conn} do
+    test "shows local mail adapter info banner when using Swoosh.Adapters.Local", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "local mail adapter"

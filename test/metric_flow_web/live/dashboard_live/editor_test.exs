@@ -29,7 +29,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   # ---------------------------------------------------------------------------
 
   describe "renders new dashboard editor with name field, template chooser, and save button" do
-    test "shows new editor elements", %{conn: conn} do
+    test "renders new dashboard editor with name field, template chooser, and save button", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -45,7 +45,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "renders edit dashboard editor loading existing dashboard data" do
-    test "shows edit editor with pre-populated name", %{conn: conn} do
+    test "renders edit dashboard editor loading existing dashboard data", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user, %{name: "My Existing Dashboard"})
       conn = log_in_user(conn, user)
@@ -60,7 +60,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "validates dashboard name on change and shows inline error for blank name" do
-    test "shows error for blank name", %{conn: conn} do
+    test "validates dashboard name on change and shows inline error for blank name", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -74,7 +74,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "selects a template and applies its visualizations to the canvas" do
-    test "applies template visualizations", %{conn: conn} do
+    test "selects a template and applies its visualizations to the canvas", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -92,7 +92,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "clears canvas when blank template is selected" do
-    test "clears visualizations", %{conn: conn} do
+    test "clears canvas when blank template is selected", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -109,7 +109,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "opens metric picker and selects a metric and chart type" do
-    test "opens picker and selects", %{conn: conn} do
+    test "opens metric picker and selects a metric and chart type", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -133,7 +133,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "adds a visualization to the canvas from the metric picker" do
-    test "adds visualization card", %{conn: conn} do
+    test "adds a visualization to the canvas from the metric picker", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -151,7 +151,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "removes a visualization from the canvas" do
-    test "removes visualization card", %{conn: conn} do
+    test "removes a visualization from the canvas", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -171,7 +171,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "reorders visualizations with move up and move down buttons" do
-    test "moves visualizations", %{conn: conn} do
+    test "reorders visualizations with move up and move down buttons", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -194,7 +194,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "saves dashboard and navigates to show page with success flash" do
-    test "saves and redirects", %{conn: conn} do
+    test "saves dashboard and navigates to show page with success flash", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -216,7 +216,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "shows error when saving with no visualizations added" do
-    test "displays viz error", %{conn: conn} do
+    test "shows error when saving with no visualizations added", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -234,7 +234,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "redirects to dashboard with error when editing non-existent dashboard" do
-    test "redirects for invalid ID", %{conn: conn} do
+    test "redirects to dashboard with error when editing non-existent dashboard", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 

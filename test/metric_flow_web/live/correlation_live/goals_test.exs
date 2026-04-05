@@ -89,7 +89,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   # ---------------------------------------------------------------------------
 
   describe "renders goals page with goal metric form and dropdown" do
-    test "shows form with select and buttons", %{conn: conn} do
+    test "renders goals page with goal metric form and dropdown", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
@@ -106,7 +106,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "pre-selects the current goal metric from the latest correlation summary" do
-    test "pre-selects existing goal", %{conn: conn} do
+    test "pre-selects the current goal metric from the latest correlation summary", %{conn: conn} do
       {user, account} = user_with_personal_account()
       insert_metric!(user, %{metric_name: "revenue"})
       insert_metric!(user, %{metric_name: "clicks"})
@@ -122,7 +122,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "shows empty state with connect integrations link when no metrics exist" do
-    test "displays empty state", %{conn: conn} do
+    test "shows empty state with connect integrations link when no metrics exist", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -136,7 +136,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "disables save button when no metrics are available" do
-    test "save button is disabled", %{conn: conn} do
+    test "disables save button when no metrics are available", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -149,7 +149,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "updates selected goal on dropdown change" do
-    test "reflects new selection", %{conn: conn} do
+    test "updates selected goal on dropdown change", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       insert_metric!(user, %{metric_name: "sessions"})
       insert_metric!(user, %{metric_name: "clicks"})
@@ -166,7 +166,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "saves goal metric and redirects to correlations with success flash" do
-    test "saves and redirects", %{conn: conn} do
+    test "saves goal metric and redirects to correlations with success flash", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       insert_sufficient_metrics!(user)
       conn = log_in_user(conn, user)
@@ -184,7 +184,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "shows error flash when saving with no metric selected" do
-    test "displays error for empty selection", %{conn: conn} do
+    test "shows error flash when saving with no metric selected", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -200,7 +200,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "shows error flash when insufficient data for correlation" do
-    test "displays insufficient data error and stays on page", %{conn: conn} do
+    test "shows error flash when insufficient data for correlation", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       insert_metric!(user, %{metric_name: "revenue"})
       conn = log_in_user(conn, user)
@@ -219,7 +219,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
   end
 
   describe "navigates back to correlations on cancel click" do
-    test "redirects to correlations", %{conn: conn} do
+    test "navigates back to correlations on cancel click", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 

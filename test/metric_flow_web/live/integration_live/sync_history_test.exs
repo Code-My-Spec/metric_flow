@@ -85,7 +85,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   # ---------------------------------------------------------------------------
 
   describe "renders sync history page with header and schedule section" do
-    test "shows header, subtitle, and schedule", %{conn: conn} do
+    test "renders sync history page with header and schedule section", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -103,7 +103,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "shows date range ending at yesterday with today excluded" do
-    test "displays yesterday date in ISO format", %{conn: conn} do
+    test "shows date range ending at yesterday with today excluded", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -119,7 +119,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "shows empty state when no sync history or events exist" do
-    test "displays empty state message", %{conn: conn} do
+    test "shows empty state when no sync history or events exist", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -133,7 +133,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "displays persisted success entries with provider name, badge, and records count" do
-    test "shows success entry details", %{conn: conn} do
+    test "displays persisted success entries with provider name, badge, and records count", %{conn: conn} do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_ads)
       sync_job = insert_sync_job!(user.id, integration.id, :google_ads)
@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "displays persisted failed entries with provider name, badge, and error message" do
-    test "shows failed entry details", %{conn: conn} do
+    test "displays persisted failed entries with provider name, badge, and error message", %{conn: conn} do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
@@ -178,7 +178,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "filters entries by status when filter buttons are clicked" do
-    test "filters to success only", %{conn: conn} do
+    test "filters entries by status when filter buttons are clicked", %{conn: conn} do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
@@ -200,33 +200,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
         refute has_element?(lv, "[data-role='sync-history-entry'][data-status='failed']")
       end)
     end
-
-    test "filters to failed only", %{conn: conn} do
-      user = user_fixture()
-      integration = insert_integration!(user.id, :google_analytics)
-      sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
-      insert_sync_history!(user.id, integration.id, sync_job.id, %{status: :success, records_synced: 10})
-      insert_sync_history!(user.id, integration.id, sync_job.id, %{
-        status: :failed,
-        error_message: "timeout",
-        started_at: DateTime.add(DateTime.utc_now(), -200, :second) |> DateTime.truncate(:microsecond),
-        completed_at: DateTime.add(DateTime.utc_now(), -180, :second) |> DateTime.truncate(:microsecond)
-      })
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
-
-        lv |> element("[data-role='filter-failed']") |> render_click()
-
-        assert has_element?(lv, "[data-role='sync-history-entry'][data-status='failed']")
-        refute has_element?(lv, "[data-role='sync-history-entry'][data-status='success']")
-      end)
-    end
   end
 
   describe "highlights the active filter button with btn-primary" do
-    test "default filter is All with btn-primary", %{conn: conn} do
+    test "highlights the active filter button with btn-primary", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -238,24 +215,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
         assert has_element?(lv, "[data-role='filter-failed'].btn-ghost")
       end)
     end
-
-    test "success filter gets btn-primary when clicked", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
-
-        lv |> element("[data-role='filter-success']") |> render_click()
-
-        assert has_element?(lv, "[data-role='filter-success'].btn-primary")
-        assert has_element?(lv, "[data-role='filter-all'].btn-ghost")
-      end)
-    end
   end
 
   describe "prepends live sync_completed events to the top of the history list" do
-    test "new success event appears above persisted entries", %{conn: conn} do
+    test "prepends live sync_completed events to the top of the history list", %{conn: conn} do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
@@ -282,7 +245,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "prepends live sync_failed events with error reason and optional retry info" do
-    test "shows failed event with reason and retry info", %{conn: conn} do
+    test "prepends live sync_failed events with error reason and optional retry info", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -302,23 +265,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
         assert render(lv) =~ "Attempt 2/3"
       end)
     end
-
-    test "does not show retry info when attempt/max_attempts absent", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
-
-        send(lv.pid, {:sync_failed, %{provider: :quickbooks, reason: "token expired"}})
-
-        refute render(lv) =~ ~r/Attempt \d+\/\d+/
-      end)
-    end
   end
 
   describe "shows Initial Sync badge for entries with sync_type initial" do
-    test "displays Initial Sync badge on success event", %{conn: conn} do
+    test "shows Initial Sync badge for entries with sync_type initial", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 

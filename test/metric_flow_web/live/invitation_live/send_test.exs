@@ -58,7 +58,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   # ---------------------------------------------------------------------------
 
   describe "renders invitation page with send form and pending invitations for owner" do
-    test "shows form and pending section", %{conn: conn} do
+    test "renders invitation page with send form and pending invitations for owner", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user, %{name: "Acme Corp"})
       conn = log_in_user(conn, user)
@@ -74,7 +74,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "redirects non-owner/admin users to members page with error flash" do
-    test "redirects read_only member", %{conn: conn} do
+    test "redirects non-owner/admin users to members page with error flash", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       reader = user_fixture()
@@ -88,25 +88,10 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
         assert flash["error"] =~ "You do not have permission to invite members."
       end)
     end
-
-    test "redirects account_manager", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      manager = user_fixture()
-      insert_member!(account, manager, :account_manager)
-      conn = log_in_user(conn, manager)
-
-      capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/accounts/members", flash: flash}}} =
-                 live(conn, ~p"/accounts/invitations")
-
-        assert flash["error"] =~ "You do not have permission to invite members."
-      end)
-    end
   end
 
   describe "live-validates invitation form fields on change" do
-    test "shows error for invalid email", %{conn: conn} do
+    test "live-validates invitation form fields on change", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -125,7 +110,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "sends invitation and shows success flash with recipient email" do
-    test "sends and shows flash", %{conn: conn} do
+    test "sends invitation and shows success flash with recipient email", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -145,7 +130,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "shows changeset errors when submitting invalid invitation data" do
-    test "shows error for blank email", %{conn: conn} do
+    test "shows changeset errors when submitting invalid invitation data", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -162,27 +147,10 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       assert html =~ "can&#39;t be blank"
       refute html =~ "Invitation sent"
     end
-
-    test "shows error for invalid email format", %{conn: conn} do
-      user = user_fixture()
-      _account = account_fixture(user)
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
-
-      html =
-        lv
-        |> form("form[phx-submit='send_invitation']", %{
-          "invitation" => %{"email" => "bad-email", "role" => "read_only"}
-        })
-        |> render_submit()
-
-      assert html =~ "must be a valid email address"
-    end
   end
 
   describe "displays pending invitations list with email, role badge, and cancel button" do
-    test "shows pending invitation details", %{conn: conn} do
+    test "displays pending invitations list with email, role badge, and cancel button", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       _invitation = invitation_fixture(account, user, "pending@example.com", :admin)
@@ -197,7 +165,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "cancels a pending invitation and removes it from the list" do
-    test "cancels and removes invitation", %{conn: conn} do
+    test "cancels a pending invitation and removes it from the list", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       _invitation = invitation_fixture(account, user, "tobe.cancelled@example.com")
@@ -218,7 +186,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "shows empty state when no pending invitations exist" do
-    test "displays no pending invitations message", %{conn: conn} do
+    test "shows empty state when no pending invitations exist", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)

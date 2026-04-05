@@ -14,6 +14,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
   alias MetricFlow.Accounts
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Agencies
+  alias MetricFlowWeb.Hooks.ActiveAccountHook
 
   # ---------------------------------------------------------------------------
   # Render
@@ -127,7 +128,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
     if connected?(socket), do: Accounts.subscribe_account(scope)
 
     # Default to the user's own account, falling back to the most recent.
-    primary = MetricFlowWeb.ActiveAccountHook.primary_account(accounts, scope.user)
+    primary = ActiveAccountHook.primary_account(accounts, scope.user)
     active_account_id = if primary, do: primary.id
 
     {account_roles, agency_grants} = load_account_metadata(scope, accounts)

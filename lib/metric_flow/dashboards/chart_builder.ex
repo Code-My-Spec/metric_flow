@@ -80,7 +80,7 @@ defmodule MetricFlow.Dashboards.ChartBuilder do
     |> Vl.data_from_values(values)
     |> Vl.mark(:line, point: true, tooltip: true)
     |> Vl.encode_field(:x, "date", type: :temporal)
-    |> Vl.encode_field(:y, "value", type: :quantitative)
+    |> Vl.encode_field(:y, "value", type: :quantitative, scale: [type: "symlog"])
     |> Vl.encode_field(:color, "metric", type: :nominal)
     |> Vl.to_spec()
     |> apply_dark_theme()

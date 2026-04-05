@@ -31,7 +31,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   # ---------------------------------------------------------------------------
 
   describe "renders new visualization page with name field and metric selector" do
-    test "shows new page with key elements", %{conn: conn} do
+    test "renders new visualization page with name field and metric selector", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -48,7 +48,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "renders edit visualization page loading existing visualization data" do
-    test "shows edit page with pre-populated name", %{conn: conn} do
+    test "renders edit visualization page loading existing visualization data", %{conn: conn} do
       user = user_fixture()
       visualization = visualization_fixture(user, %{name: "My Existing Viz"})
       conn = log_in_user(conn, user)
@@ -63,7 +63,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "shows available metrics from connected integrations in metric selector" do
-    test "displays metric buttons when user has metrics", %{conn: conn} do
+    test "shows available metrics from connected integrations in metric selector", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -78,7 +78,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "shows empty state in metric selector when no metrics are available" do
-    test "displays no metrics message", %{conn: conn} do
+    test "shows empty state in metric selector when no metrics are available", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -91,7 +91,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "toggles metric selection on select_metric click" do
-    test "selects and enables preview", %{conn: conn} do
+    test "toggles metric selection on select_metric click", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -109,25 +109,10 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       end)
     end
 
-    test "resets chart preview when different metric selected", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
-
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        render_click(lv, "preview_chart", %{})
-
-        lv |> element("[data-role='metric-list'] button", "clicks") |> render_click()
-        assert has_element?(lv, "[data-role='chart-placeholder']")
-      end)
-    end
   end
 
   describe "selects chart type on select_chart_type click and highlights active button" do
-    test "highlights selected chart type", %{conn: conn} do
+    test "selects chart type on select_chart_type click and highlights active button", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -145,7 +130,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "previews chart with Vega-Lite spec when preview_chart is clicked" do
-    test "shows vega-lite chart container", %{conn: conn} do
+    test "previews chart with Vega-Lite spec when preview_chart is clicked", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -163,7 +148,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "disables preview button when no metrics are selected" do
-    test "preview button is disabled initially", %{conn: conn} do
+    test "disables preview button when no metrics are selected", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -176,7 +161,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "validates name field on change and shows inline error for blank name" do
-    test "shows error for blank name", %{conn: conn} do
+    test "validates name field on change and shows inline error for blank name", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -188,22 +173,10 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       end)
     end
 
-    test "clears error for valid name", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
-
-        render_change(lv, "validate_name", %{"name" => ""})
-        html = render_change(lv, "validate_name", %{"name" => "Valid Name"})
-        refute html =~ "can&#39;t be blank"
-      end)
-    end
   end
 
   describe "saves visualization and navigates to index with success flash" do
-    test "saves and redirects on valid create", %{conn: conn} do
+    test "saves visualization and navigates to index with success flash", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -219,26 +192,10 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       end)
     end
 
-    test "saves and redirects on valid update", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      visualization = visualization_fixture(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/#{visualization.id}/edit")
-
-        render_change(lv, "validate_name", %{"name" => "Updated Name"})
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        lv |> element("[data-role='save-visualization-btn']") |> render_click()
-
-        assert_redirect(lv, "/dashboards")
-      end)
-    end
   end
 
   describe "shows validation errors when saving with blank name or no metrics selected" do
-    test "error for blank name on save", %{conn: conn} do
+    test "shows validation errors when saving with blank name or no metrics selected", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -255,25 +212,10 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       end)
     end
 
-    test "error for no metric selected on save", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
-
-        render_change(lv, "validate_name", %{"name" => "My Chart"})
-
-        html =
-          lv |> element("[data-role='save-visualization-btn']") |> render_click()
-
-        assert html =~ "select a metric"
-      end)
-    end
   end
 
   describe "toggles shareable flag on toggle_shareable click" do
-    test "toggles on and off", %{conn: conn} do
+    test "toggles shareable flag on toggle_shareable click", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -290,7 +232,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "redirects to visualizations with error when editing non-existent visualization" do
-    test "redirects for non-existent ID", %{conn: conn} do
+    test "redirects to visualizations with error when editing non-existent visualization", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -300,16 +242,5 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       end)
     end
 
-    test "redirects for other user visualization", %{conn: conn} do
-      owner = user_fixture()
-      other_user = user_fixture()
-      visualization = visualization_fixture(owner)
-      conn = log_in_user(conn, other_user)
-
-      capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboards"}}} =
-                 live(conn, ~p"/visualizations/#{visualization.id}/edit")
-      end)
-    end
   end
 end

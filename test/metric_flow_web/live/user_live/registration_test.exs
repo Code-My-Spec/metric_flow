@@ -5,7 +5,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   import MetricFlowTest.UsersFixtures
 
   describe "renders registration form with email, password, account name, and account type fields" do
-    test "all fields are present", %{conn: conn} do
+    test "renders registration form with email, password, account name, and account type fields", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ ~s(type="email")
@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "autofocuses email input on mount" do
-    test "email input has phx-mounted focus hook", %{conn: conn} do
+    test "autofocuses email input on mount", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ "phx-mounted"
@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "shows Already registered? subtitle with link to log in page" do
-    test "subtitle and link are present", %{conn: conn} do
+    test "shows Already registered? subtitle with link to log in page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ "Already registered?"
@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "redirects to signed-in path if user is already logged in" do
-    test "redirects authenticated user", %{conn: conn} do
+    test "redirects to signed-in path if user is already logged in", %{conn: conn} do
       result =
         conn
         |> log_in_user(user_fixture())
@@ -48,7 +48,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "live-validates email format on change and shows inline error for invalid email" do
-    test "shows error for invalid email", %{conn: conn} do
+    test "live-validates email format on change and shows inline error for invalid email", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       result =
@@ -61,7 +61,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "shows has already been taken error when submitting a duplicate email" do
-    test "renders duplicate email error", %{conn: conn} do
+    test "shows has already been taken error when submitting a duplicate email", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       user = user_fixture(%{email: "test@email.com"})
@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "creates user and shows success screen with confirmation email message on valid submit" do
-    test "shows success screen after registration", %{conn: conn} do
+    test "creates user and shows success screen with confirmation email message on valid submit", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()
@@ -91,7 +91,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "displays account name confirmation on success screen when account name was provided" do
-    test "shows account name on success", %{conn: conn} do
+    test "displays account name confirmation on success screen when account name was provided", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()
@@ -109,7 +109,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "shows Creating account... on submit button while form is processing" do
-    test "submit button has disable-with text", %{conn: conn} do
+    test "shows Creating account... on submit button while form is processing", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ "Creating account..."
@@ -117,7 +117,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "navigates to login page when Log in link is clicked" do
-    test "Log in link navigates to login page", %{conn: conn} do
+    test "navigates to login page when Log in link is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       {:ok, _login_live, login_html} =

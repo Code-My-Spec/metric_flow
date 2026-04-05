@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders dashboards index page with header and New Dashboard link" do
-    test "shows header and new dashboard button", %{conn: conn} do
+    test "renders dashboards index page with header and New Dashboard link", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "displays canned system dashboards with Built-in badge" do
-    test "shows canned dashboards section", %{conn: conn} do
+    test "displays canned system dashboards with Built-in badge", %{conn: conn} do
       user = user_fixture()
       canned = canned_dashboard_fixture(user, %{name: "Traffic Overview"})
       conn = log_in_user(conn, user)
@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "displays user-created dashboards with View, Edit, and Delete actions" do
-    test "shows user dashboard with all actions", %{conn: conn} do
+    test "displays user-created dashboards with View, Edit, and Delete actions", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user, %{name: "Revenue Overview"})
       conn = log_in_user(conn, user)
@@ -97,7 +97,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "shows empty state when user has no saved dashboards" do
-    test "displays empty state with create link", %{conn: conn} do
+    test "shows empty state when user has no saved dashboards", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -111,7 +111,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "shows delete confirmation inline when Delete is clicked" do
-    test "shows confirmation with confirm and cancel buttons", %{conn: conn} do
+    test "shows delete confirmation inline when Delete is clicked", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user)
       conn = log_in_user(conn, user)
@@ -129,7 +129,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "deletes dashboard and shows success flash on confirm" do
-    test "removes dashboard and flashes success", %{conn: conn} do
+    test "deletes dashboard and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user, %{name: "To Be Deleted"})
       conn = log_in_user(conn, user)
@@ -147,7 +147,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "cancels delete confirmation without modifying data" do
-    test "hides confirmation and keeps dashboard", %{conn: conn} do
+    test "cancels delete confirmation without modifying data", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user)
       conn = log_in_user(conn, user)
@@ -166,7 +166,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   end
 
   describe "shows error when deleting a non-existent dashboard" do
-    test "flashes error for not found", %{conn: conn} do
+    test "shows error when deleting a non-existent dashboard", %{conn: conn} do
       user = user_fixture()
       dashboard = dashboard_fixture(user)
       conn = log_in_user(conn, user)

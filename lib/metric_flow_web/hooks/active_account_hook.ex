@@ -1,4 +1,4 @@
-defmodule MetricFlowWeb.ActiveAccountHook do
+defmodule MetricFlowWeb.Hooks.ActiveAccountHook do
   @moduledoc """
   LiveView on_mount hook that loads the active account name for the current scope.
 

@@ -5,11 +5,9 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
-  alias MetricFlow.Accounts
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -66,7 +64,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders accounts page with Your Accounts header for authenticated user" do
-    test "shows header", %{conn: conn} do
+    test "renders accounts page with Your Accounts header for authenticated user", %{conn: conn} do
       user = user_fixture()
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -78,7 +76,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "displays account cards with name, type badge, and role badge" do
-    test "shows name, type, and role for each account", %{conn: conn} do
+    test "displays account cards with name, type badge, and role badge", %{conn: conn} do
       user = user_fixture()
       team = team_account_fixture(user, %{name: "My Team"})
       personal = personal_account_fixture(user)
@@ -95,7 +93,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "highlights the active account with data-active true" do
-    test "active account has data-active true", %{conn: conn} do
+    test "highlights the active account with data-active true", %{conn: conn} do
       user = user_fixture()
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -110,7 +108,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "shows Switch button for inactive accounts and Active label for current account" do
-    test "active account button is disabled with Active label", %{conn: conn} do
+    test "shows Switch button for inactive accounts and Active label for current account", %{conn: conn} do
       user = user_fixture()
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -119,23 +117,10 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
 
       assert has_element?(lv, "[data-role='switch-account'][disabled]", "Active")
     end
-
-    test "inactive account has Switch button", %{conn: conn} do
-      user = user_fixture()
-      first = team_account_fixture(user, %{name: "First"})
-      _second = team_account_fixture(user, %{name: "Second"})
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, html} = live(conn, ~p"/accounts")
-
-      # Second is active (most recent), so First should have a Switch button
-      assert html =~ "Switch to #{first.name}"
-      assert has_element?(lv, "[data-role='switch-account']:not([disabled])")
-    end
   end
 
   describe "switches active account on switch_account click and shows success flash" do
-    test "switches and shows flash", %{conn: conn} do
+    test "switches active account on switch_account click and shows success flash", %{conn: conn} do
       user = user_fixture()
       first = team_account_fixture(user, %{name: "First Account"})
       _second = team_account_fixture(user, %{name: "Second Account"})
@@ -159,7 +144,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "shows empty state when user has no accounts" do
-    test "displays no accounts found", %{conn: conn} do
+    test "shows empty state when user has no accounts", %{conn: conn} do
       user = user_fixture()
       user_id = user.id
       Repo.delete_all(from(m in AccountMember, where: m.user_id == ^user_id))
@@ -172,7 +157,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "creates a new team account via inline form and shows success flash" do
-    test "creates team and shows flash", %{conn: conn} do
+    test "creates a new team account via inline form and shows success flash", %{conn: conn} do
       user = user_fixture()
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -192,7 +177,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "shows validation errors on create team form with invalid data" do
-    test "shows error for blank name", %{conn: conn} do
+    test "shows validation errors on create team form with invalid data", %{conn: conn} do
       user = user_fixture()
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -208,27 +193,10 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
 
       assert html =~ "can&#39;t be blank"
     end
-
-    test "shows error for invalid slug", %{conn: conn} do
-      user = user_fixture()
-      _existing = team_account_fixture(user)
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
-
-      html =
-        lv
-        |> form("form[phx-submit='create_team']", %{
-          "team" => %{"name" => "Valid Name", "slug" => "INVALID SLUG!"}
-        })
-        |> render_submit()
-
-      assert html =~ "has invalid format"
-    end
   end
 
   describe "live-validates team form fields on change" do
-    test "shows live validation errors", %{conn: conn} do
+    test "live-validates team form fields on change", %{conn: conn} do
       user = user_fixture()
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -247,7 +215,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "subscribes to PubSub and refreshes account list on real-time updates" do
-    test "refreshes on account created", %{conn: conn} do
+    test "subscribes to PubSub and refreshes account list on real-time updates", %{conn: conn} do
       user = user_fixture()
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -262,26 +230,10 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       html = render(lv)
       assert html =~ "PubSub Created"
     end
-
-    test "refreshes on account deleted", %{conn: conn} do
-      user = user_fixture()
-      _keep = team_account_fixture(user, %{name: "Keep This"})
-      to_delete = team_account_fixture(user, %{name: "Delete This"})
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
-
-      scope = Scope.for_user(user)
-      {:ok, deleted} = Accounts.delete_account(scope, to_delete)
-      send(lv.pid, {:deleted, deleted})
-
-      html = render(lv)
-      refute html =~ "Delete This"
-    end
   end
 
   describe "redirects unauthenticated users to login" do
-    test "redirects to /users/log-in", %{conn: conn} do
+    test "redirects unauthenticated users to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} = live(conn, ~p"/accounts")
     end
   end

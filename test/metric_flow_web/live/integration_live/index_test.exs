@@ -94,7 +94,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders integrations page with header and Connect a Platform link" do
-    test "shows header and connect link", %{conn: conn} do
+    test "renders integrations page with header and Connect a Platform link", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -109,7 +109,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "shows empty state when no integrations are connected" do
-    test "displays empty state message", %{conn: conn} do
+    test "shows empty state when no integrations are connected", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -124,7 +124,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "displays connected platforms with name, description, and Connected badge" do
-    test "shows connected platform details", %{conn: conn} do
+    test "displays connected platforms with name, description, and Connected badge", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -142,7 +142,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms" do
-    test "shows all action buttons", %{conn: conn} do
+    test "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -159,7 +159,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "displays available platforms section for unconnected providers" do
-    test "shows available platforms with connect links", %{conn: conn} do
+    test "displays available platforms section for unconnected providers", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -175,7 +175,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "triggers sync and shows success flash on Sync Now click" do
-    test "shows sync started flash", %{conn: conn} do
+    test "triggers sync and shows success flash on Sync Now click", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads, %{provider_metadata: %{"provider_user_id" => "stub-user-id", "email" => "stub@example.com", "customer_id" => "1234567890"}})
       conn = log_in_user(conn, user)
@@ -194,7 +194,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "shows error flash when syncing a non-existent integration" do
-    test "shows not found error", %{conn: conn} do
+    test "shows error flash when syncing a non-existent integration", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -209,7 +209,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "opens disconnect confirmation modal on Disconnect click" do
-    test "shows modal with confirm and cancel", %{conn: conn} do
+    test "opens disconnect confirmation modal on Disconnect click", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -231,7 +231,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "disconnects provider and shows success flash on confirm" do
-    test "deletes integration and shows flash", %{conn: conn} do
+    test "disconnects provider and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)
@@ -258,7 +258,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "cancels disconnect modal without modifying data" do
-    test "closes modal and preserves integration", %{conn: conn} do
+    test "cancels disconnect modal without modifying data", %{conn: conn} do
       user = user_fixture()
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)

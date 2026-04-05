@@ -33,7 +33,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   # ---------------------------------------------------------------------------
 
   describe "renders provider dashboard with provider name and connection status" do
-    test "shows dashboard header and status", %{conn: conn} do
+    test "renders provider dashboard with provider name and connection status", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_analytics)
       conn = log_in_user(conn, user)
@@ -48,7 +48,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "shows metric cards with chart containers for the provider" do
-    test "displays metric cards", %{conn: conn} do
+    test "shows metric cards with chart containers for the provider", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_analytics)
       conn = log_in_user(conn, user)
@@ -62,7 +62,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "shows sync history section with recent sync entries" do
-    test "displays sync history section", %{conn: conn} do
+    test "shows sync history section with recent sync entries", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_analytics)
       conn = log_in_user(conn, user)
@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "triggers manual sync and shows sync started flash" do
-    test "starts sync and shows flash", %{conn: conn} do
+    test "triggers manual sync and shows sync started flash", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_analytics)
       conn = log_in_user(conn, user)
@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "changes date range filter and re-renders metric charts" do
-    test "updates date range", %{conn: conn} do
+    test "changes date range filter and re-renders metric charts", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_analytics)
       conn = log_in_user(conn, user)
@@ -112,7 +112,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "shows reviews section for google_business provider" do
-    test "displays reviews section", %{conn: conn} do
+    test "shows reviews section for google_business provider", %{conn: conn} do
       user = user_fixture()
       create_integration(user, :google_business)
       conn = log_in_user(conn, user)
@@ -126,7 +126,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "shows empty state with connect link when provider has no integration" do
-    test "displays empty state", %{conn: conn} do
+    test "shows empty state with connect link when provider has no integration", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -139,7 +139,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   end
 
   describe "redirects to integrations for unrecognized provider" do
-    test "redirects for invalid provider", %{conn: conn} do
+    test "redirects to integrations for unrecognized provider", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 

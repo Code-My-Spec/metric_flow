@@ -85,10 +85,12 @@ defmodule MetricFlow.Codemyspec.Client do
     Integrations.connected?(scope, :codemyspec)
   end
 
-  @doc "Fetches the access token from the user's CodeMySpec integration."
+  @doc "Fetches a fresh access token, refreshing if expired."
   def get_token(scope) do
-    case Integrations.get_integration(scope, :codemyspec) do
-      {:ok, integration} -> {:ok, integration.access_token}
+    with {:ok, integration} <- Integrations.get_integration(scope, :codemyspec),
+         {:ok, integration} <- Integrations.ensure_fresh_token(scope, integration) do
+      {:ok, integration.access_token}
+    else
       _ -> {:error, :not_connected}
     end
   end

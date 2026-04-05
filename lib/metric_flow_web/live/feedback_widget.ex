@@ -42,6 +42,9 @@ defmodule MetricFlowWeb.FeedbackWidget do
         |> assign(:error, nil)
         |> assign(:screenshot_data, nil)
         |> assign(:capturing, false)
+        |> assign(:form_title, "")
+        |> assign(:form_description, "")
+        |> assign(:form_severity, "medium")
       else
         socket
       end
@@ -52,6 +55,15 @@ defmodule MetricFlowWeb.FeedbackWidget do
   @impl true
   def handle_event("toggle", _params, socket) do
     {:noreply, assign(socket, expanded: !socket.assigns.expanded, submitted: false, error: nil)}
+  end
+
+  @impl true
+  def handle_event("validate", params, socket) do
+    {:noreply,
+     socket
+     |> assign(:form_title, params["title"] || "")
+     |> assign(:form_description, params["description"] || "")
+     |> assign(:form_severity, params["severity"] || "medium")}
   end
 
   @impl true
@@ -100,7 +112,10 @@ defmodule MetricFlowWeb.FeedbackWidget do
            socket
            |> assign(:submitted, true)
            |> assign(:error, nil)
-           |> assign(:screenshot_data, nil)}
+           |> assign(:screenshot_data, nil)
+           |> assign(:form_title, "")
+           |> assign(:form_description, "")
+           |> assign(:form_severity, "medium")}
 
         {:error, reason} ->
           {:noreply, assign(socket, :error, "Failed to submit: #{inspect(reason)}")}
@@ -163,7 +178,7 @@ defmodule MetricFlowWeb.FeedbackWidget do
                   <button phx-click="toggle" phx-target={@myself} class="btn btn-ghost btn-sm mt-2">Close</button>
                 </div>
               <% else %>
-                <form phx-submit="submit_feedback" phx-target={@myself} class="space-y-3">
+                <form phx-submit="submit_feedback" phx-change="validate" phx-target={@myself} class="space-y-3">
                   <%= if @error do %>
                     <div class="alert alert-error text-xs p-2"><span>{@error}</span></div>
                   <% end %>
@@ -192,13 +207,13 @@ defmodule MetricFlowWeb.FeedbackWidget do
                     <% end %>
                   <% end %>
 
-                  <input type="text" name="title" placeholder="Brief summary" required class="input input-bordered input-sm w-full" />
-                  <textarea name="description" placeholder="Describe the issue..." rows="3" class="textarea textarea-bordered textarea-sm w-full"></textarea>
-                  <select name="severity" class="select select-bordered select-sm w-full">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
+                  <input type="text" name="title" value={@form_title} placeholder="Brief summary" required class="input input-bordered input-sm w-full" />
+                  <textarea name="description" placeholder="Describe the issue..." rows="3" class="textarea textarea-bordered textarea-sm w-full">{@form_description}</textarea>
+                  <select name="severity" value={@form_severity} class="select select-bordered select-sm w-full">
+                    <option value="low" selected={@form_severity == "low"}>Low</option>
+                    <option value="medium" selected={@form_severity == "medium"}>Medium</option>
+                    <option value="high" selected={@form_severity == "high"}>High</option>
+                    <option value="critical" selected={@form_severity == "critical"}>Critical</option>
                   </select>
                   <button type="submit" class="btn btn-primary btn-sm w-full">Submit Feedback</button>
                 </form>

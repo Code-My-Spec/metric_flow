@@ -21,6 +21,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   alias MetricFlow.Agencies
   alias MetricFlow.Users
   alias MetricFlowWeb.AgencyLive
+  alias MetricFlowWeb.Hooks.ActiveAccountHook
 
   # ---------------------------------------------------------------------------
   # Render
@@ -331,12 +332,12 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     account =
       case Map.get(params, "account_id") do
         nil ->
-          MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+          ActiveAccountHook.primary_account(accounts)
 
         account_id_str ->
           account_id = String.to_integer(account_id_str)
           Enum.find(accounts, fn a -> a.id == account_id end) ||
-            MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+            ActiveAccountHook.primary_account(accounts)
       end
 
     user_role = Accounts.get_user_role(scope, scope.user.id, account.id)

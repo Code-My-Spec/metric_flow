@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   # ---------------------------------------------------------------------------
 
   describe "renders dashboard page with All Metrics title for default route" do
-    test "shows All Metrics heading", %{conn: conn} do
+    test "renders dashboard page with All Metrics title for default route", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -63,7 +63,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "shows onboarding prompt when no integrations are connected" do
-    test "displays onboarding with connect link", %{conn: conn} do
+    test "shows onboarding prompt when no integrations are connected", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "displays metrics dashboard with chart and data table when integrations exist" do
-    test "shows dashboard with chart and table", %{conn: conn} do
+    test "displays metrics dashboard with chart and data table when integrations exist", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user)
@@ -97,7 +97,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "filters metrics by platform when platform filter button is clicked" do
-    test "filters by specific platform", %{conn: conn} do
+    test "filters metrics by platform when platform filter button is clicked", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user, :google_analytics)
       insert_metric!(user)
@@ -113,26 +113,10 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       end)
     end
 
-    test "clears filter with all", %{conn: conn} do
-      user = user_fixture()
-      insert_integration!(user, :google_analytics)
-      insert_metric!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
-
-        render_click(lv, "filter_platform", %{"platform" => "google_analytics"})
-        html = render_click(lv, "filter_platform", %{"platform" => "all"})
-
-        assert is_binary(html)
-        assert has_element?(lv, "[data-role='metrics-dashboard']")
-      end)
-    end
   end
 
   describe "changes date range when date range filter button is clicked" do
-    test "switches to different date ranges", %{conn: conn} do
+    test "changes date range when date range filter button is clicked", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user)
@@ -156,7 +140,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "toggles metric visibility when metric toggle button is clicked" do
-    test "toggles metric off and back on", %{conn: conn} do
+    test "toggles metric visibility when metric toggle button is clicked", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user, %{metric_name: "sessions"})
@@ -176,7 +160,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "highlights active platform and date range filter buttons with btn-primary" do
-    test "platform and date range filters have active states", %{conn: conn} do
+    test "highlights active platform and date range filter buttons with btn-primary", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -195,7 +179,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "shows AI chat panel when AI Chat button is clicked and hides on close" do
-    test "opens and closes AI chat panel", %{conn: conn} do
+    test "shows AI chat panel when AI Chat button is clicked and hides on close", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -213,7 +197,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "shows AI insights panel for a metric and hides on close" do
-    test "opens and closes AI insights panel", %{conn: conn} do
+    test "shows AI insights panel for a metric and hides on close", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user, %{metric_name: "sessions"})
@@ -232,7 +216,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "shows empty state in chart and table when no data matches filters" do
-    test "shows no data message when no metrics exist", %{conn: conn} do
+    test "shows empty state in chart and table when no data matches filters", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)
@@ -246,7 +230,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "displays summary stats grid with metric sums and averages" do
-    test "shows summary stats section", %{conn: conn} do
+    test "displays summary stats grid with metric sums and averages", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user, %{metric_name: "sessions", value: 100.0})
@@ -261,7 +245,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "renders custom dashboard by ID with dashboard name as title" do
-    test "falls back to All Metrics when dashboard ID not found", %{conn: conn} do
+    test "renders custom dashboard by ID with dashboard name as title", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)

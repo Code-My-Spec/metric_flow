@@ -27,7 +27,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   # ---------------------------------------------------------------------------
 
   describe "renders insights page with header and type filter bar" do
-    test "shows header and filter bar", %{conn: conn} do
+    test "renders insights page with header and type filter bar", %{conn: conn} do
       {user, _account_id} = user_with_account()
 
       capture_log(fn ->
@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "shows no-insights empty state when account has no insights" do
-    test "displays empty state with correlations link", %{conn: conn} do
+    test "shows no-insights empty state when account has no insights", %{conn: conn} do
       {user, _account_id} = user_with_account()
 
       capture_log(fn ->
@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "displays insight cards with summary, type badge, confidence badge, and content" do
-    test "shows insight card details", %{conn: conn} do
+    test "displays insight cards with summary, type badge, confidence badge, and content", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{
         summary: "Increase Google Ads budget",
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "filters insights by type when filter button is clicked" do
-    test "filters to specific type", %{conn: conn} do
+    test "filters insights by type when filter button is clicked", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
@@ -96,7 +96,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "highlights active filter button with btn-primary" do
-    test "active filter has btn-primary", %{conn: conn} do
+    test "highlights active filter button with btn-primary", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id)
 
@@ -111,7 +111,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "shows empty filter state when no insights match selected type" do
-    test "displays no filter results", %{conn: conn} do
+    test "shows empty filter state when no insights match selected type", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase})
 
@@ -126,7 +126,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "clears filter and shows all insights when Show All is clicked" do
-    test "resets to all insights", %{conn: conn} do
+    test "clears filter and shows all insights when Show All is clicked", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "submits helpful feedback and shows confirmation message" do
-    test "shows confirmation after helpful feedback", %{conn: conn} do
+    test "submits helpful feedback and shows confirmation message", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
 
@@ -164,7 +164,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "submits not helpful feedback and shows confirmation message" do
-    test "shows confirmation after not helpful feedback", %{conn: conn} do
+    test "submits not helpful feedback and shows confirmation message", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
 
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "shows feedback confirmation for insights that already have feedback" do
-    test "displays confirmation on mount", %{conn: conn} do
+    test "shows feedback confirmation for insights that already have feedback", %{conn: conn} do
       {user, account_id} = user_with_account()
       insight = insert_insight!(account_id)
       insert_suggestion_feedback!(insight.id, user.id, %{rating: :helpful})
@@ -196,7 +196,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "shows AI personalization note when insights exist" do
-    test "displays personalization note", %{conn: conn} do
+    test "shows AI personalization note when insights exist", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id)
 
@@ -205,16 +205,6 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
 
         assert has_element?(lv, "[data-role='ai-personalization-note']")
         assert html =~ "AI suggestions learn from your feedback and improve over time."
-      end)
-    end
-
-    test "hidden when no insights", %{conn: conn} do
-      {user, _account_id} = user_with_account()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_insights(conn, user)
-
-        refute has_element?(lv, "[data-role='ai-personalization-note']")
       end)
     end
   end

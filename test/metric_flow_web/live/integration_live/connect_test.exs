@@ -124,7 +124,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   # ---------------------------------------------------------------------------
 
   describe "renders connect page with provider cards in a grid" do
-    test "shows provider cards", %{conn: conn} do
+    test "renders connect page with provider cards in a grid", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -138,7 +138,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows Connected badge for providers with active integrations" do
-    test "displays Connected badge", %{conn: conn} do
+    test "shows Connected badge for providers with active integrations", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :stub)
       conn = log_in_user(conn, user)
@@ -152,7 +152,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows Not connected badge for providers without integrations" do
-    test "displays Not connected badge", %{conn: conn} do
+    test "shows Not connected badge for providers without integrations", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -165,7 +165,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows Connect button for each provider card" do
-    test "displays connect button", %{conn: conn} do
+    test "shows Connect button for each provider card", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -178,7 +178,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "renders per-provider detail view with OAuth connect button" do
-    test "shows detail view with OAuth button", %{conn: conn} do
+    test "renders per-provider detail view with OAuth connect button", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -192,7 +192,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows connected status and account email on per-provider view when connected" do
-    test "displays connected status with email", %{conn: conn} do
+    test "shows connected status and account email on per-provider view when connected", %{conn: conn} do
       user = user_fixture()
       insert_integration!(user.id, :stub)
       conn = log_in_user(conn, user)
@@ -207,7 +207,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows back to integrations link on per-provider view" do
-    test "displays back link", %{conn: conn} do
+    test "shows back to integrations link on per-provider view", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -220,7 +220,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "redirects unauthenticated users to login" do
-    test "redirects to /users/log-in", %{conn: conn} do
+    test "redirects unauthenticated users to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                live(conn, ~p"/integrations/connect")
     end

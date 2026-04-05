@@ -93,7 +93,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders correlations page with header, mode toggle, and Run Now button" do
-    test "shows page elements", %{conn: conn} do
+    test "renders correlations page with header, mode toggle, and Run Now button", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows no-data empty state when no correlation results exist" do
-    test "displays empty state", %{conn: conn} do
+    test "shows no-data empty state when no correlation results exist", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -122,7 +122,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "displays raw mode results table with metric, coefficient, lag, and platform columns" do
-    test "shows results table with data", %{conn: conn} do
+    test "displays raw mode results table with metric, coefficient, lag, and platform columns", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", coefficient: 0.82, optimal_lag: 7, provider: :google_ads})
@@ -141,7 +141,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows correlation summary bar with goal metric and data window" do
-    test "displays summary bar", %{conn: conn} do
+    test "shows correlation summary bar with goal metric and data window", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id, %{goal_metric_name: "revenue"})
       insert_correlation_result!(account.id, job)
@@ -160,7 +160,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "switches between Raw and Smart modes on mode toggle click" do
-    test "toggles modes", %{conn: conn} do
+    test "switches between Raw and Smart modes on mode toggle click", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job)
@@ -183,7 +183,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "sorts results table when column header is clicked" do
-    test "sorts by different columns", %{conn: conn} do
+    test "sorts results table when column header is clicked", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", coefficient: 0.82})
@@ -203,7 +203,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "filters results by platform when platform filter button is clicked" do
-    test "filters by platform", %{conn: conn} do
+    test "filters results by platform when platform filter button is clicked", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", provider: :google_ads})
@@ -225,7 +225,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows empty filter state when no results match selected platform" do
-    test "displays empty filter message", %{conn: conn} do
+    test "shows empty filter state when no results match selected platform", %{conn: conn} do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", provider: :google_ads})
@@ -241,7 +241,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "triggers correlation run and shows job running banner" do
-    test "shows banner when job is running", %{conn: conn} do
+    test "triggers correlation run and shows job running banner", %{conn: conn} do
       {user, account} = user_with_personal_account()
       insert_running_job!(account.id)
       conn = log_in_user(conn, user)
@@ -256,7 +256,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows insufficient data warning when correlation run fails due to insufficient data" do
-    test "displays warning badge", %{conn: conn} do
+    test "shows insufficient data warning when correlation run fails due to insufficient data", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -272,7 +272,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows Smart mode opt-in card before AI suggestions are enabled" do
-    test "displays opt-in card", %{conn: conn} do
+    test "shows Smart mode opt-in card before AI suggestions are enabled", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -288,7 +288,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "enables AI suggestions and shows recommendations panel" do
-    test "shows recommendations after enabling", %{conn: conn} do
+    test "enables AI suggestions and shows recommendations panel", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 
@@ -305,7 +305,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "submits AI feedback and shows confirmation message" do
-    test "shows confirmation after feedback", %{conn: conn} do
+    test "submits AI feedback and shows confirmation message", %{conn: conn} do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 

@@ -74,7 +74,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   # ---------------------------------------------------------------------------
 
   describe "renders invitation details with account name, inviting user, and role for authenticated user" do
-    test "shows invitation details", %{conn: conn} do
+    test "renders invitation details with account name, inviting user, and role for authenticated user", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner, %{name: "Acme Corp"})
       invitee = user_fixture()
@@ -91,7 +91,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "shows accept and decline buttons for authenticated user" do
-    test "displays accept and decline", %{conn: conn} do
+    test "shows accept and decline buttons for authenticated user", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       invitee = user_fixture()
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "shows log in and register buttons for unauthenticated user" do
-    test "displays log in and register", %{conn: conn} do
+    test "shows log in and register buttons for unauthenticated user", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       invitation = invitation_fixture(account, owner, "guest@example.com")
@@ -123,7 +123,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "accepts invitation and redirects to accounts with success flash" do
-    test "accepts and redirects", %{conn: conn} do
+    test "accepts invitation and redirects to accounts with success flash", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner, %{name: "Acme Corp"})
       invitee = user_fixture()
@@ -140,7 +140,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "declines invitation and redirects to root with info flash" do
-    test "declines and redirects", %{conn: conn} do
+    test "declines invitation and redirects to root with info flash", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       invitee = user_fixture()
@@ -157,16 +157,16 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "shows error and redirects for invalid or already-used token" do
-    test "redirects for invalid token", %{conn: conn} do
+    test "shows error and redirects for invalid or already-used token", %{conn: conn} do
+      # Invalid token
       capture_log(fn ->
         assert {:error, {:redirect, %{to: "/", flash: flash}}} =
                  live(conn, ~p"/invitations/nonexistent-token-abc123")
 
         assert flash["error"] =~ "invalid or has already been used"
       end)
-    end
 
-    test "redirects for already-used token", %{conn: conn} do
+      # Already-used token
       owner = user_fixture()
       account = account_fixture(owner)
       invitee = user_fixture()
@@ -185,7 +185,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "shows error and redirects for expired invitation token" do
-    test "redirects for expired token", %{conn: conn} do
+    test "shows error and redirects for expired invitation token", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       invitation = expired_invitation_fixture(account, owner, "guest@example.com")
@@ -200,7 +200,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   end
 
   describe "shows already a member flash when accepting a duplicate invitation" do
-    test "shows already member flash", %{conn: conn} do
+    test "shows already a member flash when accepting a duplicate invitation", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       invitee = user_fixture()

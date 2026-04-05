@@ -32,7 +32,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   # ---------------------------------------------------------------------------
 
   describe "renders chat page with session sidebar and conversation area" do
-    test "shows sidebar, conversation area, and input", %{conn: conn} do
+    test "renders chat page with session sidebar and conversation area", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->
@@ -50,7 +50,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "shows empty state with example prompts when no sessions exist" do
-    test "displays empty state", %{conn: conn} do
+    test "shows empty state with example prompts when no sessions exist", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->
@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "shows no-session-selected state when sessions exist but none is active" do
-    test "displays no session selected", %{conn: conn} do
+    test "shows no-session-selected state when sessions exist but none is active", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       insert_chat_session!(user.id, account_id)
 
@@ -80,7 +80,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "creates a new session and displays it when a message is sent" do
-    test "sends message and creates session", %{conn: conn} do
+    test "creates a new session and displays it when a message is sent", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->
@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "loads an existing session and displays its messages" do
-    test "shows session messages", %{conn: conn} do
+    test "loads an existing session and displays its messages", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       session = insert_chat_session!(user.id, account_id, %{title: "Revenue Chat"})
       insert_chat_message!(session.id, %{role: :user, content: "Show revenue"})
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "streams assistant response tokens into the conversation" do
-    test "handles chat_complete message gracefully", %{conn: conn} do
+    test "streams assistant response tokens into the conversation", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       session = insert_chat_session!(user.id, account_id)
       insert_chat_message!(session.id, %{role: :user, content: "test"})
@@ -131,7 +131,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "shows streaming indicator while waiting for response" do
-    test "displays waiting indicator during streaming", %{conn: conn} do
+    test "shows streaming indicator while waiting for response", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       session = insert_chat_session!(user.id, account_id)
 
@@ -149,7 +149,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "updates input value on change and disables send when blank" do
-    test "updates input and manages send button state", %{conn: conn} do
+    test "updates input value on change and disables send when blank", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->
@@ -166,7 +166,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "navigates to a session when sidebar item is clicked" do
-    test "loads session on click", %{conn: conn} do
+    test "navigates to a session when sidebar item is clicked", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       session = insert_chat_session!(user.id, account_id, %{title: "My Chat"})
       insert_chat_message!(session.id, %{role: :user, content: "Hello"})
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "starts a new chat when new chat button is clicked" do
-    test "clears active session", %{conn: conn} do
+    test "starts a new chat when new chat button is clicked", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       session = insert_chat_session!(user.id, account_id)
 
@@ -198,7 +198,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "shows error flash when loading a non-existent session ID" do
-    test "flashes error for invalid session", %{conn: conn} do
+    test "shows error flash when loading a non-existent session ID", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->
@@ -211,7 +211,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
   end
 
   describe "shows context indicator when context_type query param is set" do
-    test "displays context indicator", %{conn: conn} do
+    test "shows context indicator when context_type query param is set", %{conn: conn} do
       {user, _account_id, _scope} = user_with_account()
 
       capture_log(fn ->

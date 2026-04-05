@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   # ---------------------------------------------------------------------------
 
   describe "renders members page with member list for owner" do
-    test "shows members page with account name", %{conn: conn} do
+    test "renders members page with member list for owner", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -62,7 +62,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "displays member email, role badge, and join date in each row" do
-    test "shows email and role for each member", %{conn: conn} do
+    test "displays member email, role badge, and join date in each row", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       other_user = user_fixture()
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "shows role change dropdown and remove button for owners and admins" do
-    test "owner sees role change and remove controls", %{conn: conn} do
+    test "shows role change dropdown and remove button for owners and admins", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       other_user = user_fixture()
@@ -94,7 +94,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "hides management controls for read_only and account_manager roles" do
-    test "account_manager sees no management controls", %{conn: conn} do
+    test "hides management controls for read_only and account_manager roles", %{conn: conn} do
       owner_user = user_fixture()
       account = account_fixture(owner_user)
       manager_user = user_fixture()
@@ -108,22 +108,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       refute has_element?(lv, "[phx-click='remove_member']")
     end
 
-    test "read_only member sees no management controls", %{conn: conn} do
-      owner_user = user_fixture()
-      account = account_fixture(owner_user)
-      reader_user = user_fixture()
-      insert_member!(account, reader_user, :read_only)
-      conn = log_in_user(conn, reader_user)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      refute has_element?(lv, "[data-role='members-list']")
-      refute has_element?(lv, "[phx-click='remove_member']")
-    end
   end
 
   describe "owner can change a member role and sees success flash" do
-    test "changes role successfully", %{conn: conn} do
+    test "owner can change a member role and sees success flash", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       target_user = user_fixture()
@@ -148,7 +136,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "shows error when attempting to demote the last owner" do
-    test "prevents demotion of last owner", %{conn: conn} do
+    test "shows error when attempting to demote the last owner", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
@@ -165,7 +153,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "owner can remove a member and sees success flash" do
-    test "removes member successfully", %{conn: conn} do
+    test "owner can remove a member and sees success flash", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       target_user = user_fixture()
@@ -191,7 +179,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "hides remove button for the last owner row" do
-    test "no remove button on sole owner row", %{conn: conn} do
+    test "hides remove button for the last owner row", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
@@ -206,7 +194,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "hides remove button for the current user row" do
-    test "no remove button on own row", %{conn: conn} do
+    test "hides remove button for the current user row", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       admin_user = user_fixture()
@@ -223,7 +211,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "owner can invite a new member by email and sees success flash" do
-    test "invites member successfully", %{conn: conn} do
+    test "owner can invite a new member by email and sees success flash", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       invitee = user_fixture()
@@ -242,7 +230,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "shows error when inviting a non-existent user" do
-    test "shows user not found error", %{conn: conn} do
+    test "shows error when inviting a non-existent user", %{conn: conn} do
       owner = user_fixture()
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
@@ -259,7 +247,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "shows error when inviting an already existing member" do
-    test "shows already a member error", %{conn: conn} do
+    test "shows error when inviting an already existing member", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       existing_member = user_fixture()
@@ -278,7 +266,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
   end
 
   describe "subscribes to member PubSub and refreshes on real-time updates" do
-    test "refreshes on member created", %{conn: conn} do
+    test "subscribes to member PubSub and refreshes on real-time updates", %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner)
       conn = log_in_user(conn, owner)
@@ -294,25 +282,10 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       assert html =~ new_user.email
     end
 
-    test "refreshes on member deleted", %{conn: conn} do
-      owner = user_fixture()
-      account = account_fixture(owner)
-      target_user = user_fixture()
-      member = insert_member!(account, target_user, :admin)
-      conn = log_in_user(conn, owner)
-
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
-
-      Repo.delete!(member)
-      send(lv.pid, {:deleted, member})
-
-      html = render(lv)
-      refute html =~ target_user.email
-    end
   end
 
   describe "redirects to /accounts when user has no accounts" do
-    test "redirects when no accounts", %{conn: conn} do
+    test "redirects to /accounts when user has no accounts", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 

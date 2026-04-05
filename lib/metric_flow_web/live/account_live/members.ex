@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
 
   alias MetricFlow.Accounts
   alias MetricFlow.Users
+  alias MetricFlowWeb.Hooks.ActiveAccountHook
 
   # Roles used for row-level role select (all valid account_member roles)
   @valid_roles ~w(owner admin account_manager read_only)
@@ -209,7 +210,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
         {:ok, redirect(socket, to: "/accounts")}
 
       accounts ->
-        account = MetricFlowWeb.ActiveAccountHook.primary_account(accounts)
+        account = ActiveAccountHook.primary_account(accounts)
         members = Accounts.list_account_members(scope, account.id)
         user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
         can_manage = can_manage?(user_role)

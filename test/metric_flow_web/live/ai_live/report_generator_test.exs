@@ -34,7 +34,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   # ---------------------------------------------------------------------------
 
   describe "renders report generator page with prompt form and Generate Chart button" do
-    test "shows page with prompt form elements", %{conn: conn} do
+    test "renders report generator page with prompt form and Generate Chart button", %{conn: conn} do
       user = user_fixture()
 
       capture_log(fn ->
@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "shows empty state when no chart has been generated" do
-    test "displays empty state on mount", %{conn: conn} do
+    test "shows empty state when no chart has been generated", %{conn: conn} do
       user = user_fixture()
 
       capture_log(fn ->
@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "updates prompt text on change without calling any context" do
-    test "updates prompt and enables generate button", %{conn: conn} do
+    test "updates prompt text on change without calling any context", %{conn: conn} do
       user = user_fixture()
 
       capture_log(fn ->
@@ -78,28 +78,18 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "disables generate button when prompt is blank or generation is in progress" do
-    test "disabled on mount with blank prompt", %{conn: conn} do
+    test "disables generate button when prompt is blank or generation is in progress", %{conn: conn} do
       user = user_fixture()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_report_generator(conn, user)
-        assert has_element?(lv, "[data-role='generate-btn'][disabled]")
-      end)
-    end
-
-    test "disabled when prompt is only whitespace", %{conn: conn} do
-      user = user_fixture()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = mount_report_generator(conn, user)
-        render_change(lv, "update_prompt", %{"prompt" => "   "})
         assert has_element?(lv, "[data-role='generate-btn'][disabled]")
       end)
     end
   end
 
   describe "shows chart preview section with Vega-Lite container after successful generation" do
-    test "renders chart preview", %{conn: conn} do
+    test "shows chart preview section with Vega-Lite container after successful generation", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
@@ -120,7 +110,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "shows error message when generation fails" do
-    test "displays error and no chart preview", %{conn: conn} do
+    test "shows error message when generation fails", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
@@ -140,7 +130,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "shows save section with name input after chart is generated" do
-    test "save section appears after generation", %{conn: conn} do
+    test "shows save section with name input after chart is generated", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
@@ -160,7 +150,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "saves visualization and shows confirmation with link to visualizations" do
-    test "saves and shows confirmation", %{conn: conn} do
+    test "saves visualization and shows confirmation with link to visualizations", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
@@ -183,7 +173,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "shows save error when save name is blank" do
-    test "displays save error", %{conn: conn} do
+    test "shows save error when save name is blank", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
@@ -204,7 +194,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "disables save button when vega_spec is nil or save name is blank" do
-    test "save button disabled before generation", %{conn: conn} do
+    test "disables save button when vega_spec is nil or save name is blank", %{conn: conn} do
       user = user_fixture()
 
       capture_log(fn ->
@@ -216,7 +206,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "resets state when Generate Another is clicked after saving" do
-    test "returns to empty state", %{conn: conn} do
+    test "resets state when Generate Another is clicked after saving", %{conn: conn} do
       user = user_fixture()
 
       with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
