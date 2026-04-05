@@ -177,7 +177,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "triggers sync and shows success flash on Sync Now click" do
     test "shows sync started flash", %{conn: conn} do
       user = user_fixture()
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google_ads, %{provider_metadata: %{"provider_user_id" => "stub-user-id", "email" => "stub@example.com", "customer_id" => "1234567890"}})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->

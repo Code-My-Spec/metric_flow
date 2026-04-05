@@ -10,6 +10,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Ai
+  alias MetricFlow.Correlations
 
   @type_labels %{
     budget_increase: "Budget Increase",
@@ -48,10 +49,35 @@ defmodule MetricFlowWeb.AiLive.Insights do
     <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
       <div class="max-w-4xl mx-auto mf-content px-4 py-8">
         <%!-- Page header --%>
-        <h1 class="text-2xl font-bold">AI Insights</h1>
-        <p class="text-base-content/60 mt-1">
-          Actionable recommendations generated from your correlation analysis
-        </p>
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h1 class="text-2xl font-bold">AI Insights</h1>
+            <p class="text-base-content/60 mt-1">
+              Actionable recommendations generated from your correlation analysis
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              :if={@insights != []}
+              phx-click="clear_all_insights"
+              data-role="clear-all-insights"
+              data-confirm="Delete all insights? This cannot be undone."
+              class="btn btn-ghost btn-sm text-error"
+            >
+              Clear All
+            </button>
+            <button
+              :if={@has_correlations}
+              phx-click="generate_insights"
+              disabled={@generating}
+              data-role="generate-insights"
+              class="btn btn-primary btn-sm"
+            >
+              <span :if={@generating} class="loading loading-spinner loading-xs"></span>
+              {if @generating, do: "Generating...", else: "Generate Insights"}
+            </button>
+          </div>
+        </div>
 
         <%!-- Type filter bar --%>
         <div data-role="type-filter" class="flex items-center gap-2 mt-6 mb-6 flex-wrap">
@@ -72,13 +98,26 @@ defmodule MetricFlowWeb.AiLive.Insights do
           class="mf-card p-8 text-center"
         >
           <h2 class="text-xl font-semibold">No Insights Yet</h2>
-          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
-            AI insights are generated automatically after a correlation analysis completes.
-            Run a correlation to get your first recommendations.
-          </p>
-          <.link navigate={~p"/correlations"} class="btn btn-primary mt-6">
-            Run Correlations
-          </.link>
+          <%= if @has_correlations do %>
+            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+              You have correlation data available. Click "Generate Insights" to create AI-powered recommendations.
+            </p>
+            <button
+              phx-click="generate_insights"
+              disabled={@generating}
+              class="btn btn-primary mt-6"
+            >
+              <span :if={@generating} class="loading loading-spinner loading-xs"></span>
+              {if @generating, do: "Generating...", else: "Generate Insights"}
+            </button>
+          <% else %>
+            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+              Run a correlation analysis first, then generate insights from the results.
+            </p>
+            <.link navigate={~p"/correlations"} class="btn btn-primary mt-6">
+              Run Correlations
+            </.link>
+          <% end %>
         </div>
 
         <%!-- Empty filter state: insights exist but filter matches nothing --%>
@@ -143,9 +182,19 @@ defmodule MetricFlowWeb.AiLive.Insights do
                 Based on correlation result #{insight.correlation_result_id}
               </div>
 
-              <%!-- Generated at --%>
-              <div data-role="insight-generated-at" class="text-xs text-base-content/40">
-                Generated {format_generated_at(insight.generated_at)}
+              <%!-- Generated at + delete --%>
+              <div class="flex items-center justify-between">
+                <div data-role="insight-generated-at" class="text-xs text-base-content/40">
+                  Generated {format_generated_at(insight.generated_at)}
+                </div>
+                <button
+                  phx-click="delete_insight"
+                  phx-value-id={insight.id}
+                  data-role="delete-insight"
+                  class="btn btn-ghost btn-xs text-error"
+                >
+                  Delete
+                </button>
               </div>
 
               <%!-- Feedback section --%>
@@ -235,6 +284,8 @@ defmodule MetricFlowWeb.AiLive.Insights do
     scope = socket.assigns.current_scope
     insights = Ai.list_insights(scope, [])
     feedback_map = build_feedback_map(scope, insights)
+    latest_job = Correlations.get_latest_correlation_summary(scope)
+    has_correlations = not latest_job.no_data
 
     socket =
       socket
@@ -243,6 +294,8 @@ defmodule MetricFlowWeb.AiLive.Insights do
       |> assign(:active_type_filter, :all)
       |> assign(:feedback_submitted, %{})
       |> assign(:filter_buttons, @filter_buttons)
+      |> assign(:has_correlations, has_correlations)
+      |> assign(:generating, false)
       |> assign(:page_title, "AI Insights")
 
     {:ok, socket}
@@ -260,6 +313,54 @@ defmodule MetricFlowWeb.AiLive.Insights do
   def handle_event("filter_type", %{"type" => type_string}, socket) do
     type = String.to_existing_atom(type_string)
     {:noreply, assign(socket, :active_type_filter, type)}
+  end
+
+  def handle_event("generate_insights", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    case Correlations.get_latest_completed_job(scope) do
+      nil ->
+        {:noreply, put_flash(socket, :error, "No completed correlation analysis found. Run correlations first.")}
+
+      job ->
+        socket = assign(socket, :generating, true)
+        pid = self()
+
+        Task.start(fn ->
+          result = Ai.generate_insights(scope, job.id)
+          send(pid, {:insights_generated, result})
+        end)
+
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("delete_insight", %{"id" => id_string}, socket) do
+    scope = socket.assigns.current_scope
+    insight_id = String.to_integer(id_string)
+
+    case Ai.delete_insight(scope, insight_id) do
+      {:ok, _} ->
+        insights = Enum.reject(socket.assigns.insights, &(&1.id == insight_id))
+        {:noreply, assign(socket, :insights, insights)}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "Insight not found.")}
+    end
+  end
+
+  def handle_event("clear_all_insights", _params, socket) do
+    scope = socket.assigns.current_scope
+    {count, _} = Ai.delete_all_insights(scope)
+
+    socket =
+      socket
+      |> assign(:insights, [])
+      |> assign(:feedback_map, %{})
+      |> assign(:feedback_submitted, %{})
+      |> put_flash(:info, "Deleted #{count} insights.")
+
+    {:noreply, socket}
   end
 
   def handle_event("submit_feedback", %{"insight-id" => id_string, "rating" => rating_string}, socket) do
@@ -282,6 +383,42 @@ defmodule MetricFlowWeb.AiLive.Insights do
       {:error, _changeset} ->
         {:noreply, put_flash(socket, :error, "Could not save feedback. Please try again.")}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Info handlers
+  # ---------------------------------------------------------------------------
+
+  @impl true
+  def handle_info({:insights_generated, {:ok, new_insights}}, socket) do
+    scope = socket.assigns.current_scope
+    all_insights = Ai.list_insights(scope, [])
+    feedback_map = build_feedback_map(scope, all_insights)
+
+    socket =
+      socket
+      |> assign(:insights, all_insights)
+      |> assign(:feedback_map, feedback_map)
+      |> assign(:generating, false)
+      |> put_flash(:info, "Generated #{length(new_insights)} new insights.")
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:insights_generated, {:error, reason}}, socket) do
+    message =
+      case reason do
+        :no_results -> "No correlation results to analyze."
+        :job_not_complete -> "Correlation job is not complete yet."
+        _ -> "Failed to generate insights: #{inspect(reason)}"
+      end
+
+    socket =
+      socket
+      |> assign(:generating, false)
+      |> put_flash(:error, message)
+
+    {:noreply, socket}
   end
 
   # ---------------------------------------------------------------------------

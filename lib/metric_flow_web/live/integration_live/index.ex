@@ -115,7 +115,9 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     <% integration = find_integration(@integrations, platform.provider) %>
                     <%= if integration do %>
                       <p data-role="integration-connected-date" class="text-xs text-base-content/50 mt-1">
-                        Connected via {provider_display_name(platform.provider)} on {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
+                        Connected
+                        <span :if={logged_in_account(integration)}>as <span class="font-medium">{logged_in_account(integration)}</span></span>
+                        via {provider_display_name(platform.provider)} on {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
                       </p>
                       <div data-role="integration-selected-accounts" class="mt-2 text-sm text-base-content/60">
                         <% account_value = selected_account_display(integration) %>
@@ -129,20 +131,22 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                   </div>
 
                   <div class="flex flex-col items-end gap-2 ml-4">
+                    <% no_accounts = is_nil(selected_account_display(integration)) %>
                     <button
                       phx-click="sync"
                       phx-value-platform={Atom.to_string(platform.key)}
                       phx-value-provider={Atom.to_string(platform.provider)}
                       phx-disable-with="Please wait..."
-                      disabled={MapSet.member?(@syncing, platform.key)}
+                      disabled={MapSet.member?(@syncing, platform.key) or no_accounts}
                       class="btn btn-outline btn-sm"
+                      title={if no_accounts, do: "Select accounts before syncing", else: ""}
                     >
                       Sync Now
                     </button>
                     <.link
                       data-role="edit-integration-accounts"
                       navigate={~p"/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"}
-                      class="btn btn-ghost btn-sm"
+                      class={if no_accounts, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
                     >
                       Edit Accounts
                     </.link>
@@ -497,6 +501,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   end
 
   defp selected_account_display(_), do: nil
+
+  defp logged_in_account(%{provider_metadata: %{"email" => email}}) when is_binary(email) and email != "", do: email
+  defp logged_in_account(%{provider_metadata: %{"name" => name}}) when is_binary(name) and name != "", do: name
+  defp logged_in_account(_), do: nil
 
   defp metadata_key_for_provider(:google_analytics), do: "property_id"
   defp metadata_key_for_provider(:google_ads), do: "customer_id"

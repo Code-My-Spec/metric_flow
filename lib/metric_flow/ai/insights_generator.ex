@@ -16,14 +16,21 @@ defmodule MetricFlow.Ai.InsightsGenerator do
   @task_instructions """
   You are generating structured insights from marketing correlation data.
 
-  For each significant correlation, provide:
-  - A detailed content explanation of the relationship and recommended action
-  - A brief one-line summary
-  - A suggestion_type: one of budget_increase, budget_decrease, optimization, monitoring, or general
-  - A confidence score between 0.0 and 1.0
+  Return an array of insights. For each significant correlation, provide:
+  - summary: A concise one-sentence headline (under 120 characters)
+  - content: A 1-2 sentence actionable recommendation with specific numbers from the data
+  - suggestion_type: exactly one of "budget_increase", "budget_decrease", "optimization", "monitoring", or "general"
+  - confidence: a float between 0.0 and 1.0 based on correlation strength
 
-  Focus on actionable recommendations that connect marketing spend to business outcomes.
-  Consider the optimal lag when suggesting timing adjustments.
+  Rules:
+  - Use "budget_increase" when data suggests spending more on a channel
+  - Use "budget_decrease" when negative correlations suggest reducing spend
+  - Use "optimization" for improving efficiency without changing spend
+  - Use "monitoring" for relationships that need watching but no immediate action
+  - Keep summaries short and punchy — they are card titles, not paragraphs
+  - Each insight should be about ONE specific metric relationship, not a broad overview
+  - Focus on actionable recommendations that connect marketing spend to business outcomes
+  - Consider the optimal lag when suggesting timing adjustments
   """
 
   @doc """
@@ -83,27 +90,40 @@ defmodule MetricFlow.Ai.InsightsGenerator do
   defp parse_response(response, _correlation_data) when is_list(response), do: response
 
   defp parse_response(response, correlation_data) when is_map(response) do
-    suggestions = Map.get(response, :suggestions, Map.get(response, "suggestions", []))
-    confidence = Map.get(response, :confidence, Map.get(response, "confidence", 0.5))
-    summary = Map.get(response, :summary, Map.get(response, "summary", ""))
-
+    insights = Map.get(response, :insights, Map.get(response, "insights", []))
     results = Map.get(correlation_data, :results, [])
 
-    suggestions
+    insights
     |> Enum.with_index()
-    |> Enum.map(fn {suggestion_text, index} ->
+    |> Enum.map(fn {insight, index} ->
       result = Enum.at(results, index)
 
       %{
-        content: suggestion_text,
-        summary: summary,
-        suggestion_type: :general,
-        confidence: confidence,
+        content: get_field(insight, :content, ""),
+        summary: get_field(insight, :summary, ""),
+        suggestion_type: parse_suggestion_type(get_field(insight, :suggestion_type, "general")),
+        confidence: get_field(insight, :confidence, 0.5),
         correlation_result_id: result && Map.get(result, :correlation_result_id),
         metadata: build_metadata(result)
       }
     end)
   end
+
+  defp get_field(map, key, default) do
+    Map.get(map, key, Map.get(map, Atom.to_string(key), default))
+  end
+
+  @valid_types ~w(budget_increase budget_decrease optimization monitoring general)a
+  defp parse_suggestion_type(type) when is_atom(type) and type in @valid_types, do: type
+  defp parse_suggestion_type(type) when is_binary(type) do
+    try do
+      String.to_existing_atom(type)
+    rescue
+      ArgumentError -> :general
+    end
+    |> then(fn atom -> if atom in @valid_types, do: atom, else: :general end)
+  end
+  defp parse_suggestion_type(_), do: :general
 
   defp build_metadata(nil), do: %{}
 

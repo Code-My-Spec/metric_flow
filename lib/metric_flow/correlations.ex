@@ -31,6 +31,7 @@ defmodule MetricFlow.Correlations do
   defdelegate get_correlation_result(scope, id), to: CorrelationsRepository
   defdelegate get_correlation_job(scope, id), to: CorrelationsRepository
   defdelegate list_correlation_jobs(scope), to: CorrelationsRepository
+  defdelegate get_latest_completed_job(scope), to: CorrelationsRepository
 
   # ---------------------------------------------------------------------------
   # Correlation orchestration

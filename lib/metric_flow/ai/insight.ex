@@ -86,7 +86,7 @@ defmodule MetricFlow.Ai.Insight do
       :generated_at
     ])
     |> validate_length(:content, min: 1)
-    |> validate_length(:summary, max: 500)
+    |> validate_length(:summary, max: 2000)
     |> validate_number(:confidence,
       greater_than_or_equal_to: 0.0,
       less_than_or_equal_to: 1.0

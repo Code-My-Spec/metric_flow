@@ -78,8 +78,12 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     {results, data_window} = compute_correlations(scope, metric_names, goal_series, job)
 
     case persist_results(scope, job, results, goal_metric_name, data_window) do
-      {:ok, _} -> :ok
-      {:error, reason} -> handle_failure(scope, job, reason)
+      {:ok, updated_job} ->
+        broadcast_job_update(scope, updated_job)
+        :ok
+
+      {:error, reason} ->
+        handle_failure(scope, job, reason)
     end
   rescue
     e ->
@@ -100,7 +104,9 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
           {metric_values, goal_aligned} = Math.extract_values(metric_series, goal_values)
 
           case Math.cross_correlate(metric_values, goal_aligned) do
-            nil -> nil
+            nil ->
+              nil
+
             {optimal_lag, coefficient} ->
               %{
                 metric_name: metric_name,
@@ -163,11 +169,14 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   defp handle_failure(scope, job, reason) do
     error_message = if is_binary(reason), do: reason, else: inspect(reason)
 
-    CorrelationsRepository.update_correlation_job(scope, job, %{
-      status: :failed,
-      completed_at: DateTime.utc_now(),
-      error_message: error_message
-    })
+    case CorrelationsRepository.update_correlation_job(scope, job, %{
+           status: :failed,
+           completed_at: DateTime.utc_now(),
+           error_message: error_message
+         }) do
+      {:ok, updated_job} -> broadcast_job_update(scope, updated_job)
+      _ -> :ok
+    end
 
     {:error, reason}
   end
@@ -194,4 +203,12 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   defp detect_provider("fb_" <> _), do: :facebook_ads
   defp detect_provider("qb_" <> _), do: :quickbooks
   defp detect_provider(_), do: nil
+
+  defp broadcast_job_update(%Scope{user: user}, job) do
+    Phoenix.PubSub.broadcast(
+      MetricFlow.PubSub,
+      "user:#{user.id}:correlations",
+      {:correlation_job_updated, job}
+    )
+  end
 end

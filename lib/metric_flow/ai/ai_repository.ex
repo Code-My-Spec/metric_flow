@@ -86,6 +86,31 @@ defmodule MetricFlow.Ai.AiRepository do
     |> Repo.insert()
   end
 
+  @doc """
+  Deletes a specific insight by ID, scoped to the account.
+  """
+  @spec delete_insight(Scope.t(), integer()) :: {:ok, Insight.t()} | {:error, :not_found}
+  def delete_insight(%Scope{} = scope, id) do
+    case get_insight(scope, id) do
+      {:ok, insight} -> Repo.delete(insight)
+      {:error, :not_found} -> {:error, :not_found}
+    end
+  end
+
+  @doc """
+  Deletes all insights for the scoped account.
+  """
+  @spec delete_all_insights(Scope.t()) :: {non_neg_integer(), nil}
+  def delete_all_insights(%Scope{} = scope) do
+    case get_account_id(scope) do
+      nil -> {0, nil}
+      account_id ->
+        Insight
+        |> where(account_id: ^account_id)
+        |> Repo.delete_all()
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # ChatSession operations
   # ---------------------------------------------------------------------------

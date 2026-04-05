@@ -98,7 +98,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
         >
           <span class="loading loading-spinner loading-sm"></span>
           <p class="text-sm">
-            Correlation analysis is running. This page will reflect the latest results once complete.
+            Correlation analysis is running. Results will appear automatically when complete.
           </p>
         </div>
 
@@ -436,6 +436,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   def mount(_params, _session, socket) do
     scope = socket.assigns.current_scope
 
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:correlations")
+    end
+
     {summary, job_running} =
       try do
         summary = Correlations.get_latest_correlation_summary(scope)
@@ -537,6 +541,39 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
 
   def handle_event("submit_smart_feedback", _params, socket) do
     {:noreply, assign(socket, :ai_feedback_submitted, true)}
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub handlers
+  # ---------------------------------------------------------------------------
+
+  @impl true
+  def handle_info({:correlation_job_updated, job}, socket) do
+    scope = socket.assigns.current_scope
+
+    case job.status do
+      :completed ->
+        summary = Correlations.get_latest_correlation_summary(scope)
+
+        socket =
+          socket
+          |> assign(:job_running, false)
+          |> assign(:summary, summary)
+          |> put_flash(:info, "Correlation analysis complete — #{job.results_count || 0} results found.")
+
+        {:noreply, socket}
+
+      :failed ->
+        socket =
+          socket
+          |> assign(:job_running, false)
+          |> put_flash(:error, "Correlation analysis failed: #{job.error_message || "unknown error"}")
+
+        {:noreply, socket}
+
+      _other ->
+        {:noreply, socket}
+    end
   end
 
   # ---------------------------------------------------------------------------

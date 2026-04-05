@@ -18,9 +18,18 @@ defmodule MetricFlow.Ai.LlmClient do
   @insights_model "anthropic:claude-haiku-4-5"
 
   @insight_schema [
-    suggestions: [type: {:list, :string}, required: true],
-    confidence: [type: :float, required: true],
-    summary: [type: :string, required: true]
+    insights: [
+      type:
+        {:list,
+         {:map,
+          [
+            summary: [type: :string, required: true],
+            content: [type: :string, required: true],
+            suggestion_type: [type: :string, required: true],
+            confidence: [type: :float, required: true]
+          ]}},
+      required: true
+    ]
   ]
 
   # Anthropic structured output rejects `additionalProperties: true` on objects.

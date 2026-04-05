@@ -38,6 +38,8 @@ defmodule MetricFlow.Ai do
 
   defdelegate list_insights(scope, opts \\ []), to: AiRepository
   defdelegate get_insight(scope, id), to: AiRepository
+  defdelegate delete_insight(scope, id), to: AiRepository
+  defdelegate delete_all_insights(scope), to: AiRepository
   defdelegate list_chat_sessions(scope), to: AiRepository
   defdelegate get_chat_session(scope, id), to: AiRepository
   defdelegate get_feedback_for_insight(scope, insight_id), to: AiRepository
@@ -194,14 +196,14 @@ defmodule MetricFlow.Ai do
     now = DateTime.utc_now()
 
     insights =
-      Enum.map(insight_attrs_list, fn attrs ->
-        {:ok, insight} =
-          attrs
-          |> Map.put_new(:generated_at, now)
-          |> then(&AiRepository.create_insight(scope, &1))
-
-        insight
+      insight_attrs_list
+      |> Enum.map(fn attrs ->
+        attrs
+        |> Map.put_new(:generated_at, now)
+        |> then(&AiRepository.create_insight(scope, &1))
       end)
+      |> Enum.filter(&match?({:ok, _}, &1))
+      |> Enum.map(fn {:ok, insight} -> insight end)
 
     {:ok, insights}
   end
