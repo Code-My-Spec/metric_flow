@@ -1,4 +1,4 @@
-# MetricFlowWeb.ActiveAccountHook
+# MetricFlowWeb.Hooks.ActiveAccountHook
 
 LiveView on_mount hook that loads the active account name for the current scope. Assigns `active_account_name` to the socket so the navigation layout can display which account is currently active. Uses the most recently switched-to account from the user's account list.
 

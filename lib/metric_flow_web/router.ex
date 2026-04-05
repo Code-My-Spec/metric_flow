@@ -39,10 +39,11 @@ defmodule MetricFlowWeb.Router do
     get "/health", MetricFlowWeb.HealthController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", MetricFlowWeb do
-  #   pipe_through :api
-  # end
+  # Stripe webhook endpoint — no CSRF, no session, signature-verified
+  scope "/billing", MetricFlowWeb do
+    pipe_through :api
+    post "/webhooks", BillingWebhookController, :handle
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:metric_flow, :dev_routes) do
@@ -70,7 +71,7 @@ defmodule MetricFlowWeb.Router do
       on_mount: [
         {MetricFlowWeb.UserAuth, :require_authenticated},
         {MetricFlowWeb.WhiteLabelHook, :load_white_label},
-        {MetricFlowWeb.ActiveAccountHook, :load_active_account}
+        {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account}
       ] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
@@ -95,6 +96,29 @@ defmodule MetricFlowWeb.Router do
       live "/dashboards/:id/edit", DashboardLive.Editor, :edit
       live "/dashboards/:id", DashboardLive.Show, :show
 
+      # Subscription checkout (must be outside paywall gate)
+      live "/subscriptions/checkout", SubscriptionLive.Checkout, :index
+
+      # Agency billing routes (not paywalled — agency admins need access)
+      live "/agency/plans", AgencyLive.Plans, :index
+      live "/agency/stripe-connect", AgencyLive.StripeConnect, :index
+      live "/agency/subscriptions", AgencyLive.Subscriptions, :index
+
+      # Report routes
+      live "/reports", ReportLive.Index, :index
+      live "/reports/new", ReportLive.Index, :new
+      live "/reports/generate", AiLive.ReportGenerator, :index
+      live "/reports/:id", ReportLive.Show, :show
+    end
+
+    # Paywalled routes — require active subscription for AI features
+    live_session :require_subscription,
+      on_mount: [
+        {MetricFlowWeb.UserAuth, :require_authenticated},
+        {MetricFlowWeb.WhiteLabelHook, :load_white_label},
+        {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account},
+        {MetricFlowWeb.Hooks.RequireSubscriptionHook, :require_subscription}
+      ] do
       # Visualization routes
       live "/visualizations", VisualizationLive.Index, :index
       live "/visualizations/new", VisualizationLive.Editor, :new
@@ -108,11 +132,6 @@ defmodule MetricFlowWeb.Router do
       live "/insights", AiLive.Insights, :index
       live "/chat", AiLive.Chat, :index
       live "/chat/:id", AiLive.Chat, :show
-
-      # Report routes
-      live "/reports", ReportLive.Index, :index
-      live "/reports/new", ReportLive.Index, :new
-      live "/reports/generate", AiLive.ReportGenerator, :index
     end
 
     # OAuth provider integration routes (controller — handles session_params)

@@ -57,7 +57,10 @@ config :metric_flow,
   codemyspec_url: env!("CODEMYSPEC_URL", :string, "https://app.codemyspec.com"),
   codemyspec_client_id: env!("CODEMYSPEC_CLIENT_ID", :string, nil),
   codemyspec_client_secret: env!("CODEMYSPEC_CLIENT_SECRET", :string, nil),
-  codemyspec_project_id: env!("CODEMYSPEC_PROJECT_ID", :string, nil)
+  codemyspec_project_id: env!("CODEMYSPEC_PROJECT_ID", :string, nil),
+  stripe_secret_key: env!("STRIPE_SECRET_KEY", :string, nil),
+  stripe_publishable_key: env!("STRIPE_PUBLISHABLE_KEY", :string, nil),
+  stripe_webhook_secret: env!("STRIPE_WEBHOOK_SECRET", :string, nil)
 
 # Test-only: expose cassette recording credentials via Application config
 # so test fixtures can read them without relying on System.get_env.

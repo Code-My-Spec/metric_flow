@@ -75,5 +75,4 @@ Transforms provider-specific user data into the application's domain model.
 
 ## Dependencies
 
-- Assent.Strategy.Github
-- Assent.Strategy.Google
+None

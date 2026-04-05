@@ -27,3 +27,4 @@
 | 23 | [Report Export](decisions/report_export.md) | Proposed | Phased: browser print + CSV in Phase 1, ChromicPDF in Phase 2 when report template stabilizes |
 | 24 | [Environment Variables](decisions/dotenvy.md) | Proposed | Dotenvy for local development .env file loading |
 | 25 | [ngrok](decisions/ngrok.md) | Proposed | ngrok for local OAuth development tunneling |
+| 26 | [Stripe Billing](decisions/stripe_billing.md) | Accepted | Stripe Checkout + Connect Express for direct and agency billing, webhook lifecycle sync via Stripe CLI |

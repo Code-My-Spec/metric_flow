@@ -130,7 +130,6 @@ All public functions accept a `%Scope{}` as the first parameter for multi-tenant
 - MetricFlow.Integrations.GoogleSearchConsoleSites (module): Fetches verified sites from the Google Search Console API using the Webmasters API v3 sites endpoint. Lists all sites the authenticated user has access to in Search Console. Returns a flat list of site maps with `:id`, `:name`, and `:account` keys where `:id` is the raw `siteUrl`, `:name` is the hostname extracted from the URL (falling back to the raw URL when parsing yields no host), and `:account` is always `"Google Search Console"`. Falls back gracefully with `{:error, :api_disabled}` on a 403 response, which indicates the Search Console API is not enabled or the token lacks sufficient permissions. Accepts an `:http_plug` option for dependency injection during tests.
 - MetricFlow.Integrations.Integration (module): Ecto schema representing OAuth integration connections between users and external service providers. Stores encrypted access and refresh tokens with automatic expiration tracking. Enforces one integration per provider per user via unique constraint. Provides expired?/1 and has_refresh_token?/1 helper functions.
 - MetricFlow.Integrations.IntegrationRepository (module): Data access layer for Integration CRUD operations filtered by user_id. All operations are scoped via Scope struct for multi-tenant isolation. Provides upsert_integration/3 for OAuth callback handling, with_expired_tokens/1 for expiration queries, and connected?/2 for existence checks. Cloak handles automatic encryption/decryption of tokens.
-- MetricFlow.Integrations.OAuthStateStore (module): Server-side ETS-backed store for OAuth session params, keyed by the OAuth `state` token. Runs as a named GenServer that owns the ETS table and periodically purges expired entries. Avoids any reliance on cookies or the Phoenix session, which can be stripped by reverse proxies during 302 redirects.
 - MetricFlow.Integrations.OauthStateStore (module): Server-side ETS-backed store for OAuth session params, keyed by the OAuth `state` token. Runs as a named GenServer that owns the ETS table and periodically purges expired entries. Avoids any reliance on cookies or the Phoenix session, which can be stripped by reverse proxies during 302 redirects.
 - MetricFlow.Integrations.Providers.Behaviour (module): Behaviour contract defining callbacks all OAuth provider implementations must implement. Providers return Assent strategy configuration via config/0, specify strategy module via strategy/0, and transform provider-specific user data via normalize_user/1. Enables leveraging Assent's battle-tested OAuth implementations while maintaining separation of concerns.
 - MetricFlow.Integrations.Providers.Codemyspec (module)
@@ -142,7 +141,6 @@ All public functions accept a `%Scope{}` as the first parameter for multi-tenant
 - MetricFlow.Integrations.Providers.GoogleSearchConsole (module): Google Search Console OAuth provider implementation using Assent.Strategy.Google. Configures OAuth with email, profile, and `webmasters.readonly` scopes for accessing Search Console API data with offline access and consent prompt. Delegates user data normalization to the Google provider implementation.
 - MetricFlow.Integrations.Providers.QuickBooks (module): QuickBooks Online OAuth provider implementation using Assent.Strategy.OAuth2. Configures OAuth with the `com.intuit.quickbooks.accounting` scope using the Intuit OAuth 2.0 endpoints. Normalizes QuickBooks user data to the domain model including provider_user_id, email, name, username, avatar_url, and realm_id for the connected company.
 - MetricFlow.Integrations.QuickBooksAccounts (module): Fetches income accounts from the QuickBooks Chart of Accounts API for a QuickBooks OAuth integration. Queries the QuickBooks Online REST API for accounts with `AccountType = 'Income'` so users can select which income account to track credits and debits from for correlation analysis. Returns a flat list of account maps with `:id`, `:name`, and `:account` keys. Requires a `realm_id` in the integration's `provider_metadata` to identify the connected QuickBooks company. Falls back gracefully with `{:error, :api_disabled}` when the API returns 403, and with `{:error, :missing_realm_id}` when the integration has no realm_id. Accepts an `:http_plug` option for dependency injection during tests.
-- MetricFlow.Integrations.Strategies.QuickBooksOAuth2 (module): Custom Assent OAuth2 strategy for QuickBooks Online that skips the userinfo fetch. QuickBooks uses OAuth 2.0 for token exchange but does not reliably support the OpenID Connect userinfo endpoint for the `com.intuit.quickbooks.accounting` scope. The `realmId` (company ID) is returned as a query parameter on the callback URL rather than from a userinfo endpoint. This strategy overrides the base OAuth2 behavior to complete token exchange without a userinfo HTTP call, returning an empty map as the user payload.
 - MetricFlow.Integrations.Strategies.QuickBooksOauth2 (module): Custom Assent OAuth2 strategy for QuickBooks Online that skips the userinfo fetch. QuickBooks uses OAuth 2.0 for token exchange but does not reliably support the OpenID Connect userinfo endpoint for the `com.intuit.quickbooks.accounting` scope. The `realmId` (company ID) is returned as a query parameter on the callback URL rather than from a userinfo endpoint. This strategy overrides the base OAuth2 behavior to complete token exchange without a userinfo HTTP call, returning an empty map as the user payload.
 
 ### MetricFlow.Invitations
@@ -170,6 +168,20 @@ An invitation is created by an account owner or admin and sent to a target email
 - MetricFlow.Metrics.Metric (module): Ecto schema representing a unified metric data point. Stores metric_type (category like "traffic", "advertising", "financial"), metric_name (specific metric like "sessions", "clicks", "revenue"), value as float, recorded_at timestamp, provider atom matching Integration provider enum, and dimensions as embedded map for dimension breakdowns (source, campaign, page, etc.). Belongs to User. Indexed on [user_id, provider], [user_id, metric_name, recorded_at], and [user_id, metric_type].
 - MetricFlow.Metrics.MetricRepository (module): Data access layer for Metric CRUD and query operations filtered by user_id. All operations are scoped via Scope struct for multi-tenant isolation. Provides list_metrics/2 with filter options (provider, metric_type, metric_name, date_range, limit, offset), get_metric/2, create_metric/2, create_metrics/2 for bulk insert, delete_metrics_by_provider/2, query_time_series/3 for date-grouped aggregation, aggregate_metrics/3 for summary statistics, and list_metric_names/2 for distinct name discovery.
 - MetricFlow.Metrics.ReviewMetrics (module)
+
+### MetricFlow.Billing
+
+- **Type:** context
+- **Description:** Subscription billing and payment processing via Stripe. Manages direct user subscriptions (flat monthly plan charged to the platform's Stripe account), agency Stripe Connect onboarding, agency-defined subscription plans, and customer billing routed through agency-connected Stripe accounts. Processes Stripe webhooks for subscription lifecycle events (created, updated, cancelled, payment failed). Provides feature-gating queries to determine whether a user/account has an active paid subscription. All public functions accept a `%Scope{}` as the first parameter for multi-tenant isolation.
+
+#### Children
+
+- MetricFlow.Billing.BillingRepository (module): Data access layer for Subscription, Plan, and StripeAccount CRUD operations. All queries are scoped via Scope struct for multi-tenant isolation. Provides subscription lookups by account, plan management for agencies, and Stripe Connect account queries.
+- MetricFlow.Billing.Plan (schema): Ecto schema representing a subscription plan. Stores name, description, price_cents, currency, billing_interval (monthly/yearly), stripe_price_id, and the owning agency_account_id (nil for platform-level plans). Agencies create custom plans; the platform seeds a default flat-rate plan.
+- MetricFlow.Billing.StripeAccount (schema): Ecto schema representing a Stripe Connect account linked to an agency. Stores agency_account_id, stripe_account_id, onboarding_status (pending, complete, restricted), and capabilities metadata. One record per agency account, enforced by unique constraint.
+- MetricFlow.Billing.StripeClient (module): Stripe API integration layer using Req. Handles checkout session creation, subscription management, Connect account creation/onboarding, and webhook signature verification. Wraps Stripe API calls with error handling and token management. Accepts an `:http_plug` option for dependency injection during tests.
+- MetricFlow.Billing.Subscription (schema): Ecto schema representing an active or past subscription. Stores account_id, plan_id, stripe_subscription_id, stripe_customer_id, status (active, past_due, cancelled, trialing), current_period_start, current_period_end, and cancelled_at. Belongs to Account and Plan. Indexed on [account_id] and [stripe_subscription_id] for webhook lookups.
+- MetricFlow.Billing.WebhookProcessor (module): Processes verified Stripe webhook events. Handles subscription.created, subscription.updated, subscription.deleted, invoice.payment_failed, and account.updated (for Connect onboarding status). Updates local subscription and Stripe account records to match Stripe state.
 
 ### MetricFlow.Reviews
 
@@ -212,7 +224,7 @@ An invitation is created by an account owner or admin and sent to a target email
 
 - **Type:** liveview
 - **Description:** AI chat interface for data exploration. Displays a sidebar of previous chat sessions alongside an active conversation area. Users can start new sessions, continue existing ones, and ask natural language questions about their metrics. Assistant responses are streamed token-by-token.
-- **Stories:** 451
+- **Stories:** 451, 543
 
 ### MetricFlowWeb.AiLive.Insights
 
@@ -332,8 +344,53 @@ Allows authenticated users to build reports by composing visualizations from con
 - **Description:** Create or edit an individual standalone visualization. Authenticated users can select metrics, pick a chart type (line, bar, area), and preview a Vega-Lite chart built from real synced metric data queried from the Metrics context via the Dashboards context. The resulting visualization is saved with its Vega-Lite spec and query parameters, and may later be added to any dashboard via the Dashboard editor. Unauthenticated requests are redirected to `/users/log-in` by the router's `:require_authenticated_user` pipeline.
 - **Stories:** 442
 
+### MetricFlowWeb.SubscriptionLive.Checkout
+
+- **Type:** liveview
+- **Description:** Subscription checkout flow for direct users and agency customers. Displays available plans, initiates Stripe Checkout sessions, and handles post-checkout confirmation. For direct users, charges the platform's Stripe account. For agency customers, routes payment through the agency's connected Stripe account. Redirects to Stripe-hosted checkout and handles return URLs for success and cancellation. Requires authentication.
+- **Stories:** 544, 547
+
+### MetricFlowWeb.AgencyLive.StripeConnect
+
+- **Type:** liveview
+- **Description:** Stripe Connect onboarding for agency accounts. Guides agency admins through connecting their Stripe account to the platform via Stripe Connect Express onboarding. Displays current onboarding status, initiates the Stripe-hosted onboarding flow, and handles the return redirect. Shows account capabilities and payout status once connected. Only accessible to agency account owners and admins.
+- **Stories:** 545
+
+### MetricFlowWeb.AgencyLive.Plans
+
+- **Type:** liveview
+- **Description:** Agency subscription plan management. Allows agency admins to create, edit, and deactivate custom subscription plans for their clients. Each plan defines a name, price, billing interval, and description. Plans are synced to Stripe as Price objects under the agency's connected Stripe account. Requires an active Stripe Connect account before plans can be created.
+- **Stories:** 546
+
+### MetricFlowWeb.AgencyLive.Subscriptions
+
+- **Type:** liveview
+- **Description:** Agency customer subscription management dashboard. Displays all active, past-due, and cancelled subscriptions across the agency's client accounts. Shows subscription status, plan details, current period, and payment history. Allows agency admins to view customer billing details. Read-only — subscription cancellation and plan changes are handled through the customer's own checkout flow.
+- **Stories:** 549
+
+### MetricFlowWeb.BillingWebhookController
+
+- **Type:** controller
+- **Description:** Stripe webhook endpoint handler. Receives and verifies Stripe webhook events using signature verification, then delegates to Billing.WebhookProcessor for subscription lifecycle sync. Handles subscription.created, subscription.updated, subscription.deleted, invoice.payment_failed, and account.updated events. Returns 200 for processed events and 400 for verification failures. Does not require user authentication — secured by Stripe webhook signing secret.
+- **Stories:** 548
+
 ## Dependencies
 
+- MetricFlow.Billing -> MetricFlow.Accounts
+- MetricFlow.Billing -> MetricFlow.Agencies
+- MetricFlow.Billing.BillingRepository -> MetricFlow.Billing.Subscription
+- MetricFlow.Billing.BillingRepository -> MetricFlow.Billing.Plan
+- MetricFlow.Billing.BillingRepository -> MetricFlow.Billing.StripeAccount
+- MetricFlow.Billing.Plan -> MetricFlow.Accounts.Account
+- MetricFlow.Billing.StripeAccount -> MetricFlow.Accounts.Account
+- MetricFlow.Billing.Subscription -> MetricFlow.Accounts.Account
+- MetricFlow.Billing.Subscription -> MetricFlow.Billing.Plan
+- MetricFlow.Billing.WebhookProcessor -> MetricFlow.Billing.BillingRepository
+- MetricFlowWeb.AgencyLive.Plans -> MetricFlow.Billing
+- MetricFlowWeb.AgencyLive.StripeConnect -> MetricFlow.Billing
+- MetricFlowWeb.AgencyLive.Subscriptions -> MetricFlow.Billing
+- MetricFlowWeb.BillingWebhookController -> MetricFlow.Billing
+- MetricFlowWeb.SubscriptionLive.Checkout -> MetricFlow.Billing
 - MetricFlow.Accounts.AccountMember -> MetricFlow.Accounts.Account
 - MetricFlow.Accounts.AccountRepository -> MetricFlow.Accounts.Account
 - MetricFlow.Accounts.AccountRepository -> MetricFlow.Accounts.AccountMember
@@ -349,7 +406,6 @@ Allows authenticated users to build reports by composing visualizations from con
 - MetricFlow.Ai -> MetricFlow.Metrics
 - MetricFlow.Ai.ChatMessage -> MetricFlow.Ai.ChatSession
 - MetricFlow.Ai.ChatSession -> MetricFlow.Accounts.Account
-- MetricFlow.Ai.ChatSession -> MetricFlow.Ai.ChatMessage
 - MetricFlow.Ai.Insight -> MetricFlow.Accounts.Account
 - MetricFlow.Ai.Insight -> MetricFlow.Correlations.CorrelationResult
 - MetricFlow.Ai.SuggestionFeedback -> MetricFlow.Ai.Insight
@@ -361,10 +417,7 @@ Allows authenticated users to build reports by composing visualizations from con
 - MetricFlow.Dashboards -> MetricFlow.Integrations
 - MetricFlow.Dashboards -> MetricFlow.Metrics
 - MetricFlow.Dashboards.Dashboard -> MetricFlow.Dashboards.DashboardVisualization
-- MetricFlow.Dashboards.Dashboard -> MetricFlow.Dashboards.Visualization
-- MetricFlow.Dashboards.DashboardVisualization -> MetricFlow.Dashboards.Dashboard
 - MetricFlow.Dashboards.DashboardVisualization -> MetricFlow.Dashboards.Visualization
-- MetricFlow.Dashboards.Visualization -> MetricFlow.Dashboards.DashboardVisualization
 - MetricFlow.DataSync -> MetricFlow.Integrations
 - MetricFlow.DataSync -> MetricFlow.Metrics
 - MetricFlow.DataSync.DataProviders.Behaviour -> MetricFlow.Integrations.Integration

@@ -1,0 +1,81 @@
+flowchart TD
+metricflowweb_dashboardlive_show[MetricFlowWeb.DashboardLive.Show]
+metricflowweb_integrationlive_connect[MetricFlowWeb.IntegrationLive.Connect]
+metricflowweb_correlationlive_index[MetricFlowWeb.CorrelationLive.Index]
+metricflowweb_ailive_chat[MetricFlowWeb.AiLive.Chat]
+metricflow_integrations[MetricFlow.Integrations]
+metricflowweb_integrationlive_index[MetricFlowWeb.IntegrationLive.Index]
+metricflow_datasync[MetricFlow.DataSync]
+metricflowweb_userlive_login[MetricFlowWeb.UserLive.Login]
+metricflowweb_ailive_reportgenerator[MetricFlowWeb.AiLive.ReportGenerator]
+metricflow_agencies[MetricFlow.Agencies]
+metricflowweb_dashboardlive_editor[MetricFlowWeb.DashboardLive.Editor]
+metricflowweb_accountlive_index[MetricFlowWeb.AccountLive.Index]
+metricflowweb_reportlive_index[MetricFlowWeb.ReportLive.Index]
+metricflow_accounts[MetricFlow.Accounts]
+metricflowweb_correlationlive_goals[MetricFlowWeb.CorrelationLive.Goals]
+metricflowweb_invitationlive_send[MetricFlowWeb.InvitationLive.Send]
+metricflow_correlations[MetricFlow.Correlations]
+metricflowweb_userlive_registration[MetricFlowWeb.UserLive.Registration]
+metricflow_metrics[MetricFlow.Metrics]
+metricflowweb_integrationlive_providerdashboard[MetricFlowWeb.IntegrationLive.ProviderDashboard]
+metricflowweb_integrationlive_synchistory[MetricFlowWeb.IntegrationLive.SyncHistory]
+metricflow_invitations[MetricFlow.Invitations]
+metricflow_reviews[MetricFlow.Reviews]
+metricflowweb_accountlive_members[MetricFlowWeb.AccountLive.Members]
+metricflowweb_agencylive_settings[MetricFlowWeb.AgencyLive.Settings]
+metricflowweb_reportlive_show[MetricFlowWeb.ReportLive.Show]
+metricflow_ai[MetricFlow.Ai]
+metricflowweb_userlive_settings[MetricFlowWeb.UserLive.Settings]
+metricflow_dashboards[MetricFlow.Dashboards]
+metricflowweb_accountlive_settings[MetricFlowWeb.AccountLive.Settings]
+metricflowweb_visualizationlive_editor[MetricFlowWeb.VisualizationLive.Editor]
+metricflowweb_ailive_insights[MetricFlowWeb.AiLive.Insights]
+metricflowweb_invitationlive_accept[MetricFlowWeb.InvitationLive.Accept]
+metricflowweb_dashboardlive_index[MetricFlowWeb.DashboardLive.Index]
+metricflow_agencies --> metricflow_accounts
+metricflow_ai --> metricflow_accounts
+metricflow_ai --> metricflow_correlations
+metricflowweb_dashboardlive_show --> metricflow_dashboards
+metricflow_datasync --> metricflow_integrations
+metricflowweb_integrationlive_connect --> metricflow_integrations
+metricflowweb_correlationlive_index --> metricflow_correlations
+metricflowweb_ailive_chat --> metricflow_ai
+metricflowweb_integrationlive_index --> metricflow_integrations
+metricflowweb_integrationlive_index --> metricflow_datasync
+metricflow_datasync --> metricflow_metrics
+metricflowweb_ailive_reportgenerator --> metricflow_ai
+metricflowweb_ailive_reportgenerator --> metricflow_dashboards
+metricflowweb_dashboardlive_editor --> metricflow_dashboards
+metricflowweb_accountlive_index --> metricflow_accounts
+metricflowweb_accountlive_index --> metricflow_agencies
+metricflowweb_reportlive_index --> metricflow_metrics
+metricflowweb_reportlive_index --> metricflow_dashboards
+metricflowweb_correlationlive_goals --> metricflow_metrics
+metricflowweb_correlationlive_goals --> metricflow_correlations
+metricflowweb_invitationlive_send --> metricflow_accounts
+metricflowweb_invitationlive_send --> metricflow_invitations
+metricflow_correlations --> metricflow_integrations
+metricflow_correlations --> metricflow_metrics
+metricflowweb_userlive_registration --> metricflow_accounts
+metricflowweb_userlive_registration --> metricflow_agencies
+metricflowweb_integrationlive_providerdashboard --> metricflow_integrations
+metricflowweb_integrationlive_providerdashboard --> metricflow_datasync
+metricflowweb_integrationlive_providerdashboard --> metricflow_metrics
+metricflowweb_integrationlive_providerdashboard --> metricflow_reviews
+metricflowweb_integrationlive_synchistory --> metricflow_datasync
+metricflow_correlations --> metricflow_accounts
+metricflow_invitations --> metricflow_accounts
+metricflowweb_accountlive_members --> metricflow_accounts
+metricflowweb_agencylive_settings --> metricflow_agencies
+metricflowweb_reportlive_show --> metricflow_metrics
+metricflowweb_reportlive_show --> metricflow_dashboards
+metricflow_ai --> metricflow_metrics
+metricflow_reviews --> metricflow_integrations
+metricflow_dashboards --> metricflow_integrations
+metricflow_dashboards --> metricflow_metrics
+metricflowweb_accountlive_settings --> metricflow_accounts
+metricflowweb_visualizationlive_editor --> metricflow_dashboards
+metricflowweb_ailive_insights --> metricflow_ai
+metricflowweb_invitationlive_accept --> metricflow_invitations
+metricflowweb_dashboardlive_index --> metricflow_dashboards

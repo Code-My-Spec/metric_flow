@@ -87,6 +87,35 @@ mcp__vibium__browser_delete_cookies()                     # clear all cookies (f
 mcp__vibium__browser_quit()                               # close the browser session
 ```
 
+### Stripe CLI (webhook and billing testing)
+
+Use for triggering Stripe test events and verifying webhook delivery. A permanent webhook endpoint is registered at `https://dev.metric-flow.app/billing/webhooks` (Cloudflare tunnel → localhost:4070), so events are delivered automatically when the dev server is running — no `stripe listen` process needed.
+
+**Endpoint details:**
+- Endpoint ID: `we_1TIvE8GkgiYxMEomtkIaDURR`
+- Webhook secret: stored in `.env.dev` as `STRIPE_WEBHOOK_SECRET`
+- Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`, `invoice.payment_succeeded`, `account.updated`
+
+**Triggering test events:**
+```bash
+# Trigger a subscription creation event (creates customer → product → price → subscription)
+stripe trigger customer.subscription.created --api-key $(grep STRIPE_SECRET_KEY .env.dev | cut -d= -f2)
+
+# Trigger a payment failure event
+stripe trigger invoice.payment_failed --api-key $(grep STRIPE_SECRET_KEY .env.dev | cut -d= -f2)
+```
+
+**Verifying webhook delivery via curl:**
+```bash
+# Send a manual webhook payload (for controlled testing)
+curl -X POST https://dev.metric-flow.app/billing/webhooks \
+  -H "Content-Type: application/json" \
+  -H "Stripe-Signature: t=$(date +%s),v1=fakesig" \
+  -d '{"id":"evt_test","type":"customer.subscription.created","data":{"object":{"id":"sub_test","customer":"cus_test","status":"active"}}}'
+```
+
+Note: Manual curl with a fake signature will be rejected (400) unless you compute a valid HMAC. Use `stripe trigger` for real event delivery.
+
 ### curl (unauthenticated HTTP checks)
 
 Use for checking HTTP status codes and verifying redirects on unauthenticated access. For authenticated testing, use vibium MCP tools.
