@@ -31,7 +31,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
   # ---------------------------------------------------------------------------
 
   describe "renders report show page with report name and chart" do
-    test "displays report name and chart container", %{conn: conn} do
+    test "renders report show page with report name and chart", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user, %{name: "Q1 Revenue Report"})
       conn = log_in_user(conn, user)
@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
   end
 
   describe "shows back to reports link" do
-    test "renders back link to reports index", %{conn: conn} do
+    test "shows back to reports link", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user)
       conn = log_in_user(conn, user)
@@ -67,7 +67,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
   end
 
   describe "redirects with error flash when report ID not found" do
-    test "redirects to reports index with error flash", %{conn: conn} do
+    test "redirects with error flash when report ID not found", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -84,7 +84,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
   end
 
   describe "displays metric summary cards below the chart" do
-    test "renders metric summary section when metrics exist", %{conn: conn} do
+    test "displays metric summary cards below the chart", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user)
       conn = log_in_user(conn, user)

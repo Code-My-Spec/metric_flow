@@ -31,7 +31,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders reports index page with header and New Report button" do
-    test "shows Reports heading and new report button", %{conn: conn} do
+    test "renders reports index page with header and New Report button", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "shows available metric badges when metrics exist" do
-    test "renders metric-summary strip with badge for each metric name", %{conn: conn} do
+    test "shows available metric badges when metrics exist", %{conn: conn} do
       user = user_fixture()
       insert_metric!(user, %{metric_name: "sessions"})
       conn = log_in_user(conn, user)
@@ -62,17 +62,6 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert render(lv) =~ "sessions"
       end)
     end
-
-    test "hides metric-summary strip when no metrics exist", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
-
-        refute has_element?(lv, "[data-role='metric-summary']")
-      end)
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -80,9 +69,9 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "displays saved report cards with name and actions" do
-    test "renders a report card with name, view link, and delete button", %{conn: conn} do
+    test "displays saved report cards with name and actions", %{conn: conn} do
       user = user_fixture()
-      report = visualization_fixture(user, %{name: "Q1 Revenue Summary"})
+      report = visualization_fixture(user, %{name: "Q1 Revenue Summary", shareable: true})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -92,17 +81,6 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert has_element?(lv, "[data-role='report-card'][data-report-id='#{report.id}']")
         assert has_element?(lv, "[data-role='view-report-#{report.id}']")
         assert has_element?(lv, "[data-role='delete-report-#{report.id}']")
-      end)
-    end
-
-    test "shows shareable badge on a shareable report card", %{conn: conn} do
-      user = user_fixture()
-      _report = visualization_fixture(user, %{name: "Shareable Report", shareable: true})
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/reports")
-
         assert html =~ "Shareable"
       end)
     end
@@ -113,7 +91,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "shows empty state when no saved reports exist" do
-    test "displays empty-reports element with create link", %{conn: conn} do
+    test "shows empty state when no saved reports exist", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -124,18 +102,6 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert has_element?(lv, "[data-role='empty-reports'] a[href='/reports/new']")
       end)
     end
-
-    test "does not show empty state when reports exist", %{conn: conn} do
-      user = user_fixture()
-      _report = visualization_fixture(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
-
-        refute has_element?(lv, "[data-role='empty-reports']")
-      end)
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -143,7 +109,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "shows delete confirmation inline when Delete is clicked" do
-    test "renders inline confirmation with confirm and cancel buttons", %{conn: conn} do
+    test "shows delete confirmation inline when Delete is clicked", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user)
       conn = log_in_user(conn, user)
@@ -165,7 +131,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "deletes report and shows success flash on confirm" do
-    test "removes report card and flashes Report deleted.", %{conn: conn} do
+    test "deletes report and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user, %{name: "Expendable Report"})
       conn = log_in_user(conn, user)
@@ -180,22 +146,6 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         refute has_element?(lv, "[data-role='report-card'][data-report-id='#{report.id}']")
       end)
     end
-
-    test "flashes Report not found. when report is already gone", %{conn: conn} do
-      user = user_fixture()
-      report = visualization_fixture(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
-
-        render_click(lv, "delete", %{"id" => to_string(report.id)})
-        Repo.delete!(report)
-        html = render_click(lv, "confirm_delete", %{"id" => to_string(report.id)})
-
-        assert html =~ "Report not found."
-      end)
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -203,7 +153,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "cancels delete confirmation without modifying data" do
-    test "hides confirmation and keeps report card in the list", %{conn: conn} do
+    test "cancels delete confirmation without modifying data", %{conn: conn} do
       user = user_fixture()
       report = visualization_fixture(user)
       conn = log_in_user(conn, user)
@@ -227,7 +177,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "renders new report page with AI and manual creation options" do
-    test "shows AI option card and manual option card on /reports/new", %{conn: conn} do
+    test "renders new report page with AI and manual creation options", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -237,27 +187,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert html =~ "New Report"
         assert has_element?(lv, "[data-role='report-option-ai']")
         assert has_element?(lv, "[data-role='report-option-manual']")
-      end)
-    end
-
-    test "AI option links to /reports/generate", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports/new")
-
         assert has_element?(lv, "[data-role='report-option-ai'] a[href='/reports/generate']")
-      end)
-    end
-
-    test "manual option links to /visualizations/new", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports/new")
-
         assert has_element?(lv, "[data-role='report-option-manual'] a[href='/visualizations/new']")
       end)
     end

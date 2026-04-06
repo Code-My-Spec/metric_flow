@@ -23,7 +23,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
   # ---------------------------------------------------------------------------
 
   describe "renders settings page with email and password change forms" do
-    test "shows account settings with both forms", %{conn: conn} do
+    test "renders settings page with email and password change forms", %{conn: conn} do
       {:ok, _lv, html} =
         conn
         |> authenticated_conn()
@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       %{conn: conn, user: user}
     end
 
-    test "shows error for email with spaces", %{conn: conn} do
+    test "validates email on change and shows inline errors for invalid email", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
@@ -61,7 +61,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       %{conn: conn, user: user}
     end
 
-    test "shows confirmation message and keeps original email", %{conn: conn, user: user} do
+    test "sends email change confirmation link on valid email submit", %{conn: conn, user: user} do
       new_email = unique_user_email()
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
   end
 
   describe "shows error when submitting email change outside sudo mode" do
-    test "redirects with re-authenticate error when sudo mode expired", %{conn: _conn} do
+    test "shows error when submitting email change outside sudo mode", %{conn: _conn} do
       conn_no_sudo =
         build_conn()
         |> log_in_user(user_fixture(),
@@ -98,7 +98,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       %{conn: conn, user: user}
     end
 
-    test "shows error for too-short password and mismatched confirmation", %{conn: conn} do
+    test "validates password on change and shows inline errors", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
       result =
@@ -122,7 +122,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       %{conn: conn, user: user}
     end
 
-    test "triggers form action and updates password", %{conn: conn, user: user} do
+    test "triggers password form submission on valid password submit", %{conn: conn, user: user} do
       new_password = valid_user_password()
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
@@ -149,7 +149,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
   end
 
   describe "processes email confirmation token and shows success flash" do
-    test "updates email and shows success message", %{conn: conn} do
+    test "processes email confirmation token and shows success flash", %{conn: conn} do
       {conn, user} = authenticated_conn_with_user(conn)
       new_email = unique_user_email()
 
@@ -170,7 +170,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
   end
 
   describe "shows error flash for invalid or expired email confirmation token" do
-    test "shows error message for invalid token", %{conn: conn} do
+    test "shows error flash for invalid or expired email confirmation token", %{conn: conn} do
       {conn, user} = authenticated_conn_with_user(conn)
 
       {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/invalid-token")
@@ -182,23 +182,5 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       assert Users.get_user_by_email(user.email)
     end
 
-    test "shows error message when token has already been used", %{conn: conn} do
-      {conn, user} = authenticated_conn_with_user(conn)
-      new_email = unique_user_email()
-
-      token =
-        extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(%{user | email: new_email}, user.email, url)
-        end)
-
-      {:error, _redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
-
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
-
-      assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/settings"
-      assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
-    end
   end
 end

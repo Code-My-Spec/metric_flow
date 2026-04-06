@@ -27,6 +27,7 @@ All verify scripts run via `.code_my_spec/qa/scripts/verify_*.sh` with `.env.dev
 | Google OAuth | oauth2 | verify_google_oauth.sh | ok | Client ID valid (HTTP 302 from auth endpoint). GOOGLE_ADS_DEVELOPER_TOKEN not set — Ads API calls will fail |
 | QuickBooks Online | oauth2 | verify_quickbooks.sh | ok | Client credentials accepted (HTTP 400 = invalid code, credentials valid). Test tokens not set |
 | Resend (Email) | api_token | verify_resend.sh | ok | API key valid — domains endpoint returned HTTP 200 |
+| Stripe Billing | api_token | start-stripe-listener.sh | ok | Permanent webhook endpoint registered (we_1TIvE8GkgiYxMEomtkIaDURR). sk_test key valid. stripe trigger succeeds |
 
 ## Warnings
 
@@ -39,4 +40,4 @@ No blocking issues found during preflight.
 
 ## Overall Status
 
-**PASS** — all 6 integrations verified, app compiles and serves cleanly.
+**PASS** — all 7 integrations verified (including Stripe), app compiles and serves cleanly.
