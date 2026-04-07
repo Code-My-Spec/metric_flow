@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
   spex "User can provide feedback on suggestions (helpful or not helpful)" do
     scenario "each AI recommendation has helpful and not-helpful feedback buttons" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -54,6 +55,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
 
     scenario "user clicks helpful on a suggestion and sees confirmation" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -122,6 +124,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
 
     scenario "user clicks not helpful on a suggestion and sees confirmation" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")

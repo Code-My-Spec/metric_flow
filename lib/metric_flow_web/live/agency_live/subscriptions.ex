@@ -130,7 +130,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
 
   @impl true
   def mount(_params, _session, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     socket =
       socket
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
 
   @impl true
   def handle_event("search", %{"query" => query}, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     socket =
       socket
@@ -156,7 +156,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   end
 
   def handle_event("next_page", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     socket =
       socket
@@ -167,7 +167,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   end
 
   def handle_event("prev_page", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     socket =
       socket
@@ -178,7 +178,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   end
 
   def handle_event("cancel_customer_subscription", %{"id" => id}, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
     subscription = BillingRepository.get_subscription_by_account_id(String.to_integer(id))
 
     case subscription do

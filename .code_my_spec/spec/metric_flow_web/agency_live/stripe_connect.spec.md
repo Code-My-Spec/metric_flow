@@ -46,36 +46,3 @@ Layout: Single-column centered page with a status card and action buttons.
 
 Responsive: Card stacks vertically on mobile.
 
-## Functions
-
-### mount/3
-
-Initialize the StripeConnect LiveView with connection status from BillingRepository.
-
-```elixir
-@spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Load Stripe account for the current agency from BillingRepository
-2. Determine status: not_connected, complete, or restricted
-3. Assign status, stripe_account_id, and capabilities
-
-**Test Assertions**:
-- mounts and displays Stripe Connect heading
-- shows not connected status when no Stripe account exists
-- shows connect button when not connected
-- shows connected status with Stripe account ID when connected
-- shows restricted status when onboarding is incomplete
-- shows disconnect button when connected
-- hides connect button when already connected
-
-## Test Assertions
-
-- mounts and displays Stripe Connect heading
-- shows not connected status when no Stripe account exists
-- shows connect button when not connected
-- shows connected status with Stripe account ID when connected
-- shows restricted status when onboarding is incomplete
-- shows disconnect button when connected
-- hides connect button when already connected

@@ -282,6 +282,76 @@ defmodule MetricFlowSpex.SharedGivens do
      }}
   end
 
+  given :owner_has_active_subscription do
+    # Creates an active subscription for the test user's account
+    # so paywalled routes (correlations, AI) don't redirect to checkout
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    scope = MetricFlow.Users.Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, _subscription} =
+      MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+        stripe_subscription_id: "sub_test_#{System.unique_integer([:positive])}",
+        stripe_customer_id: "cus_test_#{System.unique_integer([:positive])}",
+        status: :active,
+        account_id: account_id,
+        current_period_start: DateTime.utc_now(),
+        current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+      })
+
+    {:ok, %{}}
+  end
+
+  given :owner_has_agency_plan do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    scope = MetricFlow.Users.Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, plan} =
+      MetricFlow.Billing.BillingRepository.create_plan(%{
+        name: "Agency Pro Plan",
+        price_cents: 4999,
+        currency: "usd",
+        billing_interval: :monthly,
+        agency_account_id: account_id,
+        stripe_price_id: "price_test_#{System.unique_integer([:positive])}"
+      })
+
+    {:ok, %{agency_plan: plan}}
+  end
+
+  given :owner_has_stripe_connect do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    scope = MetricFlow.Users.Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, _stripe_account} =
+      MetricFlow.Billing.BillingRepository.upsert_stripe_account(%{
+        stripe_account_id: "acct_test_#{System.unique_integer([:positive])}",
+        agency_account_id: account_id,
+        onboarding_status: :complete,
+        capabilities: %{charges_enabled: true, payouts_enabled: true}
+      })
+
+    {:ok, %{}}
+  end
+
+  @doc """
+  Signs a JSON payload with the Stripe webhook secret for testing.
+  Returns the Stripe-Signature header value.
+  """
+  def sign_webhook_payload(payload) when is_binary(payload) do
+    secret = Application.get_env(:metric_flow, :stripe_webhook_secret, "whsec_test")
+    timestamp = to_string(System.system_time(:second))
+    signed_payload = "#{timestamp}.#{payload}"
+
+    signature =
+      :crypto.mac(:hmac, :sha256, secret, signed_payload)
+      |> Base.encode16(case: :lower)
+
+    "t=#{timestamp},v1=#{signature}"
+  end
+
   given :with_oauth_stub_providers do
     MetricFlowTest.OAuthStub.setup_oauth_providers()
     {:ok, %{oauth_state: MetricFlowTest.OAuthStub.state_token()}}

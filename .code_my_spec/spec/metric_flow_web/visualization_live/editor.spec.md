@@ -73,19 +73,3 @@ Flex row, `flex items-center gap-4 mb-4`.
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-outline`, `.btn-sm`, `.btn-disabled`, `.form-control`, `.label`, `.input`, `.input-error`
 
 Responsive: All cards stack vertically. Header row wraps on mobile. Metric list wraps into multiple rows on narrow viewports.
-
-## Test Assertions
-
-- renders new visualization page with name field and metric selector
-- renders edit visualization page loading existing visualization data
-- shows available metrics from connected integrations in metric selector
-- shows empty state in metric selector when no metrics are available
-- toggles metric selection on select_metric click
-- selects chart type on select_chart_type click and highlights active button
-- previews chart with Vega-Lite spec when preview_chart is clicked
-- disables preview button when no metrics are selected
-- validates name field on change and shows inline error for blank name
-- saves visualization and navigates to index with success flash
-- shows validation errors when saving with blank name or no metrics selected
-- toggles shareable flag on toggle_shareable click
-- redirects to visualizations with error when editing non-existent visualization

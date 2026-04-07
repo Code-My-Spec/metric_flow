@@ -4,86 +4,48 @@ Edit which ad accounts or properties are synced for a connected integration with
 
 ## Type
 
-module
+liveview
 
-## Delegates
+## Route
 
-None
+`/integrations/:provider/accounts/edit`
+
+## Params
+
+- `provider` - string, provider key (e.g., `google_ads`, `facebook_ads`, `google_analytics`, `quickbooks`). Converted to atom via `String.to_existing_atom/1`; unknown atoms redirect to `/integrations`.
 
 ## Dependencies
 
 - MetricFlow.Integrations
 
-## Functions
+## Components
 
-### mount/3
+None
 
-Standard LiveView mount. No-op — data loading happens in handle_params.
+## User Interactions
 
-```elixir
-@spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-```
+- **phx-click="save_account_selection"**: Flashes "Account selection saved." and navigates to `/integrations`.
 
-**Process**:
-1. Return socket as-is
+## Design
 
-**Test Assertions**:
-- mounts successfully for authenticated user
+Layout: Centered single-column page, `max-w-lg mx-auto`, `.mf-content` wrapper with `px-4 py-8` padding.
 
-### handle_params/3
+Page header:
+- H1 "{platform name} — Edit Accounts" in `text-2xl font-bold`
+- Subtitle "Choose which accounts or properties to sync." in `text-base-content/60`
 
-Loads the integration and its selected accounts for the given provider.
+Account selection card (`data-role="account-selection"`, `.mf-card p-6`):
+- Stack of account rows (`space-y-3`), each with `bg-base-200 rounded p-3`:
+  - `.checkbox.checkbox-sm` with `data-role="account-checkbox"`, checked when the account is selected
+  - Account label text in `text-sm`
+- When no accounts are configured, a single placeholder row with unchecked checkbox and label "No accounts configured — connect and sync to populate"
 
-```elixir
-@spec handle_params(map(), String.t(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
+Form actions (`mt-6 flex flex-col gap-2`):
+- `.btn.btn-primary.w-full` "Save Selection" button with `data-role="save-account-selection"` and `phx-click="save_account_selection"`
+- `.btn.btn-ghost.btn-sm` "Back to integrations" link navigating to `/integrations`
 
-**Process**:
-1. Convert provider string to atom
-2. Fetch integration via `Integrations.get_integration(scope, provider)`
-3. Extract selected accounts from integration's `provider_metadata["selected_accounts"]`
-4. Build display accounts list (each with id, label, selected flag)
-5. If no accounts configured, show placeholder checkbox
-6. Assign display_accounts, platform_name, page_title to socket
-7. If provider atom doesn't exist, redirect to `/integrations`
+On mount: no-op (data loading in handle_params). On handle_params: converts provider string to atom, fetches integration via `Integrations.get_integration(scope, provider)`, extracts selected accounts from `provider_metadata["selected_accounts"]`, builds display accounts list. Redirects to `/integrations` for unknown provider atoms.
 
-**Test Assertions**:
-- renders edit page with platform name heading for valid provider
-- displays checkboxes for each selected account
-- shows placeholder when no accounts are configured
-- redirects to integrations for unknown provider
+Components: `.mf-card`, `.checkbox`, `.btn`, `.btn-primary`, `.btn-ghost`
 
-### handle_event/3 ("save_account_selection")
-
-Saves the account selection and redirects to integrations index.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Flash "Account selection saved."
-2. Navigate to `/integrations`
-
-**Test Assertions**:
-- flashes success message and redirects to integrations
-
-### render/1
-
-Renders the account edit form with checkboxes and save button.
-
-```elixir
-@spec render(map()) :: Phoenix.LiveView.Rendered.t()
-```
-
-**Process**:
-1. Render platform name heading and description
-2. Render account checkboxes from `@display_accounts`
-3. Render save button with `data-role="save-account-selection"`
-4. Render back link to `/integrations`
-
-**Test Assertions**:
-- renders account checkboxes with data-role attribute
-- renders save button
-- renders back link to integrations
-
+Responsive: Single-column layout stacks naturally on all screen sizes.

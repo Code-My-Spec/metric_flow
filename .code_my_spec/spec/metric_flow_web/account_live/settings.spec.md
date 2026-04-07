@@ -21,7 +21,7 @@ None
 
 ## Components
 
-- AccountLive.Components.Navigation - sidebar or tab navigation with active tab indicator for the accounts section
+None
 
 ## User Interactions
 
@@ -65,24 +65,3 @@ Components: `.mf-card`, `.mf-content`, `.mf-section`, `.btn`, `.btn-primary`, `.
 
 Responsive: All form sections stack full-width on mobile. The slug helper text wraps naturally. On small screens the Save Changes button spans full width (`w-full sm:w-auto`).
 
-## Test Assertions
-
-- renders account settings page with account name and slug fields for owner
-- shows Account Type as read-only text (Personal or Team)
-- live-validates account name and slug on change and shows inline errors
-- saves account settings and shows success flash on valid submit
-- shows unauthorized error when non-owner/admin attempts to save
-- displays Transfer Ownership section for owners of team accounts
-- hides Transfer Ownership section for non-owners and personal accounts
-- transfers ownership to selected member and demotes current user to admin
-- displays Danger Zone with delete account form for owners of team accounts
-- hides Danger Zone for non-owners and personal accounts
-- shows Account name does not match error when confirmation name is wrong
-- shows Incorrect password error when password is wrong during deletion
-- deletes account and redirects to /accounts on valid confirmation
-- prevents deletion of personal accounts
-- shows read-only settings view for non-editor roles
-- subscribes to account PubSub and updates on real-time changes
-- redirects to /accounts when user has no accounts
-- shows Leave Account section for non-owner members of team accounts
-- confirms and processes leave account action

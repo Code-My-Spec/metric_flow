@@ -84,14 +84,3 @@ When the OAuth callback redirects back to `/integrations/connect/:provider` with
 Components: `.mf-card`, `.mf-content`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.badge`, `.badge-success`, `.badge-ghost`, `.grid`
 
 Responsive: Provider cards wrap to a single column on mobile. The per-provider and result cards display at full width on mobile, centered with `max-w-sm` on larger screens. Connect buttons span full width on mobile (`w-full sm:w-auto`).
-
-## Test Assertions
-
-- renders connect page with provider cards in a grid
-- shows Connected badge for providers with active integrations
-- shows Not connected badge for providers without integrations
-- shows Connect button for each provider card
-- renders per-provider detail view with OAuth connect button
-- shows connected status and account email on per-provider view when connected
-- shows back to integrations link on per-provider view
-- redirects unauthenticated users to login

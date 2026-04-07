@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
   spex "Correlation runs against ALL metrics financial and marketing treated the same" do
     scenario "correlation results include both financial and marketing metrics" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -35,6 +36,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
 
     scenario "no separate sections for financial vs marketing correlations" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

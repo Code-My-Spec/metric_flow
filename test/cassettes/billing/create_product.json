@@ -1,0 +1,124 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-06T16:03:07.538935Z",
+      "request": {
+        "body": "name=Test+Plan&type=service",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.stripe.com/v1/products"
+      },
+      "response": {
+        "body_json": {
+          "active": true,
+          "attributes": [],
+          "created": 1775491387,
+          "default_price": null,
+          "description": null,
+          "id": "prod_UHpGCIbT9GWlrT",
+          "images": [],
+          "livemode": false,
+          "marketing_features": [],
+          "metadata": {},
+          "name": "Test Plan",
+          "object": "product",
+          "package_dimensions": null,
+          "shippable": null,
+          "statement_descriptor": null,
+          "tax_code": null,
+          "tax_details": null,
+          "type": "service",
+          "unit_label": null,
+          "updated": 1775491387,
+          "url": null
+        },
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-credentials": [
+            "true"
+          ],
+          "access-control-allow-methods": [
+            "GET, HEAD, PUT, PATCH, POST, DELETE"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required"
+          ],
+          "access-control-max-age": [
+            "300"
+          ],
+          "cache-control": [
+            "no-cache, no-store"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-security-policy": [
+            "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Mon, 06 Apr 2026 16:03:07 GMT"
+          ],
+          "idempotency-key": [
+            "a685b646-a670-4311-8a94-b211ad8f2c2c"
+          ],
+          "original-request": [
+            "req_7FDhyfAkyIOULp"
+          ],
+          "report-to": [
+            "{\"group\":\"csp\",\"max_age\":8640,\"endpoints\":[{\"url\":\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\"}],\"include_subdomains\":true}"
+          ],
+          "reporting-endpoints": [
+            "csp=\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\""
+          ],
+          "request-id": [
+            "req_7FDhyfAkyIOULp"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "strict-transport-security": [
+            "max-age=63072000; includeSubDomains; preload"
+          ],
+          "stripe-should-retry": [
+            "false"
+          ],
+          "stripe-version": [
+            "2026-02-25.clover"
+          ],
+          "vary": [
+            "Origin"
+          ],
+          "x-stripe-priority-routing-enabled": [
+            "true"
+          ],
+          "x-stripe-routing-context-priority-tier": [
+            "api-testmode"
+          ],
+          "x-wc": [
+            "3c3"
+          ]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}

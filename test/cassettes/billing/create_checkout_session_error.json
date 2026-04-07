@@ -1,0 +1,108 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-06T16:03:07.292736Z",
+      "request": {
+        "body": "cancel_url=https%3A%2F%2Fexample.com%2Freturn%3Fcancelled%3Dtrue&line_items%5B0%5D%5Bprice%5D=price_nonexistent&line_items%5B0%5D%5Bquantity%5D=1&mode=subscription&success_url=https%3A%2F%2Fexample.com%2Freturn%3Fsuccess%3Dtrue%26session_id%3D%7BCHECKOUT_SESSION_ID%7D",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.stripe.com/v1/checkout/sessions"
+      },
+      "response": {
+        "body_json": {
+          "error": {
+            "code": "resource_missing",
+            "doc_url": "https://stripe.com/docs/error-codes/resource-missing",
+            "message": "No such price: 'price_nonexistent'",
+            "param": "line_items[0][price]",
+            "request_log_url": "https://dashboard.stripe.com/acct_1TIup0GkgiYxMEom/test/workbench/logs?object=req_ULWuO7ZjTCpU4A",
+            "type": "invalid_request_error"
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-credentials": [
+            "true"
+          ],
+          "access-control-allow-methods": [
+            "GET, HEAD, PUT, PATCH, POST, DELETE"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required"
+          ],
+          "access-control-max-age": [
+            "300"
+          ],
+          "cache-control": [
+            "no-cache, no-store"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-security-policy": [
+            "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Mon, 06 Apr 2026 16:03:07 GMT"
+          ],
+          "idempotency-key": [
+            "97842b4a-d749-42ba-a61c-7e325838c4f1"
+          ],
+          "original-request": [
+            "req_ULWuO7ZjTCpU4A"
+          ],
+          "report-to": [
+            "{\"group\":\"csp\",\"max_age\":8640,\"endpoints\":[{\"url\":\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\"}],\"include_subdomains\":true}"
+          ],
+          "reporting-endpoints": [
+            "csp=\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\""
+          ],
+          "request-id": [
+            "req_ULWuO7ZjTCpU4A"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "strict-transport-security": [
+            "max-age=63072000; includeSubDomains; preload"
+          ],
+          "stripe-version": [
+            "2026-02-25.clover"
+          ],
+          "vary": [
+            "Origin"
+          ],
+          "x-stripe-priority-routing-enabled": [
+            "true"
+          ],
+          "x-stripe-routing-context-priority-tier": [
+            "api-testmode"
+          ],
+          "x-wc": [
+            "3c3"
+          ]
+        },
+        "status": 400
+      }
+    }
+  ],
+  "version": "2.0"
+}

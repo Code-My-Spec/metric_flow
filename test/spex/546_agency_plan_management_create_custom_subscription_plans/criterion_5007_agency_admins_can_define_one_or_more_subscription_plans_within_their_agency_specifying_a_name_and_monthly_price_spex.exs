@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanDefinePlansSpex do
   spex "Agency admins can define subscription plans with name and monthly price" do
     scenario "agency admin creates a new plan via the plans page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
 
       given_ "the admin navigates to the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/agency/plans")

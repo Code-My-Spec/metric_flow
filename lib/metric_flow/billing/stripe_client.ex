@@ -70,21 +70,8 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec create_product(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def create_product(name, opts \\ []) do
-    stripe_account = Keyword.get(opts, :stripe_account)
-
     body = URI.encode_query(%{"name" => name, "type" => "service"})
-    headers = api_headers(stripe_account)
-
-    case Req.post("#{@stripe_api_base}/products", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/products", body, opts)
   end
 
   @doc """
@@ -96,7 +83,6 @@ defmodule MetricFlow.Billing.StripeClient do
   def create_price(product_id, amount_cents, opts \\ []) do
     currency = Keyword.get(opts, :currency, "usd")
     interval = Keyword.get(opts, :interval, "month")
-    stripe_account = Keyword.get(opts, :stripe_account)
 
     body =
       URI.encode_query(%{
@@ -106,18 +92,7 @@ defmodule MetricFlow.Billing.StripeClient do
         "recurring[interval]" => interval
       })
 
-    headers = api_headers(stripe_account)
-
-    case Req.post("#{@stripe_api_base}/prices", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/prices", body, opts)
   end
 
   @doc """
@@ -127,21 +102,8 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec deactivate_price(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def deactivate_price(price_id, opts \\ []) do
-    stripe_account = Keyword.get(opts, :stripe_account)
-
     body = URI.encode_query(%{"active" => "false"})
-    headers = api_headers(stripe_account)
-
-    case Req.post("#{@stripe_api_base}/prices/#{price_id}", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/prices/#{price_id}", body, opts)
   end
 
   @doc """
@@ -149,8 +111,6 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec create_checkout_session(map(), String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def create_checkout_session(plan, return_url, opts \\ []) do
-    stripe_account = Keyword.get(opts, :stripe_account)
-
     body =
       URI.encode_query(%{
         "mode" => "subscription",
@@ -160,18 +120,7 @@ defmodule MetricFlow.Billing.StripeClient do
         "cancel_url" => return_url <> "?cancelled=true"
       })
 
-    headers = api_headers(stripe_account)
-
-    case Req.post("#{@stripe_api_base}/checkout/sessions", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/checkout/sessions", body, opts)
   end
 
   @doc """
@@ -179,41 +128,17 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec cancel_subscription(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def cancel_subscription(subscription_id, opts \\ []) do
-    stripe_account = Keyword.get(opts, :stripe_account)
-
     body = URI.encode_query(%{"cancel_at_period_end" => "true"})
-    headers = api_headers(stripe_account)
-
-    case Req.post("#{@stripe_api_base}/subscriptions/#{subscription_id}", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/subscriptions/#{subscription_id}", body, opts)
   end
 
   @doc """
   Create a Stripe Connect Express account.
   """
-  @spec create_express_account() :: {:ok, map()} | {:error, term()}
-  def create_express_account do
+  @spec create_express_account(keyword()) :: {:ok, map()} | {:error, term()}
+  def create_express_account(opts \\ []) do
     body = URI.encode_query(%{"type" => "express"})
-    headers = api_headers(nil)
-
-    case Req.post("#{@stripe_api_base}/accounts", body: body, headers: headers) do
-      {:ok, %{status: status, body: body}} when status in 200..299 ->
-        {:ok, body}
-
-      {:ok, %{body: body}} ->
-        {:error, body["error"]["message"] || "Stripe API error"}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    post("#{@stripe_api_base}/accounts", body, opts)
   end
 
   @doc """
@@ -221,8 +146,8 @@ defmodule MetricFlow.Billing.StripeClient do
 
   Returns the onboarding URL the agency admin should be redirected to.
   """
-  @spec create_account_link(String.t()) :: {:ok, map()} | {:error, term()}
-  def create_account_link(stripe_account_id) do
+  @spec create_account_link(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
+  def create_account_link(stripe_account_id, opts \\ []) do
     return_url = MetricFlowWeb.Endpoint.url() <> "/agency/stripe-connect"
 
     body =
@@ -233,9 +158,15 @@ defmodule MetricFlow.Billing.StripeClient do
         "type" => "account_onboarding"
       })
 
-    headers = api_headers(nil)
+    post("#{@stripe_api_base}/account_links", body, opts)
+  end
 
-    case Req.post("#{@stripe_api_base}/account_links", body: body, headers: headers) do
+  defp post(url, body, opts) do
+    stripe_account = Keyword.get(opts, :stripe_account)
+    headers = api_headers(stripe_account)
+    req_opts = [body: body, headers: headers] ++ req_http_options(opts)
+
+    case Req.post(url, req_opts) do
       {:ok, %{status: status, body: body}} when status in 200..299 ->
         {:ok, body}
 
@@ -244,6 +175,13 @@ defmodule MetricFlow.Billing.StripeClient do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  defp req_http_options(opts) do
+    case Keyword.get(opts, :plug) do
+      nil -> []
+      plug -> [plug: plug]
     end
   end
 

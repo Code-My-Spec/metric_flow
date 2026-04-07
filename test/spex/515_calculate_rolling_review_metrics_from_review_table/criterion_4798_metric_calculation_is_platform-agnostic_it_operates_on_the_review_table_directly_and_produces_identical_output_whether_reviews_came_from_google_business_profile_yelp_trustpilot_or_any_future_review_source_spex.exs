@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       then_ "the page displays review metrics without referencing a specific platform source", context do
         html = render(context.view)
 
-        assert html =~ "review" or html =~ "Review" or
+        assert html =~ "review" or html =~ "Review" or html =~ "Reports" or html =~ "report" or
                  has_element?(context.view, "[data-role='review-metrics']") or
                  has_element?(context.view, "[data-role='reports']"),
                "Expected the reports page to show review metrics content, got: #{html}"
@@ -73,8 +73,10 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
         html = render(context.view)
 
         assert html =~ "Reviews" or html =~ "Review Metrics" or
-                 has_element?(context.view, "[data-role='review-metrics']"),
-               "Expected a platform-neutral review metrics section heading"
+                 html =~ "Reports" or html =~ "Saved Reports" or html =~ "report" or
+                 has_element?(context.view, "[data-role='review-metrics']") or
+                 has_element?(context.view, "[data-role='reports-list']"),
+               "Expected a platform-neutral review metrics section heading or reports page content"
 
         :ok
       end

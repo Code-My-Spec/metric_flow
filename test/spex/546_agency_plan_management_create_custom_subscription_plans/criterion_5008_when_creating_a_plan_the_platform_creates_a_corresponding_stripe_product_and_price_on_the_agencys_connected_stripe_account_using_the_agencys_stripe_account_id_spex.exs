@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.PlanCreatesStripeProductSpex do
   spex "Creating a plan creates a Stripe Product and Price on the agency's account" do
     scenario "plan creation syncs to Stripe" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
 
       given_ "the admin is on the plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/agency/plans")

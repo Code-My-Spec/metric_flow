@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
   spex "Chat history is saved per user" do
     scenario "user's messages persist after navigating away and returning to chat" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page and sends a message", context do
@@ -69,6 +70,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
     scenario "chat page shows a chat history section or previous messages list" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user has previously sent a message in chat", context do
@@ -130,6 +132,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
     scenario "a second user does not see the first user's chat history" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the first user sends a uniquely identifiable message in chat", context do
@@ -186,6 +189,21 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         second_conn = recycle(logged_in_conn)
+
+        # Create a subscription for the second user so /chat is accessible
+        second_user = MetricFlowTest.UsersFixtures.get_user_by_email(second_email)
+        second_scope = MetricFlow.Users.Scope.for_user(second_user)
+        second_account_id = MetricFlow.Accounts.get_personal_account_id(second_scope)
+
+        {:ok, _} =
+          MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+            stripe_subscription_id: "sub_test2_#{System.unique_integer([:positive])}",
+            stripe_customer_id: "cus_test2_#{System.unique_integer([:positive])}",
+            status: :active,
+            account_id: second_account_id,
+            current_period_start: DateTime.utc_now(),
+            current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+          })
 
         {:ok, second_view, _html} = live(second_conn, "/chat")
 

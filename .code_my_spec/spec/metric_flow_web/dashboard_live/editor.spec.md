@@ -73,18 +73,3 @@ Visualization canvas (`data-role="visualization-canvas"`, `space-y-4 mb-6`):
 
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-outline`, `.btn-sm`, `.btn-xs`, `.btn-error`, `.badge`, `.badge-ghost`, `.badge-sm`, `.input`, `.input-error`, `.form-control`, `.label`.
 Responsive: Template chooser grid collapses to 2 columns on mobile, expanding to 4 on sm+. Header row uses flex layout that wraps on small viewports.
-
-## Test Assertions
-
-- renders new dashboard editor with name field, template chooser, and save button
-- renders edit dashboard editor loading existing dashboard data
-- validates dashboard name on change and shows inline error for blank name
-- selects a template and applies its visualizations to the canvas
-- clears canvas when blank template is selected
-- opens metric picker and selects a metric and chart type
-- adds a visualization to the canvas from the metric picker
-- removes a visualization from the canvas
-- reorders visualizations with move up and move down buttons
-- saves dashboard and navigates to show page with success flash
-- shows error when saving with no visualizations added
-- redirects to dashboard with error when editing non-existent dashboard

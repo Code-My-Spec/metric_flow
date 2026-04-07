@@ -86,18 +86,3 @@ Metrics dashboard (shown when `has_integrations` is true), `data-role="metrics-d
 
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.btn-xs`, `.table`, `.table-sm`, `.table-zebra`, `.badge`, `.link`, `.link-primary`.
 Responsive: Stats grid collapses to 2 columns on mobile. Data table scrolls horizontally. Filter rows and metric toggles wrap on small viewports.
-
-## Test Assertions
-
-- renders dashboard page with All Metrics title for default route
-- shows onboarding prompt when no integrations are connected
-- displays metrics dashboard with chart and data table when integrations exist
-- filters metrics by platform when platform filter button is clicked
-- changes date range when date range filter button is clicked
-- toggles metric visibility when metric toggle button is clicked
-- highlights active platform and date range filter buttons with btn-primary
-- shows AI chat panel when AI Chat button is clicked and hides on close
-- shows AI insights panel for a metric and hides on close
-- shows empty state in chart and table when no data matches filters
-- displays summary stats grid with metric sums and averages
-- renders custom dashboard by ID with dashboard name as title

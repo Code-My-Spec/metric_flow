@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.CorrelationMinimumDataThresholdSpex do
   spex "Only correlations meeting minimum data threshold are calculated eg 30 days of data" do
     scenario "user sees explanation of minimum data requirement" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -35,6 +36,7 @@ defmodule MetricFlowSpex.CorrelationMinimumDataThresholdSpex do
 
     scenario "when insufficient data exists user sees an explanatory message" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page with no metric data", context do
         conn = context.owner_conn

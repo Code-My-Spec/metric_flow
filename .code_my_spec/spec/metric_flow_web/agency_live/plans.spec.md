@@ -56,17 +56,3 @@ Layout: Single-column page with a header, plan creation form, and plans list tab
 - Empty state: "No plans created yet"
 
 Responsive: Table scrolls horizontally on mobile. Form stacks vertically.
-
-## Test Assertions
-
-- mounts and displays "Subscription Plans" heading
-- shows Stripe Connect warning when agency has no connected Stripe account
-- lists existing plans with name, price, and status
-- shows empty state when no plans exist
-- plan creation form is disabled when Stripe is not connected
-- creates a new plan on valid form submission
-- displays validation errors for missing required fields
-- opens edit form when edit button is clicked
-- updates plan on valid edit submission
-- deactivates plan when deactivate button is clicked
-- deactivated plan shows inactive badge

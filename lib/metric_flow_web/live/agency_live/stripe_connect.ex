@@ -107,7 +107,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
 
   @impl true
   def mount(_params, _session, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
     stripe_account = BillingRepository.get_stripe_account_by_agency(account_id)
 
     {status, stripe_account_id, capabilities} =
@@ -133,7 +133,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
 
   @impl true
   def handle_event("connect_stripe", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     case Billing.create_connect_account(account_id) do
       {:ok, onboarding_url} ->
@@ -145,7 +145,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
   end
 
   def handle_event("disconnect_stripe", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     case Billing.disconnect_stripe_account(account_id) do
       :ok ->
@@ -162,7 +162,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
   end
 
   def handle_event("refresh_status", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
     stripe_account = BillingRepository.get_stripe_account_by_agency(account_id)
 
     {status, stripe_account_id, capabilities} =

@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AgencySettingsListsActivePlansSpex do
   spex "Agency settings UI lists active plans with Stripe Price IDs and status" do
     scenario "agency plans page displays plan details" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
 
       given_ "the admin navigates to the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/agency/plans")

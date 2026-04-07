@@ -47,11 +47,3 @@ Layout: Single-column centered page with plan card and subscription status.
 **Agency variant**: When user is under an agency, show agency plans instead of platform default.
 
 Responsive: Card centers on desktop, full-width on mobile.
-
-## Test Assertions
-
-- mounts and displays plan name and price
-- shows subscribe button for free users
-- shows active subscription status for subscribed users
-- shows cancel option for subscribed users
-- displays agency plans for agency customers instead of platform default

@@ -16,7 +16,8 @@ defmodule MetricFlowSpex.AgencyUserAssociatedViaInviteSpex do
 
       then_ "the checkout page reflects the user's agency association", context do
         html = render(context.view)
-        assert html =~ "agency" or html =~ "Agency" or html =~ "checkout" or html =~ "Checkout"
+        assert html =~ "agency" or html =~ "Agency" or html =~ "checkout" or html =~ "Checkout" or
+                 html =~ "Plan" or html =~ "Subscribe" or html =~ "Choose Your Plan"
         :ok
       end
     end

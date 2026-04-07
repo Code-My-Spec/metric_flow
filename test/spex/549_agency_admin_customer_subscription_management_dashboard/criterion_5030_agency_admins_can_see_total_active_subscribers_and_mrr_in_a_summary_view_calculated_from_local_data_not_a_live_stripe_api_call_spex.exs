@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AgencyAdminsSeeSubscriberSummarySpex do
   spex "Agency admins can see total active subscribers and MRR in a summary view" do
     scenario "agency admin views the subscriptions page and sees summary metrics" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
 
       when_ "the admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/agency/subscriptions")

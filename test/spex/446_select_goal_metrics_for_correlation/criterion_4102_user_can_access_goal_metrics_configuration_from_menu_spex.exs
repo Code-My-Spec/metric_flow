@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
   spex "User can access Goal Metrics configuration from menu" do
     scenario "authenticated user navigates to the goal metrics page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -33,6 +34,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
 
     scenario "user accesses goal metrics configuration page directly" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the goal metrics configuration page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations/goals")

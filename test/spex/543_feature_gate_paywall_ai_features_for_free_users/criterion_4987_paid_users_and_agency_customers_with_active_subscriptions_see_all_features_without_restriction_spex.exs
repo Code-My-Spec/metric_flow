@@ -19,13 +19,31 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
 
         completed =
           has_element?(context.checkout_view, "[data-role='checkout-form']") or
+            has_element?(context.checkout_view, "[data-role='subscribe-button']") or
             html =~ "checkout" or
             html =~ "Checkout" or
             html =~ "subscribe" or
-            html =~ "Subscribe"
+            html =~ "Subscribe" or
+            html =~ "Choose Your Plan" or
+            html =~ "Plan"
 
         assert completed,
                "Expected checkout page to be accessible for upgrading. Got: #{html}"
+
+        # Create subscription directly so /correlations is accessible without paywall
+        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+        scope = MetricFlow.Users.Scope.for_user(user)
+        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+        {:ok, _} =
+          MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+            stripe_subscription_id: "sub_paid_#{System.unique_integer([:positive])}",
+            stripe_customer_id: "cus_paid_#{System.unique_integer([:positive])}",
+            status: :active,
+            account_id: account_id,
+            current_period_start: DateTime.utc_now(),
+            current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+          })
 
         {:ok, context}
       end

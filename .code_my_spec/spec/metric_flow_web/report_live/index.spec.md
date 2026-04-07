@@ -52,14 +52,3 @@ Back link, H1 New Report, two option cards: AI generator (`data-role=report-opti
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-sm`, `.btn-xs`, `.badge`, `.badge-outline`, `.badge-ghost`
 
 Responsive: Report cards stack to single column on mobile.
-
-## Test Assertions
-
-- renders reports index page with header and New Report button
-- shows available metric badges when metrics exist
-- displays saved report cards with name and actions
-- shows empty state when no saved reports exist
-- shows delete confirmation inline when Delete is clicked
-- deletes report and shows success flash on confirm
-- cancels delete confirmation without modifying data
-- renders new report page with AI and manual creation options

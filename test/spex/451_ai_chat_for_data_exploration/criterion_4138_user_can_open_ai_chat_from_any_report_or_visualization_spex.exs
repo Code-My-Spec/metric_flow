@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
   spex "User can open AI chat from any report or visualization" do
     scenario "user sees an open AI chat button or link on the dashboard page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboard")
@@ -38,6 +39,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
 
     scenario "user sees an open AI chat button or link on the correlations page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -68,6 +70,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
 
     scenario "user sees an open AI chat button or link on the insights page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the insights page", context do
         {:ok, view, _html} = live(context.owner_conn, "/insights")
@@ -98,6 +101,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
 
     scenario "clicking the AI chat button navigates to the chat page or opens a chat interface" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboard")

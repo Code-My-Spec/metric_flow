@@ -57,15 +57,3 @@ Form section (id: `registration_form`):
 
 Responsive: Single-column layout stacks naturally. `max-w-sm` caps width on larger screens.
 
-## Test Assertions
-
-- renders registration form with email, password, account name, and account type fields
-- autofocuses email input on mount
-- shows Already registered? subtitle with link to log in page
-- redirects to signed-in path if user is already logged in
-- live-validates email format on change and shows inline error for invalid email
-- shows has already been taken error when submitting a duplicate email
-- creates user and shows success screen with confirmation email message on valid submit
-- displays account name confirmation on success screen when account name was provided
-- shows Creating account... on submit button while form is processing
-- navigates to login page when Log in link is clicked

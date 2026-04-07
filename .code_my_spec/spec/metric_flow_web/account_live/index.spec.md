@@ -56,17 +56,3 @@ Create Team Account form (`form[phx-submit="create_team"]`, `phx-change="validat
 Components: `.card`, `.bg-base-200`, `.badge`, `.badge-primary`, `.badge-ghost`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.form-control`, `.input`, `.label`, `.label-text-alt`
 
 Responsive: Account cards stack vertically on all screen sizes; form fields stack full-width on mobile.
-
-## Test Assertions
-
-- renders accounts page with Your Accounts header for authenticated user
-- displays account cards with name, type badge, and role badge
-- highlights the active account with data-active true
-- shows Switch button for inactive accounts and Active label for current account
-- switches active account on switch_account click and shows success flash
-- shows empty state when user has no accounts
-- creates a new team account via inline form and shows success flash
-- shows validation errors on create team form with invalid data
-- live-validates team form fields on change
-- subscribes to PubSub and refreshes account list on real-time updates
-- redirects unauthenticated users to login

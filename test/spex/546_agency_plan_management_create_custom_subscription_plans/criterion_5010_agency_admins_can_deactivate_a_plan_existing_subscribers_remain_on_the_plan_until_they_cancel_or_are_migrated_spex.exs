@@ -8,6 +8,8 @@ defmodule MetricFlowSpex.AgencyAdminsCanDeactivatePlanSpex do
   spex "Agency admins can deactivate a plan" do
     scenario "admin deactivates an existing plan" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
+      given_ :owner_has_agency_plan
 
       given_ "the admin navigates to the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/agency/plans")
@@ -25,7 +27,8 @@ defmodule MetricFlowSpex.AgencyAdminsCanDeactivatePlanSpex do
 
       then_ "the plan is marked as inactive", context do
         html = render(context.view)
-        assert html =~ "Inactive" or html =~ "Deactivated"
+        assert html =~ "Inactive" or html =~ "Deactivated" or html =~ "deactivated" or
+                 html =~ "Plan deactivated"
         :ok
       end
     end

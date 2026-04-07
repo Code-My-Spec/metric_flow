@@ -17,8 +17,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookAds do
 
   @impl true
   def config do
-    client_id = Application.fetch_env!(:metric_flow, :facebook_ads_client_id)
-    client_secret = Application.fetch_env!(:metric_flow, :facebook_ads_client_secret)
+    client_id = Application.fetch_env!(:metric_flow, :facebook_app_id)
+    client_secret = Application.fetch_env!(:metric_flow, :facebook_app_secret)
     redirect_uri = MetricFlowWeb.Endpoint.url() <> @callback_path
 
     [

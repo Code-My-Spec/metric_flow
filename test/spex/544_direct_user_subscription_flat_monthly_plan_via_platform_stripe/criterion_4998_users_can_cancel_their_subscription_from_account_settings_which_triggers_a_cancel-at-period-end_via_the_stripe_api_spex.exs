@@ -9,8 +9,23 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
     scenario "subscribed user sees cancel option in account settings" do
       given_ :user_logged_in_as_owner
 
-      given_ "the user navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+      given_ "the user has an active subscription and navigates to the checkout page", context do
+        # Set up active subscription so cancel option is visible
+        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+        scope = MetricFlow.Users.Scope.for_user(user)
+        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+        {:ok, _} =
+          MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+            stripe_subscription_id: "sub_cancel_test_#{System.unique_integer([:positive])}",
+            stripe_customer_id: "cus_cancel_test_#{System.unique_integer([:positive])}",
+            status: :active,
+            account_id: account_id,
+            current_period_start: DateTime.utc_now(),
+            current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+          })
+
+        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end
 

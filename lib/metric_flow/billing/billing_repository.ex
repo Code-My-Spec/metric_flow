@@ -21,7 +21,9 @@ defmodule MetricFlow.Billing.BillingRepository do
   end
 
   def upsert_subscription(attrs) do
-    case get_subscription_by_stripe_id(attrs[:stripe_subscription_id] || attrs["stripe_subscription_id"]) do
+    stripe_id = attrs[:stripe_subscription_id] || attrs["stripe_subscription_id"]
+
+    case stripe_id && get_subscription_by_stripe_id(stripe_id) do
       nil ->
         %Subscription{}
         |> Subscription.changeset(attrs)
@@ -58,10 +60,14 @@ defmodule MetricFlow.Billing.BillingRepository do
     Repo.get_by(StripeAccount, agency_account_id: agency_account_id)
   end
 
+  def get_stripe_account_by_stripe_id(stripe_account_id) do
+    Repo.get_by(StripeAccount, stripe_account_id: stripe_account_id)
+  end
+
   def upsert_stripe_account(attrs) do
     agency_id = attrs[:agency_account_id] || attrs["agency_account_id"]
 
-    case get_stripe_account_by_agency(agency_id) do
+    case agency_id && get_stripe_account_by_agency(agency_id) do
       nil ->
         %StripeAccount{}
         |> StripeAccount.changeset(attrs)
@@ -105,7 +111,8 @@ defmodule MetricFlow.Billing.BillingRepository do
     |> join(:inner, [s], p in Plan, on: s.plan_id == p.id)
     |> where([s, p], p.agency_account_id == ^agency_account_id)
     |> where([s], s.status == :active)
-    |> Repo.aggregate(:sum, :price_cents, Plan)
+    |> select([s, p], sum(p.price_cents))
+    |> Repo.one()
     |> Kernel.||(0)
   end
 

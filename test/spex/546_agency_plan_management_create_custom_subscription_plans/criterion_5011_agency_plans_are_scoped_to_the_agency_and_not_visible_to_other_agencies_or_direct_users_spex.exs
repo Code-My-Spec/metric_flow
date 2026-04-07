@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AgencyPlansScopedToAgencySpex do
   spex "Agency plans are scoped to the agency" do
     scenario "direct user cannot see agency plans" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_stripe_connect
 
       given_ "the user navigates to the checkout page", context do
         {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")

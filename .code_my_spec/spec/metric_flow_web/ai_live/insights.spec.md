@@ -17,6 +17,7 @@ None
 ## Dependencies
 
 - MetricFlow.Ai
+- MetricFlow.Correlations
 
 ## Components
 
@@ -83,17 +84,3 @@ AI personalization note (`data-role="ai-personalization-note"`):
 
 Components: `.mf-card`, `.btn`, `.badge`, `.btn-primary`, `.btn-ghost`, `.btn-sm`, `.badge-sm`, `.badge-primary`, `.badge-warning`, `.badge-success`, `.badge-ghost`
 Responsive: filter bar wraps on small screens; insight card top row stacks vertically on mobile (`sm:flex-row`)
-
-## Test Assertions
-
-- renders insights page with header and type filter bar
-- shows no-insights empty state when account has no insights
-- displays insight cards with summary, type badge, confidence badge, and content
-- filters insights by type when filter button is clicked
-- highlights active filter button with btn-primary
-- shows empty filter state when no insights match selected type
-- clears filter and shows all insights when Show All is clicked
-- submits helpful feedback and shows confirmation message
-- submits not helpful feedback and shows confirmation message
-- shows feedback confirmation for insights that already have feedback
-- shows AI personalization note when insights exist

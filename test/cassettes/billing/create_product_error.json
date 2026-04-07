@@ -1,0 +1,108 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-06T16:03:08.391985Z",
+      "request": {
+        "body": "name=&type=service",
+        "body_type": "text",
+        "headers": {
+          "accept-encoding": [
+            "gzip"
+          ],
+          "content-type": [
+            "application/x-www-form-urlencoded"
+          ],
+          "user-agent": [
+            "req/0.5.17"
+          ]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.stripe.com/v1/products"
+      },
+      "response": {
+        "body_json": {
+          "error": {
+            "code": "parameter_invalid_empty",
+            "doc_url": "https://stripe.com/docs/error-codes/parameter-invalid-empty",
+            "message": "You passed an empty string for 'name'. We assume empty values are an attempt to unset a parameter; however 'name' cannot be unset. You should remove 'name' from your request or supply a non-empty value.",
+            "param": "name",
+            "request_log_url": "https://dashboard.stripe.com/acct_1TIup0GkgiYxMEom/test/workbench/logs?object=req_DIQunZ1cdOu56Q",
+            "type": "invalid_request_error"
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "access-control-allow-credentials": [
+            "true"
+          ],
+          "access-control-allow-methods": [
+            "GET, HEAD, PUT, PATCH, POST, DELETE"
+          ],
+          "access-control-allow-origin": [
+            "*"
+          ],
+          "access-control-expose-headers": [
+            "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required"
+          ],
+          "access-control-max-age": [
+            "300"
+          ],
+          "cache-control": [
+            "no-cache, no-store"
+          ],
+          "connection": [
+            "keep-alive"
+          ],
+          "content-security-policy": [
+            "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD"
+          ],
+          "content-type": [
+            "application/json"
+          ],
+          "date": [
+            "Mon, 06 Apr 2026 16:03:08 GMT"
+          ],
+          "idempotency-key": [
+            "f3252953-7cc5-4ab1-a519-354a30b2de42"
+          ],
+          "original-request": [
+            "req_DIQunZ1cdOu56Q"
+          ],
+          "report-to": [
+            "{\"group\":\"csp\",\"max_age\":8640,\"endpoints\":[{\"url\":\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\"}],\"include_subdomains\":true}"
+          ],
+          "reporting-endpoints": [
+            "csp=\"https://q.stripe.com/csp-report-v2?q=XYFtt7teLfDUiEsWcwlPNh1mafuTwG50agGa-zL86b4Oyn8ovKHhffOIVdBS1gXg6itSly31QHXvThFD&t=1\""
+          ],
+          "request-id": [
+            "req_DIQunZ1cdOu56Q"
+          ],
+          "server": [
+            "nginx"
+          ],
+          "strict-transport-security": [
+            "max-age=63072000; includeSubDomains; preload"
+          ],
+          "stripe-version": [
+            "2026-02-25.clover"
+          ],
+          "vary": [
+            "Origin"
+          ],
+          "x-stripe-priority-routing-enabled": [
+            "true"
+          ],
+          "x-stripe-routing-context-priority-tier": [
+            "api-testmode"
+          ],
+          "x-wc": [
+            "3c3"
+          ]
+        },
+        "status": 400
+      }
+    }
+  ],
+  "version": "2.0"
+}

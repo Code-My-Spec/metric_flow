@@ -48,15 +48,3 @@ Main content (top to bottom):
 Components: `.header`, `.form`, `.input`, `.button`, `.divider`
 
 Responsive: Single-column layout works on all screen sizes.
-
-## Test Assertions
-
-- renders settings page with email and password change forms
-- validates email on change and shows inline errors for invalid email
-- sends email change confirmation link on valid email submit
-- shows error when submitting email change outside sudo mode
-- validates password on change and shows inline errors
-- triggers password form submission on valid password submit
-- processes email confirmation token and shows success flash
-- shows error flash for invalid or expired email confirmation token
-

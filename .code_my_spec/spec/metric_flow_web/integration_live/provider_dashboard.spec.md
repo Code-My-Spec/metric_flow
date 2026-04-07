@@ -99,15 +99,3 @@ When the provider param is not a recognized provider:
 - Redirect to `/integrations` with error flash
 
 Responsive: On mobile, metric cards stack single-column. Action bar wraps below the header.
-
-## Test Assertions
-
-- renders provider dashboard with provider name and connection status
-- shows metric cards with chart containers for the provider
-- shows sync history section with recent sync entries
-- triggers manual sync and shows sync started flash
-- changes date range filter and re-renders metric charts
-- shows reviews section for google_business provider
-- shows empty state with connect link when provider has no integration
-- redirects to integrations for unrecognized provider
-

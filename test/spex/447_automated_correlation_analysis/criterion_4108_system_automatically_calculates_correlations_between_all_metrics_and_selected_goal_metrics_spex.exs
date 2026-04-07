@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
   spex "System automatically calculates correlations between all metrics and selected goal metrics" do
     scenario "user sees computed correlation results on the correlations page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -43,6 +44,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
 
     scenario "correlations page shows goal metric selection" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

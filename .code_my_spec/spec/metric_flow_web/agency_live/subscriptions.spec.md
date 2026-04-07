@@ -49,13 +49,3 @@ Layout: Single-column page with summary stats and a searchable customer table.
 - Empty state: "No customer subscriptions yet"
 
 Responsive: Stats stack vertically on mobile. Table scrolls horizontally.
-
-## Test Assertions
-
-- mounts and displays Customer Subscriptions heading
-- shows summary stats for active subscribers and MRR
-- lists customer subscriptions with status and plan
-- shows cancel action for active subscriptions
-- scopes data to current agency only
-- provides search input for filtering customers
-- shows status badges reflecting subscription state

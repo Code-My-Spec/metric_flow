@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.SubscriptionCancellationsHandledGracefullySpex do
         conn =
           Phoenix.ConnTest.build_conn()
           |> Plug.Conn.put_req_header("content-type", "application/json")
-          |> Plug.Conn.put_req_header("stripe-signature", "test_signature")
+          |> Plug.Conn.put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload))
           |> Phoenix.ConnTest.post("/billing/webhooks", context.payload)
 
         {:ok, Map.put(context, :response, conn)}

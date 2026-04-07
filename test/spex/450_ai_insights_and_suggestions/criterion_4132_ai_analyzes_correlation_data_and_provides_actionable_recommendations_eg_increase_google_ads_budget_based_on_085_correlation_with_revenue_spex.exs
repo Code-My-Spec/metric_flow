@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
   spex "AI analyzes correlation data and provides actionable recommendations" do
     scenario "user sees an AI recommendations section when AI suggestions are enabled in Smart mode" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -49,6 +50,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
 
     scenario "AI recommendations mention specific metrics and correlation values" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -92,6 +94,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
 
     scenario "AI recommendations include actionable suggestions with verbs like increase, optimize, or budget" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")

@@ -32,13 +32,13 @@ defmodule MetricFlowSpex.WebhookEventsAreIdempotentSpex do
         first =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", "test_signature")
+          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload))
           |> post("/billing/webhooks", context.payload)
 
         second =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", "test_signature")
+          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload))
           |> post("/billing/webhooks", context.payload)
 
         {:ok, Map.merge(context, %{first: first, second: second})}

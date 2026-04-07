@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
   spex "AI has access to all metrics and correlation data to answer" do
     scenario "AI response references metric-related terms when asked about metrics" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -73,6 +74,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
 
     scenario "AI response references correlation-related terms when asked about correlations" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -136,6 +138,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
 
     scenario "chat interface indicates it has access to the user's data" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -177,6 +180,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
 
     scenario "chat page has a form that accepts user questions about data" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do

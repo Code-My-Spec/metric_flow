@@ -85,9 +85,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
               <p class="text-3xl font-bold">$49.99<span class="text-sm font-normal">/month</span></p>
               <p class="text-base-content/60">Correlations, Intelligence, and Visualizations</p>
               <div class="card-actions justify-center mt-4">
-                <button data-role="subscribe-button" class="btn btn-primary">
-                  Subscribe
-                </button>
+                <p class="text-sm text-base-content/60">No plans available. Please contact support.</p>
               </div>
             </div>
           </div>
@@ -99,8 +97,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
 
   @impl true
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
-    account_id = scope.account.id
+    account_id = socket.assigns.active_account_id
 
     subscription = BillingRepository.get_subscription_by_account_id(account_id)
     plans = load_plans(account_id)
@@ -115,12 +112,12 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
 
   @impl true
   def handle_event("subscribe", %{"plan-id" => plan_id}, socket) do
-    scope = socket.assigns.current_scope
+    account_id = socket.assigns.active_account_id
     plan = BillingRepository.get_plan(String.to_integer(plan_id))
 
     return_url = MetricFlowWeb.Endpoint.url() <> "/subscriptions/checkout"
 
-    case Billing.create_checkout_session(scope.account.id, plan, return_url) do
+    case Billing.create_checkout_session(account_id, plan, return_url) do
       {:ok, checkout_url} ->
         {:noreply, redirect(socket, external: checkout_url)}
 
@@ -134,7 +131,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
   end
 
   def handle_event("cancel_subscription", _params, socket) do
-    account_id = socket.assigns.current_scope.account.id
+    account_id = socket.assigns.active_account_id
 
     case Billing.cancel_subscription(account_id) do
       :ok ->

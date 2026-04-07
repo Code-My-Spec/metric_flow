@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
   spex "System selects lag with highest absolute correlation value for each metric" do
     scenario "correlation entries display the automatically selected optimal lag and coefficient" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -47,6 +48,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
 
     scenario "correlations are sorted by strength to highlight the most relevant" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

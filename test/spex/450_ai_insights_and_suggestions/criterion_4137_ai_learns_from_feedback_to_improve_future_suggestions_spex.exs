@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
   spex "AI learns from feedback to improve future suggestions" do
     scenario "after providing feedback, user sees a message indicating feedback helps improve suggestions" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -67,6 +68,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
 
     scenario "the feedback section communicates the learning and improvement aspect" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -108,6 +110,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
 
     scenario "user who provides not-helpful feedback sees an indication their preferences are being considered" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")

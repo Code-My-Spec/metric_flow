@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
   spex "User can ask questions like Why did my revenue drop last week" do
     scenario "user sees a chat input field on the chat page" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -40,6 +41,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
 
     scenario "user types a revenue question and submits it" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -83,6 +85,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
 
     scenario "user's question appears in the chat after submitting" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
@@ -135,6 +138,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
 
     scenario "an AI response appears in the chat after the user submits a question" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do

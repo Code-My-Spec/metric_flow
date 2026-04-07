@@ -15,8 +15,10 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   def on_mount(:require_subscription, _params, _session, socket) do
     scope = socket.assigns[:current_scope]
 
-    if scope && scope.account do
-      case BillingRepository.get_subscription_by_account_id(scope.account.id) do
+    account_id = socket.assigns[:active_account_id]
+
+    if scope && account_id do
+      case BillingRepository.get_subscription_by_account_id(account_id) do
         %{status: status} when status in [:active, :trialing] ->
           {:cont, socket}
 

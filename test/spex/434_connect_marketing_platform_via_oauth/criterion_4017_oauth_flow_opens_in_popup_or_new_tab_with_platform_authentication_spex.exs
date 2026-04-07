@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
       then_ "the Google connect element is present on the page", context do
         html = render(context.view)
         assert html =~ "Google"
-        assert has_element?(context.view, "[data-platform='google'] [data-role='connect-button']")
+        assert has_element?(context.view, "[data-platform='google_analytics'] [data-role='connect-button']") or
+                 has_element?(context.view, "[data-platform='google_ads'] [data-role='connect-button']"),
+               "Expected a Google provider (google_analytics or google_ads) to have a connect button"
         :ok
       end
     end

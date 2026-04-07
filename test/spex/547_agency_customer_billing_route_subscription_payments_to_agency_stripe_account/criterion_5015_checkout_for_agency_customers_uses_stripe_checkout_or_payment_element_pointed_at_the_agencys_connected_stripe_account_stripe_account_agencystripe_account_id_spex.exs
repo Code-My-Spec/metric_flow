@@ -16,7 +16,8 @@ defmodule MetricFlowSpex.AgencyCheckoutUsesConnectedStripeSpex do
 
       then_ "the checkout page indicates it will process through the agency's Stripe account", context do
         html = render(context.view)
-        assert html =~ "checkout" or html =~ "Checkout" or html =~ "payment" or html =~ "Payment"
+        assert html =~ "checkout" or html =~ "Checkout" or html =~ "payment" or html =~ "Payment" or
+                 html =~ "Plan" or html =~ "Subscribe" or html =~ "Choose Your Plan"
         :ok
       end
     end

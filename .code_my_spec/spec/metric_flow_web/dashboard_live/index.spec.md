@@ -64,14 +64,3 @@ Flex row, space-between, `flex-wrap gap-3`.
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-error`, `.btn-sm`, `.btn-xs`, `.badge`, `.badge-ghost`, `.badge-sm`, `.mf-content`
 
 Responsive: Dashboard grids stack to single column on mobile; expand to two columns on sm+. Page header wraps with `flex-wrap gap-3`.
-
-## Test Assertions
-
-- renders dashboards index page with header and New Dashboard link
-- displays canned system dashboards with Built-in badge
-- displays user-created dashboards with View, Edit, and Delete actions
-- shows empty state when user has no saved dashboards
-- shows delete confirmation inline when Delete is clicked
-- deletes dashboard and shows success flash on confirm
-- cancels delete confirmation without modifying data
-- shows error when deleting a non-existent dashboard

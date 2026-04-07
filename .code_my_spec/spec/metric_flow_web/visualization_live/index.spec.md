@@ -4,9 +4,13 @@ Lists saved visualizations for the authenticated user. Shows all standalone visu
 
 ## Type
 
-module
+liveview
 
-## Delegates
+## Route
+
+`/visualizations`
+
+## Params
 
 None
 
@@ -14,88 +18,35 @@ None
 
 - MetricFlow.Dashboards
 
-## Functions
+## Components
 
-### mount/3
+None
 
-Loads all visualizations for the current user.
+## User Interactions
 
-```elixir
-@spec mount(map(), map(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-```
+- **phx-click="delete" phx-value-id={id}** (`data-role="delete-visualization-{id}"`): Sets `confirming_delete` assign to the visualization's integer ID, showing inline delete confirmation on that card.
+- **phx-click="confirm_delete" phx-value-id={id}** (`data-role="confirm-delete-{id}"`): Calls `Dashboards.delete_visualization(scope, id)`. On `{:ok, _}`, removes the visualization from the list, clears `confirming_delete`, and flashes "Visualization deleted." On `{:error, :not_found}`, clears `confirming_delete` and flashes "Visualization not found."
+- **phx-click="cancel_delete"** (`data-role="cancel-delete"`): Clears `confirming_delete` from assigns without modifying data.
 
-**Process**:
-1. Call `Dashboards.list_visualizations(scope)` to load user's visualizations
-2. Assign visualizations list and `confirming_delete: nil` to socket
+## Design
 
-**Test Assertions**:
-- renders visualization list for authenticated user
-- shows empty state when user has no visualizations
-- redirects unauthenticated user to login
+Layout: Full-width page within `Layouts.app`, content constrained to `max-w-5xl mx-auto`, `.mf-content` wrapper with `px-4 py-8` padding.
 
-### handle_event/3 ("delete")
+Page header (`flex items-start justify-between flex-wrap gap-3 mb-8`):
+- Left: H1 "Visualizations" in `text-2xl font-bold`, subtitle "Your saved charts and visualizations" in `text-base-content/60`
+- Right: `.btn.btn-primary.btn-sm` "New Visualization" link (`data-role="new-visualization-btn"`) navigating to `/visualizations/new`
 
-Shows inline delete confirmation for a visualization.
+Empty state (`data-role="empty-visualizations"`, `.mf-card p-8 text-center`):
+- Shown when no visualizations exist
+- Muted text "No visualizations yet" and `.btn.btn-primary.btn-sm` "Create your first visualization" link to `/visualizations/new`
 
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
+Visualization grid (`grid grid-cols-1 sm:grid-cols-2 gap-4`):
+- One `.mf-card p-5` per visualization with `data-role="visualization-card"` and `data-visualization-id={id}`
+- Visualization name in `font-semibold`
+- "Shareable" text in `text-xs text-base-content/60` shown when `shareable` is true
+- Action row: `.btn.btn-ghost.btn-sm` "Edit" link (`data-role="edit-visualization-{id}"`) to `/visualizations/{id}/edit`, `.btn.btn-ghost.btn-xs.text-error` "Delete" button
+- Inline delete confirmation (`data-role="delete-confirm-{id}"`, shown when `confirming_delete` matches this visualization's id): muted "Are you sure?" text, `.btn.btn-error.btn-xs` "Yes, delete" button, `.btn.btn-ghost.btn-xs` "Cancel" button
 
-**Process**:
-1. Set `confirming_delete` assign to the visualization ID
+Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-error`, `.btn-sm`, `.btn-xs`, `.mf-content`
 
-**Test Assertions**:
-- shows delete confirmation for the targeted visualization
-
-### handle_event/3 ("cancel_delete")
-
-Cancels the inline delete confirmation.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Set `confirming_delete` assign to nil
-
-**Test Assertions**:
-- hides delete confirmation
-
-### handle_event/3 ("confirm_delete")
-
-Permanently deletes the visualization and removes it from the list.
-
-```elixir
-@spec handle_event(String.t(), map(), Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
-```
-
-**Process**:
-1. Call `Dashboards.delete_visualization(scope, id)`
-2. On success, remove from visualizations list, clear confirming_delete, flash success
-3. On not_found, clear confirming_delete, flash error
-
-**Test Assertions**:
-- removes visualization from list and flashes success
-- flashes error when visualization not found
-
-### render/1
-
-Renders the visualization index page with grid of cards or empty state.
-
-```elixir
-@spec render(map()) :: Phoenix.LiveView.Rendered.t()
-```
-
-**Process**:
-1. Render page header with "Visualizations" title and "New Visualization" button
-2. If no visualizations, render empty state with create prompt
-3. If visualizations exist, render responsive grid of cards
-4. Each card shows name, shareable badge, edit link, delete button
-5. If confirming_delete matches a card, show inline confirmation
-
-**Test Assertions**:
-- renders visualization cards with data-role attributes
-- renders new visualization button
-- renders edit and delete buttons per card
-- shows inline confirmation when confirming_delete is set
-
+Responsive: Grid collapses to single column on mobile, expands to two columns on sm+. Header row wraps with `flex-wrap gap-3`.

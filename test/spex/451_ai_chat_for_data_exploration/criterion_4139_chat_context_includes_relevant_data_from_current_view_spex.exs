@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
   spex "Chat context includes relevant data from current view" do
     scenario "chat page displays a context indicator when opened directly" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates directly to the chat page", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")
@@ -43,6 +44,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
 
     scenario "chat page opened from dashboard shows dashboard or metrics context" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user is on the dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/dashboard")
@@ -107,6 +109,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
 
     scenario "chat opened from correlations page shows correlation context" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/correlations")
@@ -169,6 +172,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
 
     scenario "chat page shows a context indicator breadcrumb or label showing where the user came from" do
       given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
 
       given_ "the user navigates to the chat page", context do
         {:ok, view, _html} = live(context.owner_conn, "/chat")

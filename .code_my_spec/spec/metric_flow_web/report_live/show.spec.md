@@ -39,10 +39,3 @@ Report content: Vega-Lite chart rendered via VegaLite hook, metric summary cards
 Components: `.mf-card`, `.btn`, `.btn-primary`, `.btn-ghost`, `.btn-sm`
 
 Responsive: Single column on all viewports.
-
-## Test Assertions
-
-- renders report show page with report name and chart
-- shows back to reports link
-- redirects with error flash when report ID not found
-- displays metric summary cards below the chart
