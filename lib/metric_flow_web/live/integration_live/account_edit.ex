@@ -29,47 +29,52 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-lg mf-content px-4 py-8">
-        <div class="mb-6">
-          <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
-          <p class="mt-1 text-base-content/60">
-            Choose which accounts or properties to sync.
-          </p>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-lg mf-content px-4 py-8">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
+        <p class="mt-1 text-base-content/60">
+          Choose which accounts or properties to sync.
+        </p>
+      </div>
+
+      <div data-role="account-selection" class="mf-card p-6">
+        <div class="space-y-3">
+          <div
+            :for={{account, idx} <- Enum.with_index(@display_accounts)}
+            class="flex items-center gap-3 p-3 bg-base-200 rounded"
+          >
+            <input
+              type="checkbox"
+              data-role="account-checkbox"
+              name={"accounts[#{idx}]"}
+              value={account.id}
+              checked={account.selected}
+              class="checkbox checkbox-sm"
+            />
+            <span class="text-sm">{account.label}</span>
+          </div>
         </div>
 
-        <div data-role="account-selection" class="mf-card p-6">
-          <div class="space-y-3">
-            <div
-              :for={{account, idx} <- Enum.with_index(@display_accounts)}
-              class="flex items-center gap-3 p-3 bg-base-200 rounded"
-            >
-              <input
-                type="checkbox"
-                data-role="account-checkbox"
-                name={"accounts[#{idx}]"}
-                value={account.id}
-                checked={account.selected}
-                class="checkbox checkbox-sm"
-              />
-              <span class="text-sm">{account.label}</span>
-            </div>
-          </div>
-
-          <div class="mt-6 flex flex-col gap-2">
-            <button
-              phx-click="save_account_selection"
-              data-role="save-account-selection"
-              class="btn btn-primary w-full"
-            >
-              Save Selection
-            </button>
-            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
-              Back to integrations
-            </.link>
-          </div>
+        <div class="mt-6 flex flex-col gap-2">
+          <button
+            phx-click="save_account_selection"
+            data-role="save-account-selection"
+            class="btn btn-primary w-full"
+          >
+            Save Selection
+          </button>
+          <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
+            Back to integrations
+          </.link>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

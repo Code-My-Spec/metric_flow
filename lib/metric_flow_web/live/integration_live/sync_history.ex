@@ -35,102 +35,107 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-3xl mf-content px-4 py-8">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold">Sync History</h1>
-          <p class="mt-1 text-base-content/60">
-            View automated sync results and status
-          </p>
-        </div>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-3xl mf-content px-4 py-8">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold">Sync History</h1>
+        <p class="mt-1 text-base-content/60">
+          View automated sync results and status
+        </p>
+      </div>
 
-        <%!-- Schedule section --%>
-        <div data-role="sync-schedule" class="mf-card p-5 mb-6">
-          <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
-          <p class="mt-1 text-sm text-base-content/60">
-            Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
-            Covers marketing providers (Google Ads, Facebook Ads, Google Analytics, Google Business Profile,
-            Google Search Console) and financial providers (QuickBooks). On first sync, all available historical data is backfilled.
-            Failed syncs are automatically retried up to 3 times with exponential backoff.
-          </p>
-          <div class="mt-3 flex items-center gap-2 flex-wrap">
-            <span class="badge badge-info">Daily</span>
-          </div>
-        </div>
-
-        <%!-- Date range section --%>
-        <div
-          data-role="date-range"
-          class="flex items-center gap-2 mb-6 text-sm text-base-content/60"
-        >
-          <span>
-            Showing data through {@date_range_end |> Date.to_iso8601()} (yesterday — today excluded, incomplete day)
-          </span>
-        </div>
-
-        <%!-- Filter tabs --%>
-        <div class="flex items-center gap-2 mb-4">
-          <button
-            phx-click="filter"
-            phx-value-status="all"
-            data-role="filter-all"
-            class={"btn btn-sm #{if @status_filter == "all", do: "btn-primary", else: "btn-ghost"}"}
-          >
-            All
-          </button>
-          <button
-            phx-click="filter"
-            phx-value-status="success"
-            data-role="filter-success"
-            class={"btn btn-sm #{if @status_filter == "success", do: "btn-primary", else: "btn-ghost"}"}
-          >
-            Success
-          </button>
-          <button
-            phx-click="filter"
-            phx-value-status="failed"
-            data-role="filter-failed"
-            class={"btn btn-sm #{if @status_filter == "failed", do: "btn-primary", else: "btn-ghost"}"}
-          >
-            Failed
-          </button>
-        </div>
-
-        <%!-- Sync history list --%>
-        <div data-role="sync-history" class="space-y-3">
-          <div :if={@sync_history == [] and @sync_events == []} class="mf-card p-8 text-center">
-            <p class="text-base-content/60">No sync history yet.</p>
-            <p class="mt-2 text-sm text-base-content/50">
-              Initial Sync entries will appear here once the first automated or manual sync runs.
-              Each provider sync entry shows the provider name, status, records synced, and date.
-              The system backfills all available historical data from each platform on first sync.
-            </p>
-            <div class="mt-3 flex justify-center gap-2 flex-wrap">
-              <span data-sync-type="initial" class="badge badge-ghost">Initial Sync</span>
-            </div>
-          </div>
-
-          <%!-- Live sync events (prepended first) --%>
-          <div
-            :for={entry <- filter_events(@sync_events, @status_filter)}
-            data-role="sync-history-entry"
-            data-status={entry.status}
-            class="mf-card p-4"
-          >
-            <.sync_entry entry={entry} />
-          </div>
-
-          <%!-- Persisted history entries --%>
-          <div
-            :for={entry <- filter_history(@sync_history, @status_filter)}
-            data-role="sync-history-entry"
-            data-status={to_string(entry.status)}
-            class="mf-card p-4"
-          >
-            <.persisted_entry entry={entry} />
-          </div>
+      <%!-- Schedule section --%>
+      <div data-role="sync-schedule" class="mf-card p-5 mb-6">
+        <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
+        <p class="mt-1 text-sm text-base-content/60">
+          Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
+          Covers marketing providers (Google Ads, Facebook Ads, Google Analytics, Google Business Profile,
+          Google Search Console) and financial providers (QuickBooks). On first sync, all available historical data is backfilled.
+          Failed syncs are automatically retried up to 3 times with exponential backoff.
+        </p>
+        <div class="mt-3 flex items-center gap-2 flex-wrap">
+          <span class="badge badge-info">Daily</span>
         </div>
       </div>
+
+      <%!-- Date range section --%>
+      <div
+        data-role="date-range"
+        class="flex items-center gap-2 mb-6 text-sm text-base-content/60"
+      >
+        <span>
+          Showing data through {@date_range_end |> Date.to_iso8601()} (yesterday — today excluded, incomplete day)
+        </span>
+      </div>
+
+      <%!-- Filter tabs --%>
+      <div class="flex items-center gap-2 mb-4">
+        <button
+          phx-click="filter"
+          phx-value-status="all"
+          data-role="filter-all"
+          class={"btn btn-sm #{if @status_filter == "all", do: "btn-primary", else: "btn-ghost"}"}
+        >
+          All
+        </button>
+        <button
+          phx-click="filter"
+          phx-value-status="success"
+          data-role="filter-success"
+          class={"btn btn-sm #{if @status_filter == "success", do: "btn-primary", else: "btn-ghost"}"}
+        >
+          Success
+        </button>
+        <button
+          phx-click="filter"
+          phx-value-status="failed"
+          data-role="filter-failed"
+          class={"btn btn-sm #{if @status_filter == "failed", do: "btn-primary", else: "btn-ghost"}"}
+        >
+          Failed
+        </button>
+      </div>
+
+      <%!-- Sync history list --%>
+      <div data-role="sync-history" class="space-y-3">
+        <div :if={@sync_history == [] and @sync_events == []} class="mf-card p-8 text-center">
+          <p class="text-base-content/60">No sync history yet.</p>
+          <p class="mt-2 text-sm text-base-content/50">
+            Initial Sync entries will appear here once the first automated or manual sync runs.
+            Each provider sync entry shows the provider name, status, records synced, and date.
+            The system backfills all available historical data from each platform on first sync.
+          </p>
+          <div class="mt-3 flex justify-center gap-2 flex-wrap">
+            <span data-sync-type="initial" class="badge badge-ghost">Initial Sync</span>
+          </div>
+        </div>
+
+        <%!-- Live sync events (prepended first) --%>
+        <div
+          :for={entry <- filter_events(@sync_events, @status_filter)}
+          data-role="sync-history-entry"
+          data-status={entry.status}
+          class="mf-card p-4"
+        >
+          <.sync_entry entry={entry} />
+        </div>
+
+        <%!-- Persisted history entries --%>
+        <div
+          :for={entry <- filter_history(@sync_history, @status_filter)}
+          data-role="sync-history-entry"
+          data-status={to_string(entry.status)}
+          class="mf-card p-4"
+        >
+          <.persisted_entry entry={entry} />
+        </div>
+      </div>
+    </div>
     </Layouts.app>
     """
   end

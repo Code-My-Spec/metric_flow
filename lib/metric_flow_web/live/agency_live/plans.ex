@@ -13,148 +13,153 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-4xl">
-        <.header>
-          Subscription Plans
-          <:subtitle>Manage plans for your agency customers</:subtitle>
-        </.header>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-4xl">
+      <.header>
+        Subscription Plans
+        <:subtitle>Manage plans for your agency customers</:subtitle>
+      </.header>
 
-        <div class="mt-8 space-y-6">
-          <div :if={!@stripe_connected} class="alert alert-warning">
-            <span>Connect your Stripe account before creating plans.</span>
-            <.link navigate="/app/agency/stripe-connect" class="link link-primary">
-              Connect Stripe
-            </.link>
+      <div class="mt-8 space-y-6">
+        <div :if={!@stripe_connected} class="alert alert-warning">
+          <span>Connect your Stripe account before creating plans.</span>
+          <.link navigate="/app/agency/stripe-connect" class="link link-primary">
+            Connect Stripe
+          </.link>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <h2 class="card-title text-base">
+              {if @editing_plan_id, do: "Edit Plan", else: "Create Plan"}
+            </h2>
+            <form
+              id="plan-form"
+              phx-submit={if @editing_plan_id, do: "update_plan", else: "create_plan"}
+              phx-change="validate_plan"
+              class="space-y-4"
+            >
+              <div class="form-control">
+                <label class="label"><span class="label-text">Plan Name</span></label>
+                <input
+                  type="text"
+                  name="plan[name]"
+                  value={@form_params["name"]}
+                  class={["input w-full", @form_errors[:name] && "input-error"]}
+                  required
+                  disabled={!@stripe_connected}
+                />
+                <p :if={@form_errors[:name]} class="text-sm text-error mt-1">
+                  {@form_errors[:name]}
+                </p>
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text">Monthly Price (cents)</span></label>
+                <input
+                  type="number"
+                  name="plan[price_cents]"
+                  value={@form_params["price_cents"]}
+                  class={["input w-full", @form_errors[:price_cents] && "input-error"]}
+                  required
+                  min="1"
+                  disabled={!@stripe_connected}
+                />
+                <p :if={@form_errors[:price_cents]} class="text-sm text-error mt-1">
+                  {@form_errors[:price_cents]}
+                </p>
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text">Billing Interval</span></label>
+                <select name="plan[billing_interval]" class="select w-full" disabled={!@stripe_connected}>
+                  <option value="monthly" selected={@form_params["billing_interval"] == "monthly"}>Monthly</option>
+                  <option value="yearly" selected={@form_params["billing_interval"] == "yearly"}>Yearly</option>
+                </select>
+              </div>
+
+              <div class="form-control">
+                <label class="label"><span class="label-text">Description</span></label>
+                <textarea
+                  name="plan[description]"
+                  class="textarea w-full"
+                  disabled={!@stripe_connected}
+                >{@form_params["description"]}</textarea>
+              </div>
+
+              <div class="card-actions justify-end gap-2">
+                <button :if={@editing_plan_id} type="button" phx-click="cancel_edit" class="btn btn-ghost">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" disabled={!@stripe_connected}>
+                  {if @editing_plan_id, do: "Update Plan", else: "Create Plan"}
+                </button>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <div class="card bg-base-100 shadow">
-            <div class="card-body">
-              <h2 class="card-title text-base">
-                {if @editing_plan_id, do: "Edit Plan", else: "Create Plan"}
-              </h2>
-              <form
-                id="plan-form"
-                phx-submit={if @editing_plan_id, do: "update_plan", else: "create_plan"}
-                phx-change="validate_plan"
-                class="space-y-4"
-              >
-                <div class="form-control">
-                  <label class="label"><span class="label-text">Plan Name</span></label>
-                  <input
-                    type="text"
-                    name="plan[name]"
-                    value={@form_params["name"]}
-                    class={["input w-full", @form_errors[:name] && "input-error"]}
-                    required
-                    disabled={!@stripe_connected}
-                  />
-                  <p :if={@form_errors[:name]} class="text-sm text-error mt-1">
-                    {@form_errors[:name]}
-                  </p>
-                </div>
-
-                <div class="form-control">
-                  <label class="label"><span class="label-text">Monthly Price (cents)</span></label>
-                  <input
-                    type="number"
-                    name="plan[price_cents]"
-                    value={@form_params["price_cents"]}
-                    class={["input w-full", @form_errors[:price_cents] && "input-error"]}
-                    required
-                    min="1"
-                    disabled={!@stripe_connected}
-                  />
-                  <p :if={@form_errors[:price_cents]} class="text-sm text-error mt-1">
-                    {@form_errors[:price_cents]}
-                  </p>
-                </div>
-
-                <div class="form-control">
-                  <label class="label"><span class="label-text">Billing Interval</span></label>
-                  <select name="plan[billing_interval]" class="select w-full" disabled={!@stripe_connected}>
-                    <option value="monthly" selected={@form_params["billing_interval"] == "monthly"}>Monthly</option>
-                    <option value="yearly" selected={@form_params["billing_interval"] == "yearly"}>Yearly</option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label"><span class="label-text">Description</span></label>
-                  <textarea
-                    name="plan[description]"
-                    class="textarea w-full"
-                    disabled={!@stripe_connected}
-                  >{@form_params["description"]}</textarea>
-                </div>
-
-                <div class="card-actions justify-end gap-2">
-                  <button :if={@editing_plan_id} type="button" phx-click="cancel_edit" class="btn btn-ghost">
-                    Cancel
-                  </button>
-                  <button type="submit" class="btn btn-primary" disabled={!@stripe_connected}>
-                    {if @editing_plan_id, do: "Update Plan", else: "Create Plan"}
-                  </button>
-                </div>
-              </form>
+        <div class="card bg-base-100 shadow">
+          <div class="card-body p-0">
+            <div :if={@plans == []} class="p-6 text-center text-base-content/60">
+              No plans created yet
             </div>
-          </div>
-
-          <div class="card bg-base-100 shadow">
-            <div class="card-body p-0">
-              <div :if={@plans == []} class="p-6 text-center text-base-content/60">
-                No plans created yet
-              </div>
-              <div :if={@plans != []} class="overflow-x-auto">
-                <table class="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Price</th>
-                      <th>Interval</th>
-                      <th>Stripe Price ID</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr :for={plan <- @plans} data-role="plan-row">
-                      <td>{plan.name}</td>
-                      <td>{format_price(plan.price_cents, plan.currency)}</td>
-                      <td class="capitalize">{plan.billing_interval}</td>
-                      <td class="font-mono text-xs">{plan.stripe_price_id || "—"}</td>
-                      <td>
-                        <span :if={plan.active} class="badge badge-success">Active</span>
-                        <span :if={!plan.active} class="badge badge-ghost">Inactive</span>
-                      </td>
-                      <td class="space-x-2">
-                        <button
-                          :if={plan.active}
-                          phx-click="edit_plan"
-                          phx-value-id={plan.id}
-                          data-role="edit-plan"
-                          class="btn btn-xs btn-ghost"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          :if={plan.active}
-                          phx-click="deactivate_plan"
-                          phx-value-id={plan.id}
-                          data-role="deactivate-plan"
-                          data-confirm="Are you sure you want to deactivate this plan?"
-                          class="btn btn-xs btn-ghost text-error"
-                        >
-                          Deactivate
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <div :if={@plans != []} class="overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Interval</th>
+                    <th>Stripe Price ID</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr :for={plan <- @plans} data-role="plan-row">
+                    <td>{plan.name}</td>
+                    <td>{format_price(plan.price_cents, plan.currency)}</td>
+                    <td class="capitalize">{plan.billing_interval}</td>
+                    <td class="font-mono text-xs">{plan.stripe_price_id || "—"}</td>
+                    <td>
+                      <span :if={plan.active} class="badge badge-success">Active</span>
+                      <span :if={!plan.active} class="badge badge-ghost">Inactive</span>
+                    </td>
+                    <td class="space-x-2">
+                      <button
+                        :if={plan.active}
+                        phx-click="edit_plan"
+                        phx-value-id={plan.id}
+                        data-role="edit-plan"
+                        class="btn btn-xs btn-ghost"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        :if={plan.active}
+                        phx-click="deactivate_plan"
+                        phx-value-id={plan.id}
+                        data-role="deactivate-plan"
+                        data-confirm="Are you sure you want to deactivate this plan?"
+                        class="btn btn-xs btn-ghost text-error"
+                      >
+                        Deactivate
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

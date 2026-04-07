@@ -40,14 +40,19 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mf-content mx-auto max-w-5xl px-4 py-8">
-        <%= if @connected do %>
-          <%= render_dashboard(assigns) %>
-        <% else %>
-          <%= render_empty_state(assigns) %>
-        <% end %>
-      </div>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mf-content mx-auto max-w-5xl px-4 py-8">
+      <%= if @connected do %>
+        <%= render_dashboard(assigns) %>
+      <% else %>
+        <%= render_empty_state(assigns) %>
+      <% end %>
+    </div>
     </Layouts.app>
     """
   end

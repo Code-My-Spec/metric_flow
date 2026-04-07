@@ -46,181 +46,186 @@ defmodule MetricFlowWeb.AiLive.Insights do
     assigns = assign(assigns, :filtered_insights, filter_insights(assigns.insights, assigns.active_type_filter))
 
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="max-w-4xl mx-auto mf-content px-4 py-8">
-        <%!-- Page header --%>
-        <div class="flex items-center justify-between mb-2">
-          <div>
-            <h1 class="text-2xl font-bold">AI Insights</h1>
-            <p class="text-base-content/60 mt-1">
-              Actionable recommendations generated from your correlation analysis
-            </p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              :if={@insights != []}
-              phx-click="clear_all_insights"
-              data-role="clear-all-insights"
-              data-confirm="Delete all insights? This cannot be undone."
-              class="btn btn-ghost btn-sm text-error"
-            >
-              Clear All
-            </button>
-            <button
-              :if={@has_correlations}
-              phx-click="generate_insights"
-              disabled={@generating}
-              data-role="generate-insights"
-              class="btn btn-primary btn-sm"
-            >
-              <span :if={@generating} class="loading loading-spinner loading-xs"></span>
-              {if @generating, do: "Generating...", else: "Generate Insights"}
-            </button>
-          </div>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="max-w-4xl mx-auto mf-content px-4 py-8">
+      <%!-- Page header --%>
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h1 class="text-2xl font-bold">AI Insights</h1>
+          <p class="text-base-content/60 mt-1">
+            Actionable recommendations generated from your correlation analysis
+          </p>
         </div>
-
-        <%!-- Type filter bar --%>
-        <div data-role="type-filter" class="flex items-center gap-2 mt-6 mb-6 flex-wrap">
+        <div class="flex items-center gap-2">
           <button
-            :for={{type_key, label} <- @filter_buttons}
-            phx-click="filter_type"
-            phx-value-type={Atom.to_string(type_key)}
-            class={filter_button_class(@active_type_filter, type_key)}
+            :if={@insights != []}
+            phx-click="clear_all_insights"
+            data-role="clear-all-insights"
+            data-confirm="Delete all insights? This cannot be undone."
+            class="btn btn-ghost btn-sm text-error"
           >
-            {label}
+            Clear All
+          </button>
+          <button
+            :if={@has_correlations}
+            phx-click="generate_insights"
+            disabled={@generating}
+            data-role="generate-insights"
+            class="btn btn-primary btn-sm"
+          >
+            <span :if={@generating} class="loading loading-spinner loading-xs"></span>
+            {if @generating, do: "Generating...", else: "Generate Insights"}
           </button>
         </div>
+      </div>
 
-        <%!-- Empty state: no insights at all --%>
-        <div
-          :if={@insights == [] and @filtered_insights == []}
-          data-role="no-insights-state"
-          class="mf-card p-8 text-center"
+      <%!-- Type filter bar --%>
+      <div data-role="type-filter" class="flex items-center gap-2 mt-6 mb-6 flex-wrap">
+        <button
+          :for={{type_key, label} <- @filter_buttons}
+          phx-click="filter_type"
+          phx-value-type={Atom.to_string(type_key)}
+          class={filter_button_class(@active_type_filter, type_key)}
         >
-          <h2 class="text-xl font-semibold">No Insights Yet</h2>
-          <%= if @has_correlations do %>
-            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
-              You have correlation data available. Click "Generate Insights" to create AI-powered recommendations.
-            </p>
-            <button
-              phx-click="generate_insights"
-              disabled={@generating}
-              class="btn btn-primary mt-6"
-            >
-              <span :if={@generating} class="loading loading-spinner loading-xs"></span>
-              {if @generating, do: "Generating...", else: "Generate Insights"}
-            </button>
-          <% else %>
-            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
-              Run a correlation analysis first, then generate insights from the results.
-            </p>
-            <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6">
-              Run Correlations
-            </.link>
-          <% end %>
-        </div>
+          {label}
+        </button>
+      </div>
 
-        <%!-- Empty filter state: insights exist but filter matches nothing --%>
-        <div
-          :if={@insights != [] and @filtered_insights == []}
-          data-role="no-filter-results-state"
-          class="mf-card p-6 text-center"
-        >
-          <p class="text-base-content/60">No insights match the selected filter.</p>
+      <%!-- Empty state: no insights at all --%>
+      <div
+        :if={@insights == [] and @filtered_insights == []}
+        data-role="no-insights-state"
+        class="mf-card p-8 text-center"
+      >
+        <h2 class="text-xl font-semibold">No Insights Yet</h2>
+        <%= if @has_correlations do %>
+          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+            You have correlation data available. Click "Generate Insights" to create AI-powered recommendations.
+          </p>
           <button
-            phx-click="filter_type"
-            phx-value-type="all"
-            data-role="clear-filter"
-            class="btn btn-ghost btn-sm mt-3"
+            phx-click="generate_insights"
+            disabled={@generating}
+            class="btn btn-primary mt-6"
           >
-            Show All
+            <span :if={@generating} class="loading loading-spinner loading-xs"></span>
+            {if @generating, do: "Generating...", else: "Generate Insights"}
           </button>
-        </div>
+        <% else %>
+          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+            Run a correlation analysis first, then generate insights from the results.
+          </p>
+          <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6">
+            Run Correlations
+          </.link>
+        <% end %>
+      </div>
 
-        <%!-- Insights list --%>
-        <div :if={@filtered_insights != []} data-role="insights-list" class="space-y-4">
-          <div
-            :for={insight <- @filtered_insights}
-            data-role="insight-card"
-            data-insight-id={insight.id}
-            class="mf-card p-5"
-          >
-            <div class="flex flex-col gap-3">
-              <%!-- Top row: summary + badges --%>
-              <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
-                <p data-role="insight-summary" class="font-medium text-base-content">
-                  {insight.summary}
-                </p>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span
-                    data-role="insight-type-badge"
-                    class={["badge badge-sm", type_badge_class(insight.suggestion_type)]}
-                  >
-                    {type_label(insight.suggestion_type)}
-                  </span>
-                  <span
-                    data-role="insight-confidence-badge"
-                    data-confidence={insight.confidence}
-                    class={["badge badge-sm", confidence_badge_class(insight.confidence)]}
-                  >
-                    {format_confidence(insight.confidence)} confidence
-                  </span>
-                </div>
-              </div>
+      <%!-- Empty filter state: insights exist but filter matches nothing --%>
+      <div
+        :if={@insights != [] and @filtered_insights == []}
+        data-role="no-filter-results-state"
+        class="mf-card p-6 text-center"
+      >
+        <p class="text-base-content/60">No insights match the selected filter.</p>
+        <button
+          phx-click="filter_type"
+          phx-value-type="all"
+          data-role="clear-filter"
+          class="btn btn-ghost btn-sm mt-3"
+        >
+          Show All
+        </button>
+      </div>
 
-              <%!-- Full content --%>
-              <div data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
-                {insight.content}
-              </div>
-
-              <%!-- Correlation reference --%>
-              <div
-                :if={insight.correlation_result_id}
-                data-role="insight-correlation-ref"
-                class="text-xs text-base-content/50"
-              >
-                Based on correlation result #{insight.correlation_result_id}
-              </div>
-
-              <%!-- Generated at + delete --%>
-              <div class="flex items-center justify-between">
-                <div data-role="insight-generated-at" class="text-xs text-base-content/40">
-                  Generated {format_generated_at(insight.generated_at)}
-                </div>
-                <button
-                  phx-click="delete_insight"
-                  phx-value-id={insight.id}
-                  data-role="delete-insight"
-                  class="btn btn-ghost btn-xs text-error"
+      <%!-- Insights list --%>
+      <div :if={@filtered_insights != []} data-role="insights-list" class="space-y-4">
+        <div
+          :for={insight <- @filtered_insights}
+          data-role="insight-card"
+          data-insight-id={insight.id}
+          class="mf-card p-5"
+        >
+          <div class="flex flex-col gap-3">
+            <%!-- Top row: summary + badges --%>
+            <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
+              <p data-role="insight-summary" class="font-medium text-base-content">
+                {insight.summary}
+              </p>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span
+                  data-role="insight-type-badge"
+                  class={["badge badge-sm", type_badge_class(insight.suggestion_type)]}
                 >
-                  Delete
-                </button>
+                  {type_label(insight.suggestion_type)}
+                </span>
+                <span
+                  data-role="insight-confidence-badge"
+                  data-confidence={insight.confidence}
+                  class={["badge badge-sm", confidence_badge_class(insight.confidence)]}
+                >
+                  {format_confidence(insight.confidence)} confidence
+                </span>
               </div>
+            </div>
 
-              <%!-- Feedback section --%>
-              <div
-                data-role="ai-feedback-section"
-                class="pt-3 border-t border-base-content/10"
+            <%!-- Full content --%>
+            <div data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+              {insight.content}
+            </div>
+
+            <%!-- Correlation reference --%>
+            <div
+              :if={insight.correlation_result_id}
+              data-role="insight-correlation-ref"
+              class="text-xs text-base-content/50"
+            >
+              Based on correlation result #{insight.correlation_result_id}
+            </div>
+
+            <%!-- Generated at + delete --%>
+            <div class="flex items-center justify-between">
+              <div data-role="insight-generated-at" class="text-xs text-base-content/40">
+                Generated {format_generated_at(insight.generated_at)}
+              </div>
+              <button
+                phx-click="delete_insight"
+                phx-value-id={insight.id}
+                data-role="delete-insight"
+                class="btn btn-ghost btn-xs text-error"
               >
-                <div data-role="insight-feedback">
-                  {render_feedback(assigns, insight)}
-                </div>
+                Delete
+              </button>
+            </div>
+
+            <%!-- Feedback section --%>
+            <div
+              data-role="ai-feedback-section"
+              class="pt-3 border-t border-base-content/10"
+            >
+              <div data-role="insight-feedback">
+                {render_feedback(assigns, insight)}
               </div>
             </div>
           </div>
         </div>
-
-        <%!-- AI personalization note --%>
-        <div
-          :if={@insights != []}
-          data-role="ai-personalization-note"
-          class="mt-8 pt-6 border-t border-base-content/10"
-        >
-          <p class="text-xs text-base-content/40 text-center">
-            AI suggestions learn from your feedback and improve over time.
-          </p>
-        </div>
       </div>
+
+      <%!-- AI personalization note --%>
+      <div
+        :if={@insights != []}
+        data-role="ai-personalization-note"
+        class="mt-8 pt-6 border-t border-base-content/10"
+      >
+        <p class="text-xs text-base-content/40 text-center">
+          AI suggestions learn from your feedback and improve over time.
+        </p>
+      </div>
+    </div>
     </Layouts.app>
     """
   end

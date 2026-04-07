@@ -16,114 +16,119 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-6xl">
-        <.header>
-          Customer Subscriptions
-          <:subtitle>Manage your agency's subscriber accounts</:subtitle>
-        </.header>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-6xl">
+      <.header>
+        Customer Subscriptions
+        <:subtitle>Manage your agency's subscriber accounts</:subtitle>
+      </.header>
 
-        <div class="mt-8 space-y-6">
-          <%!-- Summary stats --%>
-          <div class="stats shadow w-full">
-            <div class="stat">
-              <div class="stat-title">Active Subscribers</div>
-              <div class="stat-value">{@active_count}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-title">MRR</div>
-              <div class="stat-value">{format_mrr(@mrr)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-title">Past Due</div>
-              <div class="stat-value text-warning">{@past_due_count}</div>
-            </div>
+      <div class="mt-8 space-y-6">
+        <%!-- Summary stats --%>
+        <div class="stats shadow w-full">
+          <div class="stat">
+            <div class="stat-title">Active Subscribers</div>
+            <div class="stat-value">{@active_count}</div>
           </div>
-
-          <%!-- Search --%>
-          <div class="form-control">
-            <form phx-change="search" phx-submit="search">
-              <input
-                type="text"
-                name="query"
-                value={@search}
-                placeholder="Search by customer ID or email..."
-                class="input w-full"
-                phx-debounce="300"
-              />
-            </form>
+          <div class="stat">
+            <div class="stat-title">MRR</div>
+            <div class="stat-value">{format_mrr(@mrr)}</div>
           </div>
+          <div class="stat">
+            <div class="stat-title">Past Due</div>
+            <div class="stat-value text-warning">{@past_due_count}</div>
+          </div>
+        </div>
 
-          <%!-- Subscriptions table --%>
-          <div class="card bg-base-100 shadow">
-            <div class="card-body p-0">
-              <div :if={@subscriptions == []} class="p-6 text-center text-base-content/60">
-                No customer subscriptions yet
-              </div>
-              <div :if={@subscriptions != []} class="overflow-x-auto">
-                <table class="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Customer</th>
-                      <th>Plan</th>
-                      <th>Status</th>
-                      <th>Start Date</th>
-                      <th>Period End</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr :for={sub <- @subscriptions} data-role="subscription-row">
-                      <td class="font-mono text-xs">{sub.stripe_customer_id}</td>
-                      <td>{if sub.plan, do: sub.plan.name, else: "—"}</td>
-                      <td>
-                        <span :if={sub.status == :active} class="badge badge-success">Active</span>
-                        <span :if={sub.status == :past_due} class="badge badge-warning">Past due</span>
-                        <span :if={sub.status == :cancelled} class="badge badge-ghost">Cancelled</span>
-                        <span :if={sub.status == :trialing} class="badge badge-info">Trialing</span>
-                      </td>
-                      <td>{format_date(sub.inserted_at)}</td>
-                      <td>{format_date(sub.current_period_end)}</td>
-                      <td>
-                        <button
-                          :if={sub.status == :active}
-                          phx-click="cancel_customer_subscription"
-                          phx-value-id={sub.id}
-                          data-confirm="Cancel this customer's subscription at period end?"
-                          class="btn btn-xs btn-ghost text-error"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+        <%!-- Search --%>
+        <div class="form-control">
+          <form phx-change="search" phx-submit="search">
+            <input
+              type="text"
+              name="query"
+              value={@search}
+              placeholder="Search by customer ID or email..."
+              class="input w-full"
+              phx-debounce="300"
+            />
+          </form>
+        </div>
 
-              <%!-- Pagination --%>
-              <div :if={@subscriptions != []} class="flex justify-center gap-2 p-4">
-                <button
-                  :if={@page > 0}
-                  phx-click="prev_page"
-                  class="btn btn-sm btn-ghost"
-                >
-                  Previous
-                </button>
-                <span class="btn btn-sm btn-disabled">
-                  Page {@page + 1}
-                </span>
-                <button
-                  :if={length(@subscriptions) == @per_page}
-                  phx-click="next_page"
-                  class="btn btn-sm btn-ghost"
-                >
-                  Next
-                </button>
-              </div>
+        <%!-- Subscriptions table --%>
+        <div class="card bg-base-100 shadow">
+          <div class="card-body p-0">
+            <div :if={@subscriptions == []} class="p-6 text-center text-base-content/60">
+              No customer subscriptions yet
+            </div>
+            <div :if={@subscriptions != []} class="overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>Period End</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr :for={sub <- @subscriptions} data-role="subscription-row">
+                    <td class="font-mono text-xs">{sub.stripe_customer_id}</td>
+                    <td>{if sub.plan, do: sub.plan.name, else: "—"}</td>
+                    <td>
+                      <span :if={sub.status == :active} class="badge badge-success">Active</span>
+                      <span :if={sub.status == :past_due} class="badge badge-warning">Past due</span>
+                      <span :if={sub.status == :cancelled} class="badge badge-ghost">Cancelled</span>
+                      <span :if={sub.status == :trialing} class="badge badge-info">Trialing</span>
+                    </td>
+                    <td>{format_date(sub.inserted_at)}</td>
+                    <td>{format_date(sub.current_period_end)}</td>
+                    <td>
+                      <button
+                        :if={sub.status == :active}
+                        phx-click="cancel_customer_subscription"
+                        phx-value-id={sub.id}
+                        data-confirm="Cancel this customer's subscription at period end?"
+                        class="btn btn-xs btn-ghost text-error"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <%!-- Pagination --%>
+            <div :if={@subscriptions != []} class="flex justify-center gap-2 p-4">
+              <button
+                :if={@page > 0}
+                phx-click="prev_page"
+                class="btn btn-sm btn-ghost"
+              >
+                Previous
+              </button>
+              <span class="btn btn-sm btn-disabled">
+                Page {@page + 1}
+              </span>
+              <button
+                :if={length(@subscriptions) == @per_page}
+                phx-click="next_page"
+                class="btn btn-sm btn-ghost"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

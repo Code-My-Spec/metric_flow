@@ -58,26 +58,31 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-3xl mf-content px-4 py-8">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold">Connect a Provider</h1>
-          <p class="mt-1 text-base-content/60">
-            Authenticate with your marketing providers to start syncing data
-          </p>
-        </div>
-
-        <%= case @view_mode do %>
-          <% :selection -> %>
-            <%= render_platform_selection(assigns) %>
-          <% :detail -> %>
-            <%= render_platform_detail(assigns) %>
-          <% :result -> %>
-            <%= render_result(assigns) %>
-          <% :accounts -> %>
-            <%= render_account_selection(assigns) %>
-        <% end %>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-3xl mf-content px-4 py-8">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold">Connect a Provider</h1>
+        <p class="mt-1 text-base-content/60">
+          Authenticate with your marketing providers to start syncing data
+        </p>
       </div>
+
+      <%= case @view_mode do %>
+        <% :selection -> %>
+          <%= render_platform_selection(assigns) %>
+        <% :detail -> %>
+          <%= render_platform_detail(assigns) %>
+        <% :result -> %>
+          <%= render_result(assigns) %>
+        <% :accounts -> %>
+          <%= render_account_selection(assigns) %>
+      <% end %>
+    </div>
     </Layouts.app>
     """
   end

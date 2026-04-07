@@ -30,55 +30,55 @@ defmodule MetricFlowWeb.ReportLive.Show do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-      <div class="max-w-5xl mx-auto mf-content px-4 py-8">
-        <%!-- Header --%>
-        <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
-          <div>
-            <.link navigate={~p"/app/reports"} class="btn btn-ghost btn-sm mb-2" data-role="back-link">
-              &larr; Back to Reports
-            </.link>
-            <h1 class="text-2xl font-bold" data-role="report-name">{@report.name}</h1>
-          </div>
-          <button
-            phx-click="share"
-            class="btn btn-primary btn-sm"
-            data-role="share-button"
-          >
-            Share
-          </button>
+    <div class="max-w-5xl mx-auto mf-content px-4 py-8">
+      <%!-- Header --%>
+      <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
+        <div>
+          <.link navigate={~p"/app/reports"} class="btn btn-ghost btn-sm mb-2" data-role="back-link">
+            &larr; Back to Reports
+          </.link>
+          <h1 class="text-2xl font-bold" data-role="report-name">{@report.name}</h1>
         </div>
+        <button
+          phx-click="share"
+          class="btn btn-primary btn-sm"
+          data-role="share-button"
+        >
+          Share
+        </button>
+      </div>
 
-        <%!-- Vega-Lite chart --%>
-        <div class="mf-card p-4 mb-6" data-role="report-chart">
+      <%!-- Vega-Lite chart --%>
+      <div class="mf-card p-4 mb-6" data-role="report-chart">
+        <div
+          :if={@report.vega_spec != nil}
+          phx-hook="VegaLite"
+          phx-update="ignore"
+          data-spec={Jason.encode!(@report.vega_spec)}
+          id="report-chart"
+          data-role="vega-lite-chart"
+          style="width: 100%"
+        >
+        </div>
+        <p :if={@report.vega_spec == nil} class="text-base-content/60 text-center py-8">
+          No chart data available.
+        </p>
+      </div>
+
+      <%!-- Metric summary cards --%>
+      <div :if={@metric_names != []} data-role="metric-summaries">
+        <h2 class="text-xl font-semibold mb-4">Metric Summary</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div
-            :if={@report.vega_spec != nil}
-            phx-hook="VegaLite"
-            phx-update="ignore"
-            data-spec={Jason.encode!(@report.vega_spec)}
-            id="report-chart"
-            data-role="vega-lite-chart"
-            style="width: 100%"
+            :for={name <- @metric_names}
+            class="mf-card p-4"
+            data-role="metric-summary-card"
           >
-          </div>
-          <p :if={@report.vega_spec == nil} class="text-base-content/60 text-center py-8">
-            No chart data available.
-          </p>
-        </div>
-
-        <%!-- Metric summary cards --%>
-        <div :if={@metric_names != []} data-role="metric-summaries">
-          <h2 class="text-xl font-semibold mb-4">Metric Summary</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div
-              :for={name <- @metric_names}
-              class="mf-card p-4"
-              data-role="metric-summary-card"
-            >
-              <p class="text-sm text-base-content/60 font-medium">{name}</p>
-            </div>
+            <p class="text-sm text-base-content/60 font-medium">{name}</p>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

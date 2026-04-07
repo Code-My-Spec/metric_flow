@@ -16,7 +16,6 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
 
   alias MetricFlow.Ai
   alias MetricFlow.Dashboards
-  alias MetricFlowWeb.Layouts
 
   # ---------------------------------------------------------------------------
   # Render
@@ -30,131 +29,130 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
-     
     >
-      <div class="max-w-3xl mx-auto px-4 py-8">
-        <%!-- Page header --%>
-        <h1 class="text-2xl font-bold">Generate Report</h1>
-        <p class="text-base-content/60 mt-1">
-          Describe the chart or report you want and AI will build it for you.
-        </p>
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <%!-- Page header --%>
+      <h1 class="text-2xl font-bold">Generate Report</h1>
+      <p class="text-base-content/60 mt-1">
+        Describe the chart or report you want and AI will build it for you.
+      </p>
 
-        <%!-- Prompt form --%>
-        <div data-role="prompt-form" class="mf-card p-5 mb-6 mt-6">
-          <form phx-submit="generate" phx-change="update_prompt">
-            <label class="font-semibold text-sm block mb-2">
-              What do you want to visualize?
-            </label>
-            <textarea
-              name="prompt"
-              data-role="prompt-input"
-              rows="4"
-              placeholder="e.g. Show me weekly revenue and ad spend over the last 90 days"
-              disabled={@generating}
-              class="textarea textarea-bordered w-full"
-            >{@prompt}</textarea>
+      <%!-- Prompt form --%>
+      <div data-role="prompt-form" class="mf-card p-5 mb-6 mt-6">
+        <form phx-submit="generate" phx-change="update_prompt">
+          <label class="font-semibold text-sm block mb-2">
+            What do you want to visualize?
+          </label>
+          <textarea
+            name="prompt"
+            data-role="prompt-input"
+            rows="4"
+            placeholder="e.g. Show me weekly revenue and ad spend over the last 90 days"
+            disabled={@generating}
+            class="textarea textarea-bordered w-full"
+          >{@prompt}</textarea>
 
-            <p
-              :if={@error}
-              data-role="generate-error"
-              class="text-error text-sm mt-2"
-            >
-              {@error}
-            </p>
-
-            <button
-              type="submit"
-              data-role="generate-btn"
-              disabled={@generating || String.trim(@prompt) == ""}
-              class={[
-                "btn btn-primary mt-4 w-full sm:w-auto",
-                (@generating || String.trim(@prompt) == "") && "btn-disabled"
-              ]}
-            >
-              <span :if={@generating} class="loading loading-spinner loading-xs"></span>
-              <span :if={@generating}>Generating…</span>
-              <span :if={!@generating}>Generate Chart</span>
-            </button>
-          </form>
-        </div>
-
-        <%!-- Chart preview section — shown only when vega_spec is present --%>
-        <div :if={@vega_spec} data-role="chart-preview-section" class="mf-card p-5 mb-6">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-sm">Chart Preview</span>
-            <span class="text-xs text-base-content/40">AI-generated — review before saving</span>
-          </div>
-          <div
-            id="report-generator-chart"
-            data-role="vega-lite-chart"
-            phx-hook="VegaLite"
-            data-spec={Jason.encode!(@vega_spec)}
-            class="w-full"
+          <p
+            :if={@error}
+            data-role="generate-error"
+            class="text-error text-sm mt-2"
           >
-          </div>
-        </div>
-
-        <%!-- Save section — shown only when vega_spec is present and not yet saved --%>
-        <div :if={@vega_spec && !@saved} data-role="save-section" class="mf-card p-5 mb-6">
-          <form phx-change="update_save_name" phx-submit="save_visualization">
-            <label class="font-semibold text-sm block">Save this visualization</label>
-            <input
-              type="text"
-              name="save_name"
-              data-role="save-name-input"
-              placeholder="Visualization name"
-              value={@save_name}
-              class={[
-                "input input-bordered w-full mt-2",
-                @save_error && "input-error"
-              ]}
-            />
-            <p :if={@save_error} data-role="save-error" class="text-error text-sm mt-1">
-              {@save_error}
-            </p>
-            <button
-              type="submit"
-              data-role="save-visualization-btn"
-              disabled={@saving || is_nil(@vega_spec) || String.trim(@save_name) == ""}
-              class={[
-                "btn btn-primary btn-sm mt-3 w-full sm:w-auto",
-                (@saving || is_nil(@vega_spec) || String.trim(@save_name) == "") && "btn-disabled"
-              ]}
-            >
-              <span :if={@saving} class="loading loading-spinner loading-xs"></span>
-              <span :if={@saving}>Saving…</span>
-              <span :if={!@saving}>Save Visualization</span>
-            </button>
-          </form>
-        </div>
-
-        <%!-- Save confirmation — shown only when saved is true --%>
-        <div :if={@saved} data-role="save-confirmation" class="mf-card p-5 mb-6">
-          <div class="flex items-center gap-2 mb-3">
-            <span class="badge badge-success">Saved</span>
-            <span>Visualization saved!</span>
-          </div>
-          <.link navigate="/app/visualizations" class="link block mb-3">
-            View in Visualizations
-          </.link>
-          <button
-            phx-click="generate_another"
-            class="btn btn-ghost btn-sm"
-          >
-            Generate Another
-          </button>
-        </div>
-
-        <%!-- Empty / initial state --%>
-        <div
-          :if={is_nil(@vega_spec) && !@generating && is_nil(@error)}
-          data-role="empty-state"
-        >
-          <p class="text-base-content/40 text-sm text-center py-8">
-            Enter a prompt above and click Generate Chart to get started.
+            {@error}
           </p>
+
+          <button
+            type="submit"
+            data-role="generate-btn"
+            disabled={@generating || String.trim(@prompt) == ""}
+            class={[
+              "btn btn-primary mt-4 w-full sm:w-auto",
+              (@generating || String.trim(@prompt) == "") && "btn-disabled"
+            ]}
+          >
+            <span :if={@generating} class="loading loading-spinner loading-xs"></span>
+            <span :if={@generating}>Generating…</span>
+            <span :if={!@generating}>Generate Chart</span>
+          </button>
+        </form>
+      </div>
+
+      <%!-- Chart preview section — shown only when vega_spec is present --%>
+      <div :if={@vega_spec} data-role="chart-preview-section" class="mf-card p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-sm">Chart Preview</span>
+          <span class="text-xs text-base-content/40">AI-generated — review before saving</span>
+        </div>
+        <div
+          id="report-generator-chart"
+          data-role="vega-lite-chart"
+          phx-hook="VegaLite"
+          data-spec={Jason.encode!(@vega_spec)}
+          class="w-full"
+        >
         </div>
       </div>
+
+      <%!-- Save section — shown only when vega_spec is present and not yet saved --%>
+      <div :if={@vega_spec && !@saved} data-role="save-section" class="mf-card p-5 mb-6">
+        <form phx-change="update_save_name" phx-submit="save_visualization">
+          <label class="font-semibold text-sm block">Save this visualization</label>
+          <input
+            type="text"
+            name="save_name"
+            data-role="save-name-input"
+            placeholder="Visualization name"
+            value={@save_name}
+            class={[
+              "input input-bordered w-full mt-2",
+              @save_error && "input-error"
+            ]}
+          />
+          <p :if={@save_error} data-role="save-error" class="text-error text-sm mt-1">
+            {@save_error}
+          </p>
+          <button
+            type="submit"
+            data-role="save-visualization-btn"
+            disabled={@saving || is_nil(@vega_spec) || String.trim(@save_name) == ""}
+            class={[
+              "btn btn-primary btn-sm mt-3 w-full sm:w-auto",
+              (@saving || is_nil(@vega_spec) || String.trim(@save_name) == "") && "btn-disabled"
+            ]}
+          >
+            <span :if={@saving} class="loading loading-spinner loading-xs"></span>
+            <span :if={@saving}>Saving…</span>
+            <span :if={!@saving}>Save Visualization</span>
+          </button>
+        </form>
+      </div>
+
+      <%!-- Save confirmation — shown only when saved is true --%>
+      <div :if={@saved} data-role="save-confirmation" class="mf-card p-5 mb-6">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge badge-success">Saved</span>
+          <span>Visualization saved!</span>
+        </div>
+        <.link navigate="/app/visualizations" class="link block mb-3">
+          View in Visualizations
+        </.link>
+        <button
+          phx-click="generate_another"
+          class="btn btn-ghost btn-sm"
+        >
+          Generate Another
+        </button>
+      </div>
+
+      <%!-- Empty / initial state --%>
+      <div
+        :if={is_nil(@vega_spec) && !@generating && is_nil(@error)}
+        data-role="empty-state"
+      >
+        <p class="text-base-content/40 text-sm text-center py-8">
+          Enter a prompt above and click Generate Chart to get started.
+        </p>
+      </div>
+    </div>
     </Layouts.app>
     """
   end

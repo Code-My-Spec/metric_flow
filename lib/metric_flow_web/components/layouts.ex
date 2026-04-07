@@ -12,31 +12,18 @@ defmodule MetricFlowWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
+  Renders the app layout with navbar, content area, and footer.
 
   ## Examples
 
-      <Layouts.app flash={@flash}>
+      <Layouts.app flash={@flash} current_scope={@current_scope}>
         <h1>Content</h1>
       </Layouts.app>
-
   """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  attr :current_scope, :map,
-    default: nil,
-    doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
-
-  attr :white_label_config, :map, default: nil, doc: "optional agency white-label configuration"
-
-  attr :active_account_name, :string,
-    default: nil,
-    doc: "the name of the currently active account, shown in the navbar"
-
+  attr :flash, :map, required: true
+  attr :current_scope, :map, default: nil
+  attr :white_label_config, :map, default: nil
+  attr :active_account_name, :string, default: nil
   slot :inner_block, required: true
 
   def app(assigns) do

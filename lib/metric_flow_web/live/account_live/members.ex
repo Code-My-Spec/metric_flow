@@ -33,166 +33,171 @@ defmodule MetricFlowWeb.AccountLive.Members do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-4xl">
-        <.header>
-          Members
-          <:subtitle>{@account.name}</:subtitle>
-        </.header>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-4xl">
+      <.header>
+        Members
+        <:subtitle>{@account.name}</:subtitle>
+      </.header>
 
-        <div class="mt-8 space-y-6">
-          <%!-- Members table — visible to owners and admins only --%>
-          <div :if={@can_manage} class="card bg-base-100 shadow" data-role="members-list">
-            <div class="card-body p-0">
-              <div class="overflow-x-auto">
-                <table class="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Member</th>
-                      <th>Role</th>
-                      <th>Joined</th>
-                      <th :if={@can_manage}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      :for={member <- @members}
-                      data-role="member-row"
-                      data-user-id={member.user_id}
-                    >
-                      <td>
-                        <div class="flex items-center gap-3">
-                          <div class="avatar placeholder">
-                            <div class="bg-neutral text-neutral-content rounded-full w-8 h-8">
-                              <span class="text-xs">
-                                {String.upcase(String.first(member.user.email))}
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <div class="font-medium text-sm">{member.user.email}</div>
+      <div class="mt-8 space-y-6">
+        <%!-- Members table — visible to owners and admins only --%>
+        <div :if={@can_manage} class="card bg-base-100 shadow" data-role="members-list">
+          <div class="card-body p-0">
+            <div class="overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th :if={@can_manage}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    :for={member <- @members}
+                    data-role="member-row"
+                    data-user-id={member.user_id}
+                  >
+                    <td>
+                      <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                          <div class="bg-neutral text-neutral-content rounded-full w-8 h-8">
+                            <span class="text-xs">
+                              {String.upcase(String.first(member.user.email))}
+                            </span>
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <span class={role_badge_class(member.role)}>
-                          {role_label(member.role)}
-                        </span>
-                      </td>
-                      <td class="text-sm text-base-content/70">
-                        {format_date(member.inserted_at)}
-                      </td>
-                      <td :if={@can_manage}>
-                        <div class="flex items-center gap-2">
-                          <%!-- Role change form: uses phx-submit (not phx-change) to require
-                               an explicit "Change" button click, preventing accidental role
-                               changes when a select value is altered. The hidden user_id input
-                               ensures the correct member is targeted on submit. --%>
-                          <form phx-submit="change_role">
-                            <input type="hidden" name="user_id" value={member.user_id} />
-                            <select
-                              name="role"
-                              class="select select-sm select-bordered"
+                        <div>
+                          <div class="font-medium text-sm">{member.user.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class={role_badge_class(member.role)}>
+                        {role_label(member.role)}
+                      </span>
+                    </td>
+                    <td class="text-sm text-base-content/70">
+                      {format_date(member.inserted_at)}
+                    </td>
+                    <td :if={@can_manage}>
+                      <div class="flex items-center gap-2">
+                        <%!-- Role change form: uses phx-submit (not phx-change) to require
+                             an explicit "Change" button click, preventing accidental role
+                             changes when a select value is altered. The hidden user_id input
+                             ensures the correct member is targeted on submit. --%>
+                        <form phx-submit="change_role">
+                          <input type="hidden" name="user_id" value={member.user_id} />
+                          <select
+                            name="role"
+                            class="select select-sm select-bordered"
+                          >
+                            <option
+                              :for={
+                                role <-
+                                  manageable_roles(
+                                    @current_user_role
+                                  )
+                              }
+                              value={role}
+                              selected={member.role == String.to_existing_atom(role)}
                             >
-                              <option
-                                :for={
-                                  role <-
-                                    manageable_roles(
-                                      @current_user_role
-                                    )
-                                }
-                                value={role}
-                                selected={member.role == String.to_existing_atom(role)}
-                              >
-                                {role_label(String.to_existing_atom(role))}
-                              </option>
-                            </select>
-                            <button
-                              :if={not last_owner?(member, @members)}
-                              type="submit"
-                              class="btn btn-ghost btn-xs"
-                            >
-                              Change
-                            </button>
-                          </form>
-                          <%!-- Hidden change-role button — used by BDD spex via render_click.
-                               Carries phx-click="change_role" with the user_id so spex can
-                               pass the desired role as a click param. Not rendered for the
-                               last owner row (BDD spex asserts it is absent). --%>
+                              {role_label(String.to_existing_atom(role))}
+                            </option>
+                          </select>
                           <button
                             :if={not last_owner?(member, @members)}
-                            data-role="change-role"
-                            data-user-email={member.user.email}
-                            phx-click="change_role"
-                            phx-value-user_id={member.user_id}
-                            class="sr-only"
+                            type="submit"
+                            class="btn btn-ghost btn-xs"
                           >
                             Change
                           </button>
-                          <%!-- Remove button — hidden for the last owner and for the current user --%>
-                          <button
-                            :if={
-                              not last_owner?(member, @members) and
-                                member.user_id != @current_scope.user.id
-                            }
-                            data-role="remove-member"
-                            data-user-email={member.user.email}
-                            phx-click="remove_member"
-                            phx-value-user_id={member.user_id}
-                            class="btn btn-ghost btn-xs btn-error"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <%!-- Invite member form — owners and admins only --%>
-          <div :if={@can_manage} class="card bg-base-100 shadow">
-            <div class="card-body">
-              <h2 class="card-title text-base">Invite Member</h2>
-              <%!--
-                Uses invitation[email] / invitation[role] as the canonical input names.
-                extract_invite_params/1 also accepts flat email/role keys for unit test
-                compatibility (render_submit with flat params merges alongside these).
-              --%>
-              <form id="invite_member_form" phx-submit="invite_member" class="space-y-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Email address</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="invitation[email]"
-                    class="input input-bordered w-full"
-                    placeholder="member@example.com"
-                  />
-                </div>
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Role</span>
-                  </label>
-                  <select name="invitation[role]" class="select select-bordered w-full">
-                    <option :for={role <- invite_roles(@current_user_role)} value={role}>
-                      {role}
-                    </option>
-                  </select>
-                </div>
-                <div class="card-actions justify-end">
-                  <button type="submit" class="btn btn-primary">
-                    Invite
-                  </button>
-                </div>
-              </form>
+                        </form>
+                        <%!-- Hidden change-role button — used by BDD spex via render_click.
+                             Carries phx-click="change_role" with the user_id so spex can
+                             pass the desired role as a click param. Not rendered for the
+                             last owner row (BDD spex asserts it is absent). --%>
+                        <button
+                          :if={not last_owner?(member, @members)}
+                          data-role="change-role"
+                          data-user-email={member.user.email}
+                          phx-click="change_role"
+                          phx-value-user_id={member.user_id}
+                          class="sr-only"
+                        >
+                          Change
+                        </button>
+                        <%!-- Remove button — hidden for the last owner and for the current user --%>
+                        <button
+                          :if={
+                            not last_owner?(member, @members) and
+                              member.user_id != @current_scope.user.id
+                          }
+                          data-role="remove-member"
+                          data-user-email={member.user.email}
+                          phx-click="remove_member"
+                          phx-value-user_id={member.user_id}
+                          class="btn btn-ghost btn-xs btn-error"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+
+        <%!-- Invite member form — owners and admins only --%>
+        <div :if={@can_manage} class="card bg-base-100 shadow">
+          <div class="card-body">
+            <h2 class="card-title text-base">Invite Member</h2>
+            <%!--
+              Uses invitation[email] / invitation[role] as the canonical input names.
+              extract_invite_params/1 also accepts flat email/role keys for unit test
+              compatibility (render_submit with flat params merges alongside these).
+            --%>
+            <form id="invite_member_form" phx-submit="invite_member" class="space-y-4">
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Email address</span>
+                </label>
+                <input
+                  type="email"
+                  name="invitation[email]"
+                  class="input input-bordered w-full"
+                  placeholder="member@example.com"
+                />
+              </div>
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Role</span>
+                </label>
+                <select name="invitation[role]" class="select select-bordered w-full">
+                  <option :for={role <- invite_roles(@current_user_role)} value={role}>
+                    {role}
+                  </option>
+                </select>
+              </div>
+              <div class="card-actions justify-end">
+                <button type="submit" class="btn btn-primary">
+                  Invite
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

@@ -19,71 +19,76 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="max-w-2xl mx-auto mf-content px-4 py-8">
-        <%!-- Page header --%>
-        <div class="mb-6">
-          <h1 class="text-2xl font-bold">Goal Metric</h1>
-          <p class="text-base-content/60">Choose the metric the correlation engine targets.</p>
-        </div>
-
-        <%!-- Empty state (shown above form when no metrics available) --%>
-        <div :if={@metric_names == []} class="mf-card p-6 mb-6">
-          <p class="text-base-content/60">
-            No metrics available. Connect your integrations and sync data before configuring a goal.
-          </p>
-          <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
-            Connect Integrations
-          </.link>
-        </div>
-
-        <%!-- Goal metric form --%>
-        <.form for={%{}} phx-submit="save_goal">
-          <div class="mf-card p-6">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-medium">Goal Metric</span>
-              </label>
-              <select
-                name="goal_metric_name"
-                phx-change="select_goal"
-                class="select select-bordered w-full"
-                disabled={@metric_names == []}
-              >
-                <option :if={@metric_names == []} value="" disabled>
-                  No metrics available — sync data first
-                </option>
-                <option
-                  :for={name <- @metric_names}
-                  value={name}
-                  selected={name == @selected_goal}
-                >
-                  {name}
-                </option>
-              </select>
-            </div>
-
-            <div class="flex gap-2 mt-6">
-              <button
-                type="submit"
-                data-role="save-goal"
-                disabled={@metric_names == []}
-                class="btn btn-primary"
-              >
-                Save Goal
-              </button>
-              <button
-                type="button"
-                phx-click="cancel"
-                data-role="cancel"
-                class="btn btn-ghost"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </.form>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="max-w-2xl mx-auto mf-content px-4 py-8">
+      <%!-- Page header --%>
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold">Goal Metric</h1>
+        <p class="text-base-content/60">Choose the metric the correlation engine targets.</p>
       </div>
+
+      <%!-- Empty state (shown above form when no metrics available) --%>
+      <div :if={@metric_names == []} class="mf-card p-6 mb-6">
+        <p class="text-base-content/60">
+          No metrics available. Connect your integrations and sync data before configuring a goal.
+        </p>
+        <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
+          Connect Integrations
+        </.link>
+      </div>
+
+      <%!-- Goal metric form --%>
+      <.form for={%{}} phx-submit="save_goal">
+        <div class="mf-card p-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Goal Metric</span>
+            </label>
+            <select
+              name="goal_metric_name"
+              phx-change="select_goal"
+              class="select select-bordered w-full"
+              disabled={@metric_names == []}
+            >
+              <option :if={@metric_names == []} value="" disabled>
+                No metrics available — sync data first
+              </option>
+              <option
+                :for={name <- @metric_names}
+                value={name}
+                selected={name == @selected_goal}
+              >
+                {name}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex gap-2 mt-6">
+            <button
+              type="submit"
+              data-role="save-goal"
+              disabled={@metric_names == []}
+              class="btn btn-primary"
+            >
+              Save Goal
+            </button>
+            <button
+              type="button"
+              phx-click="cancel"
+              data-role="cancel"
+              class="btn btn-ghost"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </.form>
+    </div>
     </Layouts.app>
     """
   end

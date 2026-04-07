@@ -41,389 +41,394 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="max-w-5xl mx-auto mf-content px-4 py-8">
-        <%!-- Page header --%>
-        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 class="text-2xl font-bold">Correlations</h1>
-            <p class="text-base-content/60">Which metrics drive your goal?</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <%!-- Mode toggle --%>
-            <div data-role="mode-toggle" class="flex items-center gap-2">
-              <button
-                phx-click="set_mode"
-                phx-value-mode="raw"
-                data-role="mode-raw"
-                class={if @mode == :raw, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
-              >
-                Raw
-              </button>
-              <button
-                phx-click="set_mode"
-                phx-value-mode="smart"
-                data-role="mode-smart"
-                class={if @mode == :smart, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
-              >
-                Smart
-              </button>
-            </div>
-            <%!-- Configure Goals link --%>
-            <.link
-              navigate={~p"/app/correlations/goals"}
-              data-role="configure-goals"
-              class="btn btn-ghost btn-sm"
-            >
-              Configure Goals
-            </.link>
-            <%!-- Run Now button --%>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="max-w-5xl mx-auto mf-content px-4 py-8">
+      <%!-- Page header --%>
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="text-2xl font-bold">Correlations</h1>
+          <p class="text-base-content/60">Which metrics drive your goal?</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <%!-- Mode toggle --%>
+          <div data-role="mode-toggle" class="flex items-center gap-2">
             <button
-              phx-click="run_correlations"
-              data-role="run-correlations"
-              disabled={@job_running}
-              class="btn btn-ghost btn-sm"
+              phx-click="set_mode"
+              phx-value-mode="raw"
+              data-role="mode-raw"
+              class={if @mode == :raw, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
             >
-              <span :if={@job_running} class="loading loading-spinner loading-xs"></span>
-              Run Now
+              Raw
+            </button>
+            <button
+              phx-click="set_mode"
+              phx-value-mode="smart"
+              data-role="mode-smart"
+              class={if @mode == :smart, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
+            >
+              Smart
             </button>
           </div>
+          <%!-- Configure Goals link --%>
+          <.link
+            navigate={~p"/app/correlations/goals"}
+            data-role="configure-goals"
+            class="btn btn-ghost btn-sm"
+          >
+            Configure Goals
+          </.link>
+          <%!-- Run Now button --%>
+          <button
+            phx-click="run_correlations"
+            data-role="run-correlations"
+            disabled={@job_running}
+            class="btn btn-ghost btn-sm"
+          >
+            <span :if={@job_running} class="loading loading-spinner loading-xs"></span>
+            Run Now
+          </button>
         </div>
+      </div>
 
-        <%!-- Job running banner --%>
+      <%!-- Job running banner --%>
+      <div
+        :if={@job_running}
+        data-role="job-running-banner"
+        class="mf-card-cyan p-4 mb-6 flex items-center gap-3"
+      >
+        <span class="loading loading-spinner loading-sm"></span>
+        <p class="text-sm">
+          Correlation analysis is running. Results will appear automatically when complete.
+        </p>
+      </div>
+
+      <%!-- correlation-results wrapper always present; no-data content shown when empty --%>
+      <div data-role="correlation-results">
+        <%!-- No-data empty state --%>
         <div
-          :if={@job_running}
-          data-role="job-running-banner"
-          class="mf-card-cyan p-4 mb-6 flex items-center gap-3"
+          :if={@summary.no_data and not @job_running}
+          data-role="no-data-state"
+          class="mf-card p-8 text-center"
         >
-          <span class="loading loading-spinner loading-sm"></span>
-          <p class="text-sm">
-            Correlation analysis is running. Results will appear automatically when complete.
+          <h2 class="text-xl font-semibold">No Correlations Yet</h2>
+          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+            No correlations found — connect your marketing and financial platforms and sync at least 30 days of data points to get started.
+            The system calculates daily aggregated Pearson correlation coefficients with optimal Lag detection (0–30 days) for each metric.
+            Last calculated: never — need at least 30 days of data before correlations can run.
           </p>
-        </div>
-
-        <%!-- correlation-results wrapper always present; no-data content shown when empty --%>
-        <div data-role="correlation-results">
-          <%!-- No-data empty state --%>
+          <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-6">
+            Connect Integrations
+          </.link>
           <div
-            :if={@summary.no_data and not @job_running}
-            data-role="no-data-state"
-            class="mf-card p-8 text-center"
+            :if={@run_error == :insufficient_data}
+            data-role="insufficient-data-warning"
+            class="badge badge-warning mt-4"
           >
-            <h2 class="text-xl font-semibold">No Correlations Yet</h2>
-            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
-              No correlations found — connect your marketing and financial platforms and sync at least 30 days of data points to get started.
-              The system calculates daily aggregated Pearson correlation coefficients with optimal Lag detection (0–30 days) for each metric.
-              Last calculated: never — need at least 30 days of data before correlations can run.
-            </p>
-            <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-6">
-              Connect Integrations
-            </.link>
-            <div
-              :if={@run_error == :insufficient_data}
-              data-role="insufficient-data-warning"
-              class="badge badge-warning mt-4"
-            >
-              Insufficient data — 30 days of metrics required
-            </div>
-          </div>
-
-          <%!-- Raw mode --%>
-          <div
-            :if={@mode == :raw and not @summary.no_data}
-            data-role="raw-mode"
-          >
-            <%!-- Summary bar --%>
-            <div
-              data-role="correlation-summary"
-              class="flex items-center gap-6 mb-6 text-sm text-base-content/60 flex-wrap"
-            >
-              <span data-role="goal-metric">
-                Goal: <span class="font-medium text-base-content">{@summary.goal_metric_name}</span>
-              </span>
-              <span :if={@summary.last_calculated_at} data-role="last-calculated">
-                Last calculated {format_datetime(@summary.last_calculated_at)}
-              </span>
-              <span :if={@summary.data_window} data-role="data-window">
-                Data window: {format_data_window(@summary.data_window)}
-              </span>
-              <span :if={@summary.data_points_count} data-role="data-points">
-                {@summary.data_points_count} data points
-              </span>
-            </div>
-
-            <%!-- Filter controls --%>
-            <div
-              data-role="filter-controls"
-              class="flex items-center gap-4 mb-4 flex-wrap"
-            >
-              <div data-role="platform-filter" class="flex items-center gap-1 flex-wrap">
-                <button
-                  phx-click="filter_platform"
-                  phx-value-platform="all"
-                  class={if is_nil(@platform_filter), do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
-                >
-                  All Platforms
-                </button>
-                <button
-                  :for={provider <- distinct_providers(@summary.results)}
-                  phx-click="filter_platform"
-                  phx-value-platform={provider_key(provider)}
-                  class={if @platform_filter == provider, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
-                >
-                  {provider_display_name(provider)}
-                </button>
-              </div>
-            </div>
-
-            <%!-- Results table --%>
-            <div data-role="results-table" class="overflow-x-auto">
-              <table class="table table-zebra w-full">
-                <thead>
-                  <tr>
-                    <th>
-                      <button
-                        phx-click="sort"
-                        phx-value-by="metric_name"
-                        data-sort-col="metric_name"
-                        data-sort-active={if @sort_by == :metric_name, do: "true", else: "false"}
-                      >
-                        Metric
-                        <span :if={@sort_by == :metric_name} class="text-xs ml-1">
-                          {sort_arrow(@sort_dir)}
-                        </span>
-                      </button>
-                    </th>
-                    <th>
-                      <button
-                        phx-click="sort"
-                        phx-value-by="coefficient"
-                        data-sort-col="coefficient"
-                        data-sort-active={if @sort_by == :coefficient, do: "true", else: "false"}
-                      >
-                        Coefficient
-                        <span :if={@sort_by == :coefficient} class="text-xs ml-1">
-                          {sort_arrow(@sort_dir)}
-                        </span>
-                      </button>
-                    </th>
-                    <th>
-                      <button
-                        phx-click="sort"
-                        phx-value-by="lag"
-                        data-sort-col="lag"
-                        data-sort-active={if @sort_by == :lag, do: "true", else: "false"}
-                      >
-                        Lag
-                        <span :if={@sort_by == :lag} class="text-xs ml-1">
-                          {sort_arrow(@sort_dir)}
-                        </span>
-                      </button>
-                    </th>
-                    <th>Data Points</th>
-                    <th>
-                      <button
-                        phx-click="sort"
-                        phx-value-by="platform"
-                        data-sort-col="platform"
-                        data-sort-active={if @sort_by == :platform, do: "true", else: "false"}
-                      >
-                        Platform
-                        <span :if={@sort_by == :platform} class="text-xs ml-1">
-                          {sort_arrow(@sort_dir)}
-                        </span>
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    :if={filtered_and_sorted_results(@summary.results, @platform_filter, @sort_by, @sort_dir) == []}
-                  >
-                    <td colspan="5" data-role="empty-filter-state" class="text-base-content/60 text-center">
-                      No correlations match the selected filter.
-                    </td>
-                  </tr>
-                  <tr
-                    :for={result <- filtered_and_sorted_results(@summary.results, @platform_filter, @sort_by, @sort_dir)}
-                    data-role="correlation-row"
-                    data-metric={result.metric_name}
-                  >
-                    <td>
-                      <span class="font-medium">{result.metric_name}</span>
-                      <br />
-                      <span class="text-xs text-base-content/50">{provider_display_name(result.provider)}</span>
-                    </td>
-                    <td>
-                      <span class={["mf-metric text-sm", coefficient_color_class(result.coefficient)]}>
-                        {format_coefficient(result.coefficient)}
-                      </span>
-                      <span
-                        data-role="strength-badge"
-                        class={["badge badge-sm ml-1", strength_badge_class(result)]}
-                      >
-                        {CorrelationResult.strength_label(result)}
-                      </span>
-                    </td>
-                    <td>
-                      <span :if={result.optimal_lag == 0} class="text-base-content/60 mf-metric text-sm">
-                        Same day
-                      </span>
-                      <span :if={result.optimal_lag != 0} class="mf-metric text-sm">
-                        {result.optimal_lag} days
-                      </span>
-                    </td>
-                    <td>
-                      <span class="text-sm text-base-content/60">{result.data_points} pts</span>
-                    </td>
-                    <td>
-                      <span class="badge badge-ghost badge-sm">
-                        {provider_display_name(result.provider)}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            Insufficient data — 30 days of metrics required
           </div>
         </div>
 
-        <%!-- Smart mode --%>
-        <div :if={@mode == :smart} data-role="smart-mode">
-          <%!-- Before AI suggestions enabled --%>
-          <div :if={not @ai_suggestions_enabled} class="mf-card-accent p-8 text-center">
-            <h2 class="text-xl font-semibold">Smart Mode</h2>
-            <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
-              Smart mode uses AI to surface actionable insights from your
-              correlation data so you can act without digging through raw numbers.
-            </p>
-            <button
-              phx-click="enable_ai_suggestions"
-              data-role="enable-ai-suggestions"
-              class="btn btn-primary btn-sm mt-6"
-            >
-              Enable AI Suggestions
-            </button>
+        <%!-- Raw mode --%>
+        <div
+          :if={@mode == :raw and not @summary.no_data}
+          data-role="raw-mode"
+        >
+          <%!-- Summary bar --%>
+          <div
+            data-role="correlation-summary"
+            class="flex items-center gap-6 mb-6 text-sm text-base-content/60 flex-wrap"
+          >
+            <span data-role="goal-metric">
+              Goal: <span class="font-medium text-base-content">{@summary.goal_metric_name}</span>
+            </span>
+            <span :if={@summary.last_calculated_at} data-role="last-calculated">
+              Last calculated {format_datetime(@summary.last_calculated_at)}
+            </span>
+            <span :if={@summary.data_window} data-role="data-window">
+              Data window: {format_data_window(@summary.data_window)}
+            </span>
+            <span :if={@summary.data_points_count} data-role="data-points">
+              {@summary.data_points_count} data points
+            </span>
           </div>
 
-          <%!-- Top correlations sections (always visible in smart mode) --%>
-          <div class="space-y-6 mb-6">
-            <%!-- Top 5 Positive Correlations --%>
-            <div data-role="top-positive-correlations" class="mf-card p-5">
-              <h3 class="text-lg font-semibold mb-3 text-success">Top Positive Correlations</h3>
-              <div :if={top_positive_correlations(@summary.results) == []} class="text-sm text-base-content/60">
-                No positive correlations found.
-              </div>
-              <div
-                :for={result <- top_positive_correlations(@summary.results)}
-                data-role="correlation-row"
-                data-metric={result.metric_name}
-                class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+          <%!-- Filter controls --%>
+          <div
+            data-role="filter-controls"
+            class="flex items-center gap-4 mb-4 flex-wrap"
+          >
+            <div data-role="platform-filter" class="flex items-center gap-1 flex-wrap">
+              <button
+                phx-click="filter_platform"
+                phx-value-platform="all"
+                class={if is_nil(@platform_filter), do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
               >
-                <div>
-                  <span class="font-medium">{result.metric_name}</span>
-                  <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span class="mf-metric text-sm text-success">{format_coefficient(result.coefficient)}</span>
-                  <span class={["badge badge-sm", strength_badge_class(result)]}>
-                    {CorrelationResult.strength_label(result)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <%!-- Top 5 Negative Correlations --%>
-            <div data-role="top-negative-correlations" class="mf-card p-5">
-              <h3 class="text-lg font-semibold mb-3 text-error">Top Negative Correlations</h3>
-              <div :if={top_negative_correlations(@summary.results) == []} class="text-sm text-base-content/60">
-                No negative correlations found.
-              </div>
-              <div
-                :for={result <- top_negative_correlations(@summary.results)}
-                data-role="correlation-row"
-                data-metric={result.metric_name}
-                class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+                All Platforms
+              </button>
+              <button
+                :for={provider <- distinct_providers(@summary.results)}
+                phx-click="filter_platform"
+                phx-value-platform={provider_key(provider)}
+                class={if @platform_filter == provider, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
               >
-                <div>
-                  <span class="font-medium">{result.metric_name}</span>
-                  <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span class="mf-metric text-sm text-error">{format_coefficient(result.coefficient)}</span>
-                  <span class={["badge badge-sm", strength_badge_class(result)]}>
-                    {CorrelationResult.strength_label(result)}
-                  </span>
-                </div>
-              </div>
+                {provider_display_name(provider)}
+              </button>
             </div>
           </div>
 
-          <%!-- After AI suggestions enabled --%>
-          <div :if={@ai_suggestions_enabled}>
-            <div data-role="ai-suggestions-enabled" class="badge badge-success mb-4">
-              AI Suggestions enabled
-            </div>
-
-            <div data-role="ai-recommendations" class="space-y-4">
-              <h3 class="text-lg font-semibold">AI Recommendations</h3>
-
-              <div class="mf-card p-6">
-                <p class="text-base-content/80 leading-relaxed">
-                  Consider running a correlation analysis to generate metric-specific insights.
-                  Suggestions are based on correlation strength, revenue trends, and business context
-                  to help you increase ROI, optimize budget allocation, and reduce underperforming spend.
-                </p>
-                <p class="text-sm text-base-content/60 mt-3">
-                  Strong correlations are highlighted so you can act on the metrics that matter most.
-                  Visit the <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
-                  page for detailed recommendations.
-                </p>
-              </div>
-
-              <%!-- Feedback section --%>
-              <div data-role="ai-feedback-section" class="mf-card p-5">
-                <div :if={not @ai_feedback_submitted}>
-                  <p data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
-                    Was this helpful or not helpful? Your feedback helps improve future suggestions.
-                  </p>
-                  <div class="flex items-center gap-2">
+          <%!-- Results table --%>
+          <div data-role="results-table" class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th>
                     <button
-                      phx-click="submit_smart_feedback"
-                      phx-value-rating="helpful"
-                      data-role="feedback-helpful"
-                      class="btn btn-ghost btn-sm"
+                      phx-click="sort"
+                      phx-value-by="metric_name"
+                      data-sort-col="metric_name"
+                      data-sort-active={if @sort_by == :metric_name, do: "true", else: "false"}
                     >
-                      Helpful
+                      Metric
+                      <span :if={@sort_by == :metric_name} class="text-xs ml-1">
+                        {sort_arrow(@sort_dir)}
+                      </span>
                     </button>
+                  </th>
+                  <th>
                     <button
-                      phx-click="submit_smart_feedback"
-                      phx-value-rating="not_helpful"
-                      data-role="feedback-not-helpful"
-                      class="btn btn-ghost btn-sm"
+                      phx-click="sort"
+                      phx-value-by="coefficient"
+                      data-sort-col="coefficient"
+                      data-sort-active={if @sort_by == :coefficient, do: "true", else: "false"}
                     >
-                      Not helpful
+                      Coefficient
+                      <span :if={@sort_by == :coefficient} class="text-xs ml-1">
+                        {sort_arrow(@sort_dir)}
+                      </span>
                     </button>
-                  </div>
-                </div>
-
-                <div :if={@ai_feedback_submitted} data-role="feedback-confirmation">
-                  <div class="flex items-center gap-2 text-sm">
-                    <span class="badge badge-success badge-sm">&#10003;</span>
-                    <span class="text-base-content/60">
-                      Thanks for your feedback — helps improve future suggestions.
+                  </th>
+                  <th>
+                    <button
+                      phx-click="sort"
+                      phx-value-by="lag"
+                      data-sort-col="lag"
+                      data-sort-active={if @sort_by == :lag, do: "true", else: "false"}
+                    >
+                      Lag
+                      <span :if={@sort_by == :lag} class="text-xs ml-1">
+                        {sort_arrow(@sort_dir)}
+                      </span>
+                    </button>
+                  </th>
+                  <th>Data Points</th>
+                  <th>
+                    <button
+                      phx-click="sort"
+                      phx-value-by="platform"
+                      data-sort-col="platform"
+                      data-sort-active={if @sort_by == :platform, do: "true", else: "false"}
+                    >
+                      Platform
+                      <span :if={@sort_by == :platform} class="text-xs ml-1">
+                        {sort_arrow(@sort_dir)}
+                      </span>
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  :if={filtered_and_sorted_results(@summary.results, @platform_filter, @sort_by, @sort_dir) == []}
+                >
+                  <td colspan="5" data-role="empty-filter-state" class="text-base-content/60 text-center">
+                    No correlations match the selected filter.
+                  </td>
+                </tr>
+                <tr
+                  :for={result <- filtered_and_sorted_results(@summary.results, @platform_filter, @sort_by, @sort_dir)}
+                  data-role="correlation-row"
+                  data-metric={result.metric_name}
+                >
+                  <td>
+                    <span class="font-medium">{result.metric_name}</span>
+                    <br />
+                    <span class="text-xs text-base-content/50">{provider_display_name(result.provider)}</span>
+                  </td>
+                  <td>
+                    <span class={["mf-metric text-sm", coefficient_color_class(result.coefficient)]}>
+                      {format_coefficient(result.coefficient)}
                     </span>
-                  </div>
-                </div>
+                    <span
+                      data-role="strength-badge"
+                      class={["badge badge-sm ml-1", strength_badge_class(result)]}
+                    >
+                      {CorrelationResult.strength_label(result)}
+                    </span>
+                  </td>
+                  <td>
+                    <span :if={result.optimal_lag == 0} class="text-base-content/60 mf-metric text-sm">
+                      Same day
+                    </span>
+                    <span :if={result.optimal_lag != 0} class="mf-metric text-sm">
+                      {result.optimal_lag} days
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-sm text-base-content/60">{result.data_points} pts</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-ghost badge-sm">
+                      {provider_display_name(result.provider)}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-                <p class="text-xs text-base-content/40 mt-3">
-                  AI suggestions learn from your feedback and improve over time.
-                </p>
+      <%!-- Smart mode --%>
+      <div :if={@mode == :smart} data-role="smart-mode">
+        <%!-- Before AI suggestions enabled --%>
+        <div :if={not @ai_suggestions_enabled} class="mf-card-accent p-8 text-center">
+          <h2 class="text-xl font-semibold">Smart Mode</h2>
+          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+            Smart mode uses AI to surface actionable insights from your
+            correlation data so you can act without digging through raw numbers.
+          </p>
+          <button
+            phx-click="enable_ai_suggestions"
+            data-role="enable-ai-suggestions"
+            class="btn btn-primary btn-sm mt-6"
+          >
+            Enable AI Suggestions
+          </button>
+        </div>
+
+        <%!-- Top correlations sections (always visible in smart mode) --%>
+        <div class="space-y-6 mb-6">
+          <%!-- Top 5 Positive Correlations --%>
+          <div data-role="top-positive-correlations" class="mf-card p-5">
+            <h3 class="text-lg font-semibold mb-3 text-success">Top Positive Correlations</h3>
+            <div :if={top_positive_correlations(@summary.results) == []} class="text-sm text-base-content/60">
+              No positive correlations found.
+            </div>
+            <div
+              :for={result <- top_positive_correlations(@summary.results)}
+              data-role="correlation-row"
+              data-metric={result.metric_name}
+              class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+            >
+              <div>
+                <span class="font-medium">{result.metric_name}</span>
+                <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
               </div>
+              <div class="flex items-center gap-3">
+                <span class="mf-metric text-sm text-success">{format_coefficient(result.coefficient)}</span>
+                <span class={["badge badge-sm", strength_badge_class(result)]}>
+                  {CorrelationResult.strength_label(result)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <%!-- Top 5 Negative Correlations --%>
+          <div data-role="top-negative-correlations" class="mf-card p-5">
+            <h3 class="text-lg font-semibold mb-3 text-error">Top Negative Correlations</h3>
+            <div :if={top_negative_correlations(@summary.results) == []} class="text-sm text-base-content/60">
+              No negative correlations found.
+            </div>
+            <div
+              :for={result <- top_negative_correlations(@summary.results)}
+              data-role="correlation-row"
+              data-metric={result.metric_name}
+              class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+            >
+              <div>
+                <span class="font-medium">{result.metric_name}</span>
+                <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="mf-metric text-sm text-error">{format_coefficient(result.coefficient)}</span>
+                <span class={["badge badge-sm", strength_badge_class(result)]}>
+                  {CorrelationResult.strength_label(result)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%!-- After AI suggestions enabled --%>
+        <div :if={@ai_suggestions_enabled}>
+          <div data-role="ai-suggestions-enabled" class="badge badge-success mb-4">
+            AI Suggestions enabled
+          </div>
+
+          <div data-role="ai-recommendations" class="space-y-4">
+            <h3 class="text-lg font-semibold">AI Recommendations</h3>
+
+            <div class="mf-card p-6">
+              <p class="text-base-content/80 leading-relaxed">
+                Consider running a correlation analysis to generate metric-specific insights.
+                Suggestions are based on correlation strength, revenue trends, and business context
+                to help you increase ROI, optimize budget allocation, and reduce underperforming spend.
+              </p>
+              <p class="text-sm text-base-content/60 mt-3">
+                Strong correlations are highlighted so you can act on the metrics that matter most.
+                Visit the <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
+                page for detailed recommendations.
+              </p>
+            </div>
+
+            <%!-- Feedback section --%>
+            <div data-role="ai-feedback-section" class="mf-card p-5">
+              <div :if={not @ai_feedback_submitted}>
+                <p data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
+                  Was this helpful or not helpful? Your feedback helps improve future suggestions.
+                </p>
+                <div class="flex items-center gap-2">
+                  <button
+                    phx-click="submit_smart_feedback"
+                    phx-value-rating="helpful"
+                    data-role="feedback-helpful"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    Helpful
+                  </button>
+                  <button
+                    phx-click="submit_smart_feedback"
+                    phx-value-rating="not_helpful"
+                    data-role="feedback-not-helpful"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    Not helpful
+                  </button>
+                </div>
+              </div>
+
+              <div :if={@ai_feedback_submitted} data-role="feedback-confirmation">
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="badge badge-success badge-sm">&#10003;</span>
+                  <span class="text-base-content/60">
+                    Thanks for your feedback — helps improve future suggestions.
+                  </span>
+                </div>
+              </div>
+
+              <p class="text-xs text-base-content/40 mt-3">
+                AI suggestions learn from your feedback and improve over time.
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

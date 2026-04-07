@@ -14,93 +14,98 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-4xl">
-        <.header>
-          Stripe Connect
-          <:subtitle>Connect your Stripe account to receive payments</:subtitle>
-        </.header>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-4xl">
+      <.header>
+        Stripe Connect
+        <:subtitle>Connect your Stripe account to receive payments</:subtitle>
+      </.header>
 
-        <div class="mt-8 space-y-6">
-          <div class="card bg-base-100 shadow">
-            <div class="card-body">
-              <div class="flex items-center justify-between">
-                <h2 class="card-title text-base">Connection Status</h2>
-                <span :if={@status == :complete} class="badge badge-success">Connected</span>
-                <span :if={@status == :restricted} class="badge badge-warning">Restricted</span>
-                <span :if={@status == :not_connected} class="badge badge-ghost">Not connected</span>
-              </div>
+      <div class="mt-8 space-y-6">
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base">Connection Status</h2>
+              <span :if={@status == :complete} class="badge badge-success">Connected</span>
+              <span :if={@status == :restricted} class="badge badge-warning">Restricted</span>
+              <span :if={@status == :not_connected} class="badge badge-ghost">Not connected</span>
+            </div>
 
-              <%!-- Not connected state --%>
-              <div :if={@status == :not_connected} class="mt-4">
-                <p class="text-base-content/60 mb-4">
-                  Connect your Stripe account to receive subscription payments from your customers.
-                </p>
-                <button
-                  phx-click="connect_stripe"
-                  data-role="connect-stripe"
-                  class="btn btn-primary"
-                >
-                  Connect Stripe Account
-                </button>
-              </div>
+            <%!-- Not connected state --%>
+            <div :if={@status == :not_connected} class="mt-4">
+              <p class="text-base-content/60 mb-4">
+                Connect your Stripe account to receive subscription payments from your customers.
+              </p>
+              <button
+                phx-click="connect_stripe"
+                data-role="connect-stripe"
+                class="btn btn-primary"
+              >
+                Connect Stripe Account
+              </button>
+            </div>
 
-              <%!-- Connected state --%>
-              <div :if={@status == :complete} class="mt-4 space-y-4">
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-base-content/60">Account ID:</span>
-                    <span class="font-mono text-sm">{@stripe_account_id}</span>
-                  </div>
-                  <div :if={@capabilities != %{}} class="flex items-center gap-2">
-                    <span class="text-base-content/60">Capabilities:</span>
-                    <div class="flex gap-1">
-                      <span :for={{cap, status} <- @capabilities} class="badge badge-sm badge-outline">
-                        {cap}: {status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <div>
-                  <p class="text-sm text-warning mb-2">
-                    Disconnecting will prevent new customer subscriptions through your agency.
-                    Existing subscriptions will be flagged for review.
-                  </p>
-                  <button
-                    phx-click="disconnect_stripe"
-                    data-role="disconnect-stripe"
-                    data-confirm="Are you sure? This will affect billing for your customers."
-                    class="btn btn-error btn-outline btn-sm"
-                  >
-                    Disconnect Stripe Account
-                  </button>
-                </div>
-              </div>
-
-              <%!-- Restricted state --%>
-              <div :if={@status == :restricted} class="mt-4 space-y-4">
-                <div class="alert alert-warning">
-                  <span>Your Stripe account setup is incomplete. Please complete onboarding to start receiving payments.</span>
-                </div>
+            <%!-- Connected state --%>
+            <div :if={@status == :complete} class="mt-4 space-y-4">
+              <div class="space-y-2">
                 <div class="flex items-center gap-2">
                   <span class="text-base-content/60">Account ID:</span>
                   <span class="font-mono text-sm">{@stripe_account_id}</span>
                 </div>
+                <div :if={@capabilities != %{}} class="flex items-center gap-2">
+                  <span class="text-base-content/60">Capabilities:</span>
+                  <div class="flex gap-1">
+                    <span :for={{cap, status} <- @capabilities} class="badge badge-sm badge-outline">
+                      {cap}: {status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div>
+                <p class="text-sm text-warning mb-2">
+                  Disconnecting will prevent new customer subscriptions through your agency.
+                  Existing subscriptions will be flagged for review.
+                </p>
                 <button
-                  phx-click="connect_stripe"
-                  data-role="connect-stripe"
-                  class="btn btn-primary btn-sm"
+                  phx-click="disconnect_stripe"
+                  data-role="disconnect-stripe"
+                  data-confirm="Are you sure? This will affect billing for your customers."
+                  class="btn btn-error btn-outline btn-sm"
                 >
-                  Resume Onboarding
+                  Disconnect Stripe Account
                 </button>
               </div>
+            </div>
+
+            <%!-- Restricted state --%>
+            <div :if={@status == :restricted} class="mt-4 space-y-4">
+              <div class="alert alert-warning">
+                <span>Your Stripe account setup is incomplete. Please complete onboarding to start receiving payments.</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-base-content/60">Account ID:</span>
+                <span class="font-mono text-sm">{@stripe_account_id}</span>
+              </div>
+              <button
+                phx-click="connect_stripe"
+                data-role="connect-stripe"
+                class="btn btn-primary btn-sm"
+              >
+                Resume Onboarding
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

@@ -30,275 +30,280 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} white_label_config={assigns[:white_label_config]} active_account_name={assigns[:active_account_name]}>
-      <div class="max-w-6xl mx-auto mf-content px-4 py-8">
-        <div class="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <h1 class="text-2xl font-bold">All Metrics</h1>
-            <p class="mt-1 text-base-content/60">
-              Your complete marketing and financial picture
-            </p>
-          </div>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="max-w-6xl mx-auto mf-content px-4 py-8">
+      <div class="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold">All Metrics</h1>
+          <p class="mt-1 text-base-content/60">
+            Your complete marketing and financial picture
+          </p>
+        </div>
+        <button
+          phx-click="open_ai_chat"
+          data-role="open-ai-chat"
+          class="btn btn-ghost btn-sm flex-shrink-0"
+        >
+          AI Chat
+        </button>
+      </div>
+
+      <%!-- Inline AI chat panel --%>
+      <div
+        :if={@chat_panel_open}
+        data-role="ai-chat-interface"
+        class="mf-card p-5 mb-6"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold">AI Chat</h3>
           <button
-            phx-click="open_ai_chat"
-            data-role="open-ai-chat"
-            class="btn btn-ghost btn-sm flex-shrink-0"
+            phx-click="close_ai_chat"
+            data-role="close-chat-panel"
+            aria-label="Close AI Chat"
+            class="btn btn-ghost btn-xs"
           >
-            AI Chat
+            ✕
+          </button>
+        </div>
+        <p class="text-sm text-base-content/60 mb-3">
+          Ask questions about your metrics and get AI-powered insights.
+        </p>
+        <.link navigate={~p"/app/chat"} class="btn btn-primary btn-sm">
+          Open Full AI Chat
+        </.link>
+      </div>
+
+      <div :if={not @has_integrations} data-role="onboarding-prompt" class="mf-card p-8 text-center">
+        <h2 class="text-xl font-semibold">Connect Your Platforms</h2>
+        <p class="mt-2 text-base-content/60">
+          Connect your marketing and financial platforms to start seeing unified metrics, AI insights, and recommendations.
+        </p>
+        <a href="/app/integrations" class="btn btn-primary mt-6">
+          Connect Integrations
+        </a>
+      </div>
+
+      <div :if={@has_integrations} data-role="metrics-dashboard">
+        <%!-- Filter controls --%>
+        <div class="flex items-center gap-4 mb-4 flex-wrap">
+          <%!-- Platform filter --%>
+          <div
+            data-role="platform-filter"
+            phx-click="filter_platform"
+            phx-value-platform="all"
+            class="flex items-center gap-1 flex-wrap"
+          >
+            <button
+              phx-click="filter_platform"
+              phx-value-platform="all"
+              class={["btn btn-sm", if(is_nil(@selected_platform), do: "btn-primary", else: "btn-ghost")]}
+            >
+              All Platforms
+            </button>
+            <button
+              :for={platform <- @dashboard_data.available_filters.platforms}
+              phx-click="filter_platform"
+              phx-value-platform={platform}
+              class={["btn btn-sm", if(@selected_platform == platform, do: "btn-primary", else: "btn-ghost")]}
+            >
+              {platform_display_name(platform)}
+            </button>
+          </div>
+
+          <%!-- Date range filter --%>
+          <div data-role="date-range-filter" class="flex items-center gap-1 flex-wrap">
+            <button
+              :for={entry <- @available_date_ranges}
+              phx-click="filter_date_range"
+              phx-value-range={entry.key}
+              class={["btn btn-sm", if(@selected_date_range == entry.key, do: "btn-primary", else: "btn-ghost")]}
+            >
+              {entry.label}
+            </button>
+          </div>
+        </div>
+
+        <%!-- Custom date range picker --%>
+        <div :if={@selected_date_range == :custom} data-role="custom-date-picker" class="flex items-center gap-3 mb-4">
+          <form phx-change="update_custom_dates" class="flex items-center gap-3">
+            <label class="text-sm text-base-content/60">From</label>
+            <input
+              type="date"
+              name="start_date"
+              value={@custom_start_date}
+              class="input input-sm input-bordered bg-base-200"
+            />
+            <label class="text-sm text-base-content/60">To</label>
+            <input
+              type="date"
+              name="end_date"
+              value={@custom_end_date}
+              class="input input-sm input-bordered bg-base-200"
+            />
+          </form>
+        </div>
+
+        <%!-- Date range display + granularity toggle --%>
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div data-role="date-range" class="text-sm text-base-content/60">
+            {render_date_range(@dashboard_data.applied_filters[:date_range])}
+          </div>
+
+          <div data-role="granularity-toggle" class="flex items-center gap-1">
+            <span class="text-xs text-base-content/60 mr-1">Group by:</span>
+            <button
+              :for={g <- [:day, :week, :month]}
+              phx-click="set_granularity"
+              phx-value-granularity={g}
+              class={["btn btn-xs", if(@granularity == g, do: "btn-primary", else: "btn-ghost")]}
+            >
+              {granularity_label(g)}
+            </button>
+          </div>
+        </div>
+
+        <%!-- Metric toggles --%>
+        <div data-role="metric-toggles" class="flex items-center gap-1 flex-wrap mb-6">
+          <button
+            :for={name <- @all_metric_names}
+            phx-click="toggle_metric"
+            phx-value-metric={name}
+            class={["btn btn-xs", if(MapSet.member?(@visible_metrics, name), do: "btn-primary", else: "btn-ghost")]}
+          >
+            {name}
           </button>
         </div>
 
-        <%!-- Inline AI chat panel --%>
+        <%!-- Multi-series chart --%>
+        <div data-role="multi-series-chart" class="mf-card p-4 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Metrics Over Time</h3>
+            <button
+              phx-click="show_ai_insights"
+              phx-value-metric="All Metrics"
+              data-role="ai-info-button"
+              class="btn btn-ghost btn-xs"
+              aria-label="View AI insights"
+            >
+              AI Insights
+            </button>
+          </div>
+          <div
+            :if={@chart_spec != nil}
+            data-role="vega-lite-chart"
+            phx-hook="VegaLite"
+            phx-update="ignore"
+            data-spec={Jason.encode!(@chart_spec)}
+            id="multi-series-chart"
+            style="width: 100%"
+          >
+          </div>
+          <p
+            :if={@chart_spec == nil}
+            class="text-base-content/60 text-center py-8"
+          >
+            No metric data available for the selected filters.
+          </p>
+        </div>
+
+        <%!-- Data table --%>
+        <div data-role="data-table" class="mf-card p-4 mt-4 overflow-x-auto">
+          <h3 class="text-base font-semibold mb-3">{granularity_label(@granularity)} Data</h3>
+          <table :if={@table_rows != []} class="table table-sm table-zebra w-full">
+            <thead>
+              <tr>
+                <th>{granularity_label(@granularity)}</th>
+                <th :for={name <- @visible_metric_names}>{name}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr :for={row <- @table_rows}>
+                <td class="font-medium">{row.period}</td>
+                <td :for={name <- @visible_metric_names}>
+                  {format_number(row.values[name])}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p :if={@table_rows == []} class="text-base-content/60 text-center py-4">
+            No data to display.
+          </p>
+        </div>
+
+        <%!-- Summary stats --%>
+        <div data-role="summary-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+          <div
+            :for={stat <- visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics)}
+            data-role="stat-card"
+            class="mf-card p-4"
+          >
+            <p class="text-sm text-base-content/60 font-medium">{stat.metric_name}</p>
+            <p data-role="stat-sum" class="text-2xl font-bold mf-metric">
+              {format_number(stat.stats.sum)}
+            </p>
+            <p data-role="stat-avg" class="text-xs text-base-content/50">
+              Avg: {format_number(stat.stats.avg)}
+            </p>
+            <button
+              phx-click="show_ai_insights"
+              phx-value-metric={stat.metric_name}
+              data-role="ai-info-button"
+              class="btn btn-ghost btn-xs mt-2 w-full"
+              aria-label={"View AI insights for #{stat.metric_name}"}
+            >
+              AI Insights
+            </button>
+          </div>
+        </div>
+
         <div
-          :if={@chat_panel_open}
-          data-role="ai-chat-interface"
-          class="mf-card p-5 mb-6"
+          :if={Enum.empty?(visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics))}
+          class="mf-card p-6 text-center mt-4"
+        >
+          <p class="text-base-content/60">No metrics match the selected filters.</p>
+        </div>
+
+        <%!-- AI Insights panel --%>
+        <div
+          :if={@ai_panel_open}
+          data-role="ai-insights-panel"
+          data-metric={@ai_panel_metric}
+          class="mf-card p-5 mt-4"
         >
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-base font-semibold">AI Chat</h3>
+            <h3 class="text-base font-semibold">AI Insights: {@ai_panel_metric}</h3>
             <button
-              phx-click="close_ai_chat"
-              data-role="close-chat-panel"
-              aria-label="Close AI Chat"
+              phx-click="hide_ai_insights"
+              data-role="close-button"
+              aria-label="Close"
               class="btn btn-ghost btn-xs"
             >
               ✕
             </button>
           </div>
-          <p class="text-sm text-base-content/60 mb-3">
-            Ask questions about your metrics and get AI-powered insights.
+          <p class="text-sm text-base-content/60">
+            Metric-specific insights for {@ai_panel_metric} based on correlation analysis.
+            Visit <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
+            for detailed recommendations.
           </p>
-          <.link navigate={~p"/app/chat"} class="btn btn-primary btn-sm">
-            Open Full AI Chat
-          </.link>
         </div>
 
-        <div :if={not @has_integrations} data-role="onboarding-prompt" class="mf-card p-8 text-center">
-          <h2 class="text-xl font-semibold">Connect Your Platforms</h2>
-          <p class="mt-2 text-base-content/60">
-            Connect your marketing and financial platforms to start seeing unified metrics, AI insights, and recommendations.
+        <%!-- Semantic difference footnote --%>
+        <div data-role="semantic-warning" data-semantic-difference="attribution" class="mt-6 text-xs text-base-content/50">
+          <p>
+            <strong>Note:</strong> Cross-platform metric comparisons may reflect different attribution
+            windows and counting methods. For example, Google Ads uses a 30-day click-through
+            attribution window while Facebook Ads defaults to 7-day click / 1-day view-through.
+            Values shown are aggregated using each platform's native attribution model.
           </p>
-          <a href="/app/integrations" class="btn btn-primary mt-6">
-            Connect Integrations
-          </a>
-        </div>
-
-        <div :if={@has_integrations} data-role="metrics-dashboard">
-          <%!-- Filter controls --%>
-          <div class="flex items-center gap-4 mb-4 flex-wrap">
-            <%!-- Platform filter --%>
-            <div
-              data-role="platform-filter"
-              phx-click="filter_platform"
-              phx-value-platform="all"
-              class="flex items-center gap-1 flex-wrap"
-            >
-              <button
-                phx-click="filter_platform"
-                phx-value-platform="all"
-                class={["btn btn-sm", if(is_nil(@selected_platform), do: "btn-primary", else: "btn-ghost")]}
-              >
-                All Platforms
-              </button>
-              <button
-                :for={platform <- @dashboard_data.available_filters.platforms}
-                phx-click="filter_platform"
-                phx-value-platform={platform}
-                class={["btn btn-sm", if(@selected_platform == platform, do: "btn-primary", else: "btn-ghost")]}
-              >
-                {platform_display_name(platform)}
-              </button>
-            </div>
-
-            <%!-- Date range filter --%>
-            <div data-role="date-range-filter" class="flex items-center gap-1 flex-wrap">
-              <button
-                :for={entry <- @available_date_ranges}
-                phx-click="filter_date_range"
-                phx-value-range={entry.key}
-                class={["btn btn-sm", if(@selected_date_range == entry.key, do: "btn-primary", else: "btn-ghost")]}
-              >
-                {entry.label}
-              </button>
-            </div>
-          </div>
-
-          <%!-- Custom date range picker --%>
-          <div :if={@selected_date_range == :custom} data-role="custom-date-picker" class="flex items-center gap-3 mb-4">
-            <form phx-change="update_custom_dates" class="flex items-center gap-3">
-              <label class="text-sm text-base-content/60">From</label>
-              <input
-                type="date"
-                name="start_date"
-                value={@custom_start_date}
-                class="input input-sm input-bordered bg-base-200"
-              />
-              <label class="text-sm text-base-content/60">To</label>
-              <input
-                type="date"
-                name="end_date"
-                value={@custom_end_date}
-                class="input input-sm input-bordered bg-base-200"
-              />
-            </form>
-          </div>
-
-          <%!-- Date range display + granularity toggle --%>
-          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <div data-role="date-range" class="text-sm text-base-content/60">
-              {render_date_range(@dashboard_data.applied_filters[:date_range])}
-            </div>
-
-            <div data-role="granularity-toggle" class="flex items-center gap-1">
-              <span class="text-xs text-base-content/60 mr-1">Group by:</span>
-              <button
-                :for={g <- [:day, :week, :month]}
-                phx-click="set_granularity"
-                phx-value-granularity={g}
-                class={["btn btn-xs", if(@granularity == g, do: "btn-primary", else: "btn-ghost")]}
-              >
-                {granularity_label(g)}
-              </button>
-            </div>
-          </div>
-
-          <%!-- Metric toggles --%>
-          <div data-role="metric-toggles" class="flex items-center gap-1 flex-wrap mb-6">
-            <button
-              :for={name <- @all_metric_names}
-              phx-click="toggle_metric"
-              phx-value-metric={name}
-              class={["btn btn-xs", if(MapSet.member?(@visible_metrics, name), do: "btn-primary", else: "btn-ghost")]}
-            >
-              {name}
-            </button>
-          </div>
-
-          <%!-- Multi-series chart --%>
-          <div data-role="multi-series-chart" class="mf-card p-4 mb-4">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-base font-semibold">Metrics Over Time</h3>
-              <button
-                phx-click="show_ai_insights"
-                phx-value-metric="All Metrics"
-                data-role="ai-info-button"
-                class="btn btn-ghost btn-xs"
-                aria-label="View AI insights"
-              >
-                AI Insights
-              </button>
-            </div>
-            <div
-              :if={@chart_spec != nil}
-              data-role="vega-lite-chart"
-              phx-hook="VegaLite"
-              phx-update="ignore"
-              data-spec={Jason.encode!(@chart_spec)}
-              id="multi-series-chart"
-              style="width: 100%"
-            >
-            </div>
-            <p
-              :if={@chart_spec == nil}
-              class="text-base-content/60 text-center py-8"
-            >
-              No metric data available for the selected filters.
-            </p>
-          </div>
-
-          <%!-- Data table --%>
-          <div data-role="data-table" class="mf-card p-4 mt-4 overflow-x-auto">
-            <h3 class="text-base font-semibold mb-3">{granularity_label(@granularity)} Data</h3>
-            <table :if={@table_rows != []} class="table table-sm table-zebra w-full">
-              <thead>
-                <tr>
-                  <th>{granularity_label(@granularity)}</th>
-                  <th :for={name <- @visible_metric_names}>{name}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr :for={row <- @table_rows}>
-                  <td class="font-medium">{row.period}</td>
-                  <td :for={name <- @visible_metric_names}>
-                    {format_number(row.values[name])}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p :if={@table_rows == []} class="text-base-content/60 text-center py-4">
-              No data to display.
-            </p>
-          </div>
-
-          <%!-- Summary stats --%>
-          <div data-role="summary-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-            <div
-              :for={stat <- visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics)}
-              data-role="stat-card"
-              class="mf-card p-4"
-            >
-              <p class="text-sm text-base-content/60 font-medium">{stat.metric_name}</p>
-              <p data-role="stat-sum" class="text-2xl font-bold mf-metric">
-                {format_number(stat.stats.sum)}
-              </p>
-              <p data-role="stat-avg" class="text-xs text-base-content/50">
-                Avg: {format_number(stat.stats.avg)}
-              </p>
-              <button
-                phx-click="show_ai_insights"
-                phx-value-metric={stat.metric_name}
-                data-role="ai-info-button"
-                class="btn btn-ghost btn-xs mt-2 w-full"
-                aria-label={"View AI insights for #{stat.metric_name}"}
-              >
-                AI Insights
-              </button>
-            </div>
-          </div>
-
-          <div
-            :if={Enum.empty?(visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics))}
-            class="mf-card p-6 text-center mt-4"
-          >
-            <p class="text-base-content/60">No metrics match the selected filters.</p>
-          </div>
-
-          <%!-- AI Insights panel --%>
-          <div
-            :if={@ai_panel_open}
-            data-role="ai-insights-panel"
-            data-metric={@ai_panel_metric}
-            class="mf-card p-5 mt-4"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-base font-semibold">AI Insights: {@ai_panel_metric}</h3>
-              <button
-                phx-click="hide_ai_insights"
-                data-role="close-button"
-                aria-label="Close"
-                class="btn btn-ghost btn-xs"
-              >
-                ✕
-              </button>
-            </div>
-            <p class="text-sm text-base-content/60">
-              Metric-specific insights for {@ai_panel_metric} based on correlation analysis.
-              Visit <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
-              for detailed recommendations.
-            </p>
-          </div>
-
-          <%!-- Semantic difference footnote --%>
-          <div data-role="semantic-warning" data-semantic-difference="attribution" class="mt-6 text-xs text-base-content/50">
-            <p>
-              <strong>Note:</strong> Cross-platform metric comparisons may reflect different attribution
-              windows and counting methods. For example, Google Ads uses a 30-day click-through
-              attribution window while Facebook Ads defaults to 7-day click / 1-day view-through.
-              Values shown are aggregated using each platform's native attribution model.
-            </p>
-          </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

@@ -15,82 +15,87 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="mx-auto max-w-4xl">
-        <.header>
-          Choose Your Plan
-          <:subtitle>Unlock AI features with a subscription</:subtitle>
-        </.header>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="mx-auto max-w-4xl">
+      <.header>
+        Choose Your Plan
+        <:subtitle>Unlock AI features with a subscription</:subtitle>
+      </.header>
 
-        <div class="mt-8 space-y-6">
-          <%!-- Active subscription display --%>
-          <div :if={@subscription} class="card bg-base-100 shadow">
-            <div class="card-body">
-              <div class="flex items-center justify-between">
-                <h2 class="card-title text-base">Current Subscription</h2>
-                <span :if={@subscription.status == :active} class="badge badge-success">Active</span>
-                <span :if={@subscription.status == :past_due} class="badge badge-warning">Past due</span>
-                <span :if={@subscription.status == :cancelled} class="badge badge-ghost">Cancelled</span>
-              </div>
-              <div class="mt-2 space-y-1 text-sm text-base-content/60">
-                <p :if={@subscription.current_period_end}>
-                  Current period ends: {Calendar.strftime(@subscription.current_period_end, "%B %d, %Y")}
-                </p>
-              </div>
-              <div :if={@subscription.status == :active} class="card-actions justify-end mt-4">
+      <div class="mt-8 space-y-6">
+        <%!-- Active subscription display --%>
+        <div :if={@subscription} class="card bg-base-100 shadow">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base">Current Subscription</h2>
+              <span :if={@subscription.status == :active} class="badge badge-success">Active</span>
+              <span :if={@subscription.status == :past_due} class="badge badge-warning">Past due</span>
+              <span :if={@subscription.status == :cancelled} class="badge badge-ghost">Cancelled</span>
+            </div>
+            <div class="mt-2 space-y-1 text-sm text-base-content/60">
+              <p :if={@subscription.current_period_end}>
+                Current period ends: {Calendar.strftime(@subscription.current_period_end, "%B %d, %Y")}
+              </p>
+            </div>
+            <div :if={@subscription.status == :active} class="card-actions justify-end mt-4">
+              <button
+                phx-click="cancel_subscription"
+                data-confirm="Cancel your subscription? You'll retain access until the end of the current billing period."
+                class="btn btn-error btn-outline btn-sm"
+              >
+                Cancel Subscription
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Plan cards --%>
+        <div :if={!@subscription} class="grid gap-6 md:grid-cols-2">
+          <div :for={plan <- @plans} class="card bg-base-100 shadow">
+            <div class="card-body text-center">
+              <h2 class="card-title justify-center">{plan.name}</h2>
+              <p class="text-3xl font-bold">
+                {format_price(plan.price_cents, plan.currency)}
+                <span class="text-sm font-normal">/{plan.billing_interval}</span>
+              </p>
+              <p :if={plan.description} class="text-base-content/60">{plan.description}</p>
+              <ul class="text-left text-sm space-y-1 mt-2">
+                <li>Correlations</li>
+                <li>Intelligence</li>
+                <li>Visualizations</li>
+              </ul>
+              <div class="card-actions justify-center mt-4">
                 <button
-                  phx-click="cancel_subscription"
-                  data-confirm="Cancel your subscription? You'll retain access until the end of the current billing period."
-                  class="btn btn-error btn-outline btn-sm"
+                  phx-click="subscribe"
+                  phx-value-plan-id={plan.id}
+                  data-role="subscribe-button"
+                  class="btn btn-primary"
                 >
-                  Cancel Subscription
+                  Subscribe
                 </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <%!-- Plan cards --%>
-          <div :if={!@subscription} class="grid gap-6 md:grid-cols-2">
-            <div :for={plan <- @plans} class="card bg-base-100 shadow">
-              <div class="card-body text-center">
-                <h2 class="card-title justify-center">{plan.name}</h2>
-                <p class="text-3xl font-bold">
-                  {format_price(plan.price_cents, plan.currency)}
-                  <span class="text-sm font-normal">/{plan.billing_interval}</span>
-                </p>
-                <p :if={plan.description} class="text-base-content/60">{plan.description}</p>
-                <ul class="text-left text-sm space-y-1 mt-2">
-                  <li>Correlations</li>
-                  <li>Intelligence</li>
-                  <li>Visualizations</li>
-                </ul>
-                <div class="card-actions justify-center mt-4">
-                  <button
-                    phx-click="subscribe"
-                    phx-value-plan-id={plan.id}
-                    data-role="subscribe-button"
-                    class="btn btn-primary"
-                  >
-                    Subscribe
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <%!-- No plans available --%>
-          <div :if={!@subscription && @plans == []} class="card bg-base-100 shadow">
-            <div class="card-body text-center">
-              <h2 class="card-title justify-center">MetricFlow Pro</h2>
-              <p class="text-3xl font-bold">$49.99<span class="text-sm font-normal">/month</span></p>
-              <p class="text-base-content/60">Correlations, Intelligence, and Visualizations</p>
-              <div class="card-actions justify-center mt-4">
-                <p class="text-sm text-base-content/60">No plans available. Please contact support.</p>
-              </div>
+        <%!-- No plans available --%>
+        <div :if={!@subscription && @plans == []} class="card bg-base-100 shadow">
+          <div class="card-body text-center">
+            <h2 class="card-title justify-center">MetricFlow Pro</h2>
+            <p class="text-3xl font-bold">$49.99<span class="text-sm font-normal">/month</span></p>
+            <p class="text-base-content/60">Correlations, Intelligence, and Visualizations</p>
+            <div class="card-actions justify-center mt-4">
+              <p class="text-sm text-base-content/60">No plans available. Please contact support.</p>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </Layouts.app>
     """
   end

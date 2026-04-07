@@ -9,95 +9,100 @@ defmodule MetricFlowWeb.UserLive.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
-      <div class="text-center">
-        <.header>
-          Account Settings
-          <:subtitle>Manage your account email address and password settings</:subtitle>
-        </.header>
-      </div>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+    >
+    <div class="text-center">
+      <.header>
+        Account Settings
+        <:subtitle>Manage your account email address and password settings</:subtitle>
+      </.header>
+    </div>
 
-      <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-        <.input
-          field={@email_form[:email]}
-          type="email"
-          label="Email"
-          autocomplete="username"
-          required
-        />
-        <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
-      </.form>
+    <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+      <.input
+        field={@email_form[:email]}
+        type="email"
+        label="Email"
+        autocomplete="username"
+        required
+      />
+      <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
+    </.form>
 
-      <div class="divider" />
+    <div class="divider" />
 
-      <.form
-        for={@password_form}
-        id="password_form"
-        action={~p"/app/users/update-password"}
-        method="post"
-        phx-change="validate_password"
-        phx-submit="update_password"
-        phx-trigger-action={@trigger_submit}
-      >
-        <input
-          name={@password_form[:email].name}
-          type="hidden"
-          id="hidden_user_email"
-          autocomplete="username"
-          value={@current_email}
-        />
-        <.input
-          field={@password_form[:password]}
-          type="password"
-          label="New password"
-          autocomplete="new-password"
-          required
-        />
-        <.input
-          field={@password_form[:password_confirmation]}
-          type="password"
-          label="Confirm new password"
-          autocomplete="new-password"
-        />
-        <.button variant="primary" phx-disable-with="Saving...">
-          Save Password
-        </.button>
-      </.form>
-      <div class="divider" />
+    <.form
+      for={@password_form}
+      id="password_form"
+      action={~p"/app/users/update-password"}
+      method="post"
+      phx-change="validate_password"
+      phx-submit="update_password"
+      phx-trigger-action={@trigger_submit}
+    >
+      <input
+        name={@password_form[:email].name}
+        type="hidden"
+        id="hidden_user_email"
+        autocomplete="username"
+        value={@current_email}
+      />
+      <.input
+        field={@password_form[:password]}
+        type="password"
+        label="New password"
+        autocomplete="new-password"
+        required
+      />
+      <.input
+        field={@password_form[:password_confirmation]}
+        type="password"
+        label="Confirm new password"
+        autocomplete="new-password"
+      />
+      <.button variant="primary" phx-disable-with="Saving...">
+        Save Password
+      </.button>
+    </.form>
+    <div class="divider" />
 
-      <div class="space-y-4">
-        <h3 class="text-lg font-semibold">Connected Services</h3>
+    <div class="space-y-4">
+      <h3 class="text-lg font-semibold">Connected Services</h3>
 
-        <div class="border rounded-lg p-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <div>
-              <div class="font-medium">CodeMySpec</div>
-              <%= if @codemyspec_connected do %>
-                <div class="text-sm text-success">Connected</div>
-              <% else %>
-                <div class="text-sm text-base-content/50">Not connected</div>
-              <% end %>
-            </div>
+      <div class="border rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div>
+            <div class="font-medium">CodeMySpec</div>
+            <%= if @codemyspec_connected do %>
+              <div class="text-sm text-success">Connected</div>
+            <% else %>
+              <div class="text-sm text-base-content/50">Not connected</div>
+            <% end %>
           </div>
-
-          <%= if @codemyspec_connected do %>
-            <button
-              phx-click="disconnect_codemyspec"
-              data-confirm="Are you sure you want to disconnect CodeMySpec?"
-              class="btn btn-sm btn-outline btn-error"
-            >
-              Disconnect
-            </button>
-          <% else %>
-            <.link href={~p"/app/integrations/oauth/codemyspec"} class="btn btn-sm btn-primary">
-              Connect
-            </.link>
-          <% end %>
         </div>
+
+        <%= if @codemyspec_connected do %>
+          <button
+            phx-click="disconnect_codemyspec"
+            data-confirm="Are you sure you want to disconnect CodeMySpec?"
+            class="btn btn-sm btn-outline btn-error"
+          >
+            Disconnect
+          </button>
+        <% else %>
+          <.link href={~p"/app/integrations/oauth/codemyspec"} class="btn btn-sm btn-primary">
+            Connect
+          </.link>
+        <% end %>
       </div>
+    </div>
     </Layouts.app>
     """
   end
