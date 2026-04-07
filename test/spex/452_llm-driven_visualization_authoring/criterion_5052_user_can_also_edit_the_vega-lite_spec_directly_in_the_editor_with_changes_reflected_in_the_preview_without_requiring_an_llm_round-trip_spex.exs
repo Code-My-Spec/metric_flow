@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
 
         # Open spec editor
         view
-        |> element("[data-role='toggle-spec-editor']")
+        |> element("[data-role='open-spec-panel']")
         |> render_click()
 
         {:ok, Map.put(context, :view, view)}

@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.Criterion4150EditVegaLiteSpecDirectlySpex do
 
       when_ "user opens the spec editor", context do
         context.view
-        |> element("[data-role='toggle-spec-editor']")
+        |> element("[data-role='open-spec-panel']")
         |> render_click()
 
         {:ok, context}

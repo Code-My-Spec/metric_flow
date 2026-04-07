@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
         |> render_click()
 
         view
-        |> element("[data-role='toggle-spec-editor']")
+        |> element("[data-role='open-spec-panel']")
         |> render_click()
 
         {:ok, Map.put(context, :view, view)}

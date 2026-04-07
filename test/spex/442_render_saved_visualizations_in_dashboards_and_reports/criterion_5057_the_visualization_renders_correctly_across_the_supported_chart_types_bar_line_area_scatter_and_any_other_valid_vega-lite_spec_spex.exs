@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
 
         # Open spec editor
         view
-        |> element("[data-role='toggle-spec-editor']")
+        |> element("[data-role='open-spec-panel']")
         |> render_click()
 
         {:ok, Map.put(context, :view, view)}
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
         |> render_click()
 
         view
-        |> element("[data-role='toggle-spec-editor']")
+        |> element("[data-role='open-spec-panel']")
         |> render_click()
 
         {:ok, Map.put(context, :view, view)}

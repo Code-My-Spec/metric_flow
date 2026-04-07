@@ -1,17 +1,18 @@
 defmodule MetricFlowWeb.VisualizationLive.Editor do
   @moduledoc """
-  LiveView for creating and editing a standalone visualization.
+  LiveView for creating and editing visualizations with a three-panel workspace.
 
-  Authenticated users can build a named Vega-Lite chart from available metrics,
-  preview it, and save it to their library. The resulting visualization may
-  later be added to any dashboard via the Dashboard editor.
+  Layout: collapsible spec editor (left) | chart preview (center) | collapsible LLM chat (right)
 
-  Unauthenticated requests are redirected to `/users/log-in` by the router's
-  `:require_authenticated_user` pipeline.
+  Users can build charts by selecting metrics, editing the Vega-Lite JSON spec
+  directly, or using natural language via the LLM chat panel. All three panels
+  stay in sync — LLM-generated specs update the editor and preview, and manual
+  spec edits update the preview without an LLM round-trip.
   """
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Ai
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Visualization
 
@@ -24,167 +25,227 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app
+    <Layouts.workspace
       flash={@flash}
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
-     
     >
-      <div class="max-w-3xl mx-auto px-4 py-8">
-        <%!-- Page header --%>
-        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
-          <h1 class="text-2xl font-bold">
-            {page_title_for(@live_action)}
-          </h1>
-          <div class="flex items-center gap-2">
+      <div class="flex h-full" data-role="visualization-workspace">
+        <%!-- Left sidebar: Spec editor --%>
+        <div
+          :if={@left_panel_open}
+          data-role="spec-panel"
+          class="w-96 flex-shrink-0 border-r border-base-300 flex flex-col bg-base-100 overflow-hidden"
+        >
+          <div class="flex items-center justify-between px-4 py-2 border-b border-base-300">
+            <span class="font-semibold text-sm">Vega-Lite Spec</span>
+            <button phx-click="toggle_left_panel" class="btn btn-ghost btn-xs" data-role="close-spec-panel">
+              ✕
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-3">
+            <textarea
+              name="vega_spec"
+              data-role="vega-spec-textarea"
+              phx-blur="update_vega_spec"
+              class={[
+                "textarea textarea-bordered w-full h-full font-mono text-xs resize-none min-h-[200px]",
+                @spec_error && "textarea-error"
+              ]}
+            >{@raw_vega_spec}</textarea>
+            <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
+          </div>
+        </div>
+
+        <%!-- Center: Chart preview + controls --%>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <%!-- Toolbar --%>
+          <div class="flex items-center gap-2 px-4 py-2 border-b border-base-300 flex-wrap">
+            <button
+              :if={!@left_panel_open}
+              phx-click="toggle_left_panel"
+              class="btn btn-ghost btn-xs"
+              data-role="open-spec-panel"
+            >
+              Spec Editor
+            </button>
+
+            <%!-- Name --%>
+            <form phx-change="validate_name" class="flex-shrink-0">
+              <input
+                type="text"
+                name="name"
+                value={@name}
+                data-role="visualization-name-input"
+                placeholder="Untitled Visualization"
+                class={["input input-bordered input-sm w-56", @name_error && "input-error"]}
+              />
+            </form>
+
+            <%!-- Metric selector --%>
+            <div class="dropdown" data-role="metric-selector">
+              <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                {if @selected_metric, do: @selected_metric, else: "Select Metric"}
+              </div>
+              <ul
+                :if={@available_metrics != []}
+                tabindex="-1"
+                data-role="metric-list"
+                class="dropdown-content menu bg-base-200 rounded-box z-10 w-64 p-2 shadow max-h-60 overflow-y-auto"
+              >
+                <li :for={metric <- @available_metrics}>
+                  <a phx-click="select_metric" phx-value-metric={metric}>{metric}</a>
+                </li>
+              </ul>
+            </div>
+
+            <%!-- Chart type --%>
+            <div class="flex items-center gap-1" data-role="chart-type-selector">
+              <button
+                :for={type <- @chart_types}
+                phx-click="select_chart_type"
+                phx-value-chart_type={type}
+                class={[
+                  "btn btn-xs",
+                  @selected_chart_type == type && "btn-primary",
+                  @selected_chart_type != type && "btn-ghost"
+                ]}
+              >
+                {String.capitalize(type)}
+              </button>
+            </div>
+
+            <div class="flex-1" />
+
+            <%!-- Shareable toggle --%>
+            <button
+              phx-click="toggle_shareable"
+              data-role="toggle-shareable"
+              class={["btn btn-xs", @shareable && "btn-primary", !@shareable && "btn-ghost"]}
+            >
+              Shareable
+            </button>
+
+            <%!-- Save --%>
             <button
               phx-click="save_visualization"
               data-role="save-visualization-btn"
               class="btn btn-primary btn-sm"
             >
-              Save Visualization
+              Save
             </button>
-            <.link navigate="/app/dashboards" class="btn btn-ghost btn-sm">Cancel</.link>
-          </div>
-        </div>
 
-        <%!-- Name field --%>
-        <form phx-change="validate_name" class="form-control mb-4">
-          <label class="label">
-            <span class="label-text">Visualization Name</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={@name}
-            data-role="visualization-name-input"
-            placeholder="My Visualization"
-            class={["input input-bordered w-full", @name_error && "input-error"]}
-          />
-          <p :if={@name_error} class="text-sm text-error mt-1">
-            {@name_error}
-          </p>
-        </form>
-
-        <%!-- Metric selector --%>
-        <div data-role="metric-selector" class="mf-card p-5 mb-4">
-          <p class="font-semibold text-sm mb-3">Choose a Metric</p>
-          <div data-role="metric-list" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
             <button
-              :for={metric <- @available_metrics}
-              phx-click="select_metric"
-              phx-value-metric={metric}
-              class={[
-                "btn btn-sm",
-                @selected_metric == metric && "btn-primary",
-                @selected_metric != metric && "btn-ghost"
-              ]}
+              :if={!@right_panel_open}
+              phx-click="toggle_right_panel"
+              class="btn btn-ghost btn-xs"
+              data-role="open-chat-panel"
             >
-              {metric}
+              AI Chat
             </button>
-            <div :if={@available_metrics == []} data-role="no-metrics-available">
-              <p class="text-sm text-base-content/60">
-                No metrics available. Connect a platform to get started.
-              </p>
-              <.link navigate="/app/integrations" class="btn btn-ghost btn-sm mt-2">
-                Go to Integrations
-              </.link>
+          </div>
+
+          <%!-- Error bar --%>
+          <p :if={@name_error} class="text-sm text-error px-4 pt-1">{@name_error}</p>
+
+          <%!-- Chart area --%>
+          <div class="flex-1 overflow-auto p-4" data-role="chart-preview-section">
+            <div :if={is_nil(@chart_preview)} data-role="chart-placeholder" class="flex items-center justify-center h-full">
+              <div class="text-center">
+                <p class="text-base-content/60 text-sm">
+                  Select a metric or describe a chart in the AI Chat panel.
+                </p>
+                <div :if={@available_metrics == []} data-role="no-metrics-available" class="mt-4">
+                  <p class="text-sm text-base-content/40">No metrics available.</p>
+                  <.link navigate="/app/integrations" class="btn btn-ghost btn-sm mt-2">
+                    Connect a Platform
+                  </.link>
+                </div>
+              </div>
+            </div>
+
+            <div
+              :if={not is_nil(@chart_preview)}
+              id="visualization-preview-chart"
+              data-role="vega-lite-chart"
+              phx-hook="VegaLite"
+              data-spec={Jason.encode!(@chart_preview)}
+              class="w-full h-full"
+            >
             </div>
           </div>
         </div>
 
-        <%!-- Chart type selector --%>
-        <div data-role="chart-type-selector" class="mf-card p-5 mb-4">
-          <p class="font-semibold text-sm mb-3">Chart Type</p>
-          <div class="flex items-center gap-2">
-            <button
-              :for={type <- @chart_types}
-              phx-click="select_chart_type"
-              phx-value-chart_type={type}
-              class={[
-                "btn btn-sm",
-                @selected_chart_type == type && "btn-primary",
-                @selected_chart_type != type && "btn-ghost"
-              ]}
-            >
-              {String.capitalize(type)}
+        <%!-- Right sidebar: LLM Chat --%>
+        <div
+          :if={@right_panel_open}
+          data-role="chat-panel"
+          class="w-96 flex-shrink-0 border-l border-base-300 flex flex-col bg-base-100 overflow-hidden"
+        >
+          <div class="flex items-center justify-between px-4 py-2 border-b border-base-300">
+            <span class="font-semibold text-sm">AI Chat</span>
+            <button phx-click="toggle_right_panel" class="btn btn-ghost btn-xs" data-role="close-chat-panel">
+              ✕
             </button>
           </div>
-        </div>
 
-        <%!-- Options row --%>
-        <div class="flex items-center gap-4 mb-4">
-          <button
-            phx-click="toggle_shareable"
-            data-role="toggle-shareable"
-            class={[
-              "btn btn-sm",
-              @shareable && "btn-primary",
-              !@shareable && "btn-ghost"
-            ]}
-          >
-            Shareable
-          </button>
-          <span class="text-xs text-base-content/60">
-            Let others add this visualization to their dashboards.
-          </span>
-        </div>
-
-        <%!-- Vega-Lite spec editor --%>
-        <div data-role="vega-spec-editor" class="mf-card p-5 mb-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="font-semibold text-sm">Vega-Lite Spec Editor</p>
-            <button
-              phx-click="toggle_spec_editor"
-              data-role="toggle-spec-editor"
-              class="btn btn-ghost btn-xs"
-            >
-              {if @show_spec_editor, do: "Hide", else: "Show"}
-            </button>
-          </div>
-          <div :if={@show_spec_editor}>
-            <textarea
-              name="vega_spec"
-              data-role="vega-spec-textarea"
-              phx-blur="update_vega_spec"
-              rows="16"
-              class={[
-                "textarea textarea-bordered w-full font-mono text-xs",
-                @spec_error && "textarea-error"
-              ]}
-            >{@raw_vega_spec}</textarea>
-            <p :if={@spec_error} class="text-sm text-error mt-1">
-              {@spec_error}
-            </p>
-            <p class="text-xs text-base-content/60 mt-1">
-              Edit the Vega-Lite JSON spec directly. Changes apply on blur.
-            </p>
-          </div>
-        </div>
-
-        <%!-- Chart preview --%>
-        <div data-role="chart-preview-section" class="mf-card p-5 mb-4">
-          <p class="font-semibold text-sm mb-4">Chart</p>
-
-          <div :if={is_nil(@chart_preview)} data-role="chart-placeholder" class="text-center py-8">
-            <p class="text-base-content/60 text-sm">
-              Select a metric to see a chart.
-            </p>
-          </div>
-
+          <%!-- Chat messages --%>
           <div
-            :if={not is_nil(@chart_preview)}
-            id="visualization-preview-chart"
-            data-role="vega-lite-chart"
-            phx-hook="VegaLite"
-            data-spec={Jason.encode!(@chart_preview)}
-            class="w-full"
+            id="chat-messages"
+            data-role="chat-messages"
+            class="flex-1 overflow-y-auto p-3 space-y-3"
+            phx-update="stream"
           >
+            <div
+              :for={{dom_id, msg} <- @streams.chat_messages}
+              id={dom_id}
+              class={[
+                "p-3 rounded-lg text-sm",
+                msg.role == :user && "bg-primary/10 ml-6",
+                msg.role == :assistant && "bg-base-200 mr-6"
+              ]}
+            >
+              <p class="font-semibold text-xs mb-1 text-base-content/60">
+                {if msg.role == :user, do: "You", else: "AI"}
+              </p>
+              <p class="whitespace-pre-wrap">{msg.content}</p>
+            </div>
+          </div>
+
+          <%!-- Chat input --%>
+          <div class="border-t border-base-300 p-3">
+            <form phx-submit="send_chat" data-role="chat-form">
+              <div class="flex gap-2">
+                <textarea
+                  name="prompt"
+                  data-role="chat-input"
+                  rows="2"
+                  placeholder="Describe the chart you want..."
+                  disabled={@chat_generating}
+                  class="textarea textarea-bordered textarea-sm flex-1 resize-none"
+                >{@chat_prompt}</textarea>
+                <button
+                  type="submit"
+                  data-role="chat-send-btn"
+                  disabled={@chat_generating || String.trim(@chat_prompt) == ""}
+                  class={[
+                    "btn btn-primary btn-sm self-end",
+                    (@chat_generating || String.trim(@chat_prompt) == "") && "btn-disabled"
+                  ]}
+                >
+                  <span :if={@chat_generating} class="loading loading-spinner loading-xs" />
+                  <span :if={!@chat_generating}>Send</span>
+                </button>
+              </div>
+              <p :if={@chat_error} class="text-error text-xs mt-1" data-role="chat-error">
+                {@chat_error}
+              </p>
+            </form>
           </div>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.workspace>
     """
   end
 
@@ -210,18 +271,14 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       {:ok, visualization} ->
         socket =
           socket
+          |> assign_common(scope)
           |> assign(:visualization, visualization)
           |> assign(:name, visualization.name || "")
-          |> assign(:name_error, nil)
           |> assign(:selected_metric, extract_metric_name(visualization.vega_spec))
           |> assign(:selected_chart_type, extract_chart_type(visualization.vega_spec))
           |> assign(:shareable, visualization.shareable)
           |> assign(:chart_preview, visualization.vega_spec)
-          |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-          |> assign(:chart_types, @chart_types)
-          |> assign(:show_spec_editor, false)
           |> assign(:raw_vega_spec, format_spec(visualization.vega_spec))
-          |> assign(:spec_error, nil)
           |> assign(:page_title, "Edit Visualization")
 
         {:noreply, socket}
@@ -239,21 +296,31 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
     socket =
       socket
+      |> assign_common(scope)
       |> assign(:visualization, nil)
       |> assign(:name, "")
-      |> assign(:name_error, nil)
       |> assign(:selected_metric, nil)
       |> assign(:selected_chart_type, "line")
       |> assign(:shareable, false)
       |> assign(:chart_preview, nil)
-      |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-      |> assign(:chart_types, @chart_types)
-      |> assign(:show_spec_editor, false)
       |> assign(:raw_vega_spec, "")
-      |> assign(:spec_error, nil)
       |> assign(:page_title, "New Visualization")
 
     {:noreply, socket}
+  end
+
+  defp assign_common(socket, scope) do
+    socket
+    |> assign(:name_error, nil)
+    |> assign(:spec_error, nil)
+    |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
+    |> assign(:chart_types, @chart_types)
+    |> assign(:left_panel_open, false)
+    |> assign(:right_panel_open, true)
+    |> assign(:chat_prompt, "")
+    |> assign(:chat_generating, false)
+    |> assign(:chat_error, nil)
+    |> stream(:chat_messages, [])
   end
 
   # ---------------------------------------------------------------------------
@@ -284,11 +351,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   def handle_event("select_chart_type", %{"chart_type" => type}, socket) do
     socket = assign(socket, :selected_chart_type, type)
 
-    # Rebuild chart with new type if a metric is selected
     socket =
       if socket.assigns.selected_metric do
         spec = Dashboards.build_chart_spec(socket.assigns.selected_metric, build_sample_data())
-        # Override the mark type in the spec
         spec = Map.put(spec, "mark", type)
         assign(socket, chart_preview: spec, raw_vega_spec: format_spec(spec))
       else
@@ -302,8 +367,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     {:noreply, assign(socket, :shareable, !socket.assigns.shareable)}
   end
 
-  def handle_event("toggle_spec_editor", _params, socket) do
-    show = !socket.assigns.show_spec_editor
+  def handle_event("toggle_left_panel", _params, socket) do
+    show = !socket.assigns.left_panel_open
 
     raw =
       if show and socket.assigns.raw_vega_spec == "" do
@@ -312,7 +377,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         socket.assigns.raw_vega_spec
       end
 
-    {:noreply, assign(socket, show_spec_editor: show, raw_vega_spec: raw)}
+    {:noreply, assign(socket, left_panel_open: show, raw_vega_spec: raw)}
+  end
+
+  def handle_event("toggle_right_panel", _params, socket) do
+    {:noreply, assign(socket, :right_panel_open, !socket.assigns.right_panel_open)}
   end
 
   def handle_event("update_vega_spec", %{"value" => json}, socket) do
@@ -335,24 +404,74 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
+  def handle_event("send_chat", %{"prompt" => prompt}, socket) do
+    case String.trim(prompt) do
+      "" ->
+        {:noreply, socket}
+
+      trimmed ->
+        user_msg = %{role: :user, content: trimmed, id: System.unique_integer([:positive])}
+
+        socket =
+          socket
+          |> stream_insert(:chat_messages, user_msg)
+          |> assign(:chat_prompt, "")
+          |> assign(:chat_generating, true)
+          |> assign(:chat_error, nil)
+
+        scope = socket.assigns.current_scope
+        req_opts = Application.get_env(:metric_flow, :req_http_options, [])
+
+        case Ai.generate_vega_spec(scope, trimmed, req_http_options: req_opts) do
+          {:ok, spec} ->
+            assistant_msg = %{
+              role: :assistant,
+              content: "Chart updated.",
+              id: System.unique_integer([:positive])
+            }
+
+            {:noreply,
+             socket
+             |> stream_insert(:chat_messages, assistant_msg)
+             |> assign(
+               chart_preview: spec,
+               raw_vega_spec: format_spec(spec),
+               selected_chart_type: extract_chart_type(spec),
+               selected_metric: extract_metric_name(spec),
+               chat_generating: false,
+               left_panel_open: socket.assigns.left_panel_open || false
+             )}
+
+          {:error, reason} ->
+            error_msg = generation_error_message(reason)
+
+            assistant_msg = %{
+              role: :assistant,
+              content: "Error: #{error_msg}",
+              id: System.unique_integer([:positive])
+            }
+
+            {:noreply,
+             socket
+             |> stream_insert(:chat_messages, assistant_msg)
+             |> assign(chat_generating: false, chat_error: error_msg)}
+        end
+    end
+  end
+
   def handle_event("save_visualization", _params, socket) do
     name = socket.assigns.name
     metric = socket.assigns.selected_metric
 
-    with :ok <- validate_name_present(name),
-         :ok <- validate_metric_present(metric) do
-      do_save(socket)
-    else
-      {:error, :name_blank} ->
-        error =
-          name
-          |> Dashboards.visualization_name_changeset()
-          |> name_error_from_changeset()
+    cond do
+      name == "" || is_nil(name) ->
+        {:noreply, assign(socket, :name_error, "Name is required")}
 
-        {:noreply, assign(socket, :name_error, error)}
+      is_nil(socket.assigns.chart_preview) ->
+        {:noreply, put_flash(socket, :error, "Generate or select a chart before saving.")}
 
-      {:error, :metric_missing} ->
-        {:noreply, put_flash(socket, :error, "Please select a metric before saving.")}
+      true ->
+        do_save(socket)
     end
   end
 
@@ -366,9 +485,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     metric = socket.assigns.selected_metric
     chart_type = socket.assigns.selected_chart_type
     shareable = socket.assigns.shareable
-    preview = socket.assigns.chart_preview
-
-    vega_spec = preview || Dashboards.build_chart_spec(metric, build_sample_data())
+    vega_spec = socket.assigns.chart_preview
 
     attrs = %{
       name: name,
@@ -407,13 +524,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
-  defp validate_name_present(""), do: {:error, :name_blank}
-  defp validate_name_present(nil), do: {:error, :name_blank}
-  defp validate_name_present(_name), do: :ok
-
-  defp validate_metric_present(nil), do: {:error, :metric_missing}
-  defp validate_metric_present(_metric), do: :ok
-
   defp page_title_for(:new), do: "New Visualization"
   defp page_title_for(:edit), do: "Edit Visualization"
   defp page_title_for(_), do: "Visualization"
@@ -450,4 +560,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       %{date: Date.add(today, -days_ago), value: :rand.uniform() * 100}
     end)
   end
+
+  defp generation_error_message(:no_metrics), do: "No metrics available. Connect a platform first."
+  defp generation_error_message(:invalid_spec), do: "AI generated an invalid chart spec. Try rephrasing."
+  defp generation_error_message(:api_error), do: "AI service is temporarily unavailable."
+  defp generation_error_message(reason) when is_binary(reason), do: reason
+  defp generation_error_message(_), do: "Something went wrong. Please try again."
 end

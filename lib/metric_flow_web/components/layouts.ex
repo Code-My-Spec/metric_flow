@@ -196,6 +196,98 @@ defmodule MetricFlowWeb.Layouts do
   end
 
   @doc """
+  Renders a full-width workspace layout with no footer or max-width constraint.
+
+  Used for editor views that need the full viewport (e.g. visualization editor
+  with collapsible sidebars).
+
+  ## Examples
+
+      <Layouts.workspace flash={@flash}>
+        <div>Full-width content</div>
+      </Layouts.workspace>
+  """
+  attr :flash, :map, required: true
+  attr :current_scope, :map, default: nil
+  attr :white_label_config, :map, default: nil
+  attr :active_account_name, :string, default: nil
+  slot :inner_block, required: true
+
+  def workspace(assigns) do
+    ~H"""
+    <%= if @white_label_config do %>
+      <style>
+        :root {
+          --wl-primary: <%= Map.get(@white_label_config, :primary_color) || Map.get(@white_label_config, "primary_color") %>;
+          --wl-secondary: <%= Map.get(@white_label_config, :secondary_color) || Map.get(@white_label_config, "secondary_color") %>;
+        }
+      </style>
+    <% end %>
+    <div
+      class="navbar mf-topnav px-4 sm:px-6 lg:px-8"
+      data-white-label={if @white_label_config, do: "true"}
+    >
+      <div class="navbar-start">
+        <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
+          <a href="/" class="btn btn-ghost">
+            <img
+              src={Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")}
+              alt="Agency Logo"
+              data-role="agency-logo"
+              class="h-8 w-auto"
+            />
+          </a>
+        <% else %>
+          <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight" data-role="default-logo">
+            <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+          </a>
+        <% end %>
+      </div>
+      <div class="navbar-end gap-2">
+        <%= if @active_account_name do %>
+          <span data-role="current-account-name" class="text-sm text-base-content/70 hidden sm:inline">
+            {@active_account_name}
+          </span>
+        <% end %>
+        <.link navigate="/app/visualizations" class="btn btn-ghost btn-sm">
+          Back to Library
+        </.link>
+        <%= if @current_scope do %>
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+              <div class="bg-primary text-primary-content w-8 rounded-full">
+                <span class="text-xs">
+                  {String.first(@current_scope.user.email) |> String.upcase()}
+                </span>
+              </div>
+            </div>
+            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+              <li class="menu-title text-xs">{@current_scope.user.email}</li>
+              <li><a href={~p"/app/users/settings"}>Settings</a></li>
+              <li>
+                <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+              </li>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <main class="h-[calc(100vh-64px)] overflow-hidden">
+      {render_slot(@inner_block)}
+    </main>
+
+    <.flash_group flash={@flash} />
+
+    <.live_component
+      module={MetricFlowWeb.FeedbackWidget}
+      id="codemyspec-feedback"
+      current_scope={@current_scope}
+    />
+    """
+  end
+
+  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples
