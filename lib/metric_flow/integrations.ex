@@ -215,6 +215,29 @@ defmodule MetricFlow.Integrations do
   provider strategy does not support refresh.
   Returns `{:error, :token_refresh_failed}` if an unexpected exception is raised.
   """
+  @doc """
+  Returns the integration with a fresh token. If the token is not expired,
+  returns it as-is. If expired and a refresh token is available, refreshes it.
+  Returns `{:error, :token_expired}` if the token is expired and cannot be refreshed.
+  """
+  @spec ensure_fresh_token(Scope.t(), Integration.t()) ::
+          {:ok, Integration.t()} | {:error, :token_expired}
+  def ensure_fresh_token(%Scope{} = scope, %Integration{} = integration) do
+    cond do
+      not Integration.expired?(integration) ->
+        {:ok, integration}
+
+      Integration.has_refresh_token?(integration) ->
+        case refresh_token(scope, integration) do
+          {:ok, refreshed} -> {:ok, refreshed}
+          {:error, _reason} -> {:error, :token_expired}
+        end
+
+      true ->
+        {:error, :token_expired}
+    end
+  end
+
   @spec refresh_token(Scope.t(), Integration.t()) ::
           {:ok, Integration.t()} | {:error, term()}
   def refresh_token(%Scope{} = scope, %Integration{} = integration) do
