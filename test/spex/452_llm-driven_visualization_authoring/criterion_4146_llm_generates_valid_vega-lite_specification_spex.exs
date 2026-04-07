@@ -1,0 +1,49 @@
+defmodule MetricFlowSpex.Criterion4146LlmGeneratesVegaLiteSpecSpex do
+  use SexySpex
+  use MetricFlowTest.ConnCase, async: false
+  import Phoenix.LiveViewTest
+  import ExUnit.CaptureLog
+  import ReqCassette
+
+  import_givens MetricFlowSpex.SharedGivens
+
+  @cassette_opts [
+    cassette_dir: "test/cassettes/ai",
+    filter_request_headers: ["x-api-key", "authorization"],
+    mode: :replay,
+    match_requests_on: [:method, :uri]
+  ]
+
+  spex "LLM generates valid Vega-Lite specification", fail_on_error_logs: false do
+    scenario "submitting a prompt produces a Vega-Lite chart" do
+      given_ :user_logged_in_as_owner
+      given_ :owner_has_active_subscription
+
+      given_ "user is on the report generator page", context do
+        {:ok, view, _html} = live(context.owner_conn, "/reports/generate")
+        {:ok, Map.put(context, :view, view)}
+      end
+
+      then_ "user submits a prompt and a Vega-Lite chart is rendered", context do
+        with_cassette "report_generator_success", @cassette_opts, fn plug ->
+          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+
+          capture_log(fn ->
+            context.view
+            |> render_change("update_prompt", %{"prompt" => "Show me a bar chart of impressions"})
+
+            context.view
+            |> render_submit("generate", %{"prompt" => "Show me a bar chart of impressions"})
+          end)
+
+          assert has_element?(context.view, "[data-role='vega-lite-chart']")
+          assert has_element?(context.view, "[phx-hook='VegaLite']")
+
+          Application.delete_env(:metric_flow, :req_http_options)
+        end
+
+        :ok
+      end
+    end
+  end
+end

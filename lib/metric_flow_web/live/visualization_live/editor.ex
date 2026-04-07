@@ -15,7 +15,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Visualization
 
-  @chart_types ["line", "bar", "area"]
+  @chart_types ["line", "bar", "area", "point", "arc", "rect"]
 
   # ---------------------------------------------------------------------------
   # Render
@@ -50,7 +50,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         </div>
 
         <%!-- Name field --%>
-        <div class="form-control mb-4">
+        <form phx-change="validate_name" class="form-control mb-4">
           <label class="label">
             <span class="label-text">Visualization Name</span>
           </label>
@@ -59,14 +59,13 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             name="name"
             value={@name}
             data-role="visualization-name-input"
-            phx-change="validate_name"
             placeholder="My Visualization"
             class={["input input-bordered w-full", @name_error && "input-error"]}
           />
           <p :if={@name_error} class="text-sm text-error mt-1">
             {@name_error}
           </p>
-        </div>
+        </form>
 
         <%!-- Metric selector --%>
         <div data-role="metric-selector" class="mf-card p-5 mb-4">
@@ -132,26 +131,45 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           </span>
         </div>
 
-        <%!-- Chart preview --%>
-        <div data-role="chart-preview-section" class="mf-card p-5 mb-4">
-          <div class="flex items-center justify-between mb-4">
-            <p class="font-semibold text-sm">Preview</p>
+        <%!-- Vega-Lite spec editor --%>
+        <div data-role="vega-spec-editor" class="mf-card p-5 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="font-semibold text-sm">Vega-Lite Spec Editor</p>
             <button
-              phx-click="preview_chart"
-              data-role="preview-chart-btn"
-              disabled={is_nil(@selected_metric)}
-              class={[
-                "btn btn-outline btn-sm",
-                is_nil(@selected_metric) && "btn-disabled"
-              ]}
+              phx-click="toggle_spec_editor"
+              data-role="toggle-spec-editor"
+              class="btn btn-ghost btn-xs"
             >
-              Preview Chart
+              {if @show_spec_editor, do: "Hide", else: "Show"}
             </button>
           </div>
+          <div :if={@show_spec_editor}>
+            <textarea
+              name="vega_spec"
+              data-role="vega-spec-textarea"
+              phx-blur="update_vega_spec"
+              rows="16"
+              class={[
+                "textarea textarea-bordered w-full font-mono text-xs",
+                @spec_error && "textarea-error"
+              ]}
+            >{@raw_vega_spec}</textarea>
+            <p :if={@spec_error} class="text-sm text-error mt-1">
+              {@spec_error}
+            </p>
+            <p class="text-xs text-base-content/60 mt-1">
+              Edit the Vega-Lite JSON spec directly. Changes apply on blur.
+            </p>
+          </div>
+        </div>
+
+        <%!-- Chart preview --%>
+        <div data-role="chart-preview-section" class="mf-card p-5 mb-4">
+          <p class="font-semibold text-sm mb-4">Chart</p>
 
           <div :if={is_nil(@chart_preview)} data-role="chart-placeholder" class="text-center py-8">
             <p class="text-base-content/60 text-sm">
-              Select a metric and click Preview Chart to see a sample.
+              Select a metric to see a chart.
             </p>
           </div>
 
@@ -201,6 +219,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:chart_preview, visualization.vega_spec)
           |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
           |> assign(:chart_types, @chart_types)
+          |> assign(:show_spec_editor, false)
+          |> assign(:raw_vega_spec, format_spec(visualization.vega_spec))
+          |> assign(:spec_error, nil)
           |> assign(:page_title, "Edit Visualization")
 
         {:noreply, socket}
@@ -227,6 +248,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       |> assign(:chart_preview, nil)
       |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
       |> assign(:chart_types, @chart_types)
+      |> assign(:show_spec_editor, false)
+      |> assign(:raw_vega_spec, "")
+      |> assign(:spec_error, nil)
       |> assign(:page_title, "New Visualization")
 
     {:noreply, socket}
@@ -247,34 +271,68 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   end
 
   def handle_event("select_metric", %{"metric" => metric}, socket) do
-    {:noreply, assign(socket, selected_metric: metric, chart_preview: nil)}
+    spec = Dashboards.build_chart_spec(metric, build_sample_data())
+
+    {:noreply,
+     assign(socket,
+       selected_metric: metric,
+       chart_preview: spec,
+       raw_vega_spec: format_spec(spec)
+     )}
   end
 
   def handle_event("select_chart_type", %{"chart_type" => type}, socket) do
-    {:noreply, assign(socket, :selected_chart_type, type)}
-  end
+    socket = assign(socket, :selected_chart_type, type)
 
-  def handle_event("preview_chart", _params, %{assigns: %{selected_metric: nil}} = socket) do
+    # Rebuild chart with new type if a metric is selected
+    socket =
+      if socket.assigns.selected_metric do
+        spec = Dashboards.build_chart_spec(socket.assigns.selected_metric, build_sample_data())
+        # Override the mark type in the spec
+        spec = Map.put(spec, "mark", type)
+        assign(socket, chart_preview: spec, raw_vega_spec: format_spec(spec))
+      else
+        socket
+      end
+
     {:noreply, socket}
-  end
-
-  def handle_event("preview_chart", _params, socket) do
-    scope = socket.assigns.current_scope
-    metric = socket.assigns.selected_metric
-    available = Dashboards.list_available_metrics(scope)
-
-    case metric in available do
-      false ->
-        {:noreply, put_flash(socket, :error, "Selected metric is no longer available.")}
-
-      true ->
-        spec = Dashboards.build_chart_spec(metric, build_sample_data())
-        {:noreply, assign(socket, :chart_preview, spec)}
-    end
   end
 
   def handle_event("toggle_shareable", _params, socket) do
     {:noreply, assign(socket, :shareable, !socket.assigns.shareable)}
+  end
+
+  def handle_event("toggle_spec_editor", _params, socket) do
+    show = !socket.assigns.show_spec_editor
+
+    raw =
+      if show and socket.assigns.raw_vega_spec == "" do
+        format_spec(socket.assigns.chart_preview)
+      else
+        socket.assigns.raw_vega_spec
+      end
+
+    {:noreply, assign(socket, show_spec_editor: show, raw_vega_spec: raw)}
+  end
+
+  def handle_event("update_vega_spec", %{"value" => json}, socket) do
+    case Jason.decode(json) do
+      {:ok, spec} when is_map(spec) ->
+        {:noreply,
+         assign(socket,
+           raw_vega_spec: json,
+           chart_preview: spec,
+           spec_error: nil,
+           selected_chart_type: extract_chart_type(spec),
+           selected_metric: extract_metric_name(spec)
+         )}
+
+      {:ok, _} ->
+        {:noreply, assign(socket, raw_vega_spec: json, spec_error: "Spec must be a JSON object")}
+
+      {:error, _} ->
+        {:noreply, assign(socket, raw_vega_spec: json, spec_error: "Invalid JSON")}
+    end
   end
 
   def handle_event("save_visualization", _params, socket) do
@@ -377,10 +435,13 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp extract_metric_name(%{"title" => title}) when is_binary(title), do: title
   defp extract_metric_name(_), do: nil
 
-  defp extract_chart_type(%{"mark" => mark}) when is_binary(mark) and mark in @chart_types,
-    do: mark
-
+  defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark), do: mark
+  defp extract_chart_type(%{"mark" => mark}) when is_binary(mark), do: mark
   defp extract_chart_type(_), do: "line"
+
+  defp format_spec(nil), do: ""
+  defp format_spec(spec) when is_map(spec), do: Jason.encode!(spec, pretty: true)
+  defp format_spec(_), do: ""
 
   defp build_sample_data do
     today = Date.utc_today()

@@ -336,6 +336,30 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{}}
   end
 
+  given :owner_has_metrics do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    now = DateTime.utc_now()
+
+    metrics =
+      for {name, i} <- Enum.with_index(["impressions", "clicks", "spend", "conversions", "sessions"]) do
+        %{
+          metric_name: name,
+          metric_type: "raw",
+          value: 100.0 + i,
+          recorded_at: DateTime.add(now, -i, :day),
+          provider: :google_analytics,
+          dimensions: %{},
+          user_id: user.id,
+          inserted_at: now,
+          updated_at: now
+        }
+      end
+
+    MetricFlow.Repo.insert_all(MetricFlow.Metrics.Metric, metrics)
+
+    {:ok, %{}}
+  end
+
   @doc """
   Signs a JSON payload with the Stripe webhook secret for testing.
   Returns the Stripe-Signature header value.
