@@ -10,12 +10,12 @@ defmodule MetricFlowSpex.DirectUsersCanInitiateCheckoutSpex do
       given_ :user_logged_in_as_owner
 
       when_ "the user navigates to a paywalled AI page", context do
-        result = live(context.owner_conn, "/correlations")
+        result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :live_result, result)}
       end
 
       then_ "the user is redirected to the checkout page with an upgrade prompt", context do
-        assert {:error, {:redirect, %{to: "/subscriptions/checkout"}}} = context.live_result
+        assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} = context.live_result
         :ok
       end
     end
@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.DirectUsersCanInitiateCheckoutSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to checkout", context do
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end
 

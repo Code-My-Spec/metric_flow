@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
       given_ :owner_with_quickbooks_integration
 
       given_ "the user navigates to the QuickBooks detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -29,10 +29,10 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
 
       when_ "the OAuth callback returns with an error", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/quickbooks",
+          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/quickbooks",
             MetricFlowTest.OAuthStub.denied_callback_params())
         end)
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -50,10 +50,10 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
 
       when_ "the OAuth callback is invoked without a code parameter", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/quickbooks",
+          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/quickbooks",
             %{"state" => MetricFlowTest.OAuthStub.state_token()})
         end)
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -27,7 +27,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       {:ok, _lv, html} =
         conn
         |> authenticated_conn()
-        |> live(~p"/users/settings")
+        |> live(~p"/app/users/settings")
 
       assert html =~ "Account Settings"
       assert html =~ "Change Email"
@@ -42,7 +42,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
     end
 
     test "validates email on change and shows inline errors for invalid email", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/users/settings")
 
       result =
         lv
@@ -63,7 +63,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
     test "sends email change confirmation link on valid email submit", %{conn: conn, user: user} do
       new_email = unique_user_email()
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/users/settings")
 
       result =
         lv
@@ -85,7 +85,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
       assert {:ok, conn_redirected} =
                conn_no_sudo
-               |> live(~p"/users/settings")
+               |> live(~p"/app/users/settings")
                |> follow_redirect(conn_no_sudo, ~p"/users/log-in")
 
       assert conn_redirected.resp_body =~ "You must re-authenticate to access this page."
@@ -99,7 +99,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
     end
 
     test "validates password on change and shows inline errors", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/users/settings")
 
       result =
         lv
@@ -124,7 +124,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
     test "triggers password form submission on valid password submit", %{conn: conn, user: user} do
       new_password = valid_user_password()
-      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/users/settings")
 
       form =
         form(lv, "#password_form", %{
@@ -139,7 +139,7 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
       new_password_conn = follow_trigger_action(form, conn)
 
-      assert redirected_to(new_password_conn) == ~p"/users/settings"
+      assert redirected_to(new_password_conn) == ~p"/app/users/settings"
 
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
                "Password updated successfully"
@@ -158,10 +158,10 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
           Users.deliver_user_update_email_instructions(%{user | email: new_email}, user.email, url)
         end)
 
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/#{token}")
+      {:error, redirect} = live(conn, ~p"/app/users/settings/confirm-email/#{token}")
 
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/settings"
+      assert path == ~p"/app/users/settings"
       assert %{"info" => message} = flash
       assert message == "Email changed successfully."
       refute Users.get_user_by_email(user.email)
@@ -173,10 +173,10 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
     test "shows error flash for invalid or expired email confirmation token", %{conn: conn} do
       {conn, user} = authenticated_conn_with_user(conn)
 
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm-email/invalid-token")
+      {:error, redirect} = live(conn, ~p"/app/users/settings/confirm-email/invalid-token")
 
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/settings"
+      assert path == ~p"/app/users/settings"
       assert %{"error" => message} = flash
       assert message == "Email change link is invalid or it has expired."
       assert Users.get_user_by_email(user.email)

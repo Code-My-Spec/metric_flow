@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       end
 
       when_ "the second user navigates to account settings", context do
-        {:ok, view, _html} = live(context.member_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.member_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       end
 
       given_ "the second user is on the account settings page", context do
-        {:ok, view, _html} = live(context.member_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.member_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 

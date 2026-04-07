@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
       end
 
       then_ "the first user is logged in successfully", context do
-        assert redirected_to(context.first_user_conn) == "/integrations"
+        assert redirected_to(context.first_user_conn) == "/app/integrations"
         :ok
       end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
       end
 
       then_ "the second user is also logged in successfully", context do
-        assert redirected_to(context.second_user_conn) == "/integrations"
+        assert redirected_to(context.second_user_conn) == "/app/integrations"
         :ok
       end
     end
@@ -125,7 +125,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
       end
 
       when_ "the user visits the settings page", context do
-        {:ok, _view, html} = live(context.logged_in_conn, "/users/settings")
+        {:ok, _view, html} = live(context.logged_in_conn, "/app/users/settings")
         {:ok, Map.put(context, :page_html, html)}
       end
 

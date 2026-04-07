@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
 
       given_ "the user navigates to the chat page and sends a question to get an AI response",
              context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
       given_ :with_ai_stubs
 
       given_ "the user navigates to the chat page and submits a question", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
       given_ :with_ai_stubs
 
       given_ "the user navigates to the chat page and gets an AI response", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->

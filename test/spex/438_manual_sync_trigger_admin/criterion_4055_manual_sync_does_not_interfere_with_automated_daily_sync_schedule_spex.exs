@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a connected Google integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a connected Google integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         [owner_account | _] = MetricFlow.Accounts.list_accounts(scope)
 
         # Configure auto-enrollment via the UI
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         agency_domain = "agencydomain#{System.unique_integer([:positive])}.com"
 
         view
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
 
-        {:ok, view, _html} = live(member_conn, "/accounts")
+        {:ok, view, _html} = live(member_conn, "/app/accounts")
         {:ok, Map.merge(context, %{member_conn: member_conn, accounts_view: view})}
       end
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         [owner_account | _] = MetricFlow.Accounts.list_accounts(scope)
 
         # Configure auto-enrollment via the UI
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         agency_domain = "agencyroles#{System.unique_integer([:positive])}.com"
 
         view
@@ -150,7 +150,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
 
-        {:ok, view, _html} = live(member_conn, "/accounts")
+        {:ok, view, _html} = live(member_conn, "/app/accounts")
         {:ok, Map.merge(context, %{member_conn: member_conn, accounts_view: view})}
       end
 

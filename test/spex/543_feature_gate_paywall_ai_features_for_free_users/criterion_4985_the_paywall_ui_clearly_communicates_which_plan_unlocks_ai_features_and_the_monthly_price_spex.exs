@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PaywallShowsPlanAndPriceSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the correlations page", context do
-        result = live(context.owner_conn, "/correlations")
+        result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :result, result)}
       end
 

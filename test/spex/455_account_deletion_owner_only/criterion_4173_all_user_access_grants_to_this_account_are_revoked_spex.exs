@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       given_ :second_user_registered
 
       given_ "the second user has been invited as a member of the owner's account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       end
 
       when_ "the owner deletes the account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#delete-account-form", delete_confirmation: %{
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, accounts_view, _html} = live(member_conn, "/accounts")
+        {:ok, accounts_view, _html} = live(member_conn, "/app/accounts")
         {:ok, Map.put(context, :accounts_view, accounts_view)}
       end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       given_ :second_user_registered
 
       given_ "the second user has been invited as a member of the owner's account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       end
 
       when_ "the owner deletes the account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#delete-account-form", delete_confirmation: %{
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, accounts_view, _html} = live(member_conn, "/accounts")
+        {:ok, accounts_view, _html} = live(member_conn, "/app/accounts")
         {:ok, Map.put(context, :accounts_view, accounts_view)}
       end
 

@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       given_ :owner_with_integrations
 
       given_ "the user is on the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       given_ :owner_with_integrations
 
       given_ "the user is on the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       given_ :owner_with_integrations
 
       given_ "the user is on the sync history page with both a success and a failure broadcast", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
 
         send(view.pid, {:sync_completed, %{
           provider: :google_business_reviews,

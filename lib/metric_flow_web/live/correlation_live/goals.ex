@@ -32,7 +32,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
           <p class="text-base-content/60">
             No metrics available. Connect your integrations and sync data before configuring a goal.
           </p>
-          <.link navigate={~p"/integrations"} class="btn btn-primary mt-4">
+          <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
             Connect Integrations
           </.link>
         </div>
@@ -134,7 +134,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   end
 
   def handle_event("cancel", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/correlations")}
+    {:noreply, push_navigate(socket, to: ~p"/app/correlations")}
   end
 
   # ---------------------------------------------------------------------------
@@ -168,7 +168,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
         socket =
           socket
           |> put_flash(:info, "Goal metric saved. Correlation analysis started.")
-          |> push_navigate(to: ~p"/correlations")
+          |> push_navigate(to: ~p"/app/correlations")
 
         {:noreply, socket}
 
@@ -176,7 +176,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
         socket =
           socket
           |> put_flash(:info, "A correlation run is already in progress.")
-          |> push_navigate(to: ~p"/correlations")
+          |> push_navigate(to: ~p"/app/correlations")
 
         {:noreply, socket}
 

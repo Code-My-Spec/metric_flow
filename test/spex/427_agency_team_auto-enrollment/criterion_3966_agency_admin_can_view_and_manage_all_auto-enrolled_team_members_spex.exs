@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       given_ :user_logged_in_as_owner
 
       given_ "the owner configures auto-enrollment for domain agencyco.com", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       end
 
       given_ "the owner navigates to the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :members_view, view)}
       end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       given_ :user_logged_in_as_owner
 
       given_ "the owner configures auto-enrollment for domain staffco.com", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       end
 
       given_ "the owner navigates to the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :members_view, view)}
       end
 

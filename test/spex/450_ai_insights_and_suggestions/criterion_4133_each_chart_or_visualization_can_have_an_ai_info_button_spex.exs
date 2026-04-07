@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the dashboard without any connected integrations", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 

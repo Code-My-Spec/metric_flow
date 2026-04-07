@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
 
           capture_log(fn ->
             {:ok, _view, html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert html =~ "Select Accounts"
             assert html =~ "data-role=\"account-list\""
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert has_element?(view, "input[type='checkbox'][name='location_ids[]']")
           end)
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
       end
 
       then_ "the detail page contains a link to the google_business accounts path", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "a[href*='google_business/accounts']")
         :ok
       end

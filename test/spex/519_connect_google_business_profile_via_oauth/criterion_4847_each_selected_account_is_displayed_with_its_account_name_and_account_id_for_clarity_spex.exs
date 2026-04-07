@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert has_element?(view, "[data-role='location-title']")
           end)
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert has_element?(view, "[data-role='location-account-name']")
           end)

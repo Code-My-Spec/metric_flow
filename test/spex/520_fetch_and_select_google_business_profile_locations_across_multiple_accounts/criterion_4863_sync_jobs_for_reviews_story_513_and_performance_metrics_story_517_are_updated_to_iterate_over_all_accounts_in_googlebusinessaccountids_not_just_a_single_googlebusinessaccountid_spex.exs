@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
       end
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
       end
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -191,7 +191,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
       end
 
       given_ "the user navigates to the sync history page", context do
-        result = live(context.owner_conn, "/integrations/sync-history")
+        result = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :sync_history_result, result)}
       end
 
@@ -260,7 +260,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
       end
 
       given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 

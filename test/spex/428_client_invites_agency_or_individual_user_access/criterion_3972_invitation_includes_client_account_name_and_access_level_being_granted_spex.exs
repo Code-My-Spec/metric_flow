@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
       given_ :second_user_registered
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
       given_ :second_user_registered
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
       given_ :second_user_registered
 
       given_ "the owner submits the invite form for admin access", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{

@@ -39,13 +39,13 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
       end
 
       then_ "the detail page shows Connected status", context do
-        {:ok, _view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Connected"
         :ok
       end
 
       then_ "the detail page shows a link to the location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "a[href*='google_business/accounts']")
         :ok
       end
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             view
             |> form("[data-role='account-selection']")
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
             })
 
             {path, flash} = assert_redirect(view)
-            assert path =~ "/integrations/connect/google_business"
+            assert path =~ "/app/integrations/connect/google_business"
             assert flash["info"] =~ "location"
           end)
 

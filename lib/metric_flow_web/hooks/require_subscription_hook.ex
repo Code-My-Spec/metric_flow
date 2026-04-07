@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
           socket =
             socket
             |> put_flash(:error, "Upgrade to access AI features")
-            |> redirect(to: "/subscriptions/checkout")
+            |> redirect(to: "/app/subscriptions/checkout")
 
           {:halt, socket}
       end

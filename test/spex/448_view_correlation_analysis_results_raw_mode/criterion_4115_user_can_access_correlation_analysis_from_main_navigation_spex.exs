@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user is on any authenticated page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
       when_ "the user visits the correlations page directly", context do
         result =
           try do
-            live(context.conn, "/correlations")
+            live(context.conn, "/app/correlations")
           rescue
             e -> {:error, e}
           end

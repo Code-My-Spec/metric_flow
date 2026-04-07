@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
       given_ :user_logged_in_as_owner
 
       given_ "the user views the integrations page before completing any OAuth flow", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the connect page for Google", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
       given_ :owner_with_google_ads_integration
 
       given_ "the user navigates to the Google detail page after OAuth", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

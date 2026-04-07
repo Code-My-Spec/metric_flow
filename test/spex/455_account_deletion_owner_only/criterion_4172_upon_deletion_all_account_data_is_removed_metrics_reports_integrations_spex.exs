@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :settings_view, view)}
       end
 
@@ -26,12 +26,12 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
       end
 
       then_ "the owner is redirected to the accounts list", context do
-        assert_redirect(context.settings_view, "/accounts")
+        assert_redirect(context.settings_view, "/app/accounts")
         :ok
       end
 
       given_ "the owner follows the redirect to the accounts list", context do
-        {:ok, accounts_view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, accounts_view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :accounts_view, accounts_view)}
       end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :settings_view, view)}
       end
 
@@ -61,19 +61,19 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
       end
 
       then_ "the owner is redirected away from the deleted account", context do
-        assert_redirect(context.settings_view, "/accounts")
+        assert_redirect(context.settings_view, "/app/accounts")
         :ok
       end
 
       then_ "navigating to the deleted account's settings results in an error or redirect", context do
-        result = live(context.owner_conn, "/accounts/settings")
+        result = live(context.owner_conn, "/app/accounts/settings")
 
         case result do
           {:error, {:redirect, %{to: path}}} ->
-            refute path == "/accounts/settings"
+            refute path == "/app/accounts/settings"
 
           {:error, {:live_redirect, %{to: path}}} ->
-            refute path == "/accounts/settings"
+            refute path == "/app/accounts/settings"
 
           {:ok, view, _html} ->
             html = render(view)

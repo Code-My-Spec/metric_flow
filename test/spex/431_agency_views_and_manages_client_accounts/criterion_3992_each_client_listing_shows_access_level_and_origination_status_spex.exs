@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
       end
 
       when_ "the agency owner navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
       end
 
       when_ "the agency owner navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 

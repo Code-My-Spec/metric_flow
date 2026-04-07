@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             view
             |> form("[data-role='account-selection']")
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             view
             |> form("[data-role='account-selection']")
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
             })
 
             {path, _flash} = assert_redirect(view)
-            assert path =~ "/integrations/connect/google_business"
+            assert path =~ "/app/integrations/connect/google_business"
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)

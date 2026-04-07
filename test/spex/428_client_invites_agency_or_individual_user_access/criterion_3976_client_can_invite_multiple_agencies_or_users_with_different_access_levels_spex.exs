@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
       given_ :second_user_registered
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
       import Swoosh.TestAssertions
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
         {:ok, Map.put(context, :view, view)}
       end
 

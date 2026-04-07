@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.AgencyAdminsCannotSeeOtherAgenciesDataSpex do
       given_ :second_user_registered
 
       when_ "the first admin navigates to the agency subscriptions page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/agency/subscriptions")
+        {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -27,7 +27,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
             <h1 class="text-2xl font-bold">Dashboards</h1>
             <p class="mt-1 text-base-content/60">Your saved views and system dashboards</p>
           </div>
-          <.link navigate={~p"/dashboards/new"} class="btn btn-primary btn-sm" data-role="new-dashboard-btn">
+          <.link navigate={~p"/app/dashboards/new"} class="btn btn-primary btn-sm" data-role="new-dashboard-btn">
             New Dashboard
           </.link>
         </div>
@@ -52,7 +52,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                 {dashboard.description}
               </p>
               <div class="flex gap-2 mt-3">
-                <.link navigate={~p"/dashboards/#{dashboard.id}"} class="btn btn-ghost btn-sm" data-role={"view-dashboard-#{dashboard.id}"}>
+                <.link navigate={~p"/app/dashboards/#{dashboard.id}"} class="btn btn-ghost btn-sm" data-role={"view-dashboard-#{dashboard.id}"}>
                   View
                 </.link>
               </div>
@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
           <%!-- Empty state --%>
           <div :if={@user_dashboards == []} data-role="empty-user-dashboards" class="mf-card p-8 text-center">
             <p class="text-base-content/60 mb-4">No dashboards yet</p>
-            <.link navigate={~p"/dashboards/new"} class="btn btn-primary btn-sm">
+            <.link navigate={~p"/app/dashboards/new"} class="btn btn-primary btn-sm">
               Create your first dashboard
             </.link>
           </div>
@@ -87,10 +87,10 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                 {dashboard.description}
               </p>
               <div class="flex items-center gap-2 mt-3">
-                <.link navigate={~p"/dashboards/#{dashboard.id}"} class="btn btn-ghost btn-sm" data-role={"view-dashboard-#{dashboard.id}"}>
+                <.link navigate={~p"/app/dashboards/#{dashboard.id}"} class="btn btn-ghost btn-sm" data-role={"view-dashboard-#{dashboard.id}"}>
                   View
                 </.link>
-                <.link navigate={~p"/dashboards/#{dashboard.id}/edit"} class="btn btn-ghost btn-sm" data-role={"edit-dashboard-#{dashboard.id}"}>
+                <.link navigate={~p"/app/dashboards/#{dashboard.id}/edit"} class="btn btn-ghost btn-sm" data-role={"edit-dashboard-#{dashboard.id}"}>
                   Edit
                 </.link>
                 <button

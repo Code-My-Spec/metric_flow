@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        result = live(context.owner_conn, "/dashboard")
+        result = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -109,7 +109,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
 
     scenario "unauthenticated user cannot access the cross-platform metric comparison" do
       given_ "an unauthenticated user attempts to navigate to the dashboard", context do
-        result = live(build_conn(), "/dashboard")
+        result = live(build_conn(), "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 

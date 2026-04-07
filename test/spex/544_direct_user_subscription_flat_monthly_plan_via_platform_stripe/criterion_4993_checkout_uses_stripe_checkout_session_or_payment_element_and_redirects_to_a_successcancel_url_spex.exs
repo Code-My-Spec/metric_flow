@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.CheckoutUsesStripeCheckoutSessionSpex do
       end
 
       given_ "the user is on the checkout page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end
 

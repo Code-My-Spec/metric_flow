@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
       given_ :owner_with_integrations
 
       given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
       given_ :owner_with_integrations
 
       given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
       given_ :owner_with_integrations
 
       given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
       given_ :owner_with_integrations
 
       given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/sync-history")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 

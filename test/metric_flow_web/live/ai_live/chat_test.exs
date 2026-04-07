@@ -19,12 +19,12 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
 
   defp mount_chat(conn, user) do
     conn = log_in_user(conn, user)
-    live(conn, ~p"/chat")
+    live(conn, ~p"/app/chat")
   end
 
   defp mount_chat_session(conn, user, session_id) do
     conn = log_in_user(conn, user)
-    live(conn, ~p"/chat/#{session_id}")
+    live(conn, ~p"/app/chat/#{session_id}")
   end
 
   # ---------------------------------------------------------------------------
@@ -204,8 +204,8 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
       capture_log(fn ->
         conn = log_in_user(conn, user)
 
-        assert {:error, {:live_redirect, %{to: "/chat", flash: %{"error" => "Chat session not found."}}}} =
-                 live(conn, ~p"/chat/999999")
+        assert {:error, {:live_redirect, %{to: "/app/chat", flash: %{"error" => "Chat session not found."}}}} =
+                 live(conn, ~p"/app/chat/999999")
       end)
     end
   end
@@ -216,7 +216,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
 
       capture_log(fn ->
         conn = log_in_user(conn, user)
-        {:ok, lv, _html} = live(conn, ~p"/chat?context_type=correlation")
+        {:ok, lv, _html} = live(conn, ~p"/app/chat?context_type=correlation")
 
         assert has_element?(lv, "[data-role='context-indicator']")
       end)

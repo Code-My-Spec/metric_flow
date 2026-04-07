@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       given_ :user_logged_in_as_owner
 
       given_ "the client user navigates to their integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       end
 
       when_ "the agency user views their integrations page", context do
-        {:ok, view, html} = live(context.agency_conn, "/integrations")
+        {:ok, view, html} = live(context.agency_conn, "/app/integrations")
         {:ok, Map.merge(context, %{agency_view: view, agency_html: html})}
       end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       end
 
       when_ "the client owner views their own integrations page", context do
-        {:ok, view, html} = live(context.owner_conn, "/integrations")
+        {:ok, view, html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.merge(context, %{client_view: view, client_html: html})}
       end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       given_ :user_logged_in_as_owner
 
       given_ "the authenticated user navigates to the integration connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

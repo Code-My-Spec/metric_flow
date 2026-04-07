@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -142,7 +142,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 

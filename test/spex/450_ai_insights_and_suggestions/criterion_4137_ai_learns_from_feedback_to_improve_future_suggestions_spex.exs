@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
         |> element("[data-role='mode-smart']")
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
         |> element("[data-role='mode-smart']")
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
         |> element("[data-role='mode-smart']")

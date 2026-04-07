@@ -10,7 +10,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalytics do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/google_analytics"
+  @callback_path "/app/integrations/oauth/callback/google_analytics"
 
   @impl true
   def config do

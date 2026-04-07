@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the paid user upgrades to an active subscription via the checkout flow", context do
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :checkout_view, view)}
       end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
       end
 
       then_ "the correlations page is accessible without a paywall", context do
-        result = live(context.owner_conn, "/correlations")
+        result = live(context.owner_conn, "/app/correlations")
 
         case result do
           {:ok, view, _html} ->

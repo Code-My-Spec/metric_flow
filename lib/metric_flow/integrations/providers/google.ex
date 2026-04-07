@@ -14,7 +14,7 @@ defmodule MetricFlow.Integrations.Providers.Google do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/google"
+  @callback_path "/app/integrations/oauth/callback/google"
 
   # ---------------------------------------------------------------------------
   # Behaviour implementation

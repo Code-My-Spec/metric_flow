@@ -11,14 +11,14 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback URL with a success authorization code", context do
-        conn = get(context.owner_conn, "/integrations/oauth/callback/google",
+        conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
           MetricFlowTest.OAuthStub.valid_callback_params())
         {:ok, Map.put(context, :callback_conn, conn)}
       end
 
       then_ "the user is redirected to the integrations connect page", context do
-        assert redirected_to(context.callback_conn) == "/integrations/connect" or
-                 redirected_to(context.callback_conn) =~ "/integrations"
+        assert redirected_to(context.callback_conn) == "/app/integrations/connect" or
+                 redirected_to(context.callback_conn) =~ "/app/integrations"
         :ok
       end
     end
@@ -28,14 +28,14 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the Facebook OAuth callback URL with a success authorization code", context do
-        conn = get(context.owner_conn, "/integrations/oauth/callback/facebook_ads",
+        conn = get(context.owner_conn, "/app/integrations/oauth/callback/facebook_ads",
           MetricFlowTest.OAuthStub.valid_callback_params())
         {:ok, Map.put(context, :callback_conn, conn)}
       end
 
       then_ "the user is redirected back to the integrations page after Facebook OAuth completes", context do
-        assert redirected_to(context.callback_conn) == "/integrations/connect" or
-                 redirected_to(context.callback_conn) =~ "/integrations"
+        assert redirected_to(context.callback_conn) == "/app/integrations/connect" or
+                 redirected_to(context.callback_conn) =~ "/app/integrations"
         :ok
       end
     end
@@ -45,9 +45,9 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback URL and is redirected back to the connect page", context do
-        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google",
+        _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
           MetricFlowTest.OAuthStub.valid_callback_params())
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -64,9 +64,9 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the integrations connect page after a successful Google OAuth callback", context do
-        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google",
+        _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
           MetricFlowTest.OAuthStub.valid_callback_params())
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

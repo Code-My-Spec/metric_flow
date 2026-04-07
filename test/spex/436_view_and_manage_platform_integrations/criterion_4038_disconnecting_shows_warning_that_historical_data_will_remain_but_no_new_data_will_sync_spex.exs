@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 

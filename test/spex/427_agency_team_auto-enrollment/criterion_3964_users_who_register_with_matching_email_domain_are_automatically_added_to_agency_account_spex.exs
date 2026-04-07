@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
       given_ :user_logged_in_as_owner
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
       end
 
       then_ "the new user appears as a member of the agency account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ "newuser@testco.com"
         :ok
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
       given_ :user_logged_in_as_owner
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -75,14 +75,14 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
       end
 
       then_ "the outsider user does not appear in the agency members list", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         refute html =~ "outsider@otherdomain.com"
         :ok
       end
 
       then_ "only the owner remains in the agency members list", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.owner_email
         :ok

@@ -99,7 +99,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "Integrations"
         assert html =~ "Manage your connected marketing platforms"
@@ -114,7 +114,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "No platforms connected yet."
         assert has_element?(lv, "a[href='/integrations/connect']", "Connect your first platform")
@@ -130,7 +130,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "Connected Platforms"
         assert html =~ "Google Ads"
@@ -148,7 +148,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         assert has_element?(lv, "[phx-click='sync'][phx-value-platform='google_ads']")
         assert has_element?(lv, "[data-role='edit-integration-accounts']")
@@ -165,7 +165,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "Available Platforms"
         assert has_element?(lv, "[data-platform='google_analytics'][data-status='available']")
@@ -181,7 +181,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         html =
           lv
@@ -199,7 +199,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         html = render_click(lv, "sync", %{"provider" => "google_ads", "platform" => "google_ads"})
 
@@ -215,7 +215,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         html =
           lv
@@ -238,7 +238,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         lv
         |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
@@ -265,7 +265,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
 
         lv
         |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")

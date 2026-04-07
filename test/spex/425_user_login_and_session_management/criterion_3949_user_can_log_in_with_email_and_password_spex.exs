@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
       end
 
       then_ "the user is redirected to the integrations page", context do
-        assert redirected_to(context.login_conn) == "/integrations"
+        assert redirected_to(context.login_conn) == "/app/integrations"
         :ok
       end
 

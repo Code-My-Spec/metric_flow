@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
       given_ "the owner has configured auto-enrollment for a unique domain with default role read_only", context do
         domain = "autoenroll-#{System.unique_integer([:positive])}.com"
 
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
       end
 
       given_ "the owner navigates to the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :members_view, view)}
       end
 

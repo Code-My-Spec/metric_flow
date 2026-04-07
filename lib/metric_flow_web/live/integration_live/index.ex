@@ -62,7 +62,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
               Manage your connected marketing platforms
             </p>
           </div>
-          <.link navigate={~p"/integrations/connect"} class="btn btn-primary btn-sm">
+          <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm">
             Connect a Platform
           </.link>
         </div>
@@ -70,7 +70,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
         <%= if @integrations == [] do %>
           <div class="text-center py-12">
             <p class="text-base-content/60">No platforms connected yet.</p>
-            <.link navigate={~p"/integrations/connect"} class="btn btn-primary btn-sm mt-4">
+            <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm mt-4">
               Connect your first platform
             </.link>
           </div>
@@ -145,14 +145,14 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     </button>
                     <.link
                       data-role="edit-integration-accounts"
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"}
+                      navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"}
                       class={if no_accounts, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
                     >
                       Edit Accounts
                     </.link>
                     <.link
                       data-role="integration-detail-link"
-                      navigate={~p"/integrations/connect/#{Atom.to_string(platform.provider)}"}
+                      navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}"}
                       class="btn btn-ghost btn-xs"
                     >
                       Manage
@@ -205,7 +205,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                   <div class="flex flex-col items-end gap-2 ml-4">
                     <.link
                       data-role="reconnect-integration"
-                      navigate={~p"/integrations/connect"}
+                      navigate={~p"/app/integrations/connect"}
                       class="btn btn-primary btn-sm"
                     >
                       Connect {provider_display_name(platform.provider)}

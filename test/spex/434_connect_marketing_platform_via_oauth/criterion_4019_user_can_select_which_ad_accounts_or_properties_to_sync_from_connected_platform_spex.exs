@@ -11,9 +11,9 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :with_oauth_stub_providers
 
       given_ "the user visits the OAuth callback with a success code and is redirected", context do
-        _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google",
+        _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
           MetricFlowTest.OAuthStub.valid_callback_params())
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :owner_with_google_ads_integration
 
       given_ "the user navigates to the account selection page for a connected provider", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :owner_with_google_ads_integration
 
       given_ "the user is on the account selection page for Google Analytics", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :owner_with_google_ads_integration
 
       given_ "the user is on the account selection page for Google Analytics", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
       given_ :owner_with_google_ads_integration
 
       given_ "the user navigates to the account selection page for Google Analytics", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_analytics/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 

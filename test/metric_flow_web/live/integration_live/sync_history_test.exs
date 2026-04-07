@@ -90,7 +90,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/sync-history")
 
         assert html =~ "Sync History"
         assert html =~ "View automated sync results and status"
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/sync-history")
 
         yesterday = Date.add(Date.utc_today(), -1)
         assert html =~ Date.to_iso8601(yesterday)
@@ -124,7 +124,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/sync-history")
 
         assert html =~ "No sync history yet."
         refute has_element?(lv, "[data-role='sync-history-entry']")
@@ -145,7 +145,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/sync-history")
 
         assert has_element?(lv, "[data-role='sync-history-entry'][data-status='success']")
         assert has_element?(lv, "[data-role='sync-provider']", "Google Ads")
@@ -168,7 +168,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         assert has_element?(lv, "[data-role='sync-history-entry'][data-status='failed']")
         assert has_element?(lv, "[data-role='sync-history-entry'] .badge-error", "Failed")
@@ -192,7 +192,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         lv |> element("[data-role='filter-success']") |> render_click()
 
@@ -208,7 +208,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         assert has_element?(lv, "[data-role='filter-all'].btn-primary")
         assert has_element?(lv, "[data-role='filter-success'].btn-ghost")
@@ -229,7 +229,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         send(lv.pid, {:sync_completed, sync_completed_payload(%{provider: :google_ads, records_synced: 999})})
 
@@ -250,7 +250,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         send(lv.pid, {:sync_failed, sync_failed_payload(%{
           provider: :facebook_ads,
@@ -273,7 +273,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/sync-history")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
         send(lv.pid, {:sync_completed, sync_completed_payload(%{sync_type: :initial})})
 

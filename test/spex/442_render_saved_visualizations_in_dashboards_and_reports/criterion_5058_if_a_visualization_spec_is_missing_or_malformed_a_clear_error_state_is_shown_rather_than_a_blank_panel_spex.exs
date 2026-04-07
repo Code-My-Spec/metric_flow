@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
       given_ :owner_has_metrics
 
       given_ "user has the spec editor open", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> element("[phx-value-metric='impressions']")
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
       given_ :owner_has_active_subscription
 
       when_ "user loads the visualization editor without selecting anything", context do
-        {:ok, view, html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

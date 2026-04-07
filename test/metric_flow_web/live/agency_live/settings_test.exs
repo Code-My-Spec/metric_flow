@@ -71,7 +71,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='agency-auto-enrollment']")
       assert has_element?(lv, "[data-role='agency-white-label']")
@@ -83,7 +83,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       insert_member!(account, admin_user, :admin)
       admin_conn = log_in_user(build_conn(), admin_user)
 
-      {:ok, lv, _html} = live(admin_conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(admin_conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='agency-auto-enrollment']")
       assert has_element?(lv, "[data-role='agency-white-label']")
@@ -98,7 +98,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       insert_member!(account, reader, :read_only)
       conn = log_in_user(conn, reader)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='agency-auto-enrollment']")
       refute has_element?(lv, "[data-role='agency-white-label']")
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _account = personal_account_with_owner(personal_user)
       personal_conn = log_in_user(build_conn(), personal_user)
 
-      {:ok, lv, _html} = live(personal_conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(personal_conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='agency-auto-enrollment']")
       refute has_element?(lv, "[data-role='agency-white-label']")
@@ -121,7 +121,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -164,7 +164,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _rule = auto_enrollment_rule_fixture(account.id, %{enabled: true})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, ".badge-success", "Active")
 
@@ -191,7 +191,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
 
       unique = System.unique_integer([:positive])
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -219,7 +219,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -243,7 +243,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -268,7 +268,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _config = white_label_config_fixture(account.id)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       lv
       |> element("[data-role='reset-white-label']")
@@ -286,7 +286,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       _config = white_label_config_fixture(account.id, %{subdomain: "myagency"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='dns-verification']")
       assert has_element?(lv, "[data-role='verify-dns']")

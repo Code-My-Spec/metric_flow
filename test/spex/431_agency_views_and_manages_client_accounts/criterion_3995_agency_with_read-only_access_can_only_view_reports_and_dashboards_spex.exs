@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
       end
 
       when_ "the read-only user navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.readonly_conn, "/accounts")
+        {:ok, view, _html} = live(context.readonly_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
       end
 
       when_ "the read-only user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.readonly_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.readonly_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -148,7 +148,7 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
       end
 
       when_ "the read-only user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.readonly_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.readonly_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -199,7 +199,7 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
       end
 
       when_ "the read-only user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.readonly_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.readonly_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 

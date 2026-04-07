@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             >
               Save Dashboard
             </button>
-            <.link navigate="/dashboards" class="btn btn-ghost">Cancel</.link>
+            <.link navigate="/app/dashboards" class="btn btn-ghost">Cancel</.link>
           </div>
         </div>
 
@@ -302,7 +302,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {:noreply,
          socket
          |> put_flash(:error, "Dashboard not found.")
-         |> redirect(to: "/dashboards")}
+         |> redirect(to: "/app/dashboards")}
     end
   end
 
@@ -464,7 +464,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           {:noreply,
            socket
            |> put_flash(:info, "Dashboard created.")
-           |> push_navigate(to: ~p"/dashboards/#{dashboard.id}")}
+           |> push_navigate(to: ~p"/app/dashboards/#{dashboard.id}")}
         else
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}
@@ -479,7 +479,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           {:noreply,
            socket
            |> put_flash(:info, "Dashboard updated.")
-           |> push_navigate(to: ~p"/dashboards/#{updated.id}")}
+           |> push_navigate(to: ~p"/app/dashboards/#{updated.id}")}
         else
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}

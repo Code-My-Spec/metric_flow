@@ -17,7 +17,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, _html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, _lv, _html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
         send(self(), :done)
       end)
 
@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         assert html =~ "Google Analytics"
         assert html =~ "Edit Accounts"
@@ -59,7 +59,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         checkboxes = lv |> element("[data-role='account-checkbox']")
         assert has_element?(lv, "[data-role='account-checkbox']")
@@ -84,7 +84,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         assert html =~ "No accounts configured"
         send(self(), :done)
@@ -98,9 +98,9 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/totally_fake_provider/accounts/edit")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/totally_fake_provider/accounts/edit")
 
-        assert_redirect(lv, ~p"/integrations")
+        assert_redirect(lv, ~p"/app/integrations")
         send(self(), :done)
       end)
 
@@ -119,11 +119,11 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         lv |> element("[data-role='save-account-selection']") |> render_click()
 
-        assert_redirect(lv, ~p"/integrations")
+        assert_redirect(lv, ~p"/app/integrations")
         send(self(), :done)
       end)
 
@@ -142,7 +142,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         assert has_element?(lv, "[data-role='account-checkbox']")
         send(self(), :done)
@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         assert has_element?(lv, "[data-role='save-account-selection']")
         send(self(), :done)
@@ -172,10 +172,10 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/google_analytics/accounts/edit")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
 
         assert html =~ "Back to integrations"
-        assert html =~ "/integrations"
+        assert html =~ "/app/integrations"
         send(self(), :done)
       end)
 

@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
             current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
           })
 
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end
 

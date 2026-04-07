@@ -16,7 +16,7 @@ defmodule MetricFlow.Integrations.Providers.Codemyspec do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/codemyspec"
+  @callback_path "/app/integrations/oauth/callback/codemyspec"
 
   @impl true
   def config do

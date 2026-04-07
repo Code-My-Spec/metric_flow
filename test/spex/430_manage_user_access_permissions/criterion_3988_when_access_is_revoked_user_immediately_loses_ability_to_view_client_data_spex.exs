@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -69,11 +69,11 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
       end
 
       then_ "the removed member cannot access the shared account data", context do
-        result = live(context.member_conn, "/accounts/members")
+        result = live(context.member_conn, "/app/accounts/members")
 
         case result do
           {:error, {:redirect, %{to: redirect_path}}} ->
-            assert redirect_path in ["/users/log-in", "/accounts", "/"]
+            assert redirect_path in ["/users/log-in", "/app/accounts", "/"]
 
           {:ok, view, _html} ->
             # The user still has their own account, so the page loads.
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
       end
 
       then_ "the second user can no longer see the shared account data on their next request", context do
-        result = live(context.member_conn, "/accounts/members")
+        result = live(context.member_conn, "/app/accounts/members")
 
         case result do
           {:error, {:redirect, _}} ->

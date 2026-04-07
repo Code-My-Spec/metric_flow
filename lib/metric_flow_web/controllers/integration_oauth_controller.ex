@@ -54,13 +54,13 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
         conn
         |> put_flash(:error, "Failed to connect to #{provider_str}")
-        |> redirect(to: ~p"/integrations/connect")
+        |> redirect(to: ~p"/app/integrations/connect")
     end
   rescue
     ArgumentError ->
       conn
       |> put_flash(:error, "This platform is not yet supported")
-      |> redirect(to: ~p"/integrations/connect")
+      |> redirect(to: ~p"/app/integrations/connect")
   end
 
   @doc """
@@ -88,7 +88,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         _ -> nil
       end
 
-    redirect_to = if provider == :codemyspec, do: ~p"/users/settings", else: ~p"/integrations/connect/#{provider_str}"
+    redirect_to = if provider == :codemyspec, do: ~p"/app/users/settings", else: ~p"/app/integrations/connect/#{provider_str}"
 
     case handle_oauth_callback(scope, provider, params, session_params) do
       {:ok, _integration} ->
@@ -101,7 +101,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
         conn
         |> put_flash(:error, "Failed to save integration")
-        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
+        |> redirect(to: ~p"/app/integrations/connect/#{provider_str}")
 
       {:error, reason} ->
         Logger.error("OAuth callback failed for #{provider_str}: #{inspect(reason)}")
@@ -110,7 +110,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
         conn
         |> put_flash(:error, error_message)
-        |> redirect(to: ~p"/integrations/connect/#{provider_str}")
+        |> redirect(to: ~p"/app/integrations/connect/#{provider_str}")
     end
   rescue
     e in [KeyError, ArgumentError] ->
@@ -118,7 +118,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
       conn
       |> put_flash(:error, "Could not complete the connection. Please try again.")
-      |> redirect(to: ~p"/integrations/connect/#{provider_str}")
+      |> redirect(to: ~p"/app/integrations/connect/#{provider_str}")
   end
 
   # Private Helpers

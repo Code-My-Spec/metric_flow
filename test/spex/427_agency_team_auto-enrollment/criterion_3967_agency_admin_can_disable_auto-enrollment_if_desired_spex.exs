@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario1-#{System.unique_integer([:positive])}.com"
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario2-#{System.unique_integer([:positive])}.com"
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
       given_ "the owner has configured and then disabled auto-enrollment for a unique domain", context do
         domain = "scenario3-#{System.unique_integer([:positive])}.com"
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form", auto_enrollment: %{
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
       end
 
       then_ "the new user does NOT appear as a member of the agency account", context do
-        {:ok, members_view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, members_view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(members_view)
         refute html =~ context.newbie_email
         :ok

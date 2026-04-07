@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
       given_ :second_user_registered
 
       given_ "the owner has invited the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
       given_ :second_user_registered
 
       given_ "the owner has invited the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{

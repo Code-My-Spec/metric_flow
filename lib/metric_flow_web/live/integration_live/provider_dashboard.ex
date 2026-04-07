@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         Connect your {@provider_name} account to start seeing data here.
       </p>
       <.link
-        navigate={"/integrations/connect/#{@provider}"}
+        navigate={"/app/integrations/connect/#{@provider}"}
         class="btn btn-primary"
       >
         Connect {@provider_name}
@@ -222,7 +222,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       {:ok,
        socket
        |> put_flash(:error, "Unknown provider: #{provider}")
-       |> redirect(to: "/integrations")}
+       |> redirect(to: "/app/integrations")}
     end
   end
 

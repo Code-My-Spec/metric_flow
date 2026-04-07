@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
       given_ :owner_with_quickbooks_integration
 
       given_ "the user navigates to the QuickBooks detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
       given_ :owner_with_quickbooks_integration
 
       given_ "the user navigates to the QuickBooks detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 

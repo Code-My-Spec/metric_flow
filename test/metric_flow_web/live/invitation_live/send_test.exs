@@ -63,7 +63,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _account = account_fixture(user, %{name: "Acme Corp"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, html} = live(conn, ~p"/app/accounts/invitations")
 
       assert html =~ "Invite Members"
       assert html =~ "Acme Corp"
@@ -82,8 +82,8 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       conn = log_in_user(conn, reader)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/accounts/members", flash: flash}}} =
-                 live(conn, ~p"/accounts/invitations")
+        assert {:error, {:redirect, %{to: "/app/accounts/members", flash: flash}}} =
+                 live(conn, ~p"/app/accounts/invitations")
 
         assert flash["error"] =~ "You do not have permission to invite members."
       end)
@@ -96,7 +96,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
 
       html =
         lv
@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
 
       html =
         lv
@@ -135,7 +135,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
 
       html =
         lv
@@ -156,7 +156,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _invitation = invitation_fixture(account, user, "pending@example.com", :admin)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
 
       assert has_element?(lv, "[data-role='pending-invitation-row']")
       assert has_element?(lv, "[data-role='invitation-email']", "pending@example.com")
@@ -171,7 +171,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _invitation = invitation_fixture(account, user, "tobe.cancelled@example.com")
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/invitations")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
 
       assert has_element?(lv, "[data-role='invitation-email']", "tobe.cancelled@example.com")
 
@@ -191,7 +191,7 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts/invitations")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/invitations")
 
       assert html =~ "No pending invitations."
     end

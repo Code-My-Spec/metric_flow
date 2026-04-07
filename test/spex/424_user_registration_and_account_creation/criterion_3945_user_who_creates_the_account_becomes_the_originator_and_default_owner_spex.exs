@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
       end
 
       when_ "the authenticated user navigates to the accounts page", context do
-        result = live(context.conn, "/accounts")
+        result = live(context.conn, "/app/accounts")
         {:ok, Map.put(context, :accounts_result, result)}
       end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
       end
 
       when_ "the authenticated user navigates to the accounts page", context do
-        result = live(context.conn, "/accounts")
+        result = live(context.conn, "/app/accounts")
         {:ok, Map.put(context, :accounts_result, result)}
       end
 

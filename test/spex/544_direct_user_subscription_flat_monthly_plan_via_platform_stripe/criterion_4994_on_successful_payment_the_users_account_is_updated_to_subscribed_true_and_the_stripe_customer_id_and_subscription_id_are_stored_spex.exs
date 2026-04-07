@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.OnSuccessfulPaymentAccountUpdatedSpex do
             current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
           })
 
-        result = live(context.owner_conn, "/subscriptions/checkout")
+        result = live(context.owner_conn, "/app/subscriptions/checkout")
 
         view =
           case result do

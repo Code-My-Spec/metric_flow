@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       given_ :second_user_registered
 
       given_ "the owner has invited the second user as account manager", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -57,14 +57,14 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       end
 
       then_ "the user sees a success confirmation message", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/accounts")
+        {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "You now have access" or html =~ "Owner Account"
         :ok
       end
 
       then_ "the user can access the client account members page showing their role", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "account_manager"
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       given_ :second_user_registered
 
       given_ "the owner has invited the second user as read-only", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
       end
 
       then_ "the user's role is shown as read_only in the members list", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "read_only"

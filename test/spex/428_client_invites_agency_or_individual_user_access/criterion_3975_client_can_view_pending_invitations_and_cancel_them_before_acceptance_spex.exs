@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page and sends an invitation", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page and sends an invitation", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       given_ :user_logged_in_as_owner
 
       given_ "the owner sends an invitation from the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       given_ :second_user_registered
 
       given_ "the owner sends an invitation and then cancels it", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{

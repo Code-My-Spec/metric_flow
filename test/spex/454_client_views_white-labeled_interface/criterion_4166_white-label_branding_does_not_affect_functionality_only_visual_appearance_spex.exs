@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
       given_ "the client navigates to the dashboard via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "functest.metricflow.io"}
-        {:ok, view, _html} = live(conn, "/dashboard")
+        {:ok, view, _html} = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
       given_ "the client visits the dashboard via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "functest2.metricflow.io"}
-        {:ok, view, _html} = live(conn, "/dashboard")
+        {:ok, view, _html} = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
       given_ "the client visits the integrations page via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "functest3.metricflow.io"}
-        {:ok, view, _html} = live(conn, "/integrations")
+        {:ok, view, _html} = live(conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 

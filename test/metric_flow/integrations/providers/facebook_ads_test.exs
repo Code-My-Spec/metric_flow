@@ -50,7 +50,7 @@ defmodule MetricFlow.Integrations.Providers.FacebookAdsTest do
 
     test "includes redirect_uri with /integrations/oauth/callback/facebook_ads path" do
       config = FacebookAds.config()
-      assert String.ends_with?(Keyword.get(config, :redirect_uri), "/integrations/oauth/callback/facebook_ads")
+      assert String.ends_with?(Keyword.get(config, :redirect_uri), "/app/integrations/oauth/callback/facebook_ads")
     end
 
     test "includes authorization_params with read scope" do

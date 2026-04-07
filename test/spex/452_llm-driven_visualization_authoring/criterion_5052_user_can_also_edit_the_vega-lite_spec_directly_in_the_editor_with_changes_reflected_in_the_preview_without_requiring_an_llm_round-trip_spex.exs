@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
       given_ :owner_has_metrics
 
       given_ "user is on the visualization editor with a metric selected", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> element("[phx-value-metric='impressions']")

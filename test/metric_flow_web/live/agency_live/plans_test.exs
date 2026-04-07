@@ -69,7 +69,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       _account = agency_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "Subscription Plans"
     end
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       _account = agency_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "Connect your Stripe account"
     end
@@ -91,7 +91,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       plan_fixture(account, %{name: "Pro Plan", price_cents: 9999})
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "Pro Plan"
       assert html =~ "$99.99"
@@ -103,7 +103,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       _account = agency_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "No plans created yet"
     end
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       _account = agency_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "disabled"
       assert html =~ "Connect your Stripe account"
@@ -127,7 +127,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       stripe_account_fixture(account)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, "/agency/plans")
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
       |> form("#plan-form", plan: %{name: "Starter", price_cents: 2999})
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       stripe_account_fixture(account)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, "/agency/plans")
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
       |> form("#plan-form", plan: %{name: "", price_cents: ""})
@@ -161,7 +161,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       plan = plan_fixture(account, %{name: "Edit Me"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, "/agency/plans")
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
       |> element("[data-role=edit-plan][phx-value-id=#{plan.id}]")
@@ -179,7 +179,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       plan = plan_fixture(account, %{name: "Old Name"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, "/agency/plans")
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
       |> element("[data-role=edit-plan][phx-value-id=#{plan.id}]")
@@ -201,7 +201,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       plan = plan_fixture(account, %{name: "Deactivate Me"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, "/agency/plans")
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
       |> element("[data-role=deactivate-plan][phx-value-id=#{plan.id}]")
@@ -218,7 +218,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       _plan = plan_fixture(account, %{name: "Inactive Plan", active: false})
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/agency/plans")
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "Inactive"
     end

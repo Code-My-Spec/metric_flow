@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the account settings page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the account settings page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the account settings page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the account settings page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 

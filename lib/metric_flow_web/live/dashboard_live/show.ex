@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           <p class="text-sm text-base-content/60 mb-3">
             Ask questions about your metrics and get AI-powered insights.
           </p>
-          <.link navigate={~p"/chat"} class="btn btn-primary btn-sm">
+          <.link navigate={~p"/app/chat"} class="btn btn-primary btn-sm">
             Open Full AI Chat
           </.link>
         </div>
@@ -78,7 +78,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           <p class="mt-2 text-base-content/60">
             Connect your marketing and financial platforms to start seeing unified metrics, AI insights, and recommendations.
           </p>
-          <a href="/integrations" class="btn btn-primary mt-6">
+          <a href="/app/integrations" class="btn btn-primary mt-6">
             Connect Integrations
           </a>
         </div>
@@ -283,7 +283,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
             </div>
             <p class="text-sm text-base-content/60">
               Metric-specific insights for {@ai_panel_metric} based on correlation analysis.
-              Visit <.link navigate={~p"/insights"} class="link link-primary">AI Insights</.link>
+              Visit <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
               for detailed recommendations.
             </p>
           </div>

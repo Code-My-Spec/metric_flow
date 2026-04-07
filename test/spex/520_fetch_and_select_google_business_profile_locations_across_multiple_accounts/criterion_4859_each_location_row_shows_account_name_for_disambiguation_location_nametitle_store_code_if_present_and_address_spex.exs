@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
       end
 
       given_ "the user navigates to the google business locations page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -150,7 +150,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
       end
 
       given_ "the user navigates to the locations page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -224,7 +224,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
       end
 
       given_ "the user visits the google business accounts page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -299,7 +299,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
       end
 
       given_ "the user visits the google business accounts page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -324,7 +324,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
 
     scenario "unauthenticated user cannot access the google business locations page" do
       given_ "an unauthenticated user navigates to the google business accounts page", context do
-        result = live(build_conn(), "/integrations/connect/google_business/accounts")
+        result = live(build_conn(), "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 

@@ -141,13 +141,13 @@ defmodule MetricFlowWeb.InvitationLive.Accept do
         {:noreply,
          socket
          |> put_flash(:info, "You now have access to #{account_name}.")
-         |> redirect(to: "/accounts")}
+         |> redirect(to: "/app/accounts")}
 
       {:error, :already_member} ->
         {:noreply,
          socket
          |> put_flash(:info, "You already have access to this account.")
-         |> redirect(to: "/accounts")}
+         |> redirect(to: "/app/accounts")}
 
       {:error, :expired} ->
         {:noreply,

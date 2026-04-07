@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PaywalledRoutesRedirectFreeUsersSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates directly to the visualizations page via URL", context do
-        result = live(context.owner_conn, "/visualizations")
+        result = live(context.owner_conn, "/app/visualizations")
         {:ok, Map.put(context, :result, result)}
       end
 

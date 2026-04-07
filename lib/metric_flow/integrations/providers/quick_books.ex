@@ -11,7 +11,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/quickbooks"
+  @callback_path "/app/integrations/oauth/callback/quickbooks"
 
   @authorize_url "https://appcenter.intuit.com/connect/oauth2"
   @token_url "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"

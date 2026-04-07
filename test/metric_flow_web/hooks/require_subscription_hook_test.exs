@@ -57,7 +57,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       subscription_fixture(account, %{status: :active})
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/correlations")
+      {:ok, _lv, html} = live(conn, "/app/correlations")
       assert html =~ "Correlation"
     end
 
@@ -67,7 +67,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       subscription_fixture(account, %{status: :trialing})
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, "/correlations")
+      {:ok, _lv, html} = live(conn, "/app/correlations")
       assert html =~ "Correlation"
     end
 
@@ -76,8 +76,8 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/subscriptions/checkout"}}} =
-               live(conn, "/correlations")
+      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
+               live(conn, "/app/correlations")
     end
 
     test "halts and redirects for accounts with cancelled subscription", %{conn: conn} do
@@ -86,8 +86,8 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       subscription_fixture(account, %{status: :cancelled})
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/subscriptions/checkout"}}} =
-               live(conn, "/correlations")
+      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
+               live(conn, "/app/correlations")
     end
 
     test "halts and redirects for accounts with past_due subscription", %{conn: conn} do
@@ -96,8 +96,8 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       subscription_fixture(account, %{status: :past_due})
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/subscriptions/checkout"}}} =
-               live(conn, "/correlations")
+      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
+               live(conn, "/app/correlations")
     end
 
     test "continues when no current scope is present", %{conn: conn} do
@@ -106,7 +106,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       subscription_fixture(_account, %{status: :active})
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, _html} = live(conn, "/correlations")
+      {:ok, _lv, _html} = live(conn, "/app/correlations")
     end
   end
 end

@@ -34,7 +34,7 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
             <p class="mt-1 text-base-content/60">Your saved charts and visualizations</p>
           </div>
           <.link
-            navigate={~p"/visualizations/new"}
+            navigate={~p"/app/visualizations/new"}
             class="btn btn-primary btn-sm"
             data-role="new-visualization-btn"
           >
@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
           class="mf-card p-8 text-center"
         >
           <p class="text-base-content/60 mb-4">No visualizations yet</p>
-          <.link navigate={~p"/visualizations/new"} class="btn btn-primary btn-sm">
+          <.link navigate={~p"/app/visualizations/new"} class="btn btn-primary btn-sm">
             Create your first visualization
           </.link>
         </div>
@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
             </p>
             <div class="flex items-center gap-2 mt-3">
               <.link
-                navigate={~p"/visualizations/#{visualization.id}/edit"}
+                navigate={~p"/app/visualizations/#{visualization.id}/edit"}
                 class="btn btn-ghost btn-sm"
                 data-role={"edit-visualization-#{visualization.id}"}
               >

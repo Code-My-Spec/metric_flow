@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        result = live(context.owner_conn, "/dashboard")
+        result = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
 
     scenario "unauthenticated user cannot access the dashboard" do
       given_ "an unauthenticated user navigates to the dashboard", context do
-        result = live(build_conn(), "/dashboard")
+        result = live(build_conn(), "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 

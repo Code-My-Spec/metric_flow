@@ -45,7 +45,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             >
               Save Visualization
             </button>
-            <.link navigate="/dashboards" class="btn btn-ghost btn-sm">Cancel</.link>
+            <.link navigate="/app/dashboards" class="btn btn-ghost btn-sm">Cancel</.link>
           </div>
         </div>
 
@@ -87,7 +87,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               <p class="text-sm text-base-content/60">
                 No metrics available. Connect a platform to get started.
               </p>
-              <.link navigate="/integrations" class="btn btn-ghost btn-sm mt-2">
+              <.link navigate="/app/integrations" class="btn btn-ghost btn-sm mt-2">
                 Go to Integrations
               </.link>
             </div>
@@ -230,7 +230,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         {:noreply,
          socket
          |> put_flash(:error, "Visualization not found.")
-         |> redirect(to: "/dashboards")}
+         |> redirect(to: "/app/dashboards")}
     end
   end
 
@@ -387,7 +387,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         {:noreply,
          socket
          |> put_flash(:info, "Visualization saved.")
-         |> push_navigate(to: "/dashboards")}
+         |> push_navigate(to: "/app/dashboards")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
@@ -400,7 +400,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         {:noreply,
          socket
          |> put_flash(:info, "Visualization saved.")
-         |> push_navigate(to: "/dashboards")}
+         |> push_navigate(to: "/app/dashboards")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}

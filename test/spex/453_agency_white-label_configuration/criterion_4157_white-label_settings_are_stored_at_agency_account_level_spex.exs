@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings and saves white-label branding", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
       when_ "the owner remounts the settings page (simulating a page refresh)", context do
         refreshed_conn = recycle(context.owner_conn)
-        {:ok, refreshed_view, _html} = live(refreshed_conn, "/accounts/settings")
+        {:ok, refreshed_view, _html} = live(refreshed_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :refreshed_view, refreshed_view)}
       end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       given_ :second_user_registered
 
       given_ "the owner invites the second user as an admin of the agency account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       end
 
       when_ "the owner saves white-label settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         admin_conn = recycle(logged_in_conn)
-        {:ok, admin_view, _html} = live(admin_conn, "/accounts/settings")
+        {:ok, admin_view, _html} = live(admin_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :admin_view, admin_view)}
       end
 
@@ -129,7 +129,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       given_ :user_logged_in_as_owner
 
       when_ "the owner saves white-label settings for their agency", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -172,7 +172,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       end
 
       when_ "the separate user navigates to their account settings", context do
-        {:ok, separate_view, _html} = live(context.separate_conn, "/accounts/settings")
+        {:ok, separate_view, _html} = live(context.separate_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :separate_view, separate_view)}
       end
 

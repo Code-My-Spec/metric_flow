@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
       end
 
       then_ "the owner is redirected to the accounts page with a flash message", context do
-        assert context.redirect_path == "/accounts"
+        assert context.redirect_path == "/app/accounts"
         message = context.redirect_flash["info"] || context.redirect_flash["success"] || ""
         assert message != "", "Expected a flash message to be present after account deletion"
         :ok

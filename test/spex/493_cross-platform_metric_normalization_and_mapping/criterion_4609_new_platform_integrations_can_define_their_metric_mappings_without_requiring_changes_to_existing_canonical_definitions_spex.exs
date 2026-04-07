@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
-        result = live(context.owner_conn, "/integrations")
+        result = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -139,7 +139,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
 
     scenario "unauthenticated user cannot access the integrations page" do
       given_ "an unauthenticated user attempts to navigate to the integrations page", context do
-        result = live(build_conn(), "/integrations")
+        result = live(build_conn(), "/app/integrations")
         {:ok, Map.put(context, :result, result)}
       end
 

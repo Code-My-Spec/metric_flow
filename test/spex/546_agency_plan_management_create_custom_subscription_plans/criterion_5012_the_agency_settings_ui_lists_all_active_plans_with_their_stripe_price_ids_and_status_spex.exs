@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AgencySettingsListsActivePlansSpex do
       given_ :owner_has_stripe_connect
 
       given_ "the admin navigates to the agency plans page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/agency/plans")
+        {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")
         {:ok, Map.put(context, :view, view)}
       end
 

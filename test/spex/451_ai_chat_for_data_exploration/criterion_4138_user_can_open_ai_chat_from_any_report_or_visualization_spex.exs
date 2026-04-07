@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the dashboard page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the insights page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/insights")
+        {:ok, view, _html} = live(context.owner_conn, "/app/insights")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the dashboard page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -155,10 +155,10 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
             html =~ "chat-input" or
             html =~ "Ask a question" or
             html =~ "Type your message" or
-            match?({:error, {:redirect, %{to: "/chat"}}}, live(context.owner_conn, "/dashboard")) or
+            match?({:error, {:redirect, %{to: "/app/chat"}}}, live(context.owner_conn, "/app/dashboard")) or
             match?(
-              {:error, {:live_redirect, %{to: "/chat"}}},
-              live(context.owner_conn, "/dashboard")
+              {:error, {:live_redirect, %{to: "/app/chat"}}},
+              live(context.owner_conn, "/app/dashboard")
             )
 
         assert chat_opened,

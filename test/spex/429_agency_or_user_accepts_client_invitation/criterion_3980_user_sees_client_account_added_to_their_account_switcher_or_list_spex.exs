@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       given_ :second_user_registered
 
       given_ "the owner has sent an invitation to the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       end
 
       then_ "the owner's account name appears in the second user's account list", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/accounts")
+        {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
         :ok
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       given_ :second_user_registered
 
       given_ "the owner has sent an invitation to the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       end
 
       then_ "the navigation shows the account switcher with both accounts", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/accounts")
+        {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
         :ok

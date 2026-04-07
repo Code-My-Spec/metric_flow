@@ -125,7 +125,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/google_analytics")
+        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/google_analytics")
       end)
     end
 

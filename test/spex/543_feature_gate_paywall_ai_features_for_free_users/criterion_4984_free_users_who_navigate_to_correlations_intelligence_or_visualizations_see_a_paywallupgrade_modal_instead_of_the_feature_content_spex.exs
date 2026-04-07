@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.FreeUsersSeePaswallOnAiFeaturesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the correlations page", context do
-        result = live(context.owner_conn, "/correlations")
+        result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.FreeUsersSeePaswallOnAiFeaturesSpex do
 
             :ok
 
-          {:error, {:redirect, %{to: "/subscriptions/checkout"}}} ->
+          {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} ->
             :ok
 
           {:error, {:redirect, %{to: path}}} ->

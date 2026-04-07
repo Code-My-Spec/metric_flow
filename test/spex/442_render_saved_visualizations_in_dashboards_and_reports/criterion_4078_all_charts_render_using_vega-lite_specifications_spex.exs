@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
       given_ :owner_has_metrics
 
       given_ "user is on the visualization editor", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
       given_ :owner_has_metrics
 
       given_ "user has selected a metric", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> element("[phx-value-metric='impressions']")

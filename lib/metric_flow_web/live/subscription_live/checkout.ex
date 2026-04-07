@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
     account_id = socket.assigns.active_account_id
     plan = BillingRepository.get_plan(String.to_integer(plan_id))
 
-    return_url = MetricFlowWeb.Endpoint.url() <> "/subscriptions/checkout"
+    return_url = MetricFlowWeb.Endpoint.url() <> "/app/subscriptions/checkout"
 
     case Billing.create_checkout_session(account_id, plan, return_url) do
       {:ok, checkout_url} ->

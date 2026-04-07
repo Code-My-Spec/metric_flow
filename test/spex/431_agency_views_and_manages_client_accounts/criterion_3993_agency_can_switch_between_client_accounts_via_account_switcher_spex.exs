@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       when_ "the agency owner navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       when_ "the agency owner navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       when_ "the agency owner navigates to the accounts page and switches to the client account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
 
         element(view, "[data-role='switch-account']", context.client_account_name)
         |> render_click()
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       when_ "the agency owner navigates to account settings", context do
-        {:ok, settings_view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, settings_view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :settings_view, settings_view)}
       end
 
@@ -144,7 +144,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       when_ "the agency owner navigates to the accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 

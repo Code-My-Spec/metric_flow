@@ -37,7 +37,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/reports/#{report.id}")
+        {:ok, lv, html} = live(conn, ~p"/app/reports/#{report.id}")
 
         assert html =~ "Q1 Revenue Report"
         assert has_element?(lv, "[data-role='report-chart']")
@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports/#{report.id}")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports/#{report.id}")
 
         assert has_element?(lv, "[data-role='back-link']")
         assert render(lv) =~ "Back to Reports"
@@ -72,8 +72,8 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/reports", flash: flash}}} =
-                 live(conn, ~p"/reports/999999")
+        assert {:error, {:redirect, %{to: "/app/reports", flash: flash}}} =
+                 live(conn, ~p"/app/reports/999999")
 
         assert flash["error"] =~ "not found"
         send(self(), :done)
@@ -93,7 +93,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
       insert_metric!(user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports/#{report.id}")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports/#{report.id}")
 
         assert has_element?(lv, "[data-role='metric-summaries']")
         assert has_element?(lv, "[data-role='metric-summary-card']")

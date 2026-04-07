@@ -62,19 +62,19 @@ defmodule MetricFlowWeb.Layouts do
           </div>
           <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
             <%= if @current_scope do %>
-              <li><a href={~p"/dashboard"}>Dashboard</a></li>
-              <li><a href={~p"/integrations"}>Integrations</a></li>
-              <li><a href={~p"/integrations/sync-history"}>Sync History</a></li>
-              <li><a href={~p"/correlations"}>Correlations</a></li>
-              <li><a href={~p"/correlations/goals"}>Goals</a></li>
-              <li><a href={~p"/insights"}>Insights</a></li>
-              <li><a href={~p"/chat"}>Chat</a></li>
-              <li><a href={~p"/reports/generate"}>Reports</a></li>
-              <li><a href={~p"/visualizations"}>Visualizations</a></li>
-              <li><a href={~p"/accounts"}>Accounts</a></li>
-              <li><a href={~p"/accounts/members"}>Members</a></li>
-              <li><a href={~p"/accounts/settings"}>Account Settings</a></li>
-              <li><a href={~p"/accounts/invitations"}>Invitations</a></li>
+              <li><a href={~p"/app/dashboard"}>Dashboard</a></li>
+              <li><a href={~p"/app/integrations"}>Integrations</a></li>
+              <li><a href={~p"/app/integrations/sync-history"}>Sync History</a></li>
+              <li><a href={~p"/app/correlations"}>Correlations</a></li>
+              <li><a href={~p"/app/correlations/goals"}>Goals</a></li>
+              <li><a href={~p"/app/insights"}>Insights</a></li>
+              <li><a href={~p"/app/chat"}>Chat</a></li>
+              <li><a href={~p"/app/reports/generate"}>Reports</a></li>
+              <li><a href={~p"/app/visualizations"}>Visualizations</a></li>
+              <li><a href={~p"/app/accounts"}>Accounts</a></li>
+              <li><a href={~p"/app/accounts/members"}>Members</a></li>
+              <li><a href={~p"/app/accounts/settings"}>Account Settings</a></li>
+              <li><a href={~p"/app/accounts/invitations"}>Invitations</a></li>
             <% end %>
           </ul>
         </div>
@@ -96,13 +96,13 @@ defmodule MetricFlowWeb.Layouts do
       <div class="navbar-center hidden lg:flex">
         <%= if @current_scope do %>
           <ul class="menu menu-horizontal px-1">
-            <li><a href={~p"/dashboard"}>Dashboard</a></li>
+            <li><a href={~p"/app/dashboard"}>Dashboard</a></li>
             <li>
               <details>
                 <summary>Integrations</summary>
                 <ul class="bg-base-200 rounded-box z-10 w-48 p-2 shadow">
-                  <li><a href={~p"/integrations"}>All Integrations</a></li>
-                  <li><a href={~p"/integrations/sync-history"}>Sync History</a></li>
+                  <li><a href={~p"/app/integrations"}>All Integrations</a></li>
+                  <li><a href={~p"/app/integrations/sync-history"}>Sync History</a></li>
                 </ul>
               </details>
             </li>
@@ -110,8 +110,8 @@ defmodule MetricFlowWeb.Layouts do
               <details>
                 <summary>Correlations</summary>
                 <ul class="bg-base-200 rounded-box z-10 w-48 p-2 shadow">
-                  <li><a href={~p"/correlations"}>Correlations</a></li>
-                  <li><a href={~p"/correlations/goals"}>Goals</a></li>
+                  <li><a href={~p"/app/correlations"}>Correlations</a></li>
+                  <li><a href={~p"/app/correlations/goals"}>Goals</a></li>
                 </ul>
               </details>
             </li>
@@ -119,21 +119,21 @@ defmodule MetricFlowWeb.Layouts do
               <details>
                 <summary>Intelligence</summary>
                 <ul class="bg-base-200 rounded-box z-10 w-48 p-2 shadow">
-                  <li><a href={~p"/insights"}>Insights</a></li>
-                  <li><a href={~p"/chat"}>Chat</a></li>
-                  <li><a href={~p"/reports/generate"}>Reports</a></li>
+                  <li><a href={~p"/app/insights"}>Insights</a></li>
+                  <li><a href={~p"/app/chat"}>Chat</a></li>
+                  <li><a href={~p"/app/reports/generate"}>Reports</a></li>
                 </ul>
               </details>
             </li>
-            <li><a href={~p"/visualizations"}>Visualizations</a></li>
+            <li><a href={~p"/app/visualizations"}>Visualizations</a></li>
             <li>
               <details>
                 <summary>Account</summary>
                 <ul class="bg-base-200 rounded-box z-10 w-48 p-2 shadow">
-                  <li><a href={~p"/accounts"}>Accounts</a></li>
-                  <li><a href={~p"/accounts/members"}>Members</a></li>
-                  <li><a href={~p"/accounts/settings"}>Settings</a></li>
-                  <li><a href={~p"/accounts/invitations"}>Invitations</a></li>
+                  <li><a href={~p"/app/accounts"}>Accounts</a></li>
+                  <li><a href={~p"/app/accounts/members"}>Members</a></li>
+                  <li><a href={~p"/app/accounts/settings"}>Settings</a></li>
+                  <li><a href={~p"/app/accounts/invitations"}>Invitations</a></li>
                 </ul>
               </details>
             </li>
@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.Layouts do
             </div>
             <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
               <li class="menu-title text-xs">{@current_scope.user.email}</li>
-              <li><a href={~p"/users/settings"}>Settings</a></li>
+              <li><a href={~p"/app/users/settings"}>Settings</a></li>
               <li>
                 <.link href={~p"/users/log-out"} method="delete">Log out</.link>
               </li>

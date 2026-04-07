@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integration connect page for Google", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to modify accounts for a connected provider", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

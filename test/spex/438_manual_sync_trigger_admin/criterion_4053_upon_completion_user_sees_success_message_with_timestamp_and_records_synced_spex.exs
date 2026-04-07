@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a connected Google integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page and a sync is in progress for Google", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
 
         # Trigger sync to put the platform into the syncing state
         render_click(view, "sync", %{"platform" => "google_analytics", "provider" => "google"})

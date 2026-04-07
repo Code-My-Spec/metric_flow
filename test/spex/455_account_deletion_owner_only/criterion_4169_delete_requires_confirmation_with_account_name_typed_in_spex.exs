@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
       end
 
       then_ "the owner is redirected to the accounts list", context do
-        assert_redirect(context.view, "/accounts")
+        assert_redirect(context.view, "/app/accounts")
         :ok
       end
     end

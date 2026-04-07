@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
 
       when_ "the user opens the settings page in a new tab", context do
         conn = recycle(context.logged_in_conn)
-        {:ok, view, html} = live(conn, "/users/settings")
+        {:ok, view, html} = live(conn, "/app/users/settings")
         {:ok, Map.merge(context, %{settings_view: view, settings_html: html})}
       end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
 
       when_ "the user opens the accounts page in another tab", context do
         conn = recycle(context.logged_in_conn)
-        {:ok, view, html} = live(conn, "/accounts")
+        {:ok, view, html} = live(conn, "/app/accounts")
         {:ok, Map.merge(context, %{accounts_view: view, accounts_html: html})}
       end
 

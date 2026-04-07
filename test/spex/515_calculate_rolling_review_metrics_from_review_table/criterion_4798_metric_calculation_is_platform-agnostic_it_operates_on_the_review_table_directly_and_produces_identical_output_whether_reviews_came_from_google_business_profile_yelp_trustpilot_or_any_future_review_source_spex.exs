@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the reports page", context do
-        result = live(context.owner_conn, "/reports")
+        result = live(context.owner_conn, "/app/reports")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the reports page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports")
+        {:ok, view, _html} = live(context.owner_conn, "/app/reports")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the reports page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports")
+        {:ok, view, _html} = live(context.owner_conn, "/app/reports")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
 
     scenario "unauthenticated user cannot access the reports page" do
       given_ "an unauthenticated user navigates to the reports page", context do
-        result = live(build_conn(), "/reports")
+        result = live(build_conn(), "/app/reports")
         {:ok, Map.put(context, :result, result)}
       end
 

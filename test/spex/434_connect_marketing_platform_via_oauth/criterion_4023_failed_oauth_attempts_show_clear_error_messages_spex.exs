@@ -13,10 +13,10 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
 
       given_ "the user arrives at the callback page with an OAuth error", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google",
+          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
             MetricFlowTest.OAuthStub.denied_callback_params())
         end)
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -46,9 +46,9 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
         params = MetricFlowTest.OAuthStub.denied_callback_params()
                  |> Map.put("error_description", "User denied access")
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google", params)
+          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google", params)
         end)
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -72,12 +72,12 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
 
       given_ "the user arrives at the callback page with an invalid state token", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/integrations/oauth/callback/google", %{
+          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google", %{
             "code" => "some_code",
             "state" => "invalid_state_token"
           })
         end)
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
 

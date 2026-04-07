@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
       end
 
       when_ "the user tries to access the settings page", context do
-        {:error, {:redirect, redirect}} = live(context.conn, "/users/settings")
+        {:error, {:redirect, redirect}} = live(context.conn, "/app/users/settings")
         {:ok, Map.put(context, :redirect, redirect)}
       end
 
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
 
       when_ "the user tries to access the settings page and follows the redirect", context do
         {:error, {:redirect, %{to: path, flash: flash}}} =
-          live(context.conn, "/users/settings")
+          live(context.conn, "/app/users/settings")
 
         {:ok, Map.merge(context, %{redirect_path: path, flash: flash})}
       end
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
 
       when_ "the user accesses the settings page", context do
         conn = recycle(context.logged_in_conn)
-        {:ok, _view, html} = live(conn, "/users/settings")
+        {:ok, _view, html} = live(conn, "/app/users/settings")
         {:ok, Map.put(context, :settings_html, html)}
       end
 

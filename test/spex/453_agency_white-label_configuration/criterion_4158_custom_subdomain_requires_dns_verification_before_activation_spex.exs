@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings and saves a subdomain", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{

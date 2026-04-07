@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
       given_ :with_ai_stubs
 
       given_ "the user navigates to the AI chat page and sends a message", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->
@@ -39,10 +39,10 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
       when_ "the user navigates away and then returns to the chat page", context do
         # Navigate to another page
-        {:ok, _away_view, _away_html} = live(context.owner_conn, "/dashboard")
+        {:ok, _away_view, _away_html} = live(context.owner_conn, "/app/dashboard")
 
         # Return to chat by mounting a fresh view
-        {:ok, fresh_view, fresh_html} = live(context.owner_conn, "/chat")
+        {:ok, fresh_view, fresh_html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.merge(context, %{fresh_view: fresh_view, fresh_html: fresh_html})}
       end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
       given_ :with_ai_stubs
 
       given_ "the user has previously sent a message in chat", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
       end
 
       when_ "the user returns to the chat page in a fresh mount", context do
-        {:ok, fresh_view, _html} = live(context.owner_conn, "/chat")
+        {:ok, fresh_view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, fresh_view)}
       end
 
@@ -137,7 +137,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
       given_ "the first user sends a uniquely identifiable message in chat", context do
         unique_token = "UNIQUE_MSG_#{System.unique_integer([:positive])}"
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
         cond do
           has_element?(view, "[data-role='chat-form']") ->
@@ -205,7 +205,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
             current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
           })
 
-        {:ok, second_view, _html} = live(second_conn, "/chat")
+        {:ok, second_view, _html} = live(second_conn, "/app/chat")
 
         {:ok, Map.put(context, :second_user_view, second_view)}
       end

@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/reports")
+        {:ok, lv, html} = live(conn, ~p"/app/reports")
 
         assert html =~ "Reports"
         assert has_element?(lv, "[data-role='new-report-btn'][href='/reports/new']")
@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         assert has_element?(lv, "[data-role='metric-summary']")
         assert has_element?(lv, "[data-role='metric-badge']")
@@ -75,7 +75,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/reports")
+        {:ok, lv, html} = live(conn, ~p"/app/reports")
 
         assert html =~ "Q1 Revenue Summary"
         assert has_element?(lv, "[data-role='report-card'][data-report-id='#{report.id}']")
@@ -96,7 +96,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         assert has_element?(lv, "[data-role='empty-reports']")
         assert has_element?(lv, "[data-role='empty-reports'] a[href='/reports/new']")
@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         render_click(lv, "delete", %{"id" => to_string(report.id)})
 
@@ -137,7 +137,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         render_click(lv, "delete", %{"id" => to_string(report.id)})
         html = render_click(lv, "confirm_delete", %{"id" => to_string(report.id)})
@@ -159,7 +159,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/reports")
+        {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         render_click(lv, "delete", %{"id" => to_string(report.id)})
         assert has_element?(lv, "[data-role='delete-confirm-#{report.id}']")
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/reports/new")
+        {:ok, lv, html} = live(conn, ~p"/app/reports/new")
 
         assert html =~ "New Report"
         assert has_element?(lv, "[data-role='report-option-ai']")

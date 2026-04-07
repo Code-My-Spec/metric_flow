@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PlatformInitiatesStripeConnectOauthSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the admin is on the Stripe Connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/agency/stripe-connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")
         {:ok, Map.put(context, :view, view)}
       end
 

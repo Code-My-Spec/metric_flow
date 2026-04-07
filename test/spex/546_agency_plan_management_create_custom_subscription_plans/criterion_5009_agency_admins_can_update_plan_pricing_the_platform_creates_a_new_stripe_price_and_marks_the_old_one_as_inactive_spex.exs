@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanUpdatePlanPricingSpex do
       given_ :owner_has_agency_plan
 
       given_ "the admin navigates to the agency plans page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/agency/plans")
+        {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")
         {:ok, Map.put(context, :view, view)}
       end
 

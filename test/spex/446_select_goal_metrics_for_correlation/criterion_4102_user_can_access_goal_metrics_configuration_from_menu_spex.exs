@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the goal metrics configuration page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations/goals")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations/goals")
         {:ok, Map.put(context, :view, view)}
       end
 

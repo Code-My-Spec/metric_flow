@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
       end
 
       when_ "the account manager navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.account_manager_conn, "/integrations")
+        {:ok, view, _html} = live(context.account_manager_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
       end
 
       when_ "the account manager navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.account_manager_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.account_manager_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
       end
 
       when_ "the account manager navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.account_manager_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.account_manager_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -203,7 +203,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
       end
 
       when_ "the account manager navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.account_manager_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.account_manager_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -393,7 +393,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
       {:error, :not_found} ->
         socket
         |> put_flash(:error, "Chat session not found.")
-        |> push_patch(to: ~p"/chat")
+        |> push_patch(to: ~p"/app/chat")
     end
   end
 
@@ -403,7 +403,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
   @impl true
   def handle_event("new_chat", _params, socket) do
-    {:noreply, push_patch(socket, to: ~p"/chat")}
+    {:noreply, push_patch(socket, to: ~p"/app/chat")}
   end
 
   def handle_event("toggle_sidebar", _params, socket) do
@@ -414,7 +414,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
     socket =
       socket
       |> assign(:show_sidebar, false)
-      |> push_patch(to: ~p"/chat/#{id_string}")
+      |> push_patch(to: ~p"/app/chat/#{id_string}")
 
     {:noreply, socket}
   end
@@ -519,11 +519,11 @@ defmodule MetricFlowWeb.AiLive.Chat do
   end
 
   defp build_share_url(session_id, message_id) when is_binary(message_id) and message_id != "" do
-    MetricFlowWeb.Endpoint.url() <> "/chat/#{session_id}?highlight=#{message_id}"
+    MetricFlowWeb.Endpoint.url() <> "/app/chat/#{session_id}?highlight=#{message_id}"
   end
 
   defp build_share_url(session_id, _message_id) do
-    MetricFlowWeb.Endpoint.url() <> "/chat/#{session_id}"
+    MetricFlowWeb.Endpoint.url() <> "/app/chat/#{session_id}"
   end
 
   defp apply_refreshed_session(socket, scope, session_id) do

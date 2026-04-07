@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, html} = live(conn, ~p"/app/visualizations/new")
 
         assert html =~ "New Visualization"
         assert has_element?(lv, "[data-role='visualization-name-input']")
@@ -54,7 +54,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/visualizations/#{visualization.id}/edit")
+        {:ok, _lv, html} = live(conn, ~p"/app/visualizations/#{visualization.id}/edit")
 
         assert html =~ "Edit Visualization"
         assert html =~ "My Existing Viz"
@@ -69,7 +69,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         assert has_element?(lv, "[data-role='metric-list'] button", "sessions")
         assert has_element?(lv, "[data-role='metric-list'] button", "clicks")
@@ -83,7 +83,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         assert has_element?(lv, "[data-role='no-metrics-available']")
       end)
@@ -97,7 +97,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         html =
           lv
@@ -117,7 +117,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         html =
           lv
@@ -136,7 +136,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
         render_click(lv, "preview_chart", %{})
@@ -153,7 +153,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         assert has_element?(lv, "[data-role='preview-chart-btn'][disabled]")
       end)
@@ -166,7 +166,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         html = render_change(lv, "validate_name", %{"name" => ""})
         assert html =~ "can&#39;t be blank"
@@ -182,13 +182,13 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         render_change(lv, "validate_name", %{"name" => "My New Chart"})
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
         lv |> element("[data-role='save-visualization-btn']") |> render_click()
 
-        assert_redirect(lv, "/dashboards")
+        assert_redirect(lv, "/app/dashboards")
       end)
     end
 
@@ -201,7 +201,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
 
@@ -220,7 +220,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations/new")
 
         html = lv |> element("[data-role='toggle-shareable']") |> render_click()
         assert html =~ "btn-primary"
@@ -237,8 +237,8 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/dashboards"}}} =
-                 live(conn, ~p"/visualizations/999999/edit")
+        assert {:error, {:redirect, %{to: "/app/dashboards"}}} =
+                 live(conn, ~p"/app/visualizations/999999/edit")
       end)
     end
 

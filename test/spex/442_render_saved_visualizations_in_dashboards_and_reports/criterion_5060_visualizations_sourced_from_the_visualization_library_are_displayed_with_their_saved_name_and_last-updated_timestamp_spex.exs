@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
       given_ :owner_has_metrics
 
       given_ "user creates and saves a visualization", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> form("form[phx-change='validate_name']", name: "Library Viz Test")
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
       end
 
       when_ "user visits the visualization library", context do
-        {:ok, view, html} = live(context.owner_conn, "/visualizations")
+        {:ok, view, html} = live(context.owner_conn, "/app/visualizations")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

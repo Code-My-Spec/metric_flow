@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       given_ :second_user_registered
 
       given_ "the owner sends an invitation that is then expired", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       given_ :second_user_registered
 
       given_ "an invitation has been sent and expired", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -105,7 +105,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       given_ :second_user_registered
 
       given_ "the owner sends an invitation that is then expired", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{

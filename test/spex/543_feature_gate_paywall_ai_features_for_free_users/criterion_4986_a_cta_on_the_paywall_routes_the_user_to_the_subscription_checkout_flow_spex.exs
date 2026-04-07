@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the correlations page", context do
-        result = live(context.owner_conn, "/correlations")
+        result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
               has_element?(view, "a[href='/subscriptions/checkout']") or
                 has_element?(view, "[data-role='paywall-cta']") or
                 has_element?(view, "[data-role='upgrade-cta']") or
-                html =~ "/subscriptions/checkout" or
+                html =~ "/app/subscriptions/checkout" or
                 html =~ "checkout" or
                 html =~ "Checkout" or
                 html =~ "Upgrade now" or
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
 
             :ok
 
-          {:error, {:redirect, %{to: "/subscriptions/checkout"}}} ->
+          {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} ->
             :ok
 
           {:error, {:redirect, _}} ->

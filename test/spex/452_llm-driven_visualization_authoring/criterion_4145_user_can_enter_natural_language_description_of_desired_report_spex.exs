@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
       given_ :owner_has_active_subscription
 
       when_ "user navigates to the report generator", context do
-        {:ok, view, html} = live(context.owner_conn, "/reports/generate")
+        {:ok, view, html} = live(context.owner_conn, "/app/reports/generate")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 
@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
       given_ :owner_has_active_subscription
 
       given_ "user is on the report generator page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/generate")
+        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
         {:ok, Map.put(context, :view, view)}
       end
 

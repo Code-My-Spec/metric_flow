@@ -98,7 +98,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/correlations")
+        {:ok, lv, html} = live(conn, ~p"/app/correlations")
 
         assert html =~ "Correlations"
         assert has_element?(lv, "[data-role='mode-toggle']")
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/correlations")
+        {:ok, lv, html} = live(conn, ~p"/app/correlations")
 
         assert html =~ "No Correlations Yet"
         assert has_element?(lv, "[data-role='no-data-state']")
@@ -129,7 +129,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/correlations")
+        {:ok, lv, html} = live(conn, ~p"/app/correlations")
 
         assert has_element?(lv, "[data-role='results-table']")
         assert has_element?(lv, "[data-role='correlation-row'][data-metric='clicks']")
@@ -148,7 +148,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         assert has_element?(lv, "[data-role='correlation-summary']")
         assert has_element?(lv, "[data-role='goal-metric']")
@@ -167,7 +167,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         assert has_element?(lv, "[data-role='raw-mode']")
 
@@ -191,7 +191,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         render_click(lv, "sort", %{"by" => "metric_name"})
         assert has_element?(lv, "[data-sort-col='metric_name'][data-sort-active='true']")
@@ -211,7 +211,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         assert has_element?(lv, "[data-role='filter-controls']")
 
@@ -232,7 +232,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         render_click(lv, "filter_platform", %{"platform" => "facebook_ads"})
         assert has_element?(lv, "[data-role='empty-filter-state']")
@@ -247,7 +247,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         assert has_element?(lv, "[data-role='job-running-banner']")
         assert has_element?(lv, "[data-role='run-correlations'][disabled]")
@@ -261,7 +261,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         html = render_click(lv, "run_correlations", %{})
 
@@ -277,7 +277,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         render_click(lv, "set_mode", %{"mode" => "smart"})
 
@@ -293,7 +293,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         render_click(lv, "set_mode", %{"mode" => "smart"})
         render_click(lv, "enable_ai_suggestions", %{})
@@ -310,7 +310,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations")
 
         render_click(lv, "set_mode", %{"mode" => "smart"})
         render_click(lv, "enable_ai_suggestions", %{})

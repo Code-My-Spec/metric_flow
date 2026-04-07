@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.Criterion5055SavedVizInLibrarySpex do
       given_ :owner_has_active_subscription
 
       given_ "user generates and saves a visualization", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/generate")
+        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
 
         with_cassette "report_generator_success", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Criterion5055SavedVizInLibrarySpex do
       end
 
       when_ "user navigates to the visualizations library", context do
-        {:ok, view, html} = live(context.owner_conn, "/visualizations")
+        {:ok, view, html} = live(context.owner_conn, "/app/visualizations")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

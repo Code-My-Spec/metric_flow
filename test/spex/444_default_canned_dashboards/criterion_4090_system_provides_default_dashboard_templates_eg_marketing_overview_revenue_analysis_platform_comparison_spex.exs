@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the dashboards page", context do
-        result = live(context.owner_conn, "/dashboards")
+        result = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       end
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       end
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -117,7 +117,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       end
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       end
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -171,7 +171,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
 
     scenario "unauthenticated user cannot access the dashboards templates page" do
       given_ "an unauthenticated user navigates to the dashboards page", context do
-        result = live(build_conn(), "/dashboards")
+        result = live(build_conn(), "/app/dashboards")
         {:ok, Map.put(context, :result, result)}
       end
 

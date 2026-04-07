@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
 
         logged_in_conn = submit_form(form, context.conn)
         conn = recycle(logged_in_conn)
-        {:ok, _settings_view, html} = live(conn, "/users/settings")
+        {:ok, _settings_view, html} = live(conn, "/app/users/settings")
         {:ok, Map.merge(context, %{settings_html: html, logged_in_conn: conn})}
       end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
       end
 
       then_ "the user is redirected to the login page", context do
-        {:error, {:redirect, %{to: path}}} = live(context.after_logout_conn, "/users/settings")
+        {:error, {:redirect, %{to: path}}} = live(context.after_logout_conn, "/app/users/settings")
         assert path =~ "/users/log-in"
         :ok
       end

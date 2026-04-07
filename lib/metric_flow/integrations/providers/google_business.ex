@@ -8,7 +8,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusiness do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/google_business"
+  @callback_path "/app/integrations/oauth/callback/google_business"
 
   @impl true
   def config do

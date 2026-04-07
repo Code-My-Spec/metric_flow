@@ -148,7 +148,7 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec create_account_link(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def create_account_link(stripe_account_id, opts \\ []) do
-    return_url = MetricFlowWeb.Endpoint.url() <> "/agency/stripe-connect"
+    return_url = MetricFlowWeb.Endpoint.url() <> "/app/agency/stripe-connect"
 
     body =
       URI.encode_query(%{

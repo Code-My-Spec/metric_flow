@@ -129,7 +129,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect")
 
         assert html =~ "Connect a Provider"
         assert html =~ "data-platform"
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect")
 
         assert html =~ "Connected"
       end)
@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect")
 
         assert html =~ "Not connected"
       end)
@@ -170,7 +170,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect")
 
         assert has_element?(lv, "[data-role='connect-button']")
       end)
@@ -183,7 +183,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/integrations/connect/stub")
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/connect/stub")
 
         assert is_binary(html)
         assert has_element?(lv, "[data-role='oauth-connect-button']")
@@ -198,7 +198,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/connect/stub")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect/stub")
 
         assert html =~ "Connected"
         assert html =~ "stub@example.com"
@@ -212,7 +212,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/connect/stub")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect/stub")
 
         assert has_element?(lv, "a[href='/integrations']")
       end)
@@ -222,7 +222,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   describe "redirects unauthenticated users to login" do
     test "redirects unauthenticated users to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/integrations/connect")
+               live(conn, ~p"/app/integrations/connect")
     end
   end
 end

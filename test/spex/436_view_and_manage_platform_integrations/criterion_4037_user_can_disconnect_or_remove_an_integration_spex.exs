@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page with a connected integration", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
       given_ :owner_with_integrations
 
       given_ "the user is on the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 

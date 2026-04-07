@@ -15,7 +15,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
     test "redirects to provider authorization URL for valid provider", %{conn: conn} do
       MetricFlowTest.OAuthStub.setup_oauth_providers()
 
-      conn = get(conn, ~p"/integrations/oauth/google_ads")
+      conn = get(conn, ~p"/app/integrations/oauth/google_ads")
 
       assert redirected_to(conn) =~ "oauth2.googleapis.com"
     end
@@ -23,7 +23,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
     test "stores session params in OAuthStateStore", %{conn: conn} do
       MetricFlowTest.OAuthStub.setup_oauth_providers()
 
-      conn = get(conn, ~p"/integrations/oauth/google_ads")
+      conn = get(conn, ~p"/app/integrations/oauth/google_ads")
 
       # The controller stores session params keyed by state.
       # After redirect, the state was stored. We verify by checking
@@ -32,9 +32,9 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
     end
 
     test "shows error flash and redirects for unsupported provider", %{conn: conn} do
-      conn = get(conn, ~p"/integrations/oauth/nonexistent_provider")
+      conn = get(conn, ~p"/app/integrations/oauth/nonexistent_provider")
 
-      assert redirected_to(conn) == ~p"/integrations/connect"
+      assert redirected_to(conn) == ~p"/app/integrations/connect"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "not yet supported"
     end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
 
       conn =
         capture_log(fn ->
-          conn = get(conn, ~p"/integrations/oauth/google_ads")
+          conn = get(conn, ~p"/app/integrations/oauth/google_ads")
           send(self(), {:conn, conn})
         end)
         |> then(fn _log ->
@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) == ~p"/integrations/connect"
+      assert redirected_to(conn) == ~p"/app/integrations/connect"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to connect"
     end
   end
@@ -83,7 +83,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           conn =
             get(
               conn,
-              ~p"/integrations/oauth/callback/google_ads",
+              ~p"/app/integrations/oauth/callback/google_ads",
               MetricFlowTest.OAuthStub.valid_callback_params()
             )
 
@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) == ~p"/integrations/connect/google_ads"
+      assert redirected_to(conn) == ~p"/app/integrations/connect/google_ads"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Successfully connected"
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
       conn =
         capture_log(fn ->
           conn =
-            get(conn, ~p"/integrations/oauth/callback/google_ads", %{
+            get(conn, ~p"/app/integrations/oauth/callback/google_ads", %{
               "code" => "invalid-code-that-will-fail",
               "state" => "bad-exchange-state"
             })
@@ -121,7 +121,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) =~ "/integrations/connect/google_ads"
+      assert redirected_to(conn) =~ "/app/integrations/connect/google_ads"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) != nil
     end
 
@@ -133,7 +133,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           conn =
             get(
               conn,
-              ~p"/integrations/oauth/callback/google_ads",
+              ~p"/app/integrations/oauth/callback/google_ads",
               MetricFlowTest.OAuthStub.denied_callback_params()
             )
 
@@ -145,7 +145,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) =~ "/integrations/connect/google_ads"
+      assert redirected_to(conn) =~ "/app/integrations/connect/google_ads"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Access was denied"
     end
 
@@ -155,7 +155,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
       conn =
         capture_log(fn ->
           conn =
-            get(conn, ~p"/integrations/oauth/callback/totally_unknown", %{
+            get(conn, ~p"/app/integrations/oauth/callback/totally_unknown", %{
               "code" => "some-code",
               "state" => MetricFlowTest.OAuthStub.state_token()
             })
@@ -168,7 +168,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) =~ "/integrations/connect/totally_unknown"
+      assert redirected_to(conn) =~ "/app/integrations/connect/totally_unknown"
       assert Phoenix.Flash.get(conn.assigns.flash, :error) != nil
     end
 
@@ -178,7 +178,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
       conn =
         capture_log(fn ->
           conn =
-            get(conn, ~p"/integrations/oauth/callback/google_ads", %{
+            get(conn, ~p"/app/integrations/oauth/callback/google_ads", %{
               "code" => "some-code"
             })
 
@@ -191,7 +191,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
         end)
 
       # Should still redirect (not crash) even without a state param
-      assert redirected_to(conn) =~ "/integrations/connect/google_ads"
+      assert redirected_to(conn) =~ "/app/integrations/connect/google_ads"
     end
   end
 

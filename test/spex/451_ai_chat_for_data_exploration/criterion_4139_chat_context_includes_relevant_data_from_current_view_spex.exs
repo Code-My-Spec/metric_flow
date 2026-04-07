@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates directly to the chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user is on the dashboard page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -60,20 +60,20 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
             has_element?(view, "[data-role='open-ai-chat']") ->
               view |> element("[data-role='open-ai-chat']") |> render_click()
               # After click, try to get the updated or redirected view
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
 
             has_element?(view, "a[href='/chat']") ->
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
 
             true ->
               # Fall back to navigating to /chat directly
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -124,19 +124,19 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
             has_element?(view, "[data-role='open-ai-chat']") ->
               view |> element("[data-role='open-ai-chat']") |> render_click()
 
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
 
             has_element?(view, "a[href='/chat']") ->
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
 
             true ->
-              case live(context.owner_conn, "/chat") do
+              case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
               end
@@ -175,7 +175,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the chat page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/chat")
+        {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 

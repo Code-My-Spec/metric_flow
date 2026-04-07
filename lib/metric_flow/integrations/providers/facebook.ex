@@ -10,7 +10,7 @@ defmodule MetricFlow.Integrations.Providers.Facebook do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/facebook_ads"
+  @callback_path "/app/integrations/oauth/callback/facebook_ads"
 
   @impl MetricFlow.Integrations.Providers.Behaviour
   def config do

@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       end
 
       given_ "the user navigates to the Google Business Profile locations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       end
 
       given_ "the user navigates to the Google Business Profile locations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -14,7 +14,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
         capture_log(fn ->
           get(
             context.owner_conn,
-            "/integrations/oauth/callback/google_business",
+            "/app/integrations/oauth/callback/google_business",
             %{"error" => "access_denied", "state" => "any-state"}
           )
         end)
@@ -24,13 +24,13 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
 
       then_ "the detail page shows the integration is not connected after the failed attempt",
             context do
-        {:ok, _view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Not connected"
         :ok
       end
 
       then_ "the detail page does not show a Connected badge after a failed attempt", context do
-        {:ok, _view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         refute html =~ "badge-success"
         :ok
       end
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
 
       when_ "the user arrives at the callback with an invalid CSRF state token", context do
         capture_log(fn ->
-          get(context.owner_conn, "/integrations/oauth/callback/google_business", %{
+          get(context.owner_conn, "/app/integrations/oauth/callback/google_business", %{
             "code" => "some-code",
             "state" => "invalid-state-xyz-999"
           })
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
 
       then_ "the detail page shows the integration is not connected after the invalid state",
             context do
-        {:ok, _view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Not connected"
         :ok
       end
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
       given_ :user_logged_in_as_owner
 
       then_ "the detail page renders an OAuth entry point or a not-configured notice", context do
-        {:ok, view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
 
         # Either a real connect button (when Google credentials are configured)
         # or an explicit not-configured notice — both indicate the page surfaces

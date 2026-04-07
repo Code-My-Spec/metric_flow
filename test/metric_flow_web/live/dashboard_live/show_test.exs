@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboard")
+        {:ok, _lv, html} = live(conn, ~p"/app/dashboard")
 
         assert html =~ "All Metrics"
       end)
@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/dashboard")
+        {:ok, lv, html} = live(conn, ~p"/app/dashboard")
 
         assert has_element?(lv, "[data-role='onboarding-prompt']")
         assert html =~ "Connect"
@@ -86,7 +86,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         assert has_element?(lv, "[data-role='metrics-dashboard']")
         assert has_element?(lv, "[data-role='multi-series-chart']")
@@ -104,7 +104,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         html = render_click(lv, "filter_platform", %{"platform" => "google_analytics"})
 
@@ -123,7 +123,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         html = render_click(lv, "filter_date_range", %{"range" => "last_7_days"})
         assert is_binary(html)
@@ -147,7 +147,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         html = render_click(lv, "toggle_metric", %{"metric" => "sessions"})
         assert is_binary(html)
@@ -166,7 +166,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         assert has_element?(lv, "[data-role='platform-filter']")
         assert has_element?(lv, "[data-role='date-range-filter']")
@@ -185,7 +185,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         lv |> element("[data-role='open-ai-chat']") |> render_click()
         assert has_element?(lv, "[data-role='ai-chat-interface']")
@@ -204,7 +204,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         render_click(lv, "show_ai_insights", %{"metric" => "sessions"})
         assert has_element?(lv, "[data-role='ai-insights-panel']")
@@ -222,7 +222,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboard")
+        {:ok, _lv, html} = live(conn, ~p"/app/dashboard")
 
         assert html =~ "No metric data available" or html =~ "No data to display"
       end)
@@ -237,7 +237,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
 
         assert has_element?(lv, "[data-role='summary-stats']")
       end)
@@ -251,7 +251,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboards/999999")
+        {:ok, _lv, html} = live(conn, ~p"/app/dashboards/999999")
 
         assert html =~ "All Metrics"
       end)

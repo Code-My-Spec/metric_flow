@@ -40,7 +40,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
       <div class="max-w-3xl mx-auto mf-content px-4 py-8">
         <%!-- Page header --%>
         <div class="flex items-center gap-3 mb-2">
-          <.link navigate={~p"/reports"} class="btn btn-ghost btn-sm">
+          <.link navigate={~p"/app/reports"} class="btn btn-ghost btn-sm">
             &larr; Back
           </.link>
         </div>
@@ -57,7 +57,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             <p class="text-sm text-base-content/60 mb-4">
               Describe what you want to see and AI will build the chart for you.
             </p>
-            <.link navigate={~p"/reports/generate"} class="btn btn-primary btn-sm w-full sm:w-auto">
+            <.link navigate={~p"/app/reports/generate"} class="btn btn-primary btn-sm w-full sm:w-auto">
               Generate with AI
             </.link>
           </div>
@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             <p class="text-sm text-base-content/60 mb-4">
               Create a chart by selecting metrics and a visualization type.
             </p>
-            <.link navigate={~p"/visualizations/new"} class="btn btn-secondary btn-sm w-full sm:w-auto">
+            <.link navigate={~p"/app/visualizations/new"} class="btn btn-secondary btn-sm w-full sm:w-auto">
               Build Manually
             </.link>
           </div>
@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
 
         <%!-- Cancel link --%>
         <div class="mt-8">
-          <.link navigate={~p"/reports"} class="link text-sm text-base-content/60">
+          <.link navigate={~p"/app/reports"} class="link text-sm text-base-content/60">
             Cancel — back to Reports
           </.link>
         </div>
@@ -104,7 +104,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             </p>
           </div>
           <.link
-            navigate={~p"/reports/new"}
+            navigate={~p"/app/reports/new"}
             class="btn btn-primary btn-sm"
             data-role="new-report-btn"
           >
@@ -143,7 +143,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             class="mf-card p-8 text-center"
           >
             <p class="text-base-content/60 mb-4">No saved reports yet</p>
-            <.link navigate={~p"/reports/new"} class="btn btn-primary btn-sm">
+            <.link navigate={~p"/app/reports/new"} class="btn btn-primary btn-sm">
               Create your first report
             </.link>
           </div>
@@ -167,7 +167,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
               </p>
               <div class="flex items-center gap-2 mt-3">
                 <.link
-                  navigate={~p"/visualizations/#{report.id}/edit"}
+                  navigate={~p"/app/visualizations/#{report.id}/edit"}
                   class="btn btn-ghost btn-sm"
                   data-role={"view-report-#{report.id}"}
                 >
@@ -219,7 +219,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             </p>
           </div>
           <.link
-            navigate={~p"/reports/generate"}
+            navigate={~p"/app/reports/generate"}
             class="btn btn-secondary btn-sm shrink-0"
             data-role="ai-generate-btn"
           >

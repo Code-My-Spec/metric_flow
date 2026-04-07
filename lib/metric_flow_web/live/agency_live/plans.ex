@@ -23,7 +23,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
         <div class="mt-8 space-y-6">
           <div :if={!@stripe_connected} class="alert alert-warning">
             <span>Connect your Stripe account before creating plans.</span>
-            <.link navigate="/agency/stripe-connect" class="link link-primary">
+            <.link navigate="/app/agency/stripe-connect" class="link link-primary">
               Connect Stripe
             </.link>
           </div>

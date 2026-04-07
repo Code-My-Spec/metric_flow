@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AgencyAdminsSeeSubscriberSummarySpex do
       given_ :owner_has_stripe_connect
 
       when_ "the admin navigates to the agency subscriptions page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/agency/subscriptions")
+        {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")
         {:ok, Map.put(context, :view, view)}
       end
 

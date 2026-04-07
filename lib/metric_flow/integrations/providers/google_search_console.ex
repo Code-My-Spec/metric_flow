@@ -10,7 +10,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleSearchConsole do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/integrations/oauth/callback/google_search_console"
+  @callback_path "/app/integrations/oauth/callback/google_search_console"
 
   @impl true
   def config do

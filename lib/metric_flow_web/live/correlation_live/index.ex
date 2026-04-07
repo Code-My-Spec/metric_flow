@@ -71,7 +71,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             </div>
             <%!-- Configure Goals link --%>
             <.link
-              navigate={~p"/correlations/goals"}
+              navigate={~p"/app/correlations/goals"}
               data-role="configure-goals"
               class="btn btn-ghost btn-sm"
             >
@@ -116,7 +116,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               The system calculates daily aggregated Pearson correlation coefficients with optimal Lag detection (0–30 days) for each metric.
               Last calculated: never — need at least 30 days of data before correlations can run.
             </p>
-            <.link navigate={~p"/integrations"} class="btn btn-primary mt-6">
+            <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-6">
               Connect Integrations
             </.link>
             <div
@@ -376,7 +376,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                 </p>
                 <p class="text-sm text-base-content/60 mt-3">
                   Strong correlations are highlighted so you can act on the metrics that matter most.
-                  Visit the <.link navigate={~p"/insights"} class="link link-primary">AI Insights</.link>
+                  Visit the <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
                   page for detailed recommendations.
                 </p>
               </div>

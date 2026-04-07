@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4084ArrangeVisualizationsSpex do
       given_ :owner_has_active_subscription
 
       given_ "user has a dashboard with multiple visualizations from a template", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")
 
         # Select a template to get multiple viz cards
         view

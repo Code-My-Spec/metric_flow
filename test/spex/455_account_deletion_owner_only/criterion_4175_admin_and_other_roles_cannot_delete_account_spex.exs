@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
       given_ :second_user_registered
 
       given_ "the owner invites the second user as admin", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, view, _html} = live(member_conn, "/accounts/settings")
+        {:ok, view, _html} = live(member_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :member_view, view)}
       end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
       given_ :second_user_registered
 
       given_ "the owner invites the second user as account manager", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, view, _html} = live(member_conn, "/accounts/settings")
+        {:ok, view, _html} = live(member_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :member_view, view)}
       end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
       given_ :second_user_registered
 
       given_ "the owner invites the second user as read-only", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, view, _html} = live(member_conn, "/accounts/settings")
+        {:ok, view, _html} = live(member_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :member_view, view)}
       end
 

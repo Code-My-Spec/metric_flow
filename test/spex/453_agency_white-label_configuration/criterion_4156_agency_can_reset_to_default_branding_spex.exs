@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has saved custom branding settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has saved custom branding settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has saved custom branding settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         subdomain = "resetcheck-#{System.unique_integer([:positive])}"
 
         view

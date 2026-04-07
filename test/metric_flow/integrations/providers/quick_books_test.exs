@@ -134,7 +134,7 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert is_binary(redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/quickbooks")
+        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/quickbooks")
       end)
     end
 

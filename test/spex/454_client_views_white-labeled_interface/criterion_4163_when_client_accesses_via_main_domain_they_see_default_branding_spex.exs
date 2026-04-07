@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
       end
 
       given_ "the client navigates to the dashboard via the main domain", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the client navigates to the dashboard on the main domain", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 

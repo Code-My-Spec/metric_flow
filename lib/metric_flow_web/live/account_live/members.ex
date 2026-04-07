@@ -207,7 +207,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
 
     case Accounts.list_accounts(scope) do
       [] ->
-        {:ok, redirect(socket, to: "/accounts")}
+        {:ok, redirect(socket, to: "/app/accounts")}
 
       accounts ->
         account = ActiveAccountHook.primary_account(accounts)

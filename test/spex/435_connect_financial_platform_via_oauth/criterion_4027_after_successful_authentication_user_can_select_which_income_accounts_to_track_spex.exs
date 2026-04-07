@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
-          live(context.owner_conn, "/integrations/connect/quickbooks/accounts")
+          live(context.owner_conn, "/app/integrations/connect/quickbooks/accounts")
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
-          live(context.owner_conn, "/integrations/connect/quickbooks/accounts")
+          live(context.owner_conn, "/app/integrations/connect/quickbooks/accounts")
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
-          live(context.owner_conn, "/integrations/connect/quickbooks/accounts")
+          live(context.owner_conn, "/app/integrations/connect/quickbooks/accounts")
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
       then_ "the user is redirected to the provider detail page", context do
         {path, _flash} = assert_redirect(context.view)
-        assert path =~ "/integrations"
+        assert path =~ "/app/integrations"
         :ok
       end
     end

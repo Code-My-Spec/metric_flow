@@ -23,7 +23,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
     <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mf-content mx-auto max-w-3xl">
         <div class="flex items-center gap-4 mb-6">
-          <a href="/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
+          <a href="/app/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
         </div>
 
         <div class="mb-6">
@@ -153,7 +153,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
 
     case Accounts.list_accounts(scope) do
       [] ->
-        {:ok, redirect(socket, to: "/accounts")}
+        {:ok, redirect(socket, to: "/app/accounts")}
 
       [account | _] ->
         user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
@@ -179,7 +179,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
     {:ok,
      socket
      |> put_flash(:error, "You do not have permission to invite members.")
-     |> redirect(to: "/accounts/members")}
+     |> redirect(to: "/app/accounts/members")}
   end
 
   # ---------------------------------------------------------------------------

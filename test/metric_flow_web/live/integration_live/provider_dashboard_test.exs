@@ -39,7 +39,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         assert html =~ "Google Analytics"
         assert html =~ "Connected"
@@ -54,7 +54,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         assert has_element?(lv, "[data-role='metric-card']")
       end)
@@ -68,7 +68,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         assert has_element?(lv, "[data-role='sync-history-section']")
       end)
@@ -82,7 +82,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         html =
           lv
@@ -101,7 +101,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         html = render_change(lv, "change_date_range", %{"date_range" => "last_90_days"})
 
@@ -118,7 +118,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_business/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_business/dashboard")
 
         assert has_element?(lv, "[data-role='reviews-section']")
       end)
@@ -131,7 +131,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/integrations/google_analytics/dashboard")
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
 
         assert has_element?(lv, "[data-role='empty-state']")
       end)
@@ -144,8 +144,8 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, %{to: "/integrations"}}} =
-                 live(conn, ~p"/integrations/nonexistent_provider/dashboard")
+        assert {:error, {:redirect, %{to: "/app/integrations"}}} =
+                 live(conn, ~p"/app/integrations/nonexistent_provider/dashboard")
       end)
     end
   end

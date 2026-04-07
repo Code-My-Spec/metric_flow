@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
 
       then_ "the connect detail page renders an OAuth entry point (button or not-configured notice)",
             context do
-        {:ok, view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
 
         # Either the real OAuth button (when credentials are configured) or the
         # not-configured notice (in test environment without real credentials).
@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
       given_ :user_logged_in_as_owner
 
       then_ "the connect page shows Google Business as its own distinct provider card", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         assert has_element?(view, "[data-platform='google_business']")
         :ok
       end
@@ -55,13 +55,13 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
       end
 
       then_ "the detail page shows the integration is connected", context do
-        {:ok, _view, html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Connected"
         :ok
       end
 
       then_ "the detail page shows a select accounts button for account management", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/google_business")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "[data-role='select-accounts-button']")
         :ok
       end

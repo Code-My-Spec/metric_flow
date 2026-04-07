@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
       given_ :owner_has_metrics
 
       given_ "user has a chart rendered in the editor", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> element("[phx-value-metric='impressions']")

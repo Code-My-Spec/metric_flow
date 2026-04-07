@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
 
       conn = submit_form(form, conn)
 
-      assert redirected_to(conn) == ~p"/integrations"
+      assert redirected_to(conn) == ~p"/app/integrations"
     end
   end
 

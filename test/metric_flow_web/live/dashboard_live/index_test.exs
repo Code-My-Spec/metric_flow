@@ -46,7 +46,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/dashboards")
+        {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert html =~ "Dashboards"
         assert has_element?(lv, "[data-role='new-dashboard-btn'][href='/dashboards/new']")
@@ -61,7 +61,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/dashboards")
+        {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert has_element?(lv, "[data-role='canned-dashboards']")
         assert html =~ "Traffic Overview"
@@ -82,7 +82,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/dashboards")
+        {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert html =~ "Revenue Overview"
         assert has_element?(
@@ -102,7 +102,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         assert has_element?(lv, "[data-role='empty-user-dashboards']")
         assert has_element?(lv, "[data-role='empty-user-dashboards'] a[href='/dashboards/new']")
@@ -117,7 +117,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         render_click(lv, "delete", %{"id" => to_string(dashboard.id)})
 
@@ -135,7 +135,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         render_click(lv, "delete", %{"id" => to_string(dashboard.id)})
         html = render_click(lv, "confirm_delete", %{"id" => to_string(dashboard.id)})
@@ -153,7 +153,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         render_click(lv, "delete", %{"id" => to_string(dashboard.id)})
         assert has_element?(lv, "[data-role='delete-confirm-#{dashboard.id}']")
@@ -172,7 +172,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         render_click(lv, "delete", %{"id" => to_string(dashboard.id)})
         Repo.delete!(dashboard)

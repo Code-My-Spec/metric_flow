@@ -62,9 +62,9 @@ defmodule MetricFlowWeb.Router do
     end
   end
 
-  ## Authentication routes
+  ## Authentication routes — app routes under /app prefix
 
-  scope "/", MetricFlowWeb do
+  scope "/app", MetricFlowWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,

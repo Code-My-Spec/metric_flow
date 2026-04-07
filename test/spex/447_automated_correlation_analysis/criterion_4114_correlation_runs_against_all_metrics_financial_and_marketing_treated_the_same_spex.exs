@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
-        {:ok, view, _html} = live(conn, "/correlations")
+        {:ok, view, _html} = live(conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
-        {:ok, view, _html} = live(conn, "/correlations")
+        {:ok, view, _html} = live(conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 

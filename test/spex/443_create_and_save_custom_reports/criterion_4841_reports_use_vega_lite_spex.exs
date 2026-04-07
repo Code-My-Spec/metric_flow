@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4841ReportsUseVegaLiteSpex do
       given_ :owner_with_integrations
 
       when_ "user views the main dashboard", context do
-        {:ok, view, html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

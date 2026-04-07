@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
 
       given_ "the user navigates to the QuickBooks connect detail page", context do
         {:ok, view, _html} =
-          live(context.owner_conn, "/integrations/connect/quickbooks")
+          live(context.owner_conn, "/app/integrations/connect/quickbooks")
 
         {:ok, Map.put(context, :view, view)}
       end
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
       given_ :owner_with_quickbooks_integration
 
       when_ "the user views the QuickBooks detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/quickbooks")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 

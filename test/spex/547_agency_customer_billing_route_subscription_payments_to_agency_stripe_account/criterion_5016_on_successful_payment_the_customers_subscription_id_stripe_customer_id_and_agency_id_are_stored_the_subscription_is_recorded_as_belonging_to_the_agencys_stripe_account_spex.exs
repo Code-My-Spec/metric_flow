@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.SuccessfulPaymentStoresAgencySubscriptionSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the checkout success page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout?success=true&session_id=cs_test_abc123")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout?success=true&session_id=cs_test_abc123")
         {:ok, Map.put(context, :view, view)}
       end
 

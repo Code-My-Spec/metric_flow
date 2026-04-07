@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert has_element?(view, "input[type='checkbox'][name='location_ids[]']")
           end)
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
 
           capture_log(fn ->
             {:ok, _view, html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             refute html =~ "type=\"radio\""
           end)

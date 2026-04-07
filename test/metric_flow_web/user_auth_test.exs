@@ -24,7 +24,7 @@ defmodule MetricFlowWeb.UserAuthTest do
       conn = UserAuth.log_in_user(conn, user)
       assert token = get_session(conn, :user_token)
       assert get_session(conn, :live_socket_id) == "users_sessions:#{Base.url_encode64(token)}"
-      assert redirected_to(conn) == ~p"/integrations"
+      assert redirected_to(conn) == ~p"/app/integrations"
       assert Users.get_user_by_session_token(token)
     end
 
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.UserAuthTest do
         |> assign(:current_scope, Scope.for_user(user))
         |> UserAuth.log_in_user(user)
 
-      assert redirected_to(conn) == ~p"/users/settings"
+      assert redirected_to(conn) == ~p"/app/users/settings"
     end
 
     test "writes a cookie if remember_me was set in previous session", %{conn: conn, user: user} do

@@ -315,7 +315,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
     case Accounts.list_accounts(scope) do
       [] ->
-        {:ok, redirect(socket, to: "/accounts")}
+        {:ok, redirect(socket, to: "/app/accounts")}
 
       accounts ->
         if connected?(socket), do: Accounts.subscribe_account(scope)
@@ -634,7 +634,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   end
 
   def handle_info({:deleted, _account}, socket) do
-    {:noreply, redirect(socket, to: "/accounts")}
+    {:noreply, redirect(socket, to: "/app/accounts")}
   end
 
   # ---------------------------------------------------------------------------
@@ -720,7 +720,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
             {:noreply,
              socket
              |> put_flash(:info, "Account deleted successfully.")
-             |> redirect(to: "/accounts")}
+             |> redirect(to: "/app/accounts")}
 
           {:error, :personal_account} ->
             {:noreply, put_flash(socket, :error, "Personal accounts cannot be deleted")}

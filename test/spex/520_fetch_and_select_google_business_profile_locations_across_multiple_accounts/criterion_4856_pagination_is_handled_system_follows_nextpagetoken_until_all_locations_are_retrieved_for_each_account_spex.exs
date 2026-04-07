@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
       end
 
       given_ "the user navigates to the location selection page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :location_page_result, result)}
       end
 
@@ -155,7 +155,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
       end
 
       given_ "the user visits the google_business account location page", context do
-        result = live(context.owner_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :page_result, result)}
       end
 
@@ -178,7 +178,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
 
     scenario "unauthenticated user cannot access the location selection page" do
       given_ "an unauthenticated user navigates to the google_business location page", context do
-        result = live(build_conn(), "/integrations/connect/google_business/accounts")
+        result = live(build_conn(), "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 

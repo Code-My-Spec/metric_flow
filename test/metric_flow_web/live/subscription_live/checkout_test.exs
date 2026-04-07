@@ -73,7 +73,7 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     plan_fixture(nil, %{name: "MetricFlow Pro", price_cents: 4999})
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/subscriptions/checkout")
+    {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
 
     assert html =~ "MetricFlow Pro"
     assert html =~ "$49.99"
@@ -84,7 +84,7 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     _account = account_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/subscriptions/checkout")
+    {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
 
     assert html =~ "Subscribe"
     assert html =~ "data-role=\"subscribe-button\""
@@ -96,7 +96,7 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     subscription_fixture(account)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/subscriptions/checkout")
+    {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
 
     assert html =~ "Active"
     assert html =~ "Current Subscription"
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     subscription_fixture(account)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/subscriptions/checkout")
+    {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
 
     assert html =~ "Cancel Subscription"
   end
@@ -119,7 +119,7 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     plan_fixture(account.id, %{name: "Agency Custom Plan", price_cents: 2999})
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/subscriptions/checkout")
+    {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
 
     assert html =~ "Agency Custom Plan"
     assert html =~ "$29.99"

@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         html_before = render(view)
 
         {:ok,
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         html_before = render(view)
 
         {:ok,
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
       given_ :owner_with_integrations
 
       given_ "the user has loaded the dashboard in a LiveView session", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -156,7 +156,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard and captures initial HTML", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         html_initial = render(view)
 
         {:ok,

@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
       end
 
       when_ "the unverified user tries to navigate to a protected route", context do
-        result = live(context.conn, "/users/settings")
+        result = live(context.conn, "/app/users/settings")
         {:ok, Map.put(context, :settings_result, result)}
       end
 

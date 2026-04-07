@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
       given_ :second_user_registered
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the owner is on the members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 

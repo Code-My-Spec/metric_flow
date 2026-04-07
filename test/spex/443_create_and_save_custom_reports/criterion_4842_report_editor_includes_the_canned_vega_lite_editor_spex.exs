@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4842ReportEditorIncludesVegaLiteEditorSpex do
       given_ :owner_has_active_subscription
 
       given_ "user opens the metric picker on a new dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")
 
         view
         |> element("[data-role='add-visualization-btn']")

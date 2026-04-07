@@ -114,7 +114,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
             <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
               Run a correlation analysis first, then generate insights from the results.
             </p>
-            <.link navigate={~p"/correlations"} class="btn btn-primary mt-6">
+            <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6">
               Run Correlations
             </.link>
           <% end %>

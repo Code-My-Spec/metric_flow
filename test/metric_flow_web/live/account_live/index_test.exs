@@ -69,7 +69,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts")
 
       assert html =~ "Your Accounts"
     end
@@ -82,7 +82,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       personal = personal_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts")
 
       assert html =~ team.name
       assert html =~ personal.name
@@ -98,7 +98,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       assert has_element?(
                lv,
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       assert has_element?(lv, "[data-role='switch-account'][disabled]", "Active")
     end
@@ -126,7 +126,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _second = team_account_fixture(user, %{name: "Second Account"})
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       html =
         lv
@@ -150,7 +150,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       Repo.delete_all(from(m in AccountMember, where: m.user_id == ^user_id))
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts")
 
       assert html =~ "No accounts found."
     end
@@ -162,7 +162,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       html =
         lv
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       html =
         lv
@@ -201,7 +201,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       html =
         lv
@@ -220,7 +220,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       _existing = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts")
 
       new_account = insert_account!(user, %{name: "PubSub Created"})
       insert_member!(new_account, user, :member)
@@ -234,7 +234,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
 
   describe "redirects unauthenticated users to login" do
     test "redirects unauthenticated users to login", %{conn: conn} do
-      assert {:error, {:redirect, %{to: "/users/log-in"}}} = live(conn, ~p"/accounts")
+      assert {:error, {:redirect, %{to: "/users/log-in"}}} = live(conn, ~p"/app/accounts")
     end
   end
 end

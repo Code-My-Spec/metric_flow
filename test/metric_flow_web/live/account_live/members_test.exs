@@ -54,7 +54,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts/members")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/members")
 
       assert html =~ "Members"
       assert html =~ account.name
@@ -69,7 +69,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, other_user, :admin)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts/members")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/members")
 
       assert html =~ user.email
       assert html =~ other_user.email
@@ -86,7 +86,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, other_user, :read_only)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       assert has_element?(lv, "[data-role='member-row'] select")
       assert has_element?(lv, "[data-role='remove-member']")
@@ -101,7 +101,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, manager_user, :account_manager)
       conn = log_in_user(conn, manager_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       refute has_element?(lv, "[data-role='members-list']")
       refute has_element?(lv, "[data-role='member-row'] select")
@@ -118,7 +118,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, target_user, :read_only)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       capture_log(fn ->
         html =
@@ -141,7 +141,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       html =
         lv
@@ -160,7 +160,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, target_user, :admin)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       capture_log(fn ->
         html =
@@ -184,7 +184,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       refute has_element?(
                lv,
@@ -201,7 +201,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, admin_user, :admin)
       conn = log_in_user(conn, admin_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       refute has_element?(
                lv,
@@ -217,7 +217,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       invitee = user_fixture()
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       html =
         lv
@@ -235,7 +235,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       _account = account_fixture(owner)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       html =
         lv
@@ -254,7 +254,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       insert_member!(account, existing_member, :admin)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       html =
         lv
@@ -271,7 +271,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       account = account_fixture(owner)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/members")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/members")
 
       new_user = user_fixture()
       new_member = insert_member!(account, new_user, :read_only)
@@ -289,8 +289,8 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/accounts"}}} =
-               live(conn, ~p"/accounts/members")
+      assert {:error, {:redirect, %{to: "/app/accounts"}}} =
+               live(conn, ~p"/app/accounts/members")
     end
   end
 end

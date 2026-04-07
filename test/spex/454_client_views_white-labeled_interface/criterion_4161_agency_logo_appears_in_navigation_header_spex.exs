@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
       given_ "the client navigates to the dashboard via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "logotest.metricflow.io"}
-        {:ok, view, _html} = live(conn, "/dashboard")
+        {:ok, view, _html} = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
       given_ "the client visits the app via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "logotest2.metricflow.io"}
-        {:ok, view, _html} = live(conn, "/dashboard")
+        {:ok, view, _html} = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 

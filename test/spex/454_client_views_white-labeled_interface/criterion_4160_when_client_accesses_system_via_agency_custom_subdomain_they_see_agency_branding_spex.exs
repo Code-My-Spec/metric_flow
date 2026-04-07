@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
       given_ "the client navigates to the dashboard via the agency subdomain", context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "testbrand.metricflow.io"}
-        result = live(conn, "/dashboard")
+        result = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
       given_ "an unauthenticated user visits the dashboard via an agency subdomain", context do
         %Plug.Conn{} = base_conn = build_conn()
         conn = %{base_conn | host: "testbrand.metricflow.io"}
-        result = live(conn, "/dashboard")
+        result = live(conn, "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 

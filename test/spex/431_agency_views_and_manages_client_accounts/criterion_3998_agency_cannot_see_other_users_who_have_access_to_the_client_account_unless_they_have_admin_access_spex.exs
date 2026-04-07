@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
       end
 
       when_ "the read-only user navigates to the account members page", context do
-        {:ok, view, _html} = live(context.readonly_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.readonly_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
       end
 
       when_ "the admin user navigates to the account members page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.admin_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -147,7 +147,7 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
       end
 
       when_ "the account manager navigates to the account members page", context do
-        {:ok, view, _html} = live(context.account_manager_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.account_manager_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 

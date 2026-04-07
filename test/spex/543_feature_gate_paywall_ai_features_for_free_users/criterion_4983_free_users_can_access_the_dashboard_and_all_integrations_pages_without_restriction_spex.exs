@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.FreeUsersAccessDashboardAndIntegrationsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the dashboard", context do
-        result = live(context.owner_conn, "/dashboard")
+        result = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.FreeUsersAccessDashboardAndIntegrationsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the integrations page", context do
-        result = live(context.owner_conn, "/integrations")
+        result = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :result, result)}
       end
 

@@ -21,7 +21,7 @@ defmodule MetricFlowTest.OAuthStub do
 
       given_ :with_oauth_stub_providers
       # Then hit the callback:
-      conn = get(context.owner_conn, "/integrations/oauth/callback/google_ads",
+      conn = get(context.owner_conn, "/app/integrations/oauth/callback/google_ads",
         MetricFlowTest.OAuthStub.valid_callback_params())
   """
 

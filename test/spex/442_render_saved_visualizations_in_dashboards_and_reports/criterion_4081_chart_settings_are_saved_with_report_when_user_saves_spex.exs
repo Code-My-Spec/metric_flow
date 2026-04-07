@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
       given_ :owner_has_metrics
 
       given_ "user configures a visualization", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         # Set name
         view
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
 
       then_ "the visualization is saved and user is redirected", context do
         # After save, user should be redirected to dashboards or see success flash
-        assert_redirect(context.view, "/dashboards")
+        assert_redirect(context.view, "/app/dashboards")
         :ok
       end
     end

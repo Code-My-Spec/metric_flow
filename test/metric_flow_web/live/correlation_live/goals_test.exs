@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, html} = live(conn, ~p"/app/correlations/goals")
 
         assert html =~ "Goal Metric"
         assert has_element?(lv, "select")
@@ -114,7 +114,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/correlations/goals")
+        {:ok, _lv, html} = live(conn, ~p"/app/correlations/goals")
 
         assert html =~ "revenue"
       end)
@@ -127,7 +127,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, html} = live(conn, ~p"/app/correlations/goals")
 
         assert html =~ "No metrics available"
         assert has_element?(lv, "a[href='/integrations']")
@@ -141,7 +141,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         assert has_element?(lv, "[data-role='save-goal'][disabled]")
       end)
@@ -156,7 +156,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         render_change(lv, "select_goal", %{"goal_metric_name" => "clicks"})
 
@@ -172,12 +172,12 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         render_change(lv, "select_goal", %{"goal_metric_name" => "revenue"})
         lv |> form("form") |> render_submit()
 
-        flash = assert_redirect(lv, ~p"/correlations")
+        flash = assert_redirect(lv, ~p"/app/correlations")
         assert flash["info"] =~ "Goal metric saved. Correlation analysis started."
       end)
     end
@@ -189,7 +189,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         html = render_submit(lv, "save_goal", %{})
 
@@ -206,7 +206,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         render_change(lv, "select_goal", %{"goal_metric_name" => "revenue"})
         html = lv |> form("form") |> render_submit()
@@ -224,11 +224,11 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/correlations/goals")
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         lv |> element("[data-role='cancel']") |> render_click()
 
-        assert_redirect(lv, ~p"/correlations")
+        assert_redirect(lv, ~p"/app/correlations")
       end)
     end
   end

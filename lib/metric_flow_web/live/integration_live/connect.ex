@@ -141,7 +141,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
         <div class="flex flex-col gap-2 mt-3">
           <.link
-            navigate={~p"/integrations/connect/#{@provider}/accounts"}
+            navigate={~p"/app/integrations/connect/#{@provider}/accounts"}
             data-role="select-accounts-button"
             class="btn btn-secondary btn-sm w-full sm:w-auto"
           >
@@ -195,7 +195,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       </div>
 
       <div class="mt-4">
-        <.link navigate={~p"/integrations"} class="btn btn-ghost btn-sm">
+        <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
           Back to integrations
         </.link>
       </div>
@@ -215,10 +215,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           </p>
           <span class="badge badge-success mb-4">Active</span>
           <div class="flex flex-col gap-2 mt-4">
-            <.link navigate={~p"/integrations"} class="btn btn-primary w-full">
+            <.link navigate={~p"/app/integrations"} class="btn btn-primary w-full">
               View Integrations
             </.link>
-            <.link navigate={~p"/integrations/connect"} class="btn btn-ghost btn-sm">
+            <.link navigate={~p"/app/integrations/connect"} class="btn btn-ghost btn-sm">
               Connect another platform
             </.link>
           </div>
@@ -231,10 +231,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {@error_message}
           </p>
           <div class="flex flex-col gap-2 mt-4">
-            <.link navigate={~p"/integrations/connect/#{@provider}"} class="btn btn-primary w-full">
+            <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="btn btn-primary w-full">
               Try again
             </.link>
-            <.link navigate={~p"/integrations"} class="btn btn-ghost btn-sm">
+            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
               Back to integrations
             </.link>
           </div>
@@ -379,7 +379,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             Save Selection
           </button>
 
-          <.link navigate={~p"/integrations/connect/#{@provider}"} class="btn btn-ghost btn-sm">
+          <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="btn btn-ghost btn-sm">
             Back
           </.link>
         </div>
@@ -454,7 +454,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   @impl true
   def handle_event("connect", %{"provider" => provider_str}, socket) do
-    {:noreply, redirect(socket, to: ~p"/integrations/oauth/#{provider_str}")}
+    {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/#{provider_str}")}
   end
 
   def handle_event("save_account_selection", params, socket) do
@@ -474,7 +474,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {:noreply,
              socket
              |> put_flash(:info, "#{length(location_ids)} location(s) saved successfully.")
-             |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
           {:error, reason} ->
             {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
@@ -499,7 +499,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {:noreply,
              socket
              |> put_flash(:info, "Account selection saved successfully.")
-             |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
           {:error, reason} ->
             {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
@@ -523,7 +523,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp handle_provider_params(provider_str, socket) do
     case validate_provider(provider_str) do
       :error ->
-        {:noreply, push_navigate(socket, to: ~p"/integrations/connect")}
+        {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect")}
 
       {:ok, provider_atom} ->
         {view_mode, extra_assigns} = detect_result_state(socket.assigns.flash)
@@ -542,7 +542,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp handle_accounts_params(provider_str, socket) do
     case validate_provider(provider_str) do
       :error ->
-        {:noreply, push_navigate(socket, to: ~p"/integrations/connect")}
+        {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect")}
 
       {:ok, provider_atom} ->
         integration = fetch_existing_integration(socket, provider_atom)
@@ -551,7 +551,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           {:noreply,
            socket
            |> put_flash(:error, "Please connect #{provider_str} first before selecting accounts.")
-           |> push_navigate(to: ~p"/integrations/connect/#{provider_str}")}
+           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
         else
           {accounts, accounts_error} = fetch_provider_accounts(socket, provider_atom, integration)
 

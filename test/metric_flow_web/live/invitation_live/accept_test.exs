@@ -133,7 +133,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
       {:ok, lv, _html} = live(conn, ~p"/invitations/#{invitation.token}")
 
       lv |> element("[data-role='accept-btn']") |> render_click()
-      flash = assert_redirect(lv, "/accounts")
+      flash = assert_redirect(lv, "/app/accounts")
 
       assert flash["info"] =~ "You now have access to Acme Corp"
     end
@@ -211,7 +211,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
       {:ok, lv, _html} = live(conn, ~p"/invitations/#{invitation.token}")
 
       lv |> element("[data-role='accept-btn']") |> render_click()
-      flash = assert_redirect(lv, "/accounts")
+      flash = assert_redirect(lv, "/app/accounts")
 
       assert flash["info"] =~ "already have access"
     end

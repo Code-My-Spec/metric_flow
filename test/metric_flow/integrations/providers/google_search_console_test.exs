@@ -107,7 +107,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleSearchConsoleTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/google_search_console")
+        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/google_search_console")
       end)
     end
 

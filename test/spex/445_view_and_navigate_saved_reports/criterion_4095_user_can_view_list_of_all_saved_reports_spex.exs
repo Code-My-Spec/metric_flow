@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the dashboards page", context do
-        result = live(context.owner_conn, "/dashboards")
+        result = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       end
 
       given_ "the user navigates to the dashboards page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -105,7 +105,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
 
     scenario "unauthenticated user cannot access the dashboards list" do
       given_ "an unauthenticated user navigates to the dashboards page", context do
-        result = live(build_conn(), "/dashboards")
+        result = live(build_conn(), "/app/dashboards")
         {:ok, Map.put(context, :result, result)}
       end
 

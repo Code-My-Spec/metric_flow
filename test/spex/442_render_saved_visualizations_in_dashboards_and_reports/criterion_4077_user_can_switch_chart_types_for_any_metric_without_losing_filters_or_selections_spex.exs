@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4077SwitchChartTypesRetainsSelectionsSpex do
       given_ :owner_has_metrics
 
       given_ "user has configured a visualization with a metric and name", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         # Type a name
         view

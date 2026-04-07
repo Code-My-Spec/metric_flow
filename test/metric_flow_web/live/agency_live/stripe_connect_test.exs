@@ -57,7 +57,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     _account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "Stripe Connect"
   end
@@ -67,7 +67,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     _account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "Not connected"
   end
@@ -77,7 +77,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     _account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "Connect Stripe Account"
     assert html =~ "data-role=\"connect-stripe\""
@@ -89,7 +89,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     sa = stripe_account_fixture(account)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "Connected"
     assert html =~ sa.stripe_account_id
@@ -101,7 +101,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     stripe_account_fixture(account, %{onboarding_status: :restricted})
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "Restricted"
     assert html =~ "Resume Onboarding"
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     stripe_account_fixture(account)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     assert html =~ "data-role=\"disconnect-stripe\""
     assert html =~ "Disconnect Stripe Account"
@@ -125,7 +125,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     stripe_account_fixture(account)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/stripe-connect")
+    {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     refute html =~ "data-role=\"connect-stripe\""
     end

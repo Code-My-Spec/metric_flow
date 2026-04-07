@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion5056SavedVizRenderedInlineDashboardSpex do
       given_ :owner_has_metrics
 
       given_ "user creates and saves a visualization", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         # Set name
         view
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.Criterion5056SavedVizRenderedInlineDashboardSpex do
       end
 
       when_ "user navigates to the visualizations list", context do
-        {:ok, view, html} = live(context.owner_conn, "/visualizations")
+        {:ok, view, html} = live(context.owner_conn, "/app/visualizations")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 

@@ -33,7 +33,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
       <.form
         for={@password_form}
         id="password_form"
-        action={~p"/users/update-password"}
+        action={~p"/app/users/update-password"}
         method="post"
         phx-change="validate_password"
         phx-submit="update_password"
@@ -92,7 +92,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
               Disconnect
             </button>
           <% else %>
-            <.link href={~p"/integrations/oauth/codemyspec"} class="btn btn-sm btn-primary">
+            <.link href={~p"/app/integrations/oauth/codemyspec"} class="btn btn-sm btn-primary">
               Connect
             </.link>
           <% end %>
@@ -113,7 +113,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
           put_flash(socket, :error, "Email change link is invalid or it has expired.")
       end
 
-    {:ok, push_navigate(socket, to: ~p"/users/settings")}
+    {:ok, push_navigate(socket, to: ~p"/app/users/settings")}
   end
 
   def mount(_params, _session, socket) do
@@ -156,7 +156,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
         Users.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
           user.email,
-          &url(~p"/users/settings/confirm-email/#{&1}")
+          &url(~p"/app/users/settings/confirm-email/#{&1}")
         )
 
         info = "A link to confirm your email change has been sent to the new address."

@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
       given_ :owner_has_metrics
 
       given_ "user has a chart in the editor with spec editor open", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         # Select metric to generate initial spec
         view
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
       given_ :owner_has_metrics
 
       given_ "user has the spec editor open", context do
-        {:ok, view, _html} = live(context.owner_conn, "/visualizations/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view
         |> element("[phx-value-metric='impressions']")

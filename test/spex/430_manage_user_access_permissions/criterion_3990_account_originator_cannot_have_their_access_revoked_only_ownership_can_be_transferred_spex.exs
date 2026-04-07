@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to the account members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
       given_ :second_user_registered
 
       given_ "the owner invites the second user as a member", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
       given_ :second_user_registered
 
       given_ "the owner invites the second user as a member before transfer", context do
-        {:ok, members_view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, members_view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         members_view
         |> form("#invite_member_form", invitation: %{
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
       end
 
       given_ "the owner navigates to account settings", context do
-        {:ok, settings_view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, settings_view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :settings_view, settings_view)}
       end
 

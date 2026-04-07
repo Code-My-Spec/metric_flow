@@ -115,7 +115,7 @@ defmodule MetricFlow.Integrations.Providers.CodemyspecTest do
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert is_binary(redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/codemyspec")
+        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/codemyspec")
       end)
     end
 

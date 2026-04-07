@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
       given_ :owner_has_active_subscription
 
       when_ "user navigates to create a new dashboard", context do
-        {:ok, view, html} = live(context.owner_conn, "/dashboards/new")
+        {:ok, view, html} = live(context.owner_conn, "/app/dashboards/new")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
       given_ :owner_has_active_subscription
 
       given_ "user is on the new dashboard page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")
         {:ok, Map.put(context, :view, view)}
       end
 

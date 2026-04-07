@@ -134,7 +134,7 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
             <span class="badge badge-success">Saved</span>
             <span>Visualization saved!</span>
           </div>
-          <.link navigate="/visualizations" class="link block mb-3">
+          <.link navigate="/app/visualizations" class="link block mb-3">
             View in Visualizations
           </.link>
           <button
@@ -270,7 +270,7 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
   end
 
   def handle_event("generate_another", _params, socket) do
-    {:noreply, push_patch(socket, to: ~p"/reports/generate")}
+    {:noreply, push_patch(socket, to: ~p"/app/reports/generate")}
   end
 
   # ---------------------------------------------------------------------------

@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
       end
 
       when_ "the admin user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.admin_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
       end
 
       when_ "the admin user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/integrations")
+        {:ok, view, _html} = live(context.admin_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -142,7 +142,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
       end
 
       when_ "the admin user navigates to the account members page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.admin_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -188,7 +188,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
       end
 
       when_ "the admin user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.admin_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -239,7 +239,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
       end
 
       when_ "the admin user navigates to the account settings page", context do
-        {:ok, view, _html} = live(context.admin_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.admin_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 

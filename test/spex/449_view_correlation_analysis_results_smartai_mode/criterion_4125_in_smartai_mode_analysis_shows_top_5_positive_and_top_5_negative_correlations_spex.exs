@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
       given_ :owner_has_active_subscription
 
       given_ "the user navigates to the correlations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/correlations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion4088DeleteSavedReportsSpex do
       given_ :owner_has_active_subscription
 
       given_ "user creates and saves a dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards/new")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")
 
         view
         |> element("[data-role='template-card-marketing_overview']")
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.Criterion4088DeleteSavedReportsSpex do
       end
 
       when_ "user navigates to dashboards and clicks delete", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboards")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
 
         # Find the delete button (includes dashboard ID in data-role)
         html = render(view)

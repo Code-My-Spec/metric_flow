@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the Facebook Ads provider detail page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect/facebook_ads")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/facebook_ads")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 

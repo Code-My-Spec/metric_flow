@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
 
           capture_log(fn ->
             {:ok, view, html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             # Real account list rendered (not manual entry fallback)
             assert html =~ "data-role=\"account-list\""

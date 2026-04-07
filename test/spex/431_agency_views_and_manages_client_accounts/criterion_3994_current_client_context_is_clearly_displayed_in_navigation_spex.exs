@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       end
 
       when_ "the agency user navigates to the accounts settings page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       end
 
       when_ "the agency user navigates to the accounts list page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       given_ :user_logged_in_as_owner
 
       when_ "the user navigates to the accounts page with their own account active", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       end
 
       when_ "the agency user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 

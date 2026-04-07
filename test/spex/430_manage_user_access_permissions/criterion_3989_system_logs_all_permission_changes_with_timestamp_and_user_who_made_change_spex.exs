@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
       given_ :second_user_registered
 
       given_ "the owner invites the second user with read_only role", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{

@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 

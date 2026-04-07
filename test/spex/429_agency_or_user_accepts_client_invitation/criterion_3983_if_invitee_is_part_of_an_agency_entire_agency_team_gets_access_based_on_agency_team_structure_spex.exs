@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       given_ :second_user_registered
 
       given_ "the second user is an agency user who has been invited", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -58,14 +58,14 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       end
 
       then_ "the agency user sees the client account in their accounts list", context do
-        {:ok, view, _html} = live(context.agency_user_conn, "/accounts")
+        {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
         :ok
       end
 
       then_ "a success confirmation is shown after accepting", context do
-        {:ok, view, _html} = live(context.agency_user_conn, "/accounts")
+        {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "You now have access" or html =~ "Owner Account"
         :ok
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       given_ :second_user_registered
 
       given_ "the client has invited the agency user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       end
 
       then_ "the client account members list shows the agency user has access", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "account_manager"
@@ -132,7 +132,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       given_ :second_user_registered
 
       given_ "the client has invited the agency user and they accepted", context do
-        {:ok, invite_view, _html} = live(context.owner_conn, "/accounts/invitations")
+        {:ok, invite_view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         invite_view
         |> form("#invite_member_form", invitation: %{
@@ -170,7 +170,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
       end
 
       then_ "the agency user sees the client account listed under their accessible accounts", context do
-        {:ok, view, _html} = live(context.agency_user_conn, "/accounts")
+        {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
         :ok

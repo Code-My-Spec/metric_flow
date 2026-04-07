@@ -19,7 +19,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
 
   defp mount_insights(conn, user) do
     conn = log_in_user(conn, user)
-    live(conn, ~p"/insights")
+    live(conn, ~p"/app/insights")
   end
 
   # ---------------------------------------------------------------------------

@@ -64,7 +64,7 @@ defmodule MetricFlow.Integrations.Providers.AnthropicTest do
 
     test "includes redirect_uri with /integrations/oauth/callback/anthropic path" do
       config = Anthropic.config()
-      assert String.ends_with?(Keyword.get(config, :redirect_uri), "/integrations/oauth/callback/anthropic")
+      assert String.ends_with?(Keyword.get(config, :redirect_uri), "/app/integrations/oauth/callback/anthropic")
     end
 
     test "includes authorization_params with read scope" do

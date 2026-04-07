@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.Criterion4151SystemLogsLlmInteractionsSpex do
       given_ :owner_has_active_subscription
 
       given_ "user is on the report generator", context do
-        {:ok, view, _html} = live(context.owner_conn, "/reports/generate")
+        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
         {:ok, Map.put(context, :view, view)}
       end
 

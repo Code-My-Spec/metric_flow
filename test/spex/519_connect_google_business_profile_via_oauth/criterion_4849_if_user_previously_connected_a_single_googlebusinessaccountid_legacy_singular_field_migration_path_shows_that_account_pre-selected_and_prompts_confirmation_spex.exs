@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
 
           capture_log(fn ->
             {:ok, _view, html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert html =~ "Select Accounts"
           end)
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
 
           capture_log(fn ->
             {:ok, view, _html} =
-              live(context.owner_conn, "/integrations/connect/google_business/accounts")
+              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert has_element?(view, "[data-role='save-selection']")
           end)

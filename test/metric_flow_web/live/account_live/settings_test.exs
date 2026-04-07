@@ -77,7 +77,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, html} = live(conn, ~p"/app/accounts/settings")
 
       assert html =~ "Account Settings"
       assert html =~ account.name
@@ -92,7 +92,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       _account = personal_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts/settings")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/settings")
 
       assert html =~ "Personal"
     end
@@ -105,7 +105,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -123,7 +123,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -146,7 +146,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, reader_user, :read_only)
       conn = log_in_user(conn, reader_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "button", "Save Changes")
     end
@@ -161,7 +161,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, admin_user, :admin)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='transfer-ownership']")
       assert has_element?(lv, "[data-role='transfer-ownership'] select option")
@@ -176,7 +176,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, admin_user, :admin)
       conn = log_in_user(conn, admin_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='transfer-ownership']")
     end
@@ -191,7 +191,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, target_user, :admin)
       conn = log_in_user(conn, owner)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -215,7 +215,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='delete-account']")
     end
@@ -229,7 +229,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, admin_user, :admin)
       conn = log_in_user(conn, admin_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='delete-account']")
     end
@@ -242,7 +242,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -262,7 +262,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       html =
         lv
@@ -282,7 +282,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       result =
         lv
@@ -292,7 +292,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
         })
         |> render_submit()
 
-      assert {:error, {:redirect, %{to: "/accounts"}}} = result
+      assert {:error, {:redirect, %{to: "/app/accounts"}}} = result
     end
   end
 
@@ -302,7 +302,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       account = personal_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='delete-account']")
       assert account.type == "personal"
@@ -317,7 +317,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, reader_user, :read_only)
       conn = log_in_user(conn, reader_user)
 
-      {:ok, _lv, html} = live(conn, ~p"/accounts/settings")
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/settings")
 
       assert html =~ "readonly"
       assert html =~ account.name
@@ -331,7 +331,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       updated_account = %{account | name: "PubSub Updated Name"}
       send(lv.pid, {:updated, updated_account})
@@ -347,8 +347,8 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/accounts"}}} =
-               live(conn, ~p"/accounts/settings")
+      assert {:error, {:redirect, %{to: "/app/accounts"}}} =
+               live(conn, ~p"/app/accounts/settings")
     end
   end
 
@@ -360,7 +360,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, member_user, :read_only)
       conn = log_in_user(conn, member_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       assert has_element?(lv, "[data-role='revoke-own-access']")
     end
@@ -374,7 +374,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       insert_member!(account, member_user, :read_only)
       conn = log_in_user(conn, member_user)
 
-      {:ok, lv, _html} = live(conn, ~p"/accounts/settings")
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       lv |> element("[data-role='revoke-own-access']") |> render_click()
       assert has_element?(lv, "[data-role='confirm-leave']")

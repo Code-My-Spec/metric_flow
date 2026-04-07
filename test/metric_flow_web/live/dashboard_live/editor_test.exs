@@ -34,7 +34,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, html} = live(conn, ~p"/app/dashboards/new")
 
         assert html =~ "New Dashboard"
         assert has_element?(lv, "[data-role='dashboard-name-input']")
@@ -51,7 +51,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/dashboards/#{dashboard.id}/edit")
+        {:ok, _lv, html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
 
         assert html =~ "Edit Dashboard"
         assert html =~ "My Existing Dashboard"
@@ -65,7 +65,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         html = render_change(lv, "validate_name", %{"dashboard" => %{"name" => ""}})
         assert html =~ "can&#39;t be blank"
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         lv
         |> element("[data-role='template-card-marketing_overview']")
@@ -97,7 +97,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         lv |> element("[data-role='template-card-marketing_overview']") |> render_click()
         assert has_element?(lv, "[data-role='visualization-card']")
@@ -115,7 +115,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_click(lv, "open_metric_picker", %{})
         assert has_element?(lv, "[data-role='metric-picker']")
@@ -139,7 +139,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_click(lv, "open_metric_picker", %{})
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
@@ -157,7 +157,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_click(lv, "open_metric_picker", %{})
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
@@ -177,7 +177,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_click(lv, "open_metric_picker", %{})
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
@@ -200,7 +200,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_change(lv, "validate_name", %{"dashboard" => %{"name" => "My New Dashboard"}})
 
@@ -221,7 +221,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/dashboards/new")
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
         render_change(lv, "validate_name", %{"dashboard" => %{"name" => "My Dashboard"}})
 
@@ -239,7 +239,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        assert {:error, {:redirect, _}} = live(conn, ~p"/dashboards/999999/edit")
+        assert {:error, {:redirect, _}} = live(conn, ~p"/app/dashboards/999999/edit")
       end)
     end
   end

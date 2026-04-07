@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
             >
               Save Selection
             </button>
-            <.link navigate={~p"/integrations"} class="btn btn-ghost btn-sm">
+            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
               Back to integrations
             </.link>
           </div>
@@ -106,7 +106,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
 
     case result do
       :unknown_provider ->
-        {:noreply, push_navigate(socket, to: ~p"/integrations")}
+        {:noreply, push_navigate(socket, to: ~p"/app/integrations")}
 
       {:ok, _provider, _integration, accounts, platform_name} ->
         display_accounts = build_display_accounts(accounts)
@@ -130,7 +130,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
     {:noreply,
      socket
      |> put_flash(:info, "Account selection saved.")
-     |> push_navigate(to: ~p"/integrations")}
+     |> push_navigate(to: ~p"/app/integrations")}
   end
 
   # ---------------------------------------------------------------------------

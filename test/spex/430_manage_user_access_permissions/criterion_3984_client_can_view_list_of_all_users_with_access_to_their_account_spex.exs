@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to the account members page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
       given_ :second_user_registered
 
       given_ "the owner invites the second user to their account", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
       end
 
       then_ "the unauthenticated user is redirected away from the members page", context do
-        result = live(context.unauth_conn, "/accounts/members")
+        result = live(context.unauth_conn, "/app/accounts/members")
         assert {:error, {:redirect, %{to: "/users/log-in"}}} = result
         :ok
       end

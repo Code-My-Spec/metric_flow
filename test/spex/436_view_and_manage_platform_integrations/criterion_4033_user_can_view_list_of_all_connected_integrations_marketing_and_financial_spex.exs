@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations page", context do
-        result = live(context.owner_conn, "/integrations")
+        result = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :result, result)}
       end
 
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
 
     scenario "unauthenticated user cannot access the integrations index page" do
       given_ "an unauthenticated user navigates to the integrations page", context do
-        result = live(build_conn(), "/integrations")
+        result = live(build_conn(), "/app/integrations")
         {:ok, Map.put(context, :result, result)}
       end
 

@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         yesterday = Date.add(Date.utc_today(), -1)
         today = Date.utc_today()
 
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         today = Date.utc_today()
         today_str = Date.to_iso8601(today)
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -109,7 +109,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
       given_ :owner_with_integrations
 
       given_ "the user navigates to the dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/dashboard")
+        {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         yesterday = Date.add(Date.utc_today(), -1)
         yesterday_str = Date.to_iso8601(yesterday)
 

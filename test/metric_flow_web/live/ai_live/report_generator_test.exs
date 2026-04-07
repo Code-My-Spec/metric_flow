@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   defp mount_report_generator(conn, user) do
     conn = log_in_user(conn, user)
-    live(conn, ~p"/reports/generate")
+    live(conn, ~p"/app/reports/generate")
   end
 
   # ---------------------------------------------------------------------------

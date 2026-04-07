@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       given_ :second_user_registered
 
       given_ "the owner has invited a second user as admin", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       end
 
       when_ "the owner views the members page", context do
-        {:ok, _view, html} = live(context.owner_conn, "/accounts/members")
+        {:ok, _view, html} = live(context.owner_conn, "/app/accounts/members")
         {:ok, Map.put(context, :owner_members_html, html)}
       end
 
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
-        {:ok, _view, html} = live(member_conn, "/accounts/members")
+        {:ok, _view, html} = live(member_conn, "/app/accounts/members")
         {:ok, Map.put(context, :member_members_html, html)}
       end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       end
 
       when_ "the separate user views their members page", context do
-        {:ok, _view, html} = live(context.separate_conn, "/accounts/members")
+        {:ok, _view, html} = live(context.separate_conn, "/app/accounts/members")
         {:ok, Map.put(context, :separate_members_html, html)}
       end
 

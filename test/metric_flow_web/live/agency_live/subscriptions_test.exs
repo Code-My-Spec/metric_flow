@@ -71,7 +71,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     _account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "Customer Subscriptions"
   end
@@ -81,7 +81,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "Active Subscribers"
     assert html =~ "MRR"
@@ -99,7 +99,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     subscription_fixture(client_account, plan)
 
     conn = log_in_user(conn, user)
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "Agency Plan"
     assert html =~ "Active"
@@ -116,7 +116,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     subscription_fixture(client_account, plan)
 
     conn = log_in_user(conn, user)
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "Cancel"
   end
@@ -132,7 +132,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     other_plan = plan_fixture(other_account)
     subscription_fixture(other_account, other_plan, %{stripe_customer_id: "cus_other_agency"})
 
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     refute html =~ "cus_other_agency"
   end
@@ -142,7 +142,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     _account = agency_fixture(user)
     conn = log_in_user(conn, user)
 
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "Search"
     assert html =~ "phx-change=\"search\""
@@ -159,7 +159,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
     subscription_fixture(client_account, plan, %{status: :active})
 
     conn = log_in_user(conn, user)
-    {:ok, _lv, html} = live(conn, "/agency/subscriptions")
+    {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
 
     assert html =~ "badge-success"
   end

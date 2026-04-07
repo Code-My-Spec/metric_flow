@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
       given_ :user_logged_in_as_owner
 
       given_ "the owner navigates to account settings and saves a subdomain", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#white-label-form", white_label: %{
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
       end
 
       given_ "the owner navigates away and returns to account settings", context do
-        {:ok, fresh_view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, fresh_view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, fresh_view)}
       end
 

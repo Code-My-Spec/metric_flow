@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.RequireSubscriptionReusableSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the free user navigates to the intelligence (insights) page", context do
-        result = live(context.owner_conn, "/insights")
+        result = live(context.owner_conn, "/app/insights")
         {:ok, Map.put(context, :result, result)}
       end
 

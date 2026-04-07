@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/visualizations")
+        {:ok, _lv, html} = live(conn, ~p"/app/visualizations")
 
         assert html =~ "My Chart"
         assert html =~ "Visualizations"
@@ -51,7 +51,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         assert has_element?(lv, "[data-role='empty-visualizations']")
         send(self(), :done)
@@ -62,7 +62,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
 
     test "redirects unauthenticated user to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
-               live(conn, ~p"/visualizations")
+               live(conn, ~p"/app/visualizations")
     end
   end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         lv |> element("[data-role='delete-visualization-#{viz.id}']") |> render_click()
 
@@ -100,7 +100,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         lv |> element("[data-role='delete-visualization-#{viz.id}']") |> render_click()
         assert has_element?(lv, "[data-role='delete-confirm-#{viz.id}']")
@@ -125,7 +125,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         lv |> element("[data-role='delete-visualization-#{viz.id}']") |> render_click()
         lv |> element("[data-role='confirm-delete-#{viz.id}']") |> render_click()
@@ -145,7 +145,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         # Delete from DB directly, then try to confirm
         Repo.delete!(viz)
@@ -173,7 +173,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         assert has_element?(lv, "[data-role='visualization-card'][data-visualization-id='#{viz.id}']")
         send(self(), :done)
@@ -187,7 +187,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         assert has_element?(lv, "[data-role='new-visualization-btn']")
         send(self(), :done)
@@ -202,7 +202,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         assert has_element?(lv, "[data-role='edit-visualization-#{viz.id}']")
         assert has_element?(lv, "[data-role='delete-visualization-#{viz.id}']")
@@ -218,7 +218,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/visualizations")
+        {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
         refute has_element?(lv, "[data-role='delete-confirm-#{viz.id}']")
 

@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
       given_ :second_user_registered
 
       given_ "the originator invites the second user as admin", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
       end
 
       given_ "the originator transfers ownership to the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> element("[data-role='transfer-ownership']")
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
       end
 
       given_ "the originator navigates to account settings after the transfer", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :originator_view, view)}
       end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
       given_ :second_user_registered
 
       given_ "the originator invites the second user as admin", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/members")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
         |> form("#invite_member_form", invitation: %{
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
       end
 
       given_ "the originator transfers ownership to the second user", context do
-        {:ok, view, _html} = live(context.owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> element("[data-role='transfer-ownership']")
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
 
         logged_in_conn = submit_form(login_form, build_conn())
         new_owner_conn = recycle(logged_in_conn)
-        {:ok, view, _html} = live(new_owner_conn, "/accounts/settings")
+        {:ok, view, _html} = live(new_owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :new_owner_view, view)}
       end
 

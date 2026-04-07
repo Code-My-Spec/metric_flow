@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
       end
 
       given_ "the user navigates to the google business location selection page", context do
-        result = live(context.authed_conn, "/integrations/connect/google_business/accounts")
+        result = live(context.authed_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :page_result, result)}
       end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
       end
 
       given_ "the user is on the google business accounts page", context do
-        {:ok, view, _html} = live(context.authed_conn, "/integrations/connect/google_business/accounts")
+        {:ok, view, _html} = live(context.authed_conn, "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
 
     scenario "unauthenticated user cannot access the google business location selection page" do
       given_ "an unauthenticated user navigates to the google business location selection page", context do
-        result = live(build_conn(), "/integrations/connect/google_business/accounts")
+        result = live(build_conn(), "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end
 

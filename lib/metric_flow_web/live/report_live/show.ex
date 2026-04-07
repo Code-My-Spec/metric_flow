@@ -34,7 +34,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
         <%!-- Header --%>
         <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
           <div>
-            <.link navigate={~p"/reports"} class="btn btn-ghost btn-sm mb-2" data-role="back-link">
+            <.link navigate={~p"/app/reports"} class="btn btn-ghost btn-sm mb-2" data-role="back-link">
               &larr; Back to Reports
             </.link>
             <h1 class="text-2xl font-bold" data-role="report-name">{@report.name}</h1>
@@ -107,14 +107,14 @@ defmodule MetricFlowWeb.ReportLive.Show do
             {:ok,
              socket
              |> put_flash(:error, "Report not found.")
-             |> redirect(to: ~p"/reports")}
+             |> redirect(to: ~p"/app/reports")}
         end
 
       _ ->
         {:ok,
          socket
          |> put_flash(:error, "Report not found.")
-         |> redirect(to: ~p"/reports")}
+         |> redirect(to: ~p"/app/reports")}
     end
   end
 

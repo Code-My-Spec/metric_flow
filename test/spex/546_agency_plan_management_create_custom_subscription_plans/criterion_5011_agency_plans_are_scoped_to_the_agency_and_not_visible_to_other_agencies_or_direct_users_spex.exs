@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.AgencyPlansScopedToAgencySpex do
       given_ :owner_has_stripe_connect
 
       given_ "the user navigates to the checkout page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/subscriptions/checkout")
+        {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end
 

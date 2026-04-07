@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the user navigates to the integrations connect page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/integrations/connect")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
 
     scenario "unauthenticated user cannot access the platform connection page" do
       given_ "the user navigates to the integrations connect page without being logged in", context do
-        result = live(build_conn(), "/integrations/connect")
+        result = live(build_conn(), "/app/integrations/connect")
         {:ok, Map.put(context, :result, result)}
       end
 

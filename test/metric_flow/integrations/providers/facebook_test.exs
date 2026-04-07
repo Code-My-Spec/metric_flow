@@ -95,7 +95,7 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert is_binary(redirect_uri)
-        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/facebook_ads")
+        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/facebook_ads")
       end)
     end
 
