@@ -283,8 +283,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
     case Dashboards.get_visualization(scope, id_int) do
       {:ok, visualization} ->
-        metric_name = visualization.metric_name || extract_metric_name(visualization.vega_spec)
-        chart_type = visualization.chart_type || extract_chart_type(visualization.vega_spec)
+        metric_name = extract_metric_name(visualization.vega_spec)
+        chart_type = extract_chart_type(visualization.vega_spec)
 
         # Rebuild spec with fresh data from the DB
         spec =
