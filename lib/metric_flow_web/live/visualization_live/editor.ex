@@ -283,15 +283,24 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
     case Dashboards.get_visualization(scope, id_int) do
       {:ok, visualization} ->
-        metric_name = extract_metric_name(visualization.vega_spec)
         chart_type = extract_chart_type(visualization.vega_spec)
+        bound = Dashboards.get_visualization_metric_names(visualization)
 
-        # Rebuild spec with fresh data from the DB
+        # Fall back to extracting from spec title for legacy visualizations
+        bound =
+          if bound == [] do
+            case extract_metric_name(visualization.vega_spec) do
+              nil -> []
+              name -> [name]
+            end
+          else
+            bound
+          end
+
+        # Build render-ready spec with fresh data
         spec =
-          if metric_name do
-            data = fetch_metric_data(scope, metric_name)
-            fresh = Dashboards.build_chart_spec(metric_name, data)
-            if chart_type, do: Map.put(fresh, "mark", chart_type), else: fresh
+          if bound != [] do
+            build_preview_spec(scope, bound, chart_type)
           else
             visualization.vega_spec
           end
@@ -301,11 +310,12 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign_common(scope)
           |> assign(:visualization, visualization)
           |> assign(:name, visualization.name || "")
-          |> assign(:selected_metric, metric_name)
+          |> assign(:selected_metric, List.first(bound))
           |> assign(:selected_chart_type, chart_type || "line")
           |> assign(:shareable, visualization.shareable)
+          |> assign(:bound_metrics, bound)
           |> assign(:chart_preview, spec)
-          |> assign(:raw_vega_spec, format_spec(spec))
+          |> assign(:raw_vega_spec, format_spec(strip_data_from_spec(spec)))
           |> assign(:page_title, "Edit Visualization")
 
         {:noreply, socket}
@@ -344,6 +354,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:chart_types, @chart_types)
     |> assign(:left_panel_open, false)
     |> assign(:right_panel_open, true)
+    |> assign(:bound_metrics, [])
     |> assign(:chat_prompt, "")
     |> assign(:chat_generating, false)
     |> assign(:chat_error, nil)
@@ -366,14 +377,20 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
   def handle_event("select_metric", %{"metric" => metric}, socket) do
     scope = socket.assigns.current_scope
-    data = fetch_metric_data(scope, metric)
-    spec = Dashboards.build_chart_spec(metric, data)
+    bound = socket.assigns.bound_metrics
+
+    # Add metric to bound list if not already there
+    bound = if metric in bound, do: bound, else: bound ++ [metric]
+
+    # Build spec with all bound metrics
+    spec = build_preview_spec(scope, bound, socket.assigns.selected_chart_type)
 
     {:noreply,
      assign(socket,
        selected_metric: metric,
+       bound_metrics: bound,
        chart_preview: spec,
-       raw_vega_spec: format_spec(spec)
+       raw_vega_spec: format_spec(strip_data_from_spec(spec))
      )}
   end
 
@@ -381,12 +398,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     socket = assign(socket, :selected_chart_type, type)
 
     socket =
-      if socket.assigns.selected_metric do
+      if socket.assigns.bound_metrics != [] do
         scope = socket.assigns.current_scope
-        data = fetch_metric_data(scope, socket.assigns.selected_metric)
-        spec = Dashboards.build_chart_spec(socket.assigns.selected_metric, data)
-        spec = Map.put(spec, "mark", type)
-        assign(socket, chart_preview: spec, raw_vega_spec: format_spec(spec))
+        spec = build_preview_spec(scope, socket.assigns.bound_metrics, type)
+        assign(socket, chart_preview: spec, raw_vega_spec: format_spec(strip_data_from_spec(spec)))
       else
         socket
       end
@@ -513,25 +528,28 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp do_save(socket) do
     scope = socket.assigns.current_scope
     name = socket.assigns.name
-    metric = socket.assigns.selected_metric
-    chart_type = socket.assigns.selected_chart_type
     shareable = socket.assigns.shareable
-    vega_spec = socket.assigns.chart_preview
+    metric_names = socket.assigns.bound_metrics
+
+    # Store spec as template — strip embedded data
+    vega_spec =
+      socket.assigns.chart_preview
+      |> strip_data_from_spec()
 
     attrs = %{
       name: name,
-      metric_name: metric,
-      chart_type: chart_type,
       shareable: shareable,
       vega_spec: vega_spec
     }
 
-    persist_visualization(socket, scope, socket.assigns.visualization, attrs)
+    persist_visualization(socket, scope, socket.assigns.visualization, attrs, metric_names)
   end
 
-  defp persist_visualization(socket, scope, nil, attrs) do
+  defp persist_visualization(socket, scope, nil, attrs, metric_names) do
     case Dashboards.save_visualization(scope, attrs) do
-      {:ok, _visualization} ->
+      {:ok, visualization} ->
+        Dashboards.set_visualization_metrics(visualization, metric_names)
+
         {:noreply,
          socket
          |> put_flash(:info, "Visualization saved.")
@@ -542,9 +560,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
-  defp persist_visualization(socket, scope, %Visualization{} = visualization, attrs) do
+  defp persist_visualization(socket, scope, %Visualization{} = visualization, attrs, metric_names) do
     case Dashboards.update_visualization(scope, visualization, attrs) do
-      {:ok, _visualization} ->
+      {:ok, updated} ->
+        Dashboards.set_visualization_metrics(updated, metric_names)
+
         {:noreply,
          socket
          |> put_flash(:info, "Visualization saved.")
@@ -588,6 +608,34 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     {start_date, end_date} = Dashboards.default_date_range()
     Metrics.query_time_series(scope, metric_name, date_range: {start_date, end_date})
   end
+
+  defp build_preview_spec(scope, metric_names, chart_type) do
+    {start_date, end_date} = Dashboards.default_date_range()
+
+    data =
+      metric_names
+      |> Enum.flat_map(fn name ->
+        Metrics.query_time_series(scope, name, date_range: {start_date, end_date})
+        |> Enum.map(fn %{date: date, value: value} ->
+          %{"date" => Date.to_string(date), "value" => value, "metric" => name}
+        end)
+      end)
+
+    spec = Dashboards.build_chart_spec(List.first(metric_names), data)
+    spec = Map.put(spec, "mark", chart_type || "line")
+
+    if length(metric_names) > 1 do
+      encoding = Map.get(spec, "encoding", %{})
+      encoding = Map.put(encoding, "color", %{"field" => "metric", "type" => "nominal"})
+      Map.put(spec, "encoding", encoding)
+    else
+      spec
+    end
+  end
+
+  defp strip_data_from_spec(nil), do: %{}
+  defp strip_data_from_spec(spec) when is_map(spec), do: Map.delete(spec, "data")
+  defp strip_data_from_spec(spec), do: spec
 
   defp generation_error_message(:no_metrics), do: "No metrics available. Connect a platform first."
   defp generation_error_message(:invalid_spec), do: "AI generated an invalid chart spec. Try rephrasing."

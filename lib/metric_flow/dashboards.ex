@@ -140,6 +140,67 @@ defmodule MetricFlow.Dashboards do
     end
   end
 
+  # ---------------------------------------------------------------------------
+  # Visualization metrics (many-to-many metric binding)
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Sets the bound metrics for a visualization, replacing any existing bindings.
+  """
+  @spec set_visualization_metrics(Visualization.t(), [String.t()]) :: :ok
+  defdelegate set_visualization_metrics(visualization, metric_names),
+    to: VisualizationsRepository
+
+  @doc """
+  Returns the list of metric names bound to a visualization.
+  """
+  @spec get_visualization_metric_names(Visualization.t()) :: [String.t()]
+  defdelegate get_visualization_metric_names(visualization),
+    to: VisualizationsRepository
+
+  @doc """
+  Builds a render-ready Vega-Lite spec by fetching fresh data for all
+  bound metrics and injecting it into the spec template.
+
+  For single-metric visualizations, data is injected as `data.values`.
+  For multi-metric, each data point includes a `metric` field for
+  color-coding separate series.
+  """
+  @spec build_render_spec(Scope.t(), Visualization.t()) :: map()
+  def build_render_spec(%Scope{} = scope, %Visualization{} = viz) do
+    metric_names = get_visualization_metric_names(viz)
+    spec = viz.vega_spec || %{}
+
+    data = fetch_and_combine_metrics(scope, metric_names)
+    spec = Map.put(spec, "data", %{"values" => data})
+
+    # For multi-metric, add color encoding if not already present
+    if length(metric_names) > 1 do
+      encoding = Map.get(spec, "encoding", %{})
+
+      unless Map.has_key?(encoding, "color") do
+        encoding = Map.put(encoding, "color", %{"field" => "metric", "type" => "nominal"})
+        Map.put(spec, "encoding", encoding)
+      else
+        spec
+      end
+    else
+      spec
+    end
+  end
+
+  defp fetch_and_combine_metrics(scope, metric_names) do
+    {start_date, end_date} = default_date_range()
+
+    metric_names
+    |> Enum.flat_map(fn name ->
+      Metrics.query_time_series(scope, name, date_range: {start_date, end_date})
+      |> Enum.map(fn %{date: date, value: value} ->
+        %{"date" => Date.to_string(date), "value" => value, "metric" => name}
+      end)
+    end)
+  end
+
   @doc "Returns an Ecto changeset for validating a Visualization name field."
   @spec visualization_name_changeset(String.t()) :: Ecto.Changeset.t()
   def visualization_name_changeset(name) do

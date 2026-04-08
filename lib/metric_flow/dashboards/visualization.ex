@@ -33,6 +33,7 @@ defmodule MetricFlow.Dashboards.Visualization do
     field :shareable, :boolean, default: false
 
     belongs_to :user, User
+    has_many :visualization_metrics, MetricFlow.Dashboards.VisualizationMetric
     has_many :dashboard_visualizations, MetricFlow.Dashboards.DashboardVisualization
 
     timestamps(type: :utc_datetime_usec)

@@ -10,6 +10,7 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   import Ecto.Query
 
   alias MetricFlow.Dashboards.Visualization
+  alias MetricFlow.Dashboards.VisualizationMetric
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
@@ -104,5 +105,51 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
           {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
   def delete_visualization(%Visualization{} = visualization) do
     Repo.delete(visualization)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Visualization metrics
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Replaces the bound metrics for a visualization.
+
+  Deletes existing bindings and inserts new ones. The first metric is
+  assigned role "primary", the rest "overlay".
+  """
+  @spec set_visualization_metrics(Visualization.t(), [String.t()]) :: :ok
+  def set_visualization_metrics(%Visualization{id: viz_id}, metric_names) do
+    Repo.delete_all(from(vm in VisualizationMetric, where: vm.visualization_id == ^viz_id))
+
+    now = DateTime.utc_now()
+
+    entries =
+      metric_names
+      |> Enum.with_index()
+      |> Enum.map(fn {name, idx} ->
+        %{
+          visualization_id: viz_id,
+          metric_name: name,
+          role: if(idx == 0, do: "primary", else: "overlay"),
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    if entries != [], do: Repo.insert_all(VisualizationMetric, entries)
+    :ok
+  end
+
+  @doc """
+  Returns the list of metric names bound to a visualization.
+  """
+  @spec get_visualization_metric_names(Visualization.t()) :: [String.t()]
+  def get_visualization_metric_names(%Visualization{id: viz_id}) do
+    from(vm in VisualizationMetric,
+      where: vm.visualization_id == ^viz_id,
+      order_by: [asc: vm.id],
+      select: vm.metric_name
+    )
+    |> Repo.all()
   end
 end
