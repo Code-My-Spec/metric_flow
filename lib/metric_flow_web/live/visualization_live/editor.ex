@@ -32,29 +32,37 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       active_account_name={assigns[:active_account_name]}
     >
       <div class="flex h-full" data-role="visualization-workspace">
-        <%!-- Left sidebar: Spec editor --%>
-        <div
-          :if={@left_panel_open}
-          data-role="spec-panel"
-          class="w-96 flex-shrink-0 border-r border-base-300 flex flex-col bg-base-100 overflow-hidden"
-        >
-          <div class="flex items-center justify-between px-4 py-2 border-b border-base-300">
-            <span class="font-semibold text-sm">Vega-Lite Spec</span>
-            <button phx-click="toggle_left_panel" class="btn btn-ghost btn-xs" data-role="close-spec-panel">
-              ✕
-            </button>
-          </div>
-          <div class="flex-1 overflow-y-auto p-3">
-            <textarea
-              name="vega_spec"
-              data-role="vega-spec-textarea"
-              phx-blur="update_vega_spec"
-              class={[
-                "textarea textarea-bordered w-full h-full font-mono text-xs resize-none min-h-[200px]",
-                @spec_error && "textarea-error"
-              ]}
-            >{@raw_vega_spec}</textarea>
-            <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
+        <%!-- Left: Spec editor tab + panel --%>
+        <div class="flex flex-shrink-0" data-role="spec-panel">
+          <button
+            phx-click="toggle_left_panel"
+            data-role="open-spec-panel"
+            class={[
+              "w-8 border-r border-base-300 flex items-center justify-center cursor-pointer hover:bg-base-300 transition-colors",
+              @left_panel_open && "bg-base-100",
+              !@left_panel_open && "bg-base-200"
+            ]}
+          >
+            <span class="[writing-mode:vertical-lr] rotate-180 text-xs font-semibold text-base-content/70 tracking-wider py-4">
+              Spec Editor
+            </span>
+          </button>
+          <div
+            :if={@left_panel_open}
+            class="w-88 flex flex-col bg-base-100 border-r border-base-300 overflow-hidden"
+          >
+            <div class="flex-1 overflow-y-auto p-3">
+              <textarea
+                name="vega_spec"
+                data-role="vega-spec-textarea"
+                phx-blur="update_vega_spec"
+                class={[
+                  "textarea textarea-bordered w-full h-full font-mono text-xs resize-none min-h-[200px]",
+                  @spec_error && "textarea-error"
+                ]}
+              >{@raw_vega_spec}</textarea>
+              <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
+            </div>
           </div>
         </div>
 
@@ -62,15 +70,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         <div class="flex-1 flex flex-col overflow-hidden">
           <%!-- Toolbar --%>
           <div class="flex items-center gap-2 px-4 py-2 border-b border-base-300 flex-wrap">
-            <button
-              :if={!@left_panel_open}
-              phx-click="toggle_left_panel"
-              class="btn btn-ghost btn-xs"
-              data-role="open-spec-panel"
-            >
-              Spec Editor
-            </button>
-
             <%!-- Name --%>
             <form phx-change="validate_name" class="flex-shrink-0">
               <input
@@ -136,14 +135,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               Save
             </button>
 
-            <button
-              :if={!@right_panel_open}
-              phx-click="toggle_right_panel"
-              class="btn btn-ghost btn-xs"
-              data-role="open-chat-panel"
-            >
-              AI Chat
-            </button>
           </div>
 
           <%!-- Error bar --%>
@@ -177,18 +168,12 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           </div>
         </div>
 
-        <%!-- Right sidebar: LLM Chat --%>
-        <div
-          :if={@right_panel_open}
-          data-role="chat-panel"
-          class="w-96 flex-shrink-0 border-l border-base-300 flex flex-col bg-base-100 overflow-hidden"
-        >
-          <div class="flex items-center justify-between px-4 py-2 border-b border-base-300">
-            <span class="font-semibold text-sm">AI Chat</span>
-            <button phx-click="toggle_right_panel" class="btn btn-ghost btn-xs" data-role="close-chat-panel">
-              ✕
-            </button>
-          </div>
+        <%!-- Right: Chat tab + panel --%>
+        <div class="flex flex-shrink-0" data-role="chat-panel">
+          <div
+            :if={@right_panel_open}
+            class="w-88 flex flex-col bg-base-100 border-l border-base-300 overflow-hidden"
+          >
 
           <%!-- Chat messages --%>
           <div
@@ -243,6 +228,20 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               </p>
             </form>
           </div>
+          </div>
+          <button
+            phx-click="toggle_right_panel"
+            data-role="open-chat-panel"
+            class={[
+              "w-8 border-l border-base-300 flex items-center justify-center cursor-pointer hover:bg-base-300 transition-colors",
+              @right_panel_open && "bg-base-100",
+              !@right_panel_open && "bg-base-200"
+            ]}
+          >
+            <span class="[writing-mode:vertical-lr] text-xs font-semibold text-base-content/70 tracking-wider py-4">
+              AI Chat
+            </span>
+          </button>
         </div>
       </div>
     </Layouts.workspace>

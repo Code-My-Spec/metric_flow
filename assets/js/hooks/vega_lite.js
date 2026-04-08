@@ -8,6 +8,9 @@ const VegaLite = {
       this.renderChart()
     })
   },
+  updated() {
+    this.renderChart()
+  },
   destroyed() {
     if (this.view) this.view.finalize()
   },
