@@ -32,24 +32,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       active_account_name={assigns[:active_account_name]}
     >
       <div class="flex h-full" data-role="visualization-workspace">
-        <%!-- Left: Spec editor tab + panel --%>
-        <div class="flex flex-shrink-0" data-role="spec-panel">
-          <button
-            phx-click="toggle_left_panel"
-            data-role="open-spec-panel"
-            class={[
-              "w-8 border-r border-base-300 flex items-center justify-center cursor-pointer hover:bg-base-300 transition-colors",
-              @left_panel_open && "bg-base-100",
-              !@left_panel_open && "bg-base-200"
-            ]}
-          >
-            <span class="[writing-mode:vertical-lr] rotate-180 text-xs font-semibold text-base-content/70 tracking-wider py-4">
-              Spec Editor
-            </span>
-          </button>
+        <%!-- Left: Spec editor drawer --%>
+        <div class="flex flex-shrink-0 border-r border-base-300" data-role="spec-panel">
           <div
             :if={@left_panel_open}
-            class="w-88 flex flex-col bg-base-100 border-r border-base-300 overflow-hidden"
+            class="w-88 flex flex-col bg-base-100 overflow-hidden"
           >
             <div class="flex-1 overflow-y-auto p-3">
               <textarea
@@ -64,6 +51,15 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
             </div>
           </div>
+          <button
+            phx-click="toggle_left_panel"
+            data-role="open-spec-panel"
+            class="w-8 flex items-center justify-center cursor-pointer bg-base-200 hover:bg-base-300 transition-colors"
+          >
+            <span class="[writing-mode:vertical-lr] rotate-180 text-xs font-semibold text-base-content/70 tracking-wider py-4">
+              Spec Editor
+            </span>
+          </button>
         </div>
 
         <%!-- Center: Chart preview + controls --%>
@@ -168,11 +164,20 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           </div>
         </div>
 
-        <%!-- Right: Chat tab + panel --%>
-        <div class="flex flex-shrink-0" data-role="chat-panel">
+        <%!-- Right: Chat drawer --%>
+        <div class="flex flex-shrink-0 border-l border-base-300" data-role="chat-panel">
+          <button
+            phx-click="toggle_right_panel"
+            data-role="open-chat-panel"
+            class="w-8 flex items-center justify-center cursor-pointer bg-base-200 hover:bg-base-300 transition-colors"
+          >
+            <span class="[writing-mode:vertical-lr] text-xs font-semibold text-base-content/70 tracking-wider py-4">
+              AI Chat
+            </span>
+          </button>
           <div
             :if={@right_panel_open}
-            class="w-88 flex flex-col bg-base-100 border-l border-base-300 overflow-hidden"
+            class="w-88 flex flex-col bg-base-100 overflow-hidden"
           >
 
           <%!-- Chat messages --%>
@@ -229,19 +234,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             </form>
           </div>
           </div>
-          <button
-            phx-click="toggle_right_panel"
-            data-role="open-chat-panel"
-            class={[
-              "w-8 border-l border-base-300 flex items-center justify-center cursor-pointer hover:bg-base-300 transition-colors",
-              @right_panel_open && "bg-base-100",
-              !@right_panel_open && "bg-base-200"
-            ]}
-          >
-            <span class="[writing-mode:vertical-lr] text-xs font-semibold text-base-content/70 tracking-wider py-4">
-              AI Chat
-            </span>
-          </button>
         </div>
       </div>
     </Layouts.workspace>
