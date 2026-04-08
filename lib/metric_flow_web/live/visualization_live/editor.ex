@@ -612,22 +612,31 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp build_preview_spec(scope, metric_names, chart_type) do
     {start_date, end_date} = Dashboards.default_date_range()
 
-    data =
+    # Fetch raw time series for each metric
+    all_data =
       metric_names
       |> Enum.flat_map(fn name ->
         Metrics.query_time_series(scope, name, date_range: {start_date, end_date})
         |> Enum.map(fn %{date: date, value: value} ->
-          %{"date" => Date.to_string(date), "value" => value, "metric" => name}
+          %{date: date, value: value, metric: name}
         end)
       end)
 
-    spec = Dashboards.build_chart_spec(List.first(metric_names), data)
+    # Build base spec from the first metric's data (atom keys for ChartBuilder)
+    base_data = Enum.map(all_data, fn %{date: d, value: v} -> %{date: d, value: v} end)
+    spec = Dashboards.build_chart_spec(List.first(metric_names), base_data)
     spec = Map.put(spec, "mark", chart_type || "line")
 
+    # For multi-metric, replace data with combined values including metric field
     if length(metric_names) > 1 do
-      encoding = Map.get(spec, "encoding", %{})
-      encoding = Map.put(encoding, "color", %{"field" => "metric", "type" => "nominal"})
-      Map.put(spec, "encoding", encoding)
+      values =
+        Enum.map(all_data, fn %{date: date, value: value, metric: metric} ->
+          %{"date" => Date.to_iso8601(date), "value" => value, "metric" => metric}
+        end)
+
+      spec
+      |> Map.put("data", %{"values" => values})
+      |> put_in(["encoding", "color"], %{"field" => "metric", "type" => "nominal"})
     else
       spec
     end
