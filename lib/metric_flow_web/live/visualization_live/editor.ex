@@ -36,6 +36,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         <div class="flex flex-shrink-0 border-r border-base-300" data-role="spec-panel">
           <div
             :if={@left_panel_open}
+            id="spec-panel-content"
             class="w-88 flex flex-col bg-base-100 overflow-hidden"
           >
             <div class="flex-1 overflow-y-auto p-3">
@@ -51,6 +52,16 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
             </div>
           </div>
+          <div
+            :if={@left_panel_open}
+            id="spec-resize-handle"
+            phx-hook="ResizablePanel"
+            data-target="#spec-panel-content"
+            data-direction="left"
+            data-min-width="200"
+            data-max-width="700"
+            class="w-1 cursor-col-resize bg-base-300 hover:bg-primary/40 transition-colors flex-shrink-0"
+          />
           <button
             phx-click="toggle_left_panel"
             data-role="open-spec-panel"
@@ -177,6 +188,17 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           </button>
           <div
             :if={@right_panel_open}
+            id="chat-resize-handle"
+            phx-hook="ResizablePanel"
+            data-target="#chat-panel-content"
+            data-direction="right"
+            data-min-width="200"
+            data-max-width="700"
+            class="w-1 cursor-col-resize bg-base-300 hover:bg-primary/40 transition-colors flex-shrink-0"
+          />
+          <div
+            :if={@right_panel_open}
+            id="chat-panel-content"
             class="w-88 flex flex-col bg-base-100 overflow-hidden"
           >
 

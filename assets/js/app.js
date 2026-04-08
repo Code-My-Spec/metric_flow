@@ -24,6 +24,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/metric_flow"
 import {VegaLite} from "./hooks/vega_lite"
+import {ResizablePanel} from "./hooks/resizable_panel"
 import {S3Uploader} from "./s3_uploader"
 import "./screenshot"
 import topbar from "../vendor/topbar"
@@ -32,7 +33,7 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, VegaLite},
+  hooks: {...colocatedHooks, VegaLite, ResizablePanel},
   uploaders: {S3: S3Uploader},
 })
 
