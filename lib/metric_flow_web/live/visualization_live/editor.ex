@@ -297,13 +297,22 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             bound
           end
 
-        # Build render-ready spec with fresh data
-        spec =
+        # Use saved spec as template, resolve named data for preview
+        template =
           if bound != [] do
-            build_preview_spec(scope, bound, chart_type)
+            # Rebuild template from bound metrics (or use saved spec if it has named data)
+            saved_spec = visualization.vega_spec || %{}
+
+            if has_named_data?(saved_spec) do
+              saved_spec
+            else
+              build_template_spec(bound, chart_type)
+            end
           else
-            visualization.vega_spec
+            visualization.vega_spec || %{}
           end
+
+        preview = resolve_named_data(template, scope)
 
         socket =
           socket
@@ -314,8 +323,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:selected_chart_type, chart_type || "line")
           |> assign(:shareable, visualization.shareable)
           |> assign(:bound_metrics, bound)
-          |> assign(:chart_preview, spec)
-          |> assign(:raw_vega_spec, format_spec(strip_data_from_spec(spec)))
+          |> assign(:chart_preview, preview)
+          |> assign(:raw_vega_spec, format_spec(template))
           |> assign(:page_title, "Edit Visualization")
 
         {:noreply, socket}
@@ -382,15 +391,16 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     # Add metric to bound list if not already there
     bound = if metric in bound, do: bound, else: bound ++ [metric]
 
-    # Build spec with all bound metrics
-    spec = build_preview_spec(scope, bound, socket.assigns.selected_chart_type)
+    # Build template (named data sources) then resolve for preview
+    template = build_template_spec(bound, socket.assigns.selected_chart_type)
+    preview = resolve_named_data(template, scope)
 
     {:noreply,
      assign(socket,
        selected_metric: metric,
        bound_metrics: bound,
-       chart_preview: spec,
-       raw_vega_spec: format_spec(strip_data_from_spec(spec))
+       chart_preview: preview,
+       raw_vega_spec: format_spec(template)
      )}
   end
 
@@ -400,8 +410,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     socket =
       if socket.assigns.bound_metrics != [] do
         scope = socket.assigns.current_scope
-        spec = build_preview_spec(scope, socket.assigns.bound_metrics, type)
-        assign(socket, chart_preview: spec, raw_vega_spec: format_spec(strip_data_from_spec(spec)))
+        template = build_template_spec(socket.assigns.bound_metrics, type)
+        preview = resolve_named_data(template, scope)
+        assign(socket, chart_preview: preview, raw_vega_spec: format_spec(template))
       else
         socket
       end
@@ -531,10 +542,13 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     shareable = socket.assigns.shareable
     metric_names = socket.assigns.bound_metrics
 
-    # Store spec as template — strip embedded data
+    # Save the template spec (named data sources, no embedded values)
     vega_spec =
-      socket.assigns.chart_preview
-      |> strip_data_from_spec()
+      if metric_names != [] do
+        build_template_spec(metric_names, socket.assigns.selected_chart_type)
+      else
+        socket.assigns.chart_preview
+      end
 
     attrs = %{
       name: name,
@@ -609,42 +623,114 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     Metrics.query_time_series(scope, metric_name, date_range: {start_date, end_date})
   end
 
-  defp build_preview_spec(scope, metric_names, chart_type) do
-    {start_date, end_date} = Dashboards.default_date_range()
+  # Builds a spec template with named data sources (no embedded values).
+  # Single metric: {"data": {"name": "activeUsers"}, ...}
+  # Multi metric: {"layer": [{"data": {"name": "activeUsers"}, ...}, ...]}
+  defp build_template_spec(metric_names, chart_type) do
+    mark = chart_type || "line"
 
-    # Fetch raw time series for each metric
-    all_data =
-      metric_names
-      |> Enum.flat_map(fn name ->
-        Metrics.query_time_series(scope, name, date_range: {start_date, end_date})
-        |> Enum.map(fn %{date: date, value: value} ->
-          %{date: date, value: value, metric: name}
-        end)
-      end)
+    encoding = %{
+      "x" => %{"field" => "date", "type" => "temporal"},
+      "y" => %{"field" => "value", "type" => "quantitative"}
+    }
 
-    # Build base spec from the first metric's data (atom keys for ChartBuilder)
-    base_data = Enum.map(all_data, fn %{date: d, value: v} -> %{date: d, value: v} end)
-    spec = Dashboards.build_chart_spec(List.first(metric_names), base_data)
-    spec = Map.put(spec, "mark", chart_type || "line")
+    base = %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "width" => "container",
+      "height" => 400,
+      "config" => dark_theme()
+    }
 
-    # For multi-metric, replace data with combined values including metric field
-    if length(metric_names) > 1 do
-      values =
-        Enum.map(all_data, fn %{date: date, value: value, metric: metric} ->
-          %{"date" => Date.to_iso8601(date), "value" => value, "metric" => metric}
-        end)
+    case metric_names do
+      [single] ->
+        Map.merge(base, %{
+          "title" => single,
+          "data" => %{"name" => single},
+          "mark" => mark,
+          "encoding" => encoding
+        })
 
-      spec
-      |> Map.put("data", %{"values" => values})
-      |> put_in(["encoding", "color"], %{"field" => "metric", "type" => "nominal"})
-    else
-      spec
+      multiple ->
+        layers =
+          Enum.map(multiple, fn name ->
+            %{
+              "data" => %{"name" => name},
+              "mark" => %{"type" => mark, "point" => true, "tooltip" => true},
+              "encoding" =>
+                Map.merge(encoding, %{
+                  "color" => %{"datum" => name}
+                })
+            }
+          end)
+
+        Map.merge(base, %{
+          "title" => Enum.join(multiple, " vs "),
+          "layer" => layers
+        })
     end
   end
 
-  defp strip_data_from_spec(nil), do: %{}
-  defp strip_data_from_spec(spec) when is_map(spec), do: Map.delete(spec, "data")
-  defp strip_data_from_spec(spec), do: spec
+  # Resolves named data sources in a spec by fetching real metric data.
+  # Replaces {"name": "activeUsers"} with {"values": [...]}
+  defp resolve_named_data(spec, scope) do
+    {start_date, end_date} = Dashboards.default_date_range()
+
+    cond do
+      # Layered spec — resolve each layer's data
+      Map.has_key?(spec, "layer") ->
+        layers =
+          Enum.map(spec["layer"], fn layer ->
+            resolve_layer_data(layer, scope, {start_date, end_date})
+          end)
+
+        Map.put(spec, "layer", layers)
+
+      # Single data source
+      match?(%{"name" => _}, spec["data"]) ->
+        name = spec["data"]["name"]
+        values = fetch_metric_values(scope, name, {start_date, end_date})
+        Map.put(spec, "data", %{"values" => values})
+
+      true ->
+        spec
+    end
+  end
+
+  defp resolve_layer_data(%{"data" => %{"name" => name}} = layer, scope, date_range) do
+    values = fetch_metric_values(scope, name, date_range)
+    Map.put(layer, "data", %{"values" => values})
+  end
+
+  defp resolve_layer_data(layer, _scope, _date_range), do: layer
+
+  defp fetch_metric_values(scope, metric_name, {start_date, end_date}) do
+    Metrics.query_time_series(scope, metric_name, date_range: {start_date, end_date})
+    |> Enum.map(fn %{date: date, value: value} ->
+      %{"date" => Date.to_iso8601(date), "value" => value}
+    end)
+  end
+
+  defp has_named_data?(%{"data" => %{"name" => _}}), do: true
+  defp has_named_data?(%{"layer" => layers}) when is_list(layers) do
+    Enum.any?(layers, &match?(%{"data" => %{"name" => _}}, &1))
+  end
+  defp has_named_data?(_), do: false
+
+  defp dark_theme do
+    %{
+      "background" => "transparent",
+      "title" => %{"color" => "#a6adbb"},
+      "axis" => %{
+        "labelColor" => "#a6adbb",
+        "titleColor" => "#a6adbb",
+        "gridColor" => "#2a323c",
+        "domainColor" => "#3d4451",
+        "tickColor" => "#3d4451"
+      },
+      "legend" => %{"labelColor" => "#a6adbb", "titleColor" => "#a6adbb"},
+      "view" => %{"stroke" => "transparent"}
+    }
+  end
 
   defp generation_error_message(:no_metrics), do: "No metrics available. Connect a platform first."
   defp generation_error_message(:invalid_spec), do: "AI generated an invalid chart spec. Try rephrasing."
