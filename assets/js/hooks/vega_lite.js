@@ -11,7 +11,12 @@ const VegaLite = {
     // Re-render on container resize so the chart fills available space
     this.resizeObserver = new ResizeObserver(() => {
       if (this._resizeTimer) clearTimeout(this._resizeTimer)
-      this._resizeTimer = setTimeout(() => this.renderChart(), 150)
+      this._resizeTimer = setTimeout(() => {
+        // Only re-render if container has real dimensions
+        if (this.el.clientWidth > 0 && this.el.clientHeight > 0) {
+          this.renderChart()
+        }
+      }, 250)
     })
     this.resizeObserver.observe(this.el)
   },
@@ -26,6 +31,10 @@ const VegaLite = {
   renderChart() {
     const specStr = this.el.dataset.spec
     if (!specStr) return
+
+    // Skip render if container has no dimensions
+    if (this.el.clientWidth === 0 || this.el.clientHeight === 0) return
+
     const spec = JSON.parse(specStr)
 
     // Use container dimensions so the chart resizes with panels
