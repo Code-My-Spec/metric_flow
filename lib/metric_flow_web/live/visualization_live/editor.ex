@@ -306,7 +306,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             if has_named_data?(saved_spec) do
               saved_spec
             else
-              build_template_spec(bound, chart_type)
+              build_template_spec(bound, chart_type, visualization.name)
             end
           else
             visualization.vega_spec || %{}
@@ -392,7 +392,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     bound = if metric in bound, do: bound, else: bound ++ [metric]
 
     # Build template (named data sources) then resolve for preview
-    template = build_template_spec(bound, socket.assigns.selected_chart_type)
+    template = build_template_spec(bound, socket.assigns.selected_chart_type, socket.assigns.name)
     preview = resolve_named_data(template, scope)
 
     {:noreply,
@@ -410,7 +410,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     socket =
       if socket.assigns.bound_metrics != [] do
         scope = socket.assigns.current_scope
-        template = build_template_spec(socket.assigns.bound_metrics, type)
+        template = build_template_spec(socket.assigns.bound_metrics, type, socket.assigns.name)
         preview = resolve_named_data(template, scope)
         assign(socket, chart_preview: preview, raw_vega_spec: format_spec(template))
       else
@@ -553,7 +553,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     # Save the template spec (named data sources, no embedded values)
     vega_spec =
       if metric_names != [] do
-        build_template_spec(metric_names, socket.assigns.selected_chart_type)
+        build_template_spec(metric_names, socket.assigns.selected_chart_type, socket.assigns.name)
       else
         socket.assigns.chart_preview
       end
@@ -634,8 +634,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   # Builds a spec template with named data sources (no embedded values).
   # Single metric: {"data": {"name": "activeUsers"}, ...}
   # Multi metric: {"layer": [{"data": {"name": "activeUsers"}, ...}, ...]}
-  defp build_template_spec(metric_names, chart_type) do
+  defp build_template_spec(metric_names, chart_type, title \\ nil) do
     mark = chart_type || "line"
+    title = title || List.first(metric_names) || "Untitled"
 
     encoding = %{
       "x" => %{"field" => "date", "type" => "temporal"},
@@ -644,6 +645,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
     base = %{
       "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "title" => title,
       "width" => "container",
       "height" => 400,
       "config" => dark_theme()
@@ -652,7 +654,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     case metric_names do
       [single] ->
         Map.merge(base, %{
-          "title" => single,
           "data" => %{"name" => single},
           "mark" => mark,
           "encoding" => encoding
@@ -671,10 +672,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             }
           end)
 
-        Map.merge(base, %{
-          "title" => Enum.join(multiple, " vs "),
-          "layer" => layers
-        })
+        Map.put(base, "layer", layers)
     end
   end
 
