@@ -444,11 +444,19 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   def handle_event("update_vega_spec", %{"value" => json}, socket) do
     case Jason.decode(json) do
       {:ok, spec} when is_map(spec) ->
+        scope = socket.assigns.current_scope
+        # Resolve named data sources so the chart renders with real values
+        preview = resolve_named_data(spec, scope)
+
+        # Extract bound metrics from named data in the spec
+        bound = extract_named_metrics(spec)
+
         {:noreply,
          assign(socket,
            raw_vega_spec: json,
-           chart_preview: spec,
+           chart_preview: preview,
            spec_error: nil,
+           bound_metrics: if(bound != [], do: bound, else: socket.assigns.bound_metrics),
            selected_chart_type: extract_chart_type(spec),
            selected_metric: extract_metric_name(spec)
          )}
@@ -709,6 +717,15 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       %{"date" => Date.to_iso8601(date), "value" => value}
     end)
   end
+
+  defp extract_named_metrics(%{"data" => %{"name" => name}}), do: [name]
+  defp extract_named_metrics(%{"layer" => layers}) when is_list(layers) do
+    Enum.flat_map(layers, fn
+      %{"data" => %{"name" => name}} -> [name]
+      _ -> []
+    end)
+  end
+  defp extract_named_metrics(_), do: []
 
   defp has_named_data?(%{"data" => %{"name" => _}}), do: true
   defp has_named_data?(%{"layer" => layers}) when is_list(layers) do
