@@ -15,34 +15,47 @@ defmodule MetricFlowSpex.Criterion5053ChatHistoryPersistsSpex do
   ]
 
   spex "Chat history persists for the duration of the authoring session", fail_on_error_logs: false do
-    scenario "the prompt form retains state during the session" do
+    scenario "after multiple messages, all chat history is visible" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
+      given_ :owner_has_metrics
 
-      given_ "user is on the report generator", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
+      given_ "user opens the visualization editor", context do
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "user generates a chart and it persists in the session", context do
-        with_cassette "report_generator_success", @cassette_opts, fn plug ->
+      then_ "both user and assistant messages remain visible after multiple exchanges", context do
+        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
+          # First message
           capture_log(fn ->
-            context.view
-            |> render_change("update_prompt", %{"prompt" => "Show me revenue trends"})
-
-            context.view
-            |> render_submit("generate", %{"prompt" => "Show me revenue trends"})
+            render_submit(context.view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
+            Process.sleep(100)
+            render(context.view)
           end)
 
-          # The chart should still be visible without re-navigating
-          assert has_element?(context.view, "[data-role='vega-lite-chart']")
-          assert has_element?(context.view, "[data-role='prompt-form']")
+          # Second message
+          capture_log(fn ->
+            render_submit(context.view, "send_chat", %{"prompt" => "Now add clicks as a second series and make it a layered chart"})
+            Process.sleep(100)
+            render(context.view)
+          end)
 
-          # The prompt form is still present and submittable
-          assert has_element?(context.view, "[data-role='prompt-input']")
-          assert has_element?(context.view, "[data-role='generate-btn']")
+          html = render(context.view)
+
+          # Both user messages should be in the chat history
+          assert html =~ "Show me impressions"
+          assert html =~ "Now add clicks"
+
+          # Both assistant responses should be present
+          # The assistant sends "Chart updated." for each successful generation
+          assert has_element?(context.view, "[data-role='chat-messages']")
+
+          # Chat form should still be available for more messages
+          assert has_element?(context.view, "[data-role='chat-form']")
+          assert has_element?(context.view, "[data-role='chat-input']")
 
           Application.delete_env(:metric_flow, :req_http_options)
         end

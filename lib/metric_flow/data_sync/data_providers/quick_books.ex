@@ -285,6 +285,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
         %{
           metric_type: "financial",
           metric_name: "QUICKBOOKS_ACCOUNT_DAILY_CREDITS",
+          normalized_metric_name: "revenue",
           value: totals.credits,
           recorded_at: recorded_at,
           metadata: metadata,
@@ -293,6 +294,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
         %{
           metric_type: "financial",
           metric_name: "QUICKBOOKS_ACCOUNT_DAILY_DEBITS",
+          normalized_metric_name: "expenses",
           value: totals.debits,
           recorded_at: recorded_at,
           metadata: metadata,

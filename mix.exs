@@ -90,6 +90,8 @@ defmodule MetricFlow.MixProject do
       {:sweet_xml, "~> 0.7"},
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
+      # MCP server (tool definitions for LLM agent)
+      {:anubis_mcp, github: "zoedsoupe/anubis-mcp"},
       # Data providers (ADR: data_provider_apis)
       {:google_api_analytics_data, "~> 0.17"},
       # Environment variables (ADR: dotenvy)

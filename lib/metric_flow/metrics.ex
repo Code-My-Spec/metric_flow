@@ -32,6 +32,8 @@ defmodule MetricFlow.Metrics do
   defdelegate aggregate_metrics(scope, metric_name, opts), to: MetricRepository
   defdelegate list_metric_names(scope), to: MetricRepository
   defdelegate list_metric_names(scope, opts), to: MetricRepository
+  defdelegate list_normalized_metric_names(scope), to: MetricRepository
+  defdelegate list_normalized_metric_names(scope, opts), to: MetricRepository
   defdelegate delete_metrics_by_provider(scope, provider), to: MetricRepository
   defdelegate list_metric_providers(scope), to: MetricRepository
   defdelegate list_metric_providers(scope, opts), to: MetricRepository

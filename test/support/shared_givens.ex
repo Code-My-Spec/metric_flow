@@ -344,6 +344,7 @@ defmodule MetricFlowSpex.SharedGivens do
       for {name, i} <- Enum.with_index(["impressions", "clicks", "spend", "conversions", "sessions"]) do
         %{
           metric_name: name,
+          normalized_metric_name: MetricFlow.Metrics.NormalizedMetric.normalize(:google_analytics, name),
           metric_type: "raw",
           value: 100.0 + i,
           recorded_at: DateTime.add(now, -i, :day),

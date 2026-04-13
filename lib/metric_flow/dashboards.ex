@@ -24,6 +24,17 @@ defmodule MetricFlow.Dashboards do
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
 
+  # Providers that contribute metric data (excludes tool integrations like codemyspec)
+  @data_providers [
+    :google_analytics,
+    :google_ads,
+    :google_search_console,
+    :google_business,
+    :google_business_reviews,
+    :facebook_ads,
+    :quickbooks
+  ]
+
   # ---------------------------------------------------------------------------
   # Delegated repository functions — Dashboards
   # ---------------------------------------------------------------------------
@@ -219,7 +230,7 @@ defmodule MetricFlow.Dashboards do
   @doc "Returns the list of available metric names for the scoped user."
   @spec list_available_metrics(Scope.t()) :: [String.t()]
   def list_available_metrics(%Scope{} = scope) do
-    Metrics.list_metric_names(scope)
+    Metrics.list_normalized_metric_names(scope)
   end
 
   # ---------------------------------------------------------------------------
@@ -271,7 +282,11 @@ defmodule MetricFlow.Dashboards do
     applied_filters = Keyword.put_new(opts, :date_range, date_range)
 
     integrations = Integrations.list_integrations(scope)
-    connected_platforms = Enum.map(integrations, & &1.provider)
+
+    connected_platforms =
+      integrations
+      |> Enum.map(& &1.provider)
+      |> Enum.filter(&(&1 in @data_providers))
 
     # Normalize compound providers (e.g. :google → [:google_analytics, :google_ads])
     # so the Metrics query uses valid provider enum values.
@@ -284,7 +299,7 @@ defmodule MetricFlow.Dashboards do
       |> maybe_put(:metric_type, metric_type)
 
     metric_names = resolve_metric_names(scope, metric_provider, metric_type)
-    all_metric_names = Metrics.list_metric_names(scope)
+    all_metric_names = Metrics.list_normalized_metric_names(scope)
 
     time_series = build_time_series(scope, metric_names, metric_query_opts)
     summary_stats = build_summary_stats(scope, metric_names, metric_query_opts)
@@ -431,11 +446,11 @@ defmodule MetricFlow.Dashboards do
   # filter; for metric_type we fall back to listing metrics and extracting
   # distinct names from the filtered result set.
   defp resolve_metric_names(scope, nil, nil) do
-    Metrics.list_metric_names(scope)
+    Metrics.list_normalized_metric_names(scope)
   end
 
   defp resolve_metric_names(scope, platform, nil) do
-    Metrics.list_metric_names(scope, provider: platform)
+    Metrics.list_normalized_metric_names(scope, provider: platform)
   end
 
   defp resolve_metric_names(scope, platform, metric_type) do
@@ -446,7 +461,8 @@ defmodule MetricFlow.Dashboards do
 
     scope
     |> Metrics.list_metrics(opts)
-    |> Enum.map(& &1.metric_name)
+    |> Enum.map(& &1.normalized_metric_name)
+    |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
     |> Enum.sort()
   end

@@ -180,12 +180,15 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsole do
       date_str = row |> Map.get("keys", []) |> List.first()
       recorded_at = parse_date(date_str)
 
+      alias MetricFlow.Metrics.NormalizedMetric
+
       @metric_names
       |> Enum.filter(fn name -> Map.has_key?(row, name) end)
       |> Enum.map(fn metric_name ->
         %{
           metric_type: "search",
           metric_name: metric_name,
+          normalized_metric_name: NormalizedMetric.normalize(:google_search_console, metric_name),
           value: parse_value(metric_name, Map.get(row, metric_name, 0)),
           recorded_at: recorded_at,
           dimensions: %{date: date_str},

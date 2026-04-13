@@ -14,42 +14,44 @@ defmodule MetricFlowSpex.Criterion5051EachIterationUpdatesPreviewSpex do
     match_requests_on: [:method, :uri]
   ]
 
-  spex "Each LLM iteration updates the preview in real time", fail_on_error_logs: false do
-    scenario "regenerating replaces the previous chart with the new one" do
+  spex "Each LLM iteration updates the spec editor and re-renders the preview", fail_on_error_logs: false do
+    scenario "the spec editor content changes after each LLM generation" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
+      given_ :owner_has_metrics
 
-      given_ "user is on the report generator", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
+      given_ "user opens the visualization editor with spec panel open", context do
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "user generates two charts and the preview is updated", context do
-        with_cassette "report_generator_success", @cassette_opts, fn plug ->
+      then_ "each chat message updates both the spec editor and the chart preview", context do
+        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           # First generation
           capture_log(fn ->
-            context.view
-            |> render_change("update_prompt", %{"prompt" => "Show me spend"})
-
-            context.view
-            |> render_submit("generate", %{"prompt" => "Show me spend"})
+            render_submit(context.view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
+            Process.sleep(100)
+            render(context.view)
           end)
+
+          # Open spec panel to inspect the spec
+          context.view |> element("[data-role='open-spec-panel']") |> render_click()
+          first_spec_html = render(context.view)
+          assert first_spec_html =~ "impressions"
+          assert has_element?(context.view, "[data-role='vega-lite-chart']")
 
           # Second generation
           capture_log(fn ->
-            context.view
-            |> render_change("update_prompt", %{"prompt" => "Now show conversions"})
-
-            context.view
-            |> render_submit("generate", %{"prompt" => "Now show conversions"})
+            render_submit(context.view, "send_chat", %{"prompt" => "Now add clicks as a second series and make it a layered chart"})
+            Process.sleep(100)
+            render(context.view)
           end)
 
-          # Both iterations should produce a chart
+          second_spec_html = render(context.view)
+          assert second_spec_html =~ "clicks"
           assert has_element?(context.view, "[data-role='vega-lite-chart']")
-          # The save section resets (not already saved)
-          refute has_element?(context.view, "[data-role='save-confirmation']")
 
           Application.delete_env(:metric_flow, :req_http_options)
         end

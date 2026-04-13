@@ -14,13 +14,13 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   alias MetricFlow.Dashboards
 
   # Known raw/additive metrics that always appear on the dashboard
-  @known_raw_metrics ["Clicks", "Spend", "Impressions", "Revenue", "Conversions"]
+  @known_raw_metrics ["clicks", "total_cost", "impressions", "revenue", "conversions"]
 
   # Derived metrics computed from raw component metrics
   @known_derived_metrics [
-    %{name: "CPC", numerator: "Spend", denominator: "Clicks"},
-    %{name: "CTR", numerator: "Clicks", denominator: "Impressions"},
-    %{name: "ROAS", numerator: "Revenue", denominator: "Spend"}
+    %{name: "cpc", numerator: "total_cost", denominator: "clicks"},
+    %{name: "ctr", numerator: "clicks", denominator: "impressions"},
+    %{name: "roas", numerator: "revenue", denominator: "total_cost"}
   ]
 
   # ---------------------------------------------------------------------------

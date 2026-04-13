@@ -101,6 +101,7 @@ defmodule MetricFlow.Metrics.MetricRepository do
       Enum.map(attrs_list, fn attrs ->
         attrs
         |> Map.put(:user_id, user.id)
+        |> Map.update(:metric_name, nil, &if(is_binary(&1), do: String.downcase(&1), else: &1))
         |> Map.put(:inserted_at, now)
         |> Map.put(:updated_at, now)
       end)
@@ -146,7 +147,8 @@ defmodule MetricFlow.Metrics.MetricRepository do
   def query_time_series(%Scope{user: user}, metric_name, opts) do
     date_range = resolve_time_series_date_range(opts)
 
-    from(m in Metric, where: m.user_id == ^user.id and m.metric_name == ^metric_name)
+    from(m in Metric, where: m.user_id == ^user.id)
+    |> apply_metric_name_or_normalized(metric_name)
     |> apply_provider_filter(opts)
     |> apply_date_range_filter_with_default(date_range)
     |> group_by([m], fragment("?::date", m.recorded_at))
@@ -209,6 +211,25 @@ defmodule MetricFlow.Metrics.MetricRepository do
     |> Repo.all()
   end
 
+  @doc """
+  Returns distinct normalized metric names for the scoped user, sorted alphabetically.
+
+  These are canonical cross-provider names (e.g. "clicks", "impressions", "users")
+  suitable for aggregation, display, and LLM context.
+  """
+  @spec list_normalized_metric_names(Scope.t(), keyword()) :: list(String.t())
+  def list_normalized_metric_names(%Scope{user: user}, opts \\ []) do
+    from(m in Metric,
+      where: m.user_id == ^user.id,
+      where: not is_nil(m.normalized_metric_name) and m.normalized_metric_name != ""
+    )
+    |> apply_provider_filter(opts)
+    |> distinct(true)
+    |> order_by([m], asc: m.normalized_metric_name)
+    |> select([m], m.normalized_metric_name)
+    |> Repo.all()
+  end
+
   # ---------------------------------------------------------------------------
   # list_metric_providers/2
   # ---------------------------------------------------------------------------
@@ -235,6 +256,11 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  # Match on normalized_metric_name first, fall back to metric_name for backward compat
+  defp apply_metric_name_or_normalized(query, name) do
+    where(query, [m], m.normalized_metric_name == ^name or m.metric_name == ^name)
+  end
 
   defp apply_provider_filter(query, opts) do
     case Keyword.get(opts, :provider) do

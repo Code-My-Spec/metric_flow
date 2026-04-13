@@ -151,4 +151,5 @@ defmodule MetricFlow.Ai.LlmClient do
         {:error, reason}
     end
   end
+
 end

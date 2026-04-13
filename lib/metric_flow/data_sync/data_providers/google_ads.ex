@@ -347,9 +347,12 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   end
 
   defp build_metric(metric_type, metric_name, value, recorded_at, metadata) do
+    alias MetricFlow.Metrics.NormalizedMetric
+
     %{
       metric_type: metric_type,
       metric_name: metric_name,
+      normalized_metric_name: NormalizedMetric.normalize(:google_ads, metric_name),
       value: value,
       recorded_at: recorded_at,
       metadata: metadata,

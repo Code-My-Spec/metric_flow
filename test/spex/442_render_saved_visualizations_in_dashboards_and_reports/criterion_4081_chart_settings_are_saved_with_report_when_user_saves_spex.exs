@@ -36,9 +36,9 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
         {:ok, Map.merge(context, %{save_html: html})}
       end
 
-      then_ "the visualization is saved and user is redirected", context do
-        # After save, user should be redirected to dashboards or see success flash
-        assert_redirect(context.view, "/app/dashboards")
+      then_ "the visualization is saved and user sees confirmation", context do
+        # After save, user stays on the editor and sees a success flash
+        assert render(context.view) =~ "Visualization saved"
         :ok
       end
     end

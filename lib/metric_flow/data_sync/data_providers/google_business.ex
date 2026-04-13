@@ -158,9 +158,12 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
           value = parse_int_value(data_point["value"] || "0")
           date_str = Date.to_iso8601(DateTime.to_date(recorded_at))
 
+          normalized_name = normalize_metric_name(metric_name)
+
           %{
             metric_type: "business_profile",
-            metric_name: normalize_metric_name(metric_name),
+            metric_name: normalized_name,
+            normalized_metric_name: MetricFlow.Metrics.NormalizedMetric.normalize(:google_business, normalized_name),
             value: value * 1.0,
             recorded_at: recorded_at,
             dimensions: %{
@@ -296,6 +299,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
         %{
           metric_type: "reviews",
           metric_name: "review_rating",
+          normalized_metric_name: "reviews",
           value: star_rating * 1.0,
           recorded_at: recorded_at,
           dimensions: %{
@@ -309,6 +313,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
         %{
           metric_type: "reviews",
           metric_name: "review_count",
+          normalized_metric_name: "reviews",
           value: 1.0,
           recorded_at: recorded_at,
           dimensions: %{

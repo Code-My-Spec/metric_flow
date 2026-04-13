@@ -20,7 +20,9 @@ defmodule MetricFlow.Ai do
       AiRepository,
       InsightsGenerator,
       ReportGenerator,
-      LlmClient
+      LlmClient,
+      VegaDocsReference,
+      VizChat
     ]
 
   alias MetricFlow.Ai.AiRepository
@@ -127,6 +129,32 @@ defmodule MetricFlow.Ai do
   end
 
   # ---------------------------------------------------------------------------
+  # Visualization chat (conversational with tools)
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Sends a message in the visualization chat. The model can respond with text,
+  update the Vega-Lite spec, browse docs, or query metrics.
+
+  Uses `VizChat` backed by Anubis MCP tool components. Pass a `ReqLLM.Context`
+  to maintain multi-turn conversation history (or nil for the first message).
+
+  Returns `{:ok, %{text: String.t(), spec: map() | nil, context: ReqLLM.Context.t()}}`.
+  """
+  @spec viz_chat(Scope.t(), ReqLLM.Context.t() | nil, String.t(), keyword()) ::
+          {:ok, %{text: String.t(), spec: map() | nil, context: ReqLLM.Context.t()}}
+          | {:error, term()}
+  def viz_chat(%Scope{} = scope, context, user_message, opts \\ []) do
+    metric_names = Metrics.list_normalized_metric_names(scope)
+
+    MetricFlow.Ai.VizChat.send_message(
+      context,
+      user_message,
+      Keyword.merge(opts, metric_names: metric_names)
+    )
+  end
+
+  # ---------------------------------------------------------------------------
   # Chat messaging (streaming)
   # ---------------------------------------------------------------------------
 
@@ -212,10 +240,12 @@ defmodule MetricFlow.Ai do
   # Private: generate_vega_spec helpers
   # ---------------------------------------------------------------------------
 
-  @required_vega_fields ["$schema", "mark", "encoding"]
-
   defp validate_vega_spec(spec) when is_map(spec) do
-    if Enum.all?(@required_vega_fields, &Map.has_key?(spec, &1)) do
+    has_schema = Map.has_key?(spec, "$schema")
+    has_mark_encoding = Map.has_key?(spec, "mark") and Map.has_key?(spec, "encoding")
+    has_layer = Map.has_key?(spec, "layer") and is_list(spec["layer"])
+
+    if has_schema and (has_mark_encoding or has_layer) do
       {:ok, spec}
     else
       {:error, :invalid_vega_spec}

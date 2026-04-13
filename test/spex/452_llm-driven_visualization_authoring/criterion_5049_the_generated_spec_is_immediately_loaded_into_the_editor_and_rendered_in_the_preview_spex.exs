@@ -14,31 +14,37 @@ defmodule MetricFlowSpex.Criterion5049SpecLoadedIntoEditorAndPreviewSpex do
     match_requests_on: [:method, :uri]
   ]
 
-  spex "Generated spec is immediately loaded and rendered in preview", fail_on_error_logs: false do
-    scenario "after generation, chart preview and spec are both available" do
+  spex "Generated spec is immediately loaded into the editor and rendered in preview", fail_on_error_logs: false do
+    scenario "after LLM generation, both the chart and spec editor reflect the result" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
+      given_ :owner_has_metrics
 
-      given_ "user is on the report generator", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
+      given_ "user opens the visualization editor", context do
+        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "user generates a chart and it is visible in the preview", context do
-        with_cassette "report_generator_success", @cassette_opts, fn plug ->
+      then_ "user generates a chart and it appears in the preview with spec in the editor", context do
+        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
-            context.view
-            |> render_change("update_prompt", %{"prompt" => "Show me clicks by day"})
-
-            context.view
-            |> render_submit("generate", %{"prompt" => "Show me clicks by day"})
+            render_submit(context.view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
+            Process.sleep(100)
+            render(context.view)
           end)
 
+          # Chart renders in the preview area
           assert has_element?(context.view, "[data-role='chart-preview-section']")
           assert has_element?(context.view, "[data-role='vega-lite-chart'][phx-hook='VegaLite']")
-          refute has_element?(context.view, "[data-role='empty-state']")
+          refute has_element?(context.view, "[data-role='chart-placeholder']")
+
+          # Open spec editor and verify spec is populated
+          context.view |> element("[data-role='open-spec-panel']") |> render_click()
+          html = render(context.view)
+          assert html =~ "impressions"
+          assert html =~ "$schema"
 
           Application.delete_env(:metric_flow, :req_http_options)
         end

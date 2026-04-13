@@ -21,7 +21,15 @@ defmodule MetricFlow.Ai.ReportGenerator do
   - "mark": the chart type (bar, line, point, area, etc.)
   - "encoding": field mappings with types (temporal, quantitative, nominal, ordinal)
 
-  Use the available metric names provided to map data fields correctly.
+  IMPORTANT — Data binding convention:
+  - Do NOT embed data values in the spec. Instead, use Vega-Lite named data sources.
+  - For a single metric: "data": {"name": "metricName"}
+  - For multiple metrics: use "layer" with a separate named data source per layer.
+  - Example single: {"data": {"name": "impressions"}, "mark": "line", "encoding": {...}}
+  - Example multi:  {"layer": [{"data": {"name": "impressions"}, ...}, {"data": {"name": "clicks"}, ...}]}
+  - The data values will be injected at render time from the bound metrics.
+
+  Use the available metric names provided to reference valid data sources.
   Return a complete, valid Vega-Lite v5 spec as a JSON object.
   """
 
@@ -35,8 +43,9 @@ defmodule MetricFlow.Ai.ReportGenerator do
   """
   @spec generate(String.t(), list(String.t()), keyword()) :: {:ok, map()} | {:error, term()}
   def generate(user_prompt, metric_names, opts \\ []) do
+    {current_spec, opts} = Keyword.pop(opts, :current_spec)
     system_prompt = build_system_prompt()
-    user_content = build_user_content(user_prompt, metric_names)
+    user_content = build_user_content(user_prompt, metric_names, current_spec)
 
     LlmClient.generate_vega_spec(system_prompt, user_content, opts)
   end
@@ -51,11 +60,16 @@ defmodule MetricFlow.Ai.ReportGenerator do
   end
 
   @doc false
-  def build_user_content(user_prompt, metric_names) do
-    """
-    #{user_prompt}
+  def build_user_content(user_prompt, metric_names, current_spec \\ nil) do
+    parts = [user_prompt, "\nAvailable Metrics: #{Enum.join(metric_names, ", ")}"]
 
-    Available Metrics: #{Enum.join(metric_names, ", ")}
-    """
+    parts =
+      if current_spec do
+        parts ++ ["\nCurrent Vega-Lite Spec:\n```json\n#{Jason.encode!(current_spec, pretty: true)}\n```\nEdit the above spec according to the user's request."]
+      else
+        parts
+      end
+
+    Enum.join(parts, "\n")
   end
 end

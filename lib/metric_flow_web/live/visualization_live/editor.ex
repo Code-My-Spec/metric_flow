@@ -231,20 +231,21 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             <form phx-submit="send_chat" data-role="chat-form">
               <div class="flex gap-2">
                 <textarea
+                  id="chat-prompt-input"
                   name="prompt"
                   data-role="chat-input"
                   rows="2"
                   placeholder="Describe the chart you want..."
                   disabled={@chat_generating}
                   class="textarea textarea-bordered textarea-sm flex-1 resize-none"
-                >{@chat_prompt}</textarea>
+                ></textarea>
                 <button
                   type="submit"
                   data-role="chat-send-btn"
-                  disabled={@chat_generating || String.trim(@chat_prompt) == ""}
+                  disabled={@chat_generating}
                   class={[
                     "btn btn-primary btn-sm self-end",
-                    (@chat_generating || String.trim(@chat_prompt) == "") && "btn-disabled"
+                    @chat_generating && "btn-disabled"
                   ]}
                 >
                   <span :if={@chat_generating} class="loading loading-spinner loading-xs" />
@@ -364,9 +365,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:left_panel_open, false)
     |> assign(:right_panel_open, true)
     |> assign(:bound_metrics, [])
-    |> assign(:chat_prompt, "")
     |> assign(:chat_generating, false)
     |> assign(:chat_error, nil)
+    |> assign(:chat_context, nil)
     |> stream(:chat_messages, [])
   end
 
@@ -480,47 +481,21 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         socket =
           socket
           |> stream_insert(:chat_messages, user_msg)
-          |> assign(:chat_prompt, "")
           |> assign(:chat_generating, true)
           |> assign(:chat_error, nil)
 
         scope = socket.assigns.current_scope
         req_opts = Application.get_env(:metric_flow, :req_http_options, [])
+        chat_context = socket.assigns.chat_context
+        current_spec = current_template_spec(socket)
+        opts = [req_http_options: req_opts, current_spec: current_spec]
 
-        case Ai.generate_vega_spec(scope, trimmed, req_http_options: req_opts) do
-          {:ok, spec} ->
-            assistant_msg = %{
-              role: :assistant,
-              content: "Chart updated.",
-              id: System.unique_integer([:positive])
-            }
+        # Async — don't block the LiveView process
+        Task.async(fn ->
+          Ai.viz_chat(scope, chat_context, trimmed, opts)
+        end)
 
-            {:noreply,
-             socket
-             |> stream_insert(:chat_messages, assistant_msg)
-             |> assign(
-               chart_preview: spec,
-               raw_vega_spec: format_spec(spec),
-               selected_chart_type: extract_chart_type(spec),
-               selected_metric: extract_metric_name(spec),
-               chat_generating: false,
-               left_panel_open: socket.assigns.left_panel_open || false
-             )}
-
-          {:error, reason} ->
-            error_msg = generation_error_message(reason)
-
-            assistant_msg = %{
-              role: :assistant,
-              content: "Error: #{error_msg}",
-              id: System.unique_integer([:positive])
-            }
-
-            {:noreply,
-             socket
-             |> stream_insert(:chat_messages, assistant_msg)
-             |> assign(chat_generating: false, chat_error: error_msg)}
-        end
+        {:noreply, socket}
     end
   end
 
@@ -541,8 +516,95 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   end
 
   # ---------------------------------------------------------------------------
+  # Async viz_chat result handlers
+  # ---------------------------------------------------------------------------
+
+  @impl true
+  def handle_info({ref, {:ok, %{text: text, spec: spec, context: updated_context}}}, socket)
+      when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+
+    assistant_msg = %{
+      role: :assistant,
+      content: text,
+      id: System.unique_integer([:positive])
+    }
+
+    socket =
+      socket
+      |> stream_insert(:chat_messages, assistant_msg)
+      |> assign(:chat_context, updated_context)
+      |> assign(:chat_generating, false)
+
+    socket =
+      if spec do
+        scope = socket.assigns.current_scope
+        bound = extract_named_metrics(spec)
+        bound = if bound != [], do: bound, else: socket.assigns.bound_metrics
+        preview = resolve_named_data(spec, scope)
+
+        assign(socket,
+          chart_preview: preview,
+          raw_vega_spec: format_spec(spec),
+          bound_metrics: bound,
+          selected_chart_type: extract_chart_type(spec),
+          selected_metric: List.first(bound) || extract_metric_name(spec)
+        )
+      else
+        socket
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({ref, {:error, reason}}, socket) when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+    require Logger
+    Logger.error("viz_chat error: #{inspect(reason)}")
+    error_msg = generation_error_message(reason)
+
+    assistant_msg = %{
+      role: :assistant,
+      content: "Error: #{error_msg}",
+      id: System.unique_integer([:positive])
+    }
+
+    {:noreply,
+     socket
+     |> stream_insert(:chat_messages, assistant_msg)
+     |> assign(chat_generating: false, chat_error: error_msg)}
+  end
+
+  # Task DOWN message — already handled via demonitor flush
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
+    {:noreply, socket}
+  end
+
+  # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  # Returns the template spec (with named data sources, no embedded values)
+  # for use as LLM context. Falls back to rebuilding from bound metrics.
+  defp current_template_spec(socket) do
+    bound = socket.assigns.bound_metrics
+
+    cond do
+      # Try to parse the raw spec editor content (it should be the template)
+      socket.assigns.raw_vega_spec != "" ->
+        case Jason.decode(socket.assigns.raw_vega_spec) do
+          {:ok, spec} when is_map(spec) -> spec
+          _ -> nil
+        end
+
+      # Rebuild from bound metrics
+      bound != [] ->
+        build_template_spec(bound, socket.assigns.selected_chart_type, socket.assigns.name)
+
+      true ->
+        nil
+    end
+  end
 
   defp do_save(socket) do
     scope = socket.assigns.current_scope
@@ -574,8 +636,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Visualization saved.")
-         |> push_navigate(to: "/app/dashboards")}
+         |> assign(:visualization, visualization)
+         |> put_flash(:info, "Visualization saved.")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
@@ -589,8 +651,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Visualization saved.")
-         |> push_navigate(to: "/app/dashboards")}
+         |> assign(:visualization, updated)
+         |> put_flash(:info, "Visualization saved.")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
@@ -616,10 +678,12 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   end
 
   defp extract_metric_name(%{"title" => title}) when is_binary(title), do: title
+  defp extract_metric_name(%{"metric_name" => name}) when is_binary(name), do: name
   defp extract_metric_name(_), do: nil
 
   defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark), do: mark
   defp extract_chart_type(%{"mark" => mark}) when is_binary(mark), do: mark
+  defp extract_chart_type(%{"chart_type" => type}) when is_binary(type), do: type
   defp extract_chart_type(_), do: "line"
 
   defp format_spec(nil), do: ""

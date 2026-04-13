@@ -248,11 +248,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
       recorded_at = parse_recorded_at(dimension_values, dimension_names)
       dimensions = build_dimensions_map(dimension_values, dimension_names)
 
+      alias MetricFlow.Metrics.NormalizedMetric
+
       Enum.zip(@metric_names, metric_values)
       |> Enum.map(fn {metric_name, raw_value} ->
         %{
           metric_type: "traffic",
           metric_name: metric_name,
+          normalized_metric_name: NormalizedMetric.normalize(:google_analytics, metric_name),
           value: parse_metric_value(metric_name, raw_value),
           recorded_at: recorded_at,
           dimensions: dimensions,

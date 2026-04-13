@@ -1,0 +1,125 @@
+{
+  "interactions": [
+    {
+      "recorded_at": "2026-04-08T14:00:00.000000Z",
+      "request": {
+        "body_json": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": "Show me impressions over time as a line chart",
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-5-20250929",
+          "stream": false
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": ["gzip"],
+          "anthropic-version": ["2023-06-01"],
+          "content-type": ["application/json"],
+          "user-agent": ["req/0.5.17"]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.anthropic.com/v1/messages"
+      },
+      "response": {
+        "body_json": {
+          "content": [
+            {
+              "text": "I'll create a line chart showing impressions over time.",
+              "type": "text"
+            },
+            {
+              "id": "toolu_01VizSpec001",
+              "input": {
+                "vega_lite_json": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"data\":{\"name\":\"impressions\"},\"mark\":\"line\",\"encoding\":{\"x\":{\"field\":\"date\",\"type\":\"temporal\",\"title\":\"Date\"},\"y\":{\"field\":\"value\",\"type\":\"quantitative\",\"title\":\"Impressions\"}},\"title\":\"Impressions Over Time\",\"width\":\"container\",\"height\":400}"
+              },
+              "name": "update_spec",
+              "type": "tool_use"
+            }
+          ],
+          "id": "msg_01VizChat001",
+          "model": "claude-sonnet-4-5-20250929",
+          "role": "assistant",
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "type": "message",
+          "usage": {
+            "input_tokens": 800,
+            "output_tokens": 200
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": ["application/json"],
+          "date": ["Tue, 08 Apr 2026 14:00:01 GMT"]
+        },
+        "status": 200
+      }
+    },
+    {
+      "recorded_at": "2026-04-08T14:00:10.000000Z",
+      "request": {
+        "body_json": {
+          "max_tokens": 8192,
+          "messages": [
+            {
+              "content": "Now add clicks as a second series and make it a layered chart",
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-5-20250929",
+          "stream": false
+        },
+        "body_type": "json",
+        "headers": {
+          "accept-encoding": ["gzip"],
+          "anthropic-version": ["2023-06-01"],
+          "content-type": ["application/json"],
+          "user-agent": ["req/0.5.17"]
+        },
+        "method": "POST",
+        "query_string": "",
+        "uri": "https://api.anthropic.com/v1/messages"
+      },
+      "response": {
+        "body_json": {
+          "content": [
+            {
+              "text": "I've added clicks as a second series in a layered chart.",
+              "type": "text"
+            },
+            {
+              "id": "toolu_01VizSpec002",
+              "input": {
+                "vega_lite_json": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v5.json\",\"title\":\"Impressions & Clicks Over Time\",\"width\":\"container\",\"height\":400,\"layer\":[{\"data\":{\"name\":\"impressions\"},\"mark\":{\"type\":\"line\",\"point\":true},\"encoding\":{\"x\":{\"field\":\"date\",\"type\":\"temporal\"},\"y\":{\"field\":\"value\",\"type\":\"quantitative\"},\"color\":{\"datum\":\"impressions\"}}},{\"data\":{\"name\":\"clicks\"},\"mark\":{\"type\":\"line\",\"point\":true},\"encoding\":{\"x\":{\"field\":\"date\",\"type\":\"temporal\"},\"y\":{\"field\":\"value\",\"type\":\"quantitative\"},\"color\":{\"datum\":\"clicks\"}}}]}"
+              },
+              "name": "update_spec",
+              "type": "tool_use"
+            }
+          ],
+          "id": "msg_01VizChat002",
+          "model": "claude-sonnet-4-5-20250929",
+          "role": "assistant",
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "type": "message",
+          "usage": {
+            "input_tokens": 900,
+            "output_tokens": 300
+          }
+        },
+        "body_type": "json",
+        "headers": {
+          "content-type": ["application/json"],
+          "date": ["Tue, 08 Apr 2026 14:00:11 GMT"]
+        },
+        "status": 200
+      }
+    }
+  ],
+  "version": "2.0"
+}
