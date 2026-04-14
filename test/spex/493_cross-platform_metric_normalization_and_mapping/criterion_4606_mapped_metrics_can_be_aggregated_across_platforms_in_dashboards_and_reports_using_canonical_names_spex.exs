@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         html = render(context.view)
 
         has_aggregated_clicks =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         html = render(context.view)
 
         has_aggregated_spend =
-          html =~ "Spend" or
+          html =~ "total_cost" or
             html =~ "spend" or
             has_element?(context.view, "[data-canonical-metric='spend']") or
             has_element?(context.view, "[data-metric-name='spend']") or

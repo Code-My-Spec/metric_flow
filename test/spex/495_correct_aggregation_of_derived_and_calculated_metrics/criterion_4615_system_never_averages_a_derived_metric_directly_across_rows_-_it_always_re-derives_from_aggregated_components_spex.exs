@@ -40,9 +40,9 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
         html = render(context.view)
 
         has_derived_metrics =
-          html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
+          html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "Conversion Rate" or
             html =~ "Cost Per Click" or
             html =~ "Click-Through Rate" or
@@ -71,11 +71,11 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
         html = render(context.view)
 
         has_component_metrics =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or

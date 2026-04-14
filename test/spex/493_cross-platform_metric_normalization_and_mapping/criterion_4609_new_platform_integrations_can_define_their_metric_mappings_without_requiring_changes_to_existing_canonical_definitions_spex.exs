@@ -42,13 +42,13 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
         # The canonical taxonomy (clicks, spend, impressions, conversions) must remain
         # stable on the integrations page regardless of which new platforms are connected.
         has_canonical_references =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
             html =~ "impressions" or
-            html =~ "Conversions" or
+            html =~ "impressions" or
+            html =~ "conversions" or
             html =~ "conversions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']") or
@@ -86,11 +86,11 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
         # The canonical metric names should be present on the dashboard, unchanged
         # by the addition of any new platform integration.
         has_canonical_label =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']") or

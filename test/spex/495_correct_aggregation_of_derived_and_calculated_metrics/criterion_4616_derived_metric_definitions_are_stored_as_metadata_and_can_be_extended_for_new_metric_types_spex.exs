@@ -40,9 +40,9 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
         html = render(context.view)
 
         has_known_derived_metric =
-          html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
+          html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "Conversion Rate" or
             html =~ "Cost Per Click" or
             html =~ "Click-Through Rate" or
@@ -72,9 +72,9 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
 
         derived_metric_count =
           [
-            html =~ "CPC" or html =~ "Cost Per Click",
-            html =~ "CTR" or html =~ "Click-Through Rate",
-            html =~ "ROAS" or html =~ "Return on Ad Spend",
+            html =~ "cpc" or html =~ "Cost Per Click",
+            html =~ "ctr" or html =~ "Click-Through Rate",
+            html =~ "roas" or html =~ "Return on Ad Spend",
             html =~ "Conversion Rate",
             has_element?(context.view, "[data-metric-type='derived']"),
             has_element?(context.view, "[data-role='derived-metric']")
@@ -103,9 +103,9 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
         # Verify that any derived metric appearing in the dashboard has an associated label.
         # Labels are driven by metadata so they should be proper strings, not raw atom keys.
         has_readable_label =
-          html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
+          html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "Cost Per Click" or
             html =~ "Click-Through Rate" or
             html =~ "Return on Ad Spend" or

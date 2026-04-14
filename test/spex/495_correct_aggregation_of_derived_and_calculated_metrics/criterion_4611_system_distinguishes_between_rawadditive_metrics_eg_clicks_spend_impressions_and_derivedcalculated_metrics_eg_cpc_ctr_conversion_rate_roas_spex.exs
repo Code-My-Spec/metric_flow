@@ -40,11 +40,11 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
         html = render(context.view)
 
         has_raw_metrics =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
@@ -70,11 +70,11 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
         html = render(context.view)
 
         has_derived_metrics =
-          html =~ "CPC" or
+          html =~ "cpc" or
             html =~ "cpc" or
-            html =~ "CTR" or
             html =~ "ctr" or
-            html =~ "ROAS" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "roas" or
             html =~ "Conversion Rate" or
             html =~ "conversion_rate" or

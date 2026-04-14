@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
         html = render(context.view)
 
         has_clicks =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or

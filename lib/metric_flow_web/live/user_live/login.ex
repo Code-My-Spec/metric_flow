@@ -6,7 +6,7 @@ defmodule MetricFlowWeb.UserLive.Login do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-sm space-y-4">
         <div class="text-center">
           <.header>
@@ -88,7 +88,7 @@ defmodule MetricFlowWeb.UserLive.Login do
           </.button>
         </.form>
       </div>
-    </Layouts.app>
+    </Layouts.content>
     """
   end
 

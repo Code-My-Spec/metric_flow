@@ -19,7 +19,7 @@ defmodule MetricFlowWeb.InvitationLive.Accept do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mf-content flex items-center justify-center min-h-[80vh]">
         <div class="mf-card p-8 w-full max-w-md">
           <div class="flex flex-col items-center">
@@ -82,7 +82,7 @@ defmodule MetricFlowWeb.InvitationLive.Accept do
           </div>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.content>
     """
   end
 

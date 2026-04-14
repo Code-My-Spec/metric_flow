@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         html = render(context.view)
 
         has_cpc_metric =
-          html =~ "CPC" or
+          html =~ "cpc" or
             html =~ "Cost Per Click" or
             html =~ "cost_per_click" or
             html =~ "cost-per-click" or
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         html = render(context.view)
 
         has_roas_metric =
-          html =~ "ROAS" or
+          html =~ "roas" or
             html =~ "Return on Ad Spend" or
             html =~ "return_on_ad_spend" or
             has_element?(context.view, "[data-metric='roas']") or
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         html = render(context.view)
 
         has_ctr_metric =
-          html =~ "CTR" or
+          html =~ "ctr" or
             html =~ "Click-Through Rate" or
             html =~ "Click Through Rate" or
             html =~ "click_through_rate" or
@@ -100,19 +100,19 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         html = render(context.view)
 
         has_raw_component =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']")
 
         has_derived_metric =
-          html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
+          html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "Conversion Rate" or
             html =~ "Cost Per Click" or
             has_element?(context.view, "[data-metric-type='derived']") or

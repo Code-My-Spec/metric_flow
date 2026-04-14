@@ -45,8 +45,8 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
             has_element?(context.view, "[data-role='side-by-side-chart']") or
             has_element?(context.view, "[data-role='comparison-chart']") or
             has_element?(context.view, "[data-canonical-metric='clicks'][data-platform]") or
-            (html =~ "Google" and html =~ "Clicks") or
-            (html =~ "Facebook" and html =~ "Clicks") or
+            (html =~ "Google" and html =~ "clicks") or
+            (html =~ "Facebook" and html =~ "clicks") or
             (html =~ "google" and html =~ "clicks") or
             (html =~ "facebook" and html =~ "clicks")
 

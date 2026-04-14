@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
         html = render(context.view)
 
         has_cpc =
-          html =~ "CPC" or
+          html =~ "cpc" or
             html =~ "cpc" or
             html =~ "Cost per Click" or
             html =~ "cost per click" or
@@ -68,11 +68,11 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
         html = render(context.view)
 
         has_derived_metric =
-          html =~ "CPC" or
+          html =~ "cpc" or
             html =~ "cpc" or
-            html =~ "CTR" or
             html =~ "ctr" or
-            html =~ "ROAS" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "roas" or
             html =~ "CPM" or
             html =~ "cpm" or

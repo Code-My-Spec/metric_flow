@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.workspace
+    <Layouts.app
       flash={@flash}
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
@@ -260,7 +260,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           </div>
         </div>
       </div>
-    </Layouts.workspace>
+    </Layouts.app>
     """
   end
 

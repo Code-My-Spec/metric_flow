@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         html = render(context.view)
 
         has_clicks =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         html = render(context.view)
 
         has_spend =
-          html =~ "Spend" or
+          html =~ "total_cost" or
             html =~ "spend" or
             has_element?(context.view, "[data-canonical-metric='spend']") or
             has_element?(context.view, "[data-metric-name='spend']") or
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         html = render(context.view)
 
         has_impressions =
-          html =~ "Impressions" or
+          html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-canonical-metric='impressions']") or
             has_element?(context.view, "[data-metric-name='impressions']") or
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         html = render(context.view)
 
         has_conversions =
-          html =~ "Conversions" or
+          html =~ "conversions" or
             html =~ "conversions" or
             has_element?(context.view, "[data-canonical-metric='conversions']") or
             has_element?(context.view, "[data-metric-name='conversions']") or

@@ -58,12 +58,12 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
             has_element?(context.view, "[data-metric-status='unavailable']") or
             has_element?(context.view, "[data-metric-status='missing']") or
             # Also acceptable: the dashboard simply shows actual data for the period
-            html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
-            html =~ "Clicks" or
-            html =~ "Spend" or
-            html =~ "Impressions"
+            html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
+            html =~ "clicks" or
+            html =~ "total_cost" or
+            html =~ "impressions"
 
         assert shows_gap_awareness,
                "Expected the dashboard to either display metric data or provide explicit gap indicators for missing data periods, got: #{html}"

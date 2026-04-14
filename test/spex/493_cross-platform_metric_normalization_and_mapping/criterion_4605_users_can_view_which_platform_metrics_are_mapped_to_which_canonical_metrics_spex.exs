@@ -40,11 +40,11 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
         html = render(context.view)
 
         has_canonical_metric =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']")

@@ -40,20 +40,20 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
         html = render(context.view)
 
         has_raw_metrics =
-          html =~ "Clicks" or
+          html =~ "clicks" or
             html =~ "clicks" or
-            html =~ "Spend" or
+            html =~ "total_cost" or
             html =~ "spend" or
-            html =~ "Impressions" or
+            html =~ "impressions" or
             html =~ "impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']")
 
         has_derived_metrics =
-          html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
+          html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
             html =~ "Conversion Rate" or
             html =~ "Cost Per Click" or
             html =~ "Click-Through Rate" or
@@ -118,11 +118,11 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
             has_element?(context.view, "table") or
             html =~ "metric" or
             html =~ "Metric" or
-            html =~ "CPC" or
-            html =~ "CTR" or
-            html =~ "ROAS" or
-            html =~ "Clicks" or
-            html =~ "Spend"
+            html =~ "cpc" or
+            html =~ "ctr" or
+            html =~ "roas" or
+            html =~ "clicks" or
+            html =~ "total_cost"
 
         assert uses_consistent_presentation,
                "Expected derived and raw metrics to share the same visual presentation in the dashboard, got: #{html}"
