@@ -46,7 +46,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mf-content mx-auto max-w-5xl px-4 py-8">
+    <div class="px-4 py-8">
       <%= if @connected do %>
         <%= render_dashboard(assigns) %>
       <% else %>

@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Header row --%>
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">

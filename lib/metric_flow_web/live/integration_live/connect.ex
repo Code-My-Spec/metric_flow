@@ -64,7 +64,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-3xl mf-content px-4 py-8">
+    <div class="mx-auto px-4 py-8">
       <div class="mb-8">
         <h1 class="text-2xl font-bold">Connect a Provider</h1>
         <p class="mt-1 text-base-content/60">
@@ -129,7 +129,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_platform_detail(assigns) do
     ~H"""
-    <div class="mf-card max-w-sm mx-auto p-6">
+    <div class="mf-card max-w-sm p-6">
       <h2 class="text-xl font-semibold mb-2">{@platform.name}</h2>
 
       <div :if={not is_nil(@integration)} class="mb-4">
@@ -210,7 +210,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_result(assigns) do
     ~H"""
-    <div class="mf-card max-w-sm mx-auto p-6">
+    <div class="mf-card max-w-sm p-6">
       <%= if @result_status == :connected do %>
         <div class="text-center">
           <div class="text-success text-4xl mb-3">&#10003;</div>
@@ -255,7 +255,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     assigns = assign(assigns, :is_google_business, is_gbp)
 
     ~H"""
-    <div class="mf-card max-w-lg mx-auto p-6">
+    <div class="mf-card max-w-lg p-6">
       <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
       <p class="text-sm text-base-content/60 mb-4">
         {@account_labels.chooser_text}

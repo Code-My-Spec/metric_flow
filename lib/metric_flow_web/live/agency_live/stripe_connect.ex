@@ -20,7 +20,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-4xl">
+    <div class="mx-auto">
       <.header>
         Stripe Connect
         <:subtitle>Connect your Stripe account to receive payments</:subtitle>

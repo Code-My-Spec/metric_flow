@@ -59,7 +59,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-3xl mf-content px-4 py-8" data-role="integrations-index">
+    <div class="mx-auto px-4 py-8" data-role="integrations-index">
       <div class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold">Integrations</h1>

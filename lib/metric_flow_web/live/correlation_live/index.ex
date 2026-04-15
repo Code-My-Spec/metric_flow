@@ -47,7 +47,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-5xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
@@ -116,7 +116,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           class="mf-card p-8 text-center"
         >
           <h2 class="text-xl font-semibold">No Correlations Yet</h2>
-          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+          <p class="text-base-content/60 mt-2 max-w-prose">
             No correlations found — connect your marketing and financial platforms and sync at least 30 days of data points to get started.
             The system calculates daily aggregated Pearson correlation coefficients with optimal Lag detection (0–30 days) for each metric.
             Last calculated: never — need at least 30 days of data before correlations can run.
@@ -298,7 +298,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
         <%!-- Before AI suggestions enabled --%>
         <div :if={not @ai_suggestions_enabled} class="mf-card-accent p-8 text-center">
           <h2 class="text-xl font-semibold">Smart Mode</h2>
-          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+          <p class="text-base-content/60 mt-2 max-w-prose">
             Smart mode uses AI to surface actionable insights from your
             correlation data so you can act without digging through raw numbers.
           </p>

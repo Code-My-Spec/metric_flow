@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-2xl mf-content">
+    <div class="mx-auto">
       <.header>
         Account Settings
         <:subtitle><span class="text-base-content/60">{@account.name}</span></:subtitle>

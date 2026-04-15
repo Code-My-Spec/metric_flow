@@ -52,7 +52,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-4xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <div class="flex items-center justify-between mb-2">
         <div>
@@ -104,7 +104,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
       >
         <h2 class="text-xl font-semibold">No Insights Yet</h2>
         <%= if @has_correlations do %>
-          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+          <p class="text-base-content/60 mt-2 max-w-prose">
             You have correlation data available. Click "Generate Insights" to create AI-powered recommendations.
           </p>
           <button
@@ -116,7 +116,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
             {if @generating, do: "Generating...", else: "Generate Insights"}
           </button>
         <% else %>
-          <p class="text-base-content/60 mt-2 max-w-prose mx-auto">
+          <p class="text-base-content/60 mt-2 max-w-prose">
             Run a correlation analysis first, then generate insights from the results.
           </p>
           <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6">

@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-6xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <div class="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold">All Metrics</h1>

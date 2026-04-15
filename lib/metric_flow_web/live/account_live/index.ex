@@ -29,7 +29,7 @@ defmodule MetricFlowWeb.AccountLive.Index do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-2xl">
+    <div class="mx-auto">
       <.header>Your Accounts</.header>
 
       <div class="mt-8 space-y-4">

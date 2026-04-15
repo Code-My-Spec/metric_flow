@@ -21,7 +21,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-4xl">
+    <div class="mx-auto">
       <.header>
         Choose Your Plan
         <:subtitle>Unlock AI features with a subscription</:subtitle>

@@ -22,7 +22,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-6xl">
+    <div class="mx-auto">
       <.header>
         Customer Subscriptions
         <:subtitle>Manage your agency's subscriber accounts</:subtitle>

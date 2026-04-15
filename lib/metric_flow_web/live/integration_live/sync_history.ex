@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mx-auto max-w-3xl mf-content px-4 py-8">
+    <div class="mx-auto px-4 py-8">
       <div class="mb-8">
         <h1 class="text-2xl font-bold">Sync History</h1>
         <p class="mt-1 text-base-content/60">

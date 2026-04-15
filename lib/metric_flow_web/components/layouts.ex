@@ -111,7 +111,7 @@ defmodule MetricFlowWeb.Layouts do
           </div>
 
           <%!-- Navigation --%>
-          <ul class="menu p-3 flex-1 text-sm">
+          <ul class="menu p-3 w-full flex-1 text-sm">
             <li><a href={~p"/app/dashboard"}>Dashboard</a></li>
 
             <li>

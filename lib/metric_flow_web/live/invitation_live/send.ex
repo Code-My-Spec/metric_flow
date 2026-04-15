@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="mf-content mx-auto max-w-3xl">
+    <div class="mf-content">
       <div class="flex items-center gap-4 mb-6">
         <a href="/app/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
       </div>

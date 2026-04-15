@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-3xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <div class="flex items-center gap-3 mb-2">
         <.link navigate={~p"/app/reports"} class="btn btn-ghost btn-sm">
@@ -92,7 +92,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-5xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
         <div>

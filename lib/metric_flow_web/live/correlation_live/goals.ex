@@ -25,7 +25,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-2xl mx-auto mf-content px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <div class="mb-6">
         <h1 class="text-2xl font-bold">Goal Metric</h1>

@@ -30,7 +30,7 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
     >
-    <div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="px-4 py-8">
       <%!-- Page header --%>
       <h1 class="text-2xl font-bold">Generate Report</h1>
       <p class="text-base-content/60 mt-1">
