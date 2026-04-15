@@ -65,12 +65,13 @@ defmodule MetricFlow.DataSync.Scheduler do
   end
 
   defp schedule_integration(%Integration{} = integration) do
-    with {:ok, _sync_job} <- SyncJobRepository.create_sync_job(integration, %{}),
+    with {:ok, sync_job} <- SyncJobRepository.create_sync_job(integration, %{}),
          {:ok, _oban_job} <-
            Oban.insert(
              SyncWorker.new(%{
                integration_id: integration.id,
-               user_id: integration.user_id
+               user_id: integration.user_id,
+               sync_job_id: sync_job.id
              })
            ) do
       :ok
