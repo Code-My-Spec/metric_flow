@@ -164,6 +164,7 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
   def list_client_accounts(agency_account_id) do
     from(g in AgencyClientAccessGrant,
       where: g.agency_account_id == ^agency_account_id,
+      preload: [:client_account],
       order_by: [desc: g.inserted_at, desc: g.id]
     )
     |> Repo.all()

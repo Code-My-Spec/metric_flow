@@ -31,6 +31,7 @@ defmodule MetricFlowWeb.Layouts do
   attr :current_scope, :map, default: nil
   attr :white_label_config, :map, default: nil
   attr :active_account_name, :string, default: nil
+  attr :active_account_type, :atom, default: nil
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -175,6 +176,18 @@ defmodule MetricFlowWeb.Layouts do
                   <li><a href={~p"/app/accounts/members"}>Members</a></li>
                   <li><a href={~p"/app/accounts/settings"}>Settings</a></li>
                   <li><a href={~p"/app/accounts/invitations"}>Invitations</a></li>
+                </ul>
+              </details>
+            </li>
+
+            <li :if={@active_account_type == :agency}>
+              <details>
+                <summary>Agency</summary>
+                <ul>
+                  <li><a href={~p"/app/agency/clients"}>Clients</a></li>
+                  <li><a href={~p"/app/agency/plans"}>Plans</a></li>
+                  <li><a href={~p"/app/agency/subscriptions"}>Subscriptions</a></li>
+                  <li><a href={~p"/app/agency/stripe-connect"}>Stripe Connect</a></li>
                 </ul>
               </details>
             </li>

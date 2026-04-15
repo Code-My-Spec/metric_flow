@@ -25,6 +25,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
+      active_account_type={assigns[:active_account_type]}
     >
     <div class="mf-content">
       <div class="flex items-center gap-4 mb-6">

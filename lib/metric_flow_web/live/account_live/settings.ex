@@ -35,6 +35,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
+      active_account_type={assigns[:active_account_type]}
     >
     <div class="mx-auto">
       <.header>
@@ -142,7 +143,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
         </div>
 
         <%!-- Section: Leave Account (non-owners of team accounts) --%>
-        <div :if={not @is_owner and @account.type == "team" and not @left_account} class="card bg-base-100 shadow mf-card border border-warning/40">
+        <div :if={not @is_owner and @account.type in [:client, :agency] and not @left_account} class="card bg-base-100 shadow mf-card border border-warning/40">
           <div class="card-body">
             <h2 class="card-title text-base">Leave Account</h2>
             <p class="text-sm text-base-content/60">
@@ -183,7 +184,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
         <%!-- Agency Access section (team accounts, all roles can view) --%>
         <AgencyLive.Settings.grant_agency_access_section
-          :if={@account.type == "team"}
+          :if={@account.type in [:client, :agency]}
           agency_grants={@agency_grants}
           grant_agency_form={@grant_agency_form}
           can_manage_agencies={@current_user_role in [:owner, :admin]}
@@ -191,20 +192,20 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
         <%!-- Auto-enrollment (team accounts, owner/admin only) --%>
         <AgencyLive.Settings.auto_enrollment_section
-          :if={@account.type == "team" and @current_user_role in [:owner, :admin]}
+          :if={@account.type in [:client, :agency] and @current_user_role in [:owner, :admin]}
           auto_enrollment_rule={@auto_enrollment_rule}
           auto_enrollment_form={@auto_enrollment_form}
         />
 
-        <%!-- White-Label Branding (team accounts, owner/admin only) --%>
+        <%!-- White-Label Branding (agency accounts, owner/admin only) --%>
         <AgencyLive.Settings.white_label_section
-          :if={@account.type == "team" and @current_user_role in [:owner, :admin]}
+          :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
           white_label_config={@agency_white_label_config}
           white_label_form={@white_label_form}
         />
 
         <%!-- Section 2: Transfer Ownership (owners of team accounts only) --%>
-        <div :if={@is_owner and @account.type == "team"} class="card bg-base-100 shadow mf-card">
+        <div :if={@is_owner and @account.type in [:client, :agency]} class="card bg-base-100 shadow mf-card">
           <div class="card-body">
             <h2 class="card-title text-base">Transfer Ownership</h2>
             <p class="text-sm text-base-content/60">
@@ -237,7 +238,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
         <%!-- Section 3: Danger Zone (owners of team accounts only) --%>
         <div
-          :if={@is_owner and @account.type == "team"}
+          :if={@is_owner and @account.type in [:client, :agency]}
           class="card bg-base-100 shadow mf-card border border-error/40"
         >
           <div class="card-body">
@@ -647,7 +648,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   # ---------------------------------------------------------------------------
 
   defp assign_agency_data(socket, scope, account, user_role)
-       when account.type == "team" and user_role in [:owner, :admin] do
+       when account.type in [:client, :agency] and user_role in [:owner, :admin] do
     auto_enrollment_rule =
       case Agencies.get_auto_enrollment_rule(scope, account.id) do
         {:error, _} -> nil
@@ -676,7 +677,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   end
 
   defp assign_agency_data(socket, scope, account, _user_role)
-       when account.type == "team" do
+       when account.type in [:client, :agency] do
     agency_grants =
       case Agencies.list_grants_for_client_account(scope, account.id) do
         {:error, _} -> []
@@ -727,9 +728,6 @@ defmodule MetricFlowWeb.AccountLive.Settings do
              |> put_flash(:info, "Account deleted successfully.")
              |> redirect(to: "/app/accounts")}
 
-          {:error, :personal_account} ->
-            {:noreply, put_flash(socket, :error, "Personal accounts cannot be deleted")}
-
           {:error, :unauthorized} ->
             {:noreply, put_flash(socket, :error, "You are not authorized to delete this account")}
         end
@@ -755,9 +753,9 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     Enum.reject(members, &(&1.role == :owner))
   end
 
-  defp account_type_label("personal"), do: "Personal"
-  defp account_type_label("team"), do: "Team"
-  defp account_type_label(type), do: type
+  defp account_type_label(:client), do: "Client"
+  defp account_type_label(:agency), do: "Agency"
+  defp account_type_label(type), do: to_string(type)
 
   defp has_error?(form, field) do
     form

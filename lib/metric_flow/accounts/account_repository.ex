@@ -72,7 +72,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
 
     account_attrs =
       Map.merge(string_attrs, %{
-        "type" => "team",
+        "type" => :client,
         "originator_user_id" => user.id
       })
 
@@ -126,9 +126,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
   Broadcasts {:deleted, account} on success.
   """
   @spec delete_account(Scope.t(), Account.t()) ::
-          {:ok, Account.t()} | {:error, :unauthorized} | {:error, :personal_account}
-  def delete_account(_scope, %Account{type: "personal"}), do: {:error, :personal_account}
-
+          {:ok, Account.t()} | {:error, :unauthorized}
   def delete_account(%Scope{user: user} = scope, %Account{} = account) do
     with true <- Authorization.can?(scope, :delete_account, %{account_id: account.id}),
          {:ok, %{account: deleted}} <- run_delete_account_transaction(account) do
@@ -349,7 +347,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
   @spec get_account_by_slug(String.t()) :: Account.t() | nil
   def get_account_by_slug(slug) do
     from(a in Account,
-      where: a.slug == ^slug and a.type == "team"
+      where: a.slug == ^slug
     )
     |> Repo.one()
   end

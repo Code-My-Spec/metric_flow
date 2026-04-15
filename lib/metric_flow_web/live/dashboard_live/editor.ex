@@ -54,6 +54,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       current_scope={@current_scope}
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
+      active_account_type={assigns[:active_account_type]}
     >
     <div class="px-4 py-8">
       <%!-- Header row --%>

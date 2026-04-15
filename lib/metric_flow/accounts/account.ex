@@ -2,19 +2,21 @@ defmodule MetricFlow.Accounts.Account do
   @moduledoc """
   Ecto schema representing a business account.
 
-  Stores account name, URL-friendly slug, account type (personal or team), and the
+  Stores account name, URL-friendly slug, account type (client or agency), and the
   originator_user_id tracking who created the account. The type field is read-only
-  after creation. Personal accounts are auto-created during user registration; team
-  accounts are created explicitly by users.
+  after creation. Client accounts are the default; agency accounts manage multiple
+  client accounts.
   """
 
   use Ecto.Schema
   import Ecto.Changeset
 
+  @account_types [:client, :agency]
+
   schema "accounts" do
     field :name, :string
     field :slug, :string
-    field :type, :string
+    field :type, Ecto.Enum, values: @account_types
     field :originator_user_id, :integer
 
     timestamps(type: :utc_datetime)
@@ -45,7 +47,6 @@ defmodule MetricFlow.Accounts.Account do
     |> validate_required([:name, :slug, :type, :originator_user_id])
     |> validate_length(:name, max: 255)
     |> validate_format(:slug, ~r/^[a-z0-9-]+$/)
-    |> validate_inclusion(:type, ["personal", "team"])
     |> unique_constraint(:slug)
   end
 end

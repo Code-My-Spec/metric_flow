@@ -99,7 +99,8 @@ defmodule MetricFlowWeb.Router do
       # Subscription checkout (must be outside paywall gate)
       live "/subscriptions/checkout", SubscriptionLive.Checkout, :index
 
-      # Agency billing routes (not paywalled — agency admins need access)
+      # Agency routes (not paywalled — agency admins need access)
+      live "/agency/clients", AgencyLive.Clients, :index
       live "/agency/plans", AgencyLive.Plans, :index
       live "/agency/stripe-connect", AgencyLive.StripeConnect, :index
       live "/agency/subscriptions", AgencyLive.Subscriptions, :index

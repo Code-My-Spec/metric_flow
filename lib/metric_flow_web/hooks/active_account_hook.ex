@@ -15,19 +15,20 @@ defmodule MetricFlowWeb.Hooks.ActiveAccountHook do
   def on_mount(:load_active_account, _params, _session, socket) do
     scope = socket.assigns[:current_scope]
 
-    {active_account_id, active_account_name} =
+    {active_account_id, active_account_name, active_account_type} =
       if scope && scope.user do
         accounts = Accounts.list_accounts(scope)
         account = primary_account(accounts)
-        {account && account.id, account && account.name}
+        {account && account.id, account && account.name, account && account.type}
       else
-        {nil, nil}
+        {nil, nil, nil}
       end
 
     socket =
       socket
       |> assign(:active_account_id, active_account_id)
       |> assign(:active_account_name, active_account_name)
+      |> assign(:active_account_type, active_account_type)
 
     {:cont, socket}
   end
