@@ -37,7 +37,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="px-4 py-8">
+    <div>
       <div class="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold">All Metrics</h1>

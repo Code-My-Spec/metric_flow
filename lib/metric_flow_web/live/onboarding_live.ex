@@ -4,8 +4,7 @@ defmodule MetricFlowWeb.OnboardingLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}
-      active_account_type={assigns[:active_account_type]}>
+    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
       <div class="mx-auto max-w-2xl text-center">
         <.header>Welcome to MetricFlow</.header>
 

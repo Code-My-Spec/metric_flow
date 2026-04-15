@@ -102,6 +102,7 @@ defmodule MetricFlowWeb.Router do
       # Agency routes (not paywalled — agency admins need access)
       live "/agency/clients", AgencyLive.Clients, :index
       live "/agency/plans", AgencyLive.Plans, :index
+      live "/agency/settings", AgencyLive.AgencySettings, :index
       live "/agency/stripe-connect", AgencyLive.StripeConnect, :index
       live "/agency/subscriptions", AgencyLive.Subscriptions, :index
 

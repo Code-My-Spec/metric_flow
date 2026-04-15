@@ -31,7 +31,7 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="px-4 py-8">
+    <div>
       <%!-- Page header --%>
       <h1 class="text-2xl font-bold">Generate Report</h1>
       <p class="text-base-content/60 mt-1">

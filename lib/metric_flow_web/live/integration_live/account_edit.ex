@@ -36,7 +36,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto max-w-lg px-4 py-8">
+    <div class="mx-auto max-w-lg">
       <div class="mb-6">
         <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
         <p class="mt-1 text-base-content/60">

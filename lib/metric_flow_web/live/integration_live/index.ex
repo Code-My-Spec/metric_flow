@@ -60,7 +60,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto px-4 py-8" data-role="integrations-index">
+    <div class="mx-auto" data-role="integrations-index">
       <div class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold">Integrations</h1>

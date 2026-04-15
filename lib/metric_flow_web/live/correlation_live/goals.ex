@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="px-4 py-8">
+    <div>
       <%!-- Page header --%>
       <div class="mb-6">
         <h1 class="text-2xl font-bold">Goal Metric</h1>

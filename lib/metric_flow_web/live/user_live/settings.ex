@@ -16,7 +16,7 @@ defmodule MetricFlowWeb.UserLive.Settings do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="text-center">
+    <div class="mx-auto">
       <.header>
         Account Settings
         <:subtitle>Manage your account email address and password settings</:subtitle>

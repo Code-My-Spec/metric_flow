@@ -47,7 +47,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="px-4 py-8">
+    <div>
       <%= if @connected do %>
         <%= render_dashboard(assigns) %>
       <% else %>

@@ -81,7 +81,7 @@ defmodule MetricFlowWeb.Layouts do
         </div>
 
         <%!-- Main content — full viewport --%>
-        <main class="flex-1 overflow-auto">
+        <main class="flex-1 overflow-auto px-4 py-6 sm:px-6 lg:px-8">
           {render_slot(@inner_block)}
         </main>
       </div>
@@ -187,6 +187,7 @@ defmodule MetricFlowWeb.Layouts do
                   <li><a href={~p"/app/agency/clients"}>Clients</a></li>
                   <li><a href={~p"/app/agency/plans"}>Plans</a></li>
                   <li><a href={~p"/app/agency/subscriptions"}>Subscriptions</a></li>
+                  <li><a href={~p"/app/agency/settings"}>Settings</a></li>
                   <li><a href={~p"/app/agency/stripe-connect"}>Stripe Connect</a></li>
                 </ul>
               </details>

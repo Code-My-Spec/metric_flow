@@ -14,24 +14,33 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
 
   def on_mount(:require_subscription, _params, _session, socket) do
     scope = socket.assigns[:current_scope]
-
     account_id = socket.assigns[:active_account_id]
+    account_type = socket.assigns[:active_account_type]
 
-    if scope && account_id do
-      case BillingRepository.get_subscription_by_account_id(account_id) do
-        %{status: status} when status in [:active, :trialing] ->
-          {:cont, socket}
+    cond do
+      is_nil(scope) or is_nil(account_id) ->
+        {:cont, socket}
 
-        _ ->
-          socket =
-            socket
-            |> put_flash(:error, "Upgrade to access AI features")
-            |> redirect(to: "/app/subscriptions/checkout")
+      account_type == :agency ->
+        {:cont, socket}
 
-          {:halt, socket}
-      end
-    else
-      {:cont, socket}
+      has_active_subscription?(account_id) ->
+        {:cont, socket}
+
+      true ->
+        socket =
+          socket
+          |> put_flash(:error, "Upgrade to access AI features")
+          |> redirect(to: "/app/subscriptions/checkout")
+
+        {:halt, socket}
+    end
+  end
+
+  defp has_active_subscription?(account_id) do
+    case BillingRepository.get_subscription_by_account_id(account_id) do
+      %{status: status} when status in [:active, :trialing] -> true
+      _ -> false
     end
   end
 end

@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="px-4 py-8">
+    <div>
       <%!-- Page header --%>
       <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
         <div>

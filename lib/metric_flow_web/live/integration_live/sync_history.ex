@@ -42,7 +42,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto px-4 py-8">
+    <div class="mx-auto">
       <div class="mb-8">
         <h1 class="text-2xl font-bold">Sync History</h1>
         <p class="mt-1 text-base-content/60">
