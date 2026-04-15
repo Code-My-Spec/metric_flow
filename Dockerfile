@@ -11,7 +11,7 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 # ---- Build stage ----
 FROM ${BUILDER_IMAGE} AS builder
 
-RUN apt-get update -y && apt-get install -y build-essential git curl \
+RUN apt-get update -y && apt-get install -y build-essential git curl nodejs npm \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 WORKDIR /app
@@ -35,6 +35,9 @@ COPY assets assets
 # Copy runtime config
 COPY config/runtime.exs config/
 COPY rel rel
+
+# Install npm dependencies for JS assets
+RUN cd assets && npm install && cd ..
 
 # Compile and build assets
 RUN mix compile
