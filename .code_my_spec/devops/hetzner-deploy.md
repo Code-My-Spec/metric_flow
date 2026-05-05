@@ -5,16 +5,18 @@
 | Property        | Value                                      |
 |-----------------|--------------------------------------------|
 | Provider        | Hetzner Cloud                              |
-| Server name     | `fuellytics-prod` (shared with fuellytics) |
+| Server hostname | `fuellytics-prod` (also hosts metric_flow + desert_first_cleaning) |
 | Server type     | cax11 (ARM64, 2 vCPU, 4 GB RAM, 40 GB SSD)|
 | OS              | Ubuntu 24.04                               |
-| IP              | `46.225.105.88`                            |
-| SSH user        | `deploy`                                   |
-| Firewall        | `fuellytics-fw` (Hetzner cloud firewall)   |
+| Public IP       | `178.156.143.212`                          |
+| SSH user        | `root`                                     |
+| Firewall        | Hetzner cloud firewall                     |
 | hcloud context  | `fuellytics`                               |
 
-**This server is shared with fuellytics.** Both projects run as separate Docker Compose
-stacks. They share the same Caddy reverse proxy and the `caddy_proxy` Docker network.
+This server hosts three unrelated projects (`metric_flow`, `fuellytics`,
+`desert_first_cleaning`). They share a single Caddy and a single Postgres
+container, both managed by the `infra` compose stack at `/opt/shared/`.
+See `infra-stack.md` for the shared services.
 
 ---
 
@@ -22,99 +24,92 @@ stacks. They share the same Caddy reverse proxy and the `caddy_proxy` Docker net
 
 ```
 /opt/metric_flow/
-├── app/                     # prod -- rsync target (TODO: set up)
+├── app/                     # prod -- rsync target for `scripts/deploy`
+│   ├── docker-compose.prod.yml
+│   ├── Dockerfile
+│   └── ...
+├── uat/                     # uat -- rsync target for `scripts/deploy-uat`
 │   ├── docker-compose.yml
 │   ├── Dockerfile
 │   └── ...
-├── uat/                     # uat -- rsync target
-│   ├── docker-compose.yml
-│   ├── Dockerfile
-│   └── ...
-├── .env.prod                 # prod secrets (TODO: create)
-└── .env.uat                  # uat secrets
+├── .env.prod                # prod secrets (chmod 644 currently — tighten to 600)
+└── .env.uat                 # uat secrets
 ```
+
+The shared infra stack lives at `/opt/shared/` — see `infra-stack.md`.
 
 ---
 
 ## 2. Docker Compose Configuration
 
-### Single Compose, Multiple Environments
+### Two separate compose files
 
-The same `docker-compose.yml` serves both UAT and prod. The environment is controlled
-by the `--env-file` flag and the `-p` (project name) flag. The database name comes from
-`POSTGRES_DB` in each env file — **never hardcoded** in the compose file.
+UAT and prod use **different** compose files because their service names and
+DB targets differ:
+
+| Env  | Compose file                | Project name        | DB                 |
+|------|-----------------------------|---------------------|--------------------|
+| uat  | `docker-compose.yml`        | `metric-flow-uat`   | `metric_flow_uat`  |
+| prod | `docker-compose.prod.yml`   | `metric-flow-prod`  | `metric_flow_prod` |
+
+Both define a single `app` service with no local `db` — `DATABASE_URL` points
+at the shared `infra-postgres-1` container on the external `db_net` network.
 
 ```bash
 # UAT
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d
+docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d --build
 
 # Prod
-docker compose -p metric-flow-prod --env-file /opt/metric_flow/.env.prod up -d
+docker compose -f docker-compose.prod.yml -p metric-flow-prod \
+  --env-file /opt/metric_flow/.env.prod up -d --build
 ```
 
 Key points:
 - `POSTGRES_DB` must be set in each env file (`metric_flow_uat` / `metric_flow_prod`)
+- `POSTGRES_PASSWORD` must match `/opt/shared/.env` exactly
 - Project name isolates containers: `metric-flow-uat-app-1` vs `metric-flow-prod-app-1`
-- Each stack gets its own Docker volume for Postgres data (namespaced by project name)
-- Joins `caddy_proxy` external network so Caddy can route to it
-- Has its own `internal` network isolating the db
+- App joins both `caddy_proxy` (for Caddy) and `db_net` (for Postgres) — both `external: true`
 
-### Container Names on caddy_proxy Network
+### Container names on shared networks
 
 ```
-metric-flow-uat-app-1     # UAT app (port 4000)
-metric-flow-prod-app-1    # Prod app (port 4000) -- after setup
+metric-flow-uat-app-1     # UAT app   (port 4000 via caddy_proxy)
+metric-flow-prod-app-1    # Prod app  (port 4000 via caddy_proxy)
 ```
 
 ---
 
 ## 3. Caddy Configuration
 
-Caddy runs in the `fuellytics-prod` compose stack and routes traffic for ALL projects.
-The Caddyfile lives at `/opt/fuellytics/app/Caddyfile`.
-
-Add MetricFlow routes to the existing Caddyfile:
+The Caddyfile lives at **`/opt/shared/Caddyfile`** (managed by the `infra`
+compose stack — see `infra-stack.md`). MetricFlow's routes are already in there:
 
 ```caddy
-# MetricFlow Production
 metric-flow.app {
-    reverse_proxy metric-flow-prod-app-1:4000 {
-        health_uri /health
-        health_interval 10s
-        health_timeout 5s
-        health_status 2xx
-    }
+    reverse_proxy metric-flow-prod-app-1:4000
 }
 
-# MetricFlow UAT
 uat.metric-flow.app {
-    reverse_proxy metric-flow-uat-app-1:4000 {
-        health_uri /health
-        health_interval 10s
-        health_timeout 5s
-        health_status 2xx
-    }
+    reverse_proxy metric-flow-uat-app-1:4000
 }
 ```
 
-After editing:
-```bash
-# Validate
-docker exec fuellytics-prod-caddy-1 caddy validate --config /etc/caddy/Caddyfile
+After editing the Caddyfile:
 
-# Reload (no downtime)
-docker exec fuellytics-prod-caddy-1 caddy reload --config /etc/caddy/Caddyfile
+```bash
+ssh root@178.156.143.212 "docker exec infra-caddy-1 caddy validate --config /etc/caddy/Caddyfile && \
+  docker exec infra-caddy-1 caddy reload --config /etc/caddy/Caddyfile"
 ```
 
 ---
 
 ## 4. Environment Variables
 
-### Required Env Vars (.env.prod / .env.uat)
+### Required env vars (`.env.prod` / `.env.uat`)
 
 ```bash
-# Database
-POSTGRES_PASSWORD=<strong-random-password>
+# Database (must match /opt/shared/.env)
+POSTGRES_PASSWORD=<shared-password-from-/opt/shared/.env>
 POSTGRES_DB=metric_flow_prod          # or metric_flow_uat for UAT
 
 # Phoenix
@@ -131,26 +126,37 @@ CLOAK_KEY=<base64-encoded-32-byte-key>
 # Error Tracking
 SENTRY_DSN=<sentry-dsn-url>
 
-# File Storage (Tigris S3-compatible)
-AWS_ACCESS_KEY_ID=<tigris-access-key>
-AWS_SECRET_ACCESS_KEY=<tigris-secret-key>
-
 # AI
 ANTHROPIC_API_KEY=<anthropic-key>
 
-# OAuth (if configured)
-GITHUB_CLIENT_ID=<github-oauth-client-id>
-GITHUB_CLIENT_SECRET=<github-oauth-client-secret>
-GOOGLE_CLIENT_ID=<google-oauth-client-id>
-GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
-OAUTH_BASE_URL=https://metric-flow.app     # or https://uat.metric-flow.app
+# OAuth providers (optional — only the ones in use)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_ADS_DEVELOPER_TOKEN=...
+GOOGLE_ADS_LOGIN_CUSTOMER_ID=...
+FACEBOOK_APP_ID=...
+FACEBOOK_APP_SECRET=...
+QUICKBOOKS_CLIENT_ID=...
+QUICKBOOKS_CLIENT_SECRET=...
+QUICKBOOKS_API_URL=...
+
+# File storage (Tigris S3-compatible) — not currently set in prod env
+AWS_ACCESS_KEY_ID=<tigris-access-key>
+AWS_SECRET_ACCESS_KEY=<tigris-secret-key>
+
+# OAuth callback host — not currently set in prod env
+OAUTH_BASE_URL=https://metric-flow.app
 ```
 
-### Setting Secrets on Server
+> **Currently missing from `.env.prod`:** `AWS_ACCESS_KEY_ID`,
+> `AWS_SECRET_ACCESS_KEY`, `OAUTH_BASE_URL`, `GITHUB_CLIENT_ID`,
+> `GITHUB_CLIENT_SECRET`. Add them when those features are enabled in prod.
+
+### Setting secrets on server
 
 ```bash
 # Edit env file directly
-ssh deploy@46.225.105.88 "nano /opt/metric_flow/.env.uat"
+ssh root@178.156.143.212 "nano /opt/metric_flow/.env.uat"
 
 # Generate a new secret key base locally
 mix phx.gen.secret
@@ -159,146 +165,64 @@ mix phx.gen.secret
 :crypto.strong_rand_bytes(32) |> Base.encode64()
 
 # Verify keys are present (without showing values)
-ssh deploy@46.225.105.88 "grep -o '^[A-Z_]*=' /opt/metric_flow/.env.uat"
+ssh root@178.156.143.212 "grep -oE '^[A-Z_]+=' /opt/metric_flow/.env.prod"
 ```
 
 ### Permissions
 
 ```bash
 chmod 600 /opt/metric_flow/.env.prod /opt/metric_flow/.env.uat
-chown deploy:deploy /opt/metric_flow/*.env
+chown root:root /opt/metric_flow/*.env*
 ```
+
+> **Currently `-rw-r--r--`** — anyone with shell access can read them. Tighten
+> to `chmod 600`.
 
 ---
 
 ## 5. Deploy Scripts
 
-### Deploy UAT
+The repo has working deploy scripts at `scripts/deploy` and `scripts/deploy-uat`.
+They:
 
-No deploy scripts exist yet in `scripts/`. Here's the pattern to follow:
+1. `rsync` the working tree (excluding `.git`, `_build`, `deps`, `node_modules`,
+   `.code_my_spec`, `test`, and any `.env*` files) to `/opt/metric_flow/{app,uat}/`
+2. Run `docker compose ... up -d --build` to rebuild and restart
+3. Run `/app/bin/migrate` inside the new container
 
-```bash
-#!/usr/bin/env bash
-# scripts/deploy-uat
-set -euo pipefail
-
-SERVER="deploy@46.225.105.88"
-APP_DIR="/opt/metric_flow/uat"
-ENV_FILE="/opt/metric_flow/.env.uat"
-PROJECT="metric-flow-uat"
-
-echo "==> Syncing code to server..."
-rsync -az --delete \
-  --exclude='.git' \
-  --exclude='_build' \
-  --exclude='deps' \
-  --exclude='assets/node_modules' \
-  --exclude='.code_my_spec' \
-  --exclude='test' \
-  --exclude='envs' \
-  ./ "$SERVER:$APP_DIR/"
-
-echo "==> Building and restarting containers..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE up -d --build"
-
-echo "==> Running migrations..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
-
-echo "==> Done: https://uat.metric-flow.app"
-```
-
-### Deploy Prod
-
-```bash
-#!/usr/bin/env bash
-# scripts/deploy
-set -euo pipefail
-
-SERVER="deploy@46.225.105.88"
-APP_DIR="/opt/metric_flow/app"
-ENV_FILE="/opt/metric_flow/.env.prod"
-PROJECT="metric-flow-prod"
-
-echo "==> Syncing code to server..."
-rsync -az --delete \
-  --exclude='.git' \
-  --exclude='_build' \
-  --exclude='deps' \
-  --exclude='assets/node_modules' \
-  --exclude='.code_my_spec' \
-  --exclude='test' \
-  --exclude='envs' \
-  ./ "$SERVER:$APP_DIR/"
-
-echo "==> Building and restarting containers..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE up -d --build"
-
-echo "==> Running migrations..."
-ssh "$SERVER" "cd $APP_DIR && \
-  docker compose -p $PROJECT --env-file $ENV_FILE exec app /app/bin/migrate"
-
-echo "==> Done: https://metric-flow.app"
-```
+The prod script uses `-f docker-compose.prod.yml`; UAT uses the default
+`docker-compose.yml`. Both target `root@178.156.143.212`.
 
 ---
 
 ## 6. Database Management
 
-### Containers
-
-| Environment | Container                    | User          | Database           |
-|-------------|------------------------------|---------------|--------------------|
-| UAT         | `metric-flow-uat-db-1`       | `metric_flow` | `metric_flow_uat`  |
-| Prod        | `metric-flow-prod-db-1`      | `metric_flow` | `metric_flow_prod` |
-
-Each has its own Docker volume (`metric-flow-uat_pgdata`, `metric-flow-prod_pgdata`).
-Databases are fully isolated -- separate containers, separate volumes, separate networks.
-
-**These are NOT shared with fuellytics.** Fuellytics has its own db containers
-(`fuellytics-prod-db-1`, `fuellytics-uat-db-1`) on separate volumes.
-
-### Interactive psql
+The DB lives in the shared `infra-postgres-1` container. Full details in
+`infra-stack.md`. Quick references:
 
 ```bash
-docker exec -it metric-flow-uat-db-1 psql -U metric_flow metric_flow_uat
-docker exec -it metric-flow-prod-db-1 psql -U metric_flow metric_flow_prod
-```
+# psql shell
+ssh root@178.156.143.212 -t "docker exec -it infra-postgres-1 psql -U postgres metric_flow_prod"
 
-### Migrations
-
-```bash
-# Run pending migrations
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
-  exec app /app/bin/migrate
+# Run migrations
+ssh root@178.156.143.212 "cd /opt/metric_flow/app && \
+  docker compose -f docker-compose.prod.yml -p metric-flow-prod \
+  --env-file /opt/metric_flow/.env.prod exec app /app/bin/migrate"
 
 # Rollback
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
-  exec app /app/bin/metric_flow eval \
-  'MetricFlow.Release.rollback(MetricFlow.Repo, 20260101000000)'
+ssh root@178.156.143.212 "cd /opt/metric_flow/app && \
+  docker compose -f docker-compose.prod.yml -p metric-flow-prod \
+  --env-file /opt/metric_flow/.env.prod exec app /app/bin/metric_flow eval \
+  'MetricFlow.Release.rollback(MetricFlow.Repo, 20260101000000)'"
 
-# Remote IEx console
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat \
-  exec app /app/bin/metric_flow remote
-```
+# Remote IEx
+ssh root@178.156.143.212 -t "cd /opt/metric_flow/app && \
+  docker compose -f docker-compose.prod.yml -p metric-flow-prod \
+  --env-file /opt/metric_flow/.env.prod exec app /app/bin/metric_flow remote"
 
-### Backups
-
-```bash
-# Manual backup
-docker exec metric-flow-uat-db-1 \
-  pg_dump -U metric_flow metric_flow_uat \
-  | gzip > /opt/backups/metric-flow-uat-$(date +%Y%m%d-%H%M%S).sql.gz
-
-# Restore
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat stop app
-docker exec metric-flow-uat-db-1 psql -U metric_flow -c "DROP DATABASE metric_flow_uat;"
-docker exec metric-flow-uat-db-1 psql -U metric_flow -c "CREATE DATABASE metric_flow_uat;"
-gunzip -c /opt/backups/metric-flow-uat-YYYYMMDD-HHMMSS.sql.gz \
-  | docker exec -i metric-flow-uat-db-1 psql -U metric_flow metric_flow_uat
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat start app
+# Backup
+ssh root@178.156.143.212 "docker exec infra-postgres-1 pg_dump -U postgres metric_flow_prod" \
+  | gzip > metric_flow_prod-$(date +%Y%m%d-%H%M%S).sql.gz
 ```
 
 ---
@@ -314,48 +238,35 @@ The cax11 has 4 GB RAM. Elixir compilation is memory-hungry. If Docker build OOM
 
 ## 8. Operational Commands
 
-### Check Status
-
 ```bash
 # All containers
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+ssh root@178.156.143.212 "docker ps --format 'table {{.Names}}\t{{.Status}}'"
 
 # Logs
-docker logs metric-flow-uat-app-1 --tail 50 -f
+ssh root@178.156.143.212 "docker logs metric-flow-prod-app-1 --tail 50 -f"
 
 # Health
-docker inspect metric-flow-uat-app-1 | jq '.[0].State.Health'
-```
+ssh root@178.156.143.212 "docker inspect metric-flow-prod-app-1 | jq '.[0].State.Health'"
 
-### Restart
-
-```bash
 # Restart without rebuild
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat restart app
+ssh root@178.156.143.212 "cd /opt/metric_flow/app && \
+  docker compose -f docker-compose.prod.yml -p metric-flow-prod \
+  --env-file /opt/metric_flow/.env.prod restart app"
 
-# Rebuild and restart
-docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d --build app
-```
-
-### Disk Cleanup
-
-```bash
-docker system df
-docker image prune -f
-docker builder prune -f
+# Disk cleanup
+ssh root@178.156.143.212 "docker system df && docker image prune -f && docker builder prune -f"
 ```
 
 ---
 
-## 9. TODO / Outstanding Setup
+## 9. Outstanding Items
 
-- [x] Create `/opt/metric_flow/app/` directory on server for prod
-- [x] Create `/opt/metric_flow/.env.prod` with all required vars (incl. `POSTGRES_DB`)
-- [x] Single `docker-compose.yml` with env-driven `POSTGRES_DB` (no separate prod file needed)
-- [x] Add MetricFlow routes to the Caddyfile on server
-- [x] Set up DNS records for `metric-flow.app` and `uat.metric-flow.app` in Cloudflare
-- [ ] Create deploy scripts at `scripts/deploy` and `scripts/deploy-uat`
-- [ ] Set up cron backup jobs for metric_flow databases
-- [ ] Add `/health` route to the Phoenix router
-- [ ] Add Resend API key to prod and UAT env files
-- [ ] Verify sending domain in Resend dashboard (add DNS records to Cloudflare)
+- [ ] Tighten `/opt/metric_flow/.env.{prod,uat}` to `chmod 600`
+- [ ] Tighten `/opt/shared/.env` to `chmod 600`
+- [ ] Replace shared `postgres` superuser with per-app users + scoped grants
+      (see security note in `infra-stack.md`)
+- [ ] Set up cron backup jobs for `infra-postgres-1` databases to `/opt/shared/backups/`
+      (or to Tigris)
+- [ ] Add `AWS_*`, `OAUTH_BASE_URL`, GitHub OAuth keys to `.env.prod` if those
+      features are enabled
+- [ ] Verify Resend sending domain and add DNS records to Cloudflare

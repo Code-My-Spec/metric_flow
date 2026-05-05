@@ -1,34 +1,13 @@
-# UAT:  docker compose -p metric-flow-uat  --env-file /opt/metric_flow/.env.uat  up -d
-# Prod: docker compose -p metric-flow-prod --env-file /opt/metric_flow/.env.prod up -d
+# UAT: docker compose -p metric-flow-uat --env-file /opt/metric_flow/.env.uat up -d --build
 
 services:
-  db:
-    image: postgres:17
-    restart: unless-stopped
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: metric_flow
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-metric_flow_uat}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U metric_flow"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal
-
   app:
     build: .
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     expose:
       - "4000"
     environment:
-      DATABASE_URL: ecto://metric_flow:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-metric_flow_uat}
+      DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       PHX_HOST: ${PHX_HOST}
       PHX_SERVER: "true"
@@ -57,13 +36,11 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      - internal
       - caddy_proxy
-
-volumes:
-  pgdata:
+      - db_net
 
 networks:
-  internal:
   caddy_proxy:
+    external: true
+  db_net:
     external: true
