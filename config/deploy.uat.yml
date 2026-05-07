@@ -11,10 +11,11 @@ servers:
   web:
     hosts:
       - 46.225.105.88
-    proxy: false
-    options:
-      network: caddy_proxy
-      network-alias: metric-flow-uat-web
+    options: {}                 # override deploy.yml's caddy_proxy options
+    proxy:                      # role-level override of deploy.yml's `proxy: false`
+      ssl: true
+      host: uat.metric-flow.app
+      app_port: 4000
 
 registry:
   server: ghcr.io
