@@ -127,6 +127,7 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
 
     attrs = %{
       subdomain: params["subdomain"],
+      custom_domain: params["custom_domain"],
       logo_url: params["logo_url"],
       primary_color: params["primary_color"],
       secondary_color: params["secondary_color"]
@@ -167,7 +168,46 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
   end
 
   def handle_event("verify_dns", _params, socket) do
-    {:noreply, put_flash(socket, :info, "DNS verification initiated. Please allow a few minutes.")}
+    scope = socket.assigns.current_scope
+    account_id = socket.assigns.account_id
+
+    case Agencies.verify_dns(scope, account_id) do
+      {:ok, results} ->
+        config = Agencies.get_white_label_config(scope, account_id)
+        config = if is_tuple(config), do: nil, else: config
+
+        socket =
+          socket
+          |> assign(:agency_white_label_config, config)
+          |> put_flash(:info, dns_result_message(results))
+
+        {:noreply, socket}
+
+      {:error, :no_config} ->
+        {:noreply, put_flash(socket, :error, "Save your white-label settings first")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "Not authorized")}
+    end
+  end
+
+  defp dns_result_message(results) do
+    parts =
+      [
+        format_dns_result("Subdomain", results.subdomain),
+        format_dns_result("Custom domain", results.custom_domain)
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    Enum.join(parts, " | ")
+  end
+
+  defp format_dns_result(_label, :not_configured), do: nil
+  defp format_dns_result(label, :verified), do: "#{label}: verified"
+  defp format_dns_result(label, :not_found), do: "#{label}: no CNAME record found"
+
+  defp format_dns_result(label, {:wrong_target, targets}) do
+    "#{label}: CNAME points to #{Enum.join(targets, ", ")} (expected app.metricflow.io)"
   end
 
   defp empty_form, do: %{params: %{}, errors: []}

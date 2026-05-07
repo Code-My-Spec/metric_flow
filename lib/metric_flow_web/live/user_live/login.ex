@@ -43,6 +43,7 @@ defmodule MetricFlowWeb.UserLive.Login do
           phx-submit="submit_magic"
         >
           <.input
+            id="magic_email"
             readonly={!!@current_scope}
             field={f[:email]}
             type="email"
@@ -67,6 +68,7 @@ defmodule MetricFlowWeb.UserLive.Login do
           phx-trigger-action={@trigger_submit}
         >
           <.input
+            id="password_email"
             readonly={!!@current_scope}
             field={f[:email]}
             type="email"

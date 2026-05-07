@@ -337,6 +337,18 @@ defmodule MetricFlow.Agencies do
   end
 
   @doc """
+  Retrieves white-label configuration by custom domain.
+
+  This is a public lookup that does not require authentication or scope,
+  as it is used by the WhiteLabel plug to resolve custom domains. Only
+  returns configs where the domain has been verified via DNS.
+  """
+  @spec get_white_label_config_by_custom_domain(String.t()) :: WhiteLabelConfig.t() | nil
+  def get_white_label_config_by_custom_domain(domain) do
+    AgenciesRepository.get_white_label_config_by_custom_domain(domain)
+  end
+
+  @doc """
   Resets (deletes) white-label branding configuration for an agency.
 
   Requires admin access to the agency account. Returns `:ok` on success or
@@ -362,7 +374,30 @@ defmodule MetricFlow.Agencies do
           {:ok, WhiteLabelConfig.t()} | {:error, Ecto.Changeset.t() | :unauthorized}
   def update_white_label_config(%Scope{} = scope, agency_id, attrs) do
     with :ok <- authorize(scope, :admin, agency_id) do
+      attrs = maybe_clear_custom_domain_verification(agency_id, attrs)
       AgenciesRepository.upsert_white_label_config(agency_id, attrs)
+    end
+  end
+
+  @doc """
+  Verifies DNS configuration for an agency's white-label domains.
+
+  Checks CNAME records for both the subdomain and custom domain, updating
+  verification timestamps on success. Requires admin access.
+
+  Returns `{:ok, results}` with per-domain verification status, or
+  `{:error, reason}` on failure.
+  """
+  @spec verify_dns(Scope.t(), integer()) :: {:ok, map()} | {:error, atom()}
+  def verify_dns(%Scope{} = scope, agency_id) do
+    with :ok <- authorize(scope, :admin, agency_id) do
+      case AgenciesRepository.get_white_label_config(agency_id) do
+        nil ->
+          {:error, :no_config}
+
+        config ->
+          do_verify_dns(config)
+      end
     end
   end
 
@@ -580,5 +615,78 @@ defmodule MetricFlow.Agencies do
       )
       |> Repo.delete_all()
     end)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private helpers — DNS verification
+  # ---------------------------------------------------------------------------
+
+  @cname_target "app.metricflow.io"
+
+  defp dns_client do
+    Application.get_env(:metric_flow, :dns_client, MetricFlow.Agencies.DnsClient)
+  end
+
+  defp do_verify_dns(%WhiteLabelConfig{} = config) do
+    subdomain_result = verify_subdomain_dns(config)
+    custom_domain_result = verify_custom_domain_dns(config)
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    verification_attrs =
+      %{}
+      |> maybe_set_verified(:subdomain_verified_at, subdomain_result, now)
+      |> maybe_set_verified(:custom_domain_verified_at, custom_domain_result, now)
+
+    if verification_attrs != %{} do
+      AgenciesRepository.update_dns_verification(config, verification_attrs)
+    end
+
+    {:ok, %{subdomain: subdomain_result, custom_domain: custom_domain_result}}
+  end
+
+  defp verify_subdomain_dns(%{subdomain: nil}), do: :not_configured
+  defp verify_subdomain_dns(%{subdomain: ""}), do: :not_configured
+
+  defp verify_subdomain_dns(%{subdomain: subdomain}) do
+    fqdn = "#{subdomain}.metric-flow.app"
+    check_cname(fqdn)
+  end
+
+  defp verify_custom_domain_dns(%{custom_domain: nil}), do: :not_configured
+  defp verify_custom_domain_dns(%{custom_domain: ""}), do: :not_configured
+
+  defp verify_custom_domain_dns(%{custom_domain: domain}) do
+    check_cname(domain)
+  end
+
+  defp check_cname(hostname) do
+    cnames = dns_client().lookup_cname(hostname)
+
+    case cnames do
+      [] ->
+        :not_found
+
+      targets ->
+        if Enum.any?(targets, &(&1 == @cname_target)) do
+          :verified
+        else
+          {:wrong_target, targets}
+        end
+    end
+  end
+
+  defp maybe_set_verified(attrs, field, :verified, now), do: Map.put(attrs, field, now)
+  defp maybe_set_verified(attrs, _field, _result, _now), do: attrs
+
+  defp maybe_clear_custom_domain_verification(agency_id, attrs) do
+    new_domain = Map.get(attrs, :custom_domain)
+
+    case AgenciesRepository.get_white_label_config(agency_id) do
+      %WhiteLabelConfig{custom_domain: existing} when existing != new_domain and not is_nil(new_domain) ->
+        Map.put(attrs, :custom_domain_verified_at, nil)
+
+      _ ->
+        attrs
+    end
   end
 end

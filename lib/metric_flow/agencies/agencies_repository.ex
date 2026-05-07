@@ -382,6 +382,34 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
   end
 
   @doc """
+  Retrieves white-label configuration by custom domain.
+
+  Only returns configs where the custom domain has been verified (i.e.,
+  `custom_domain_verified_at` is not nil). This prevents unverified domain
+  claims from resolving.
+  """
+  @spec get_white_label_config_by_custom_domain(String.t()) :: WhiteLabelConfig.t() | nil
+  def get_white_label_config_by_custom_domain(domain) do
+    from(c in WhiteLabelConfig,
+      where: c.custom_domain == ^domain and not is_nil(c.custom_domain_verified_at)
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Updates DNS verification timestamps on a white-label config.
+
+  Uses `dns_verification_changeset/2` which only allows timestamp fields.
+  """
+  @spec update_dns_verification(WhiteLabelConfig.t(), map()) ::
+          {:ok, WhiteLabelConfig.t()} | {:error, Ecto.Changeset.t()}
+  def update_dns_verification(%WhiteLabelConfig{} = config, attrs) do
+    config
+    |> WhiteLabelConfig.dns_verification_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Deletes white-label configuration for an agency.
 
   Returns `{number_deleted, nil}`. No-op if no config exists.
@@ -407,7 +435,7 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
     %WhiteLabelConfig{}
     |> WhiteLabelConfig.changeset(attrs_with_agency)
     |> Repo.insert(
-      on_conflict: {:replace_all_except, [:id, :inserted_at]},
+      on_conflict: {:replace_all_except, [:id, :inserted_at, :custom_domain_verified_at, :subdomain_verified_at]},
       conflict_target: [:agency_id]
     )
   end

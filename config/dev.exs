@@ -89,6 +89,7 @@ config :metric_flow, :cloudflare_tunnel,
   enabled: true,
   mode: :named,
   hostname: "dev.metric-flow.app",
+  additional_hostnames: ["analytics.fuellytics.app"],
   tunnel_id: "087e2228-74d8-437d-bc92-b41c9fc9f253",
   account_tag: "6477547f586ec90db2c2a0081dcd98bd",
   origin_url: "http://127.0.0.1:4070"

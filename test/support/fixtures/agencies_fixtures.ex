@@ -38,7 +38,7 @@ defmodule MetricFlowTest.AgenciesFixtures do
     defaults = %{
       name: "Agency Account #{unique}",
       slug: "agency-account-#{unique}",
-      type: "team",
+      type: "agency",
       originator_user_id: user.id
     }
 
@@ -111,7 +111,8 @@ defmodule MetricFlowTest.AgenciesFixtures do
       logo_url: "https://example.com/logo.png",
       primary_color: "#FF5733",
       secondary_color: "#3498DB",
-      custom_css: nil
+      custom_css: nil,
+      custom_domain: nil
     }
   end
 

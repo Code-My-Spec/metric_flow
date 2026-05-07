@@ -293,6 +293,28 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
 
           <div class="form-control">
             <label class="label">
+              <span class="label-text">Custom Domain</span>
+            </label>
+            <input
+              type="text"
+              name="white_label[custom_domain]"
+              value={white_label_value(@white_label_config, @white_label_form, :custom_domain)}
+              class={["input w-full font-mono", has_form_error?(@white_label_form, :custom_domain) && "input-error"]}
+              placeholder="analytics.yourdomain.com"
+            />
+            <p class="text-xs text-base-content/50 mt-1">
+              Optional. A fully qualified domain name for your branded instance.
+            </p>
+            <p
+              :if={has_form_error?(@white_label_form, :custom_domain)}
+              class="text-sm text-error mt-1"
+            >
+              {first_form_error(@white_label_form, :custom_domain)}
+            </p>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
               <span class="label-text">Logo URL</span>
             </label>
             <input
@@ -363,28 +385,51 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
           </div>
         </form>
 
-        <%!-- DNS verification section: shown when a subdomain is configured --%>
+        <%!-- DNS verification section: shown when subdomain or custom domain is configured --%>
         <div
-          :if={not is_nil(@white_label_config) and is_binary(@white_label_config.subdomain) and @white_label_config.subdomain != ""}
-          class="mt-4 p-4 rounded border border-warning/40 bg-warning/5"
+          :if={has_domain_config?(@white_label_config)}
+          class="mt-4 p-4 rounded border border-base-300 bg-base-200/50"
           data-role="dns-verification"
         >
-          <h3 class="text-sm font-semibold mb-2">DNS Verification Required</h3>
-          <p class="text-sm text-base-content/60 mb-2">
-            To activate your custom subdomain <span class="font-mono font-medium">{@white_label_config.subdomain}</span>,
-            configure a CNAME record pointing to <span class="font-mono">app.metricflow.io</span>.
+          <h3 class="text-sm font-semibold mb-3">DNS Configuration</h3>
+          <p class="text-sm text-base-content/60 mb-3">
+            Configure CNAME records pointing to <span class="font-mono">app.metricflow.io</span>.
           </p>
-          <div class="flex items-center gap-3">
-            <span class="badge badge-warning badge-sm">Pending verification</span>
-            <button
-              type="button"
-              class="btn btn-ghost btn-sm"
-              data-role="verify-dns"
-              phx-click="verify_dns"
-            >
-              Verify DNS
-            </button>
+
+          <%!-- Subdomain status --%>
+          <div
+            :if={is_binary(@white_label_config.subdomain) and @white_label_config.subdomain != ""}
+            class="flex items-center gap-3 mb-2"
+          >
+            <span class="font-mono text-sm">{@white_label_config.subdomain}.metric-flow.app</span>
+            <%= if @white_label_config.subdomain_verified_at do %>
+              <span class="badge badge-success badge-sm">Verified</span>
+            <% else %>
+              <span class="badge badge-warning badge-sm">Pending</span>
+            <% end %>
           </div>
+
+          <%!-- Custom domain status --%>
+          <div
+            :if={is_binary(@white_label_config.custom_domain) and @white_label_config.custom_domain != ""}
+            class="flex items-center gap-3 mb-2"
+          >
+            <span class="font-mono text-sm">{@white_label_config.custom_domain}</span>
+            <%= if @white_label_config.custom_domain_verified_at do %>
+              <span class="badge badge-success badge-sm">Verified</span>
+            <% else %>
+              <span class="badge badge-warning badge-sm">Pending</span>
+            <% end %>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm mt-1"
+            data-role="verify-dns"
+            phx-click="verify_dns"
+          >
+            Verify DNS
+          </button>
         </div>
       </div>
     </div>
@@ -445,6 +490,14 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
 
   defp preview_value(form, field) do
     Map.get(form.params, Atom.to_string(field), "")
+  end
+
+  defp has_domain_config?(nil), do: false
+
+  defp has_domain_config?(config) do
+    has_subdomain = is_binary(config.subdomain) and config.subdomain != ""
+    has_custom = is_binary(config.custom_domain) and config.custom_domain != ""
+    has_subdomain or has_custom
   end
 
   defp access_level_label(:read_only), do: "Read Only"

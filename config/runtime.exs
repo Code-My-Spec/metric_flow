@@ -127,6 +127,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
+    check_origin: true,
     secret_key_base: secret_key_base
 
   # Resend for production email delivery (ADR: email_provider)
