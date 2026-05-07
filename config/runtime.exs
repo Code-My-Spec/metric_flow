@@ -17,10 +17,18 @@ import Dotenvy
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-# Load .env files in dev and test via Dotenvy (ADR: dotenvy)
-# In prod, we still call source! with System.get_env() so that env!/3
-# can read OS environment variables (env! only reads the process dictionary
-# populated by source!, it does NOT fall back to System.get_env).
+
+# === Secret loading ==========================================================
+#
+# Dev/test: source secrets from local .env files (gitignored).
+# Prod (UAT + prod box): fetch from AWS SSM Parameter Store at boot via
+#   MetricFlow.Secrets.load!/1 — Kamal carries only AWS bootstrap creds,
+#   never the app secrets themselves. See lib/metric_flow/secrets.ex
+#   and priv/knowledge/devops/secrets-runtime.md.
+#
+# In all cases, env!/3 below reads from the Dotenvy process dict that
+# source! populates — so SSM values must be in System env BEFORE source!
+# runs, then source! pulls them in via System.get_env().
 if config_env() in [:dev, :test] do
   env_dir_prefix = System.get_env("RELEASE_ROOT") || "."
 
@@ -30,6 +38,8 @@ if config_env() in [:dev, :test] do
     System.get_env()
   ])
 else
+  app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
+  MetricFlow.Secrets.load!(app_env)
   source!([System.get_env()])
 end
 
@@ -133,12 +143,12 @@ if config_env() == :prod do
   # Resend for production email delivery (ADR: email_provider)
   config :metric_flow, MetricFlow.Mailer,
     adapter: Swoosh.Adapters.Resend,
-    api_key: System.fetch_env!("RESEND_API_KEY")
+    api_key: env!("RESEND_API_KEY", :string!)
 
   config :swoosh, :api_client, Swoosh.ApiClient.Req
 
   # Cloak vault key from environment (ADR: deployment)
-  if cloak_key = System.get_env("CLOAK_KEY") do
+  if cloak_key = env!("CLOAK_KEY", :string, nil) do
     config :metric_flow, MetricFlow.Vault,
       ciphers: [
         default: {

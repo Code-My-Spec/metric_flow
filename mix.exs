@@ -21,7 +21,10 @@ defmodule MetricFlow.MixProject do
   def application do
     [
       mod: {MetricFlowWeb.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      # :ex_aws_ssm and :hackney are listed here so they're booted by the
+      # release before MetricFlow.Secrets.load!/1 is called from
+      # config/runtime.exs — no manual Application.ensure_all_started.
+      extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney]
     ]
   end
 
@@ -84,9 +87,12 @@ defmodule MetricFlow.MixProject do
       {:prom_ex, "~> 1.11"},
       # Charting (ADR: charting_library)
       {:vega_lite, "~> 0.1.11"},
-      # File storage (ADR: file_storage)
+      # File storage + secrets (ADR: file_storage, secrets_management)
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
+      # Secrets fetched from AWS SSM Parameter Store at boot in
+      # config/runtime.exs. See priv/knowledge/devops/secrets-runtime.md.
+      {:ex_aws_ssm, "~> 2.1"},
       {:sweet_xml, "~> 0.7"},
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
