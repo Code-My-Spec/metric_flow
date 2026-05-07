@@ -8,8 +8,8 @@ The MetricFlow domain is `metric-flow.app`. DNS is managed in Cloudflare.
 
 | Hostname               | Type  | Content                                          | Proxied | Target                          |
 |------------------------|-------|--------------------------------------------------|---------|----------------------------------|
-| `metric-flow.app`      | A     | `46.225.105.88`                                  | Yes     | Caddy -> prod app container      |
-| `uat.metric-flow.app`  | A     | `46.225.105.88`                                  | Yes     | Caddy -> UAT app container       |
+| `metric-flow.app`      | A     | `178.156.143.212`                                | No      | Caddy -> prod app container      |
+| `uat.metric-flow.app`  | A     | `178.156.143.212`                                | No      | Caddy -> UAT app container       |
 | `dev.metric-flow.app`  | CNAME | `087e2228-74d8-437d-bc92-b41c9fc9f253.cfargotunnel.com` | Yes     | CF Tunnel -> localhost:4070      |
 
 ## Cloudflare Account

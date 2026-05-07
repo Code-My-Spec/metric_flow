@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# scripts/deploy-uat — deploy metric_flow UAT to Hetzner
+# Deploy MetricFlow UAT to prod VPS
 set -euo pipefail
 
-SERVER="deploy@46.225.105.88"
+SERVER="root@178.156.143.212"
 APP_DIR="/opt/metric_flow/uat"
 ENV_FILE="/opt/metric_flow/.env.uat"
 PROJECT="metric-flow-uat"
@@ -18,9 +18,6 @@ rsync -az --delete \
   --exclude='.env' \
   --exclude='.env.*' \
   ./ "$SERVER:$APP_DIR/"
-
-echo "==> Uploading env file..."
-rsync -az .env.uat "$SERVER:$ENV_FILE"
 
 echo "==> Building and restarting containers..."
 ssh "$SERVER" "cd $APP_DIR && \
