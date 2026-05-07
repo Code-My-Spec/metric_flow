@@ -28,23 +28,16 @@ builder:
   arch: arm64
   local: true
 
+# Container fetches its own secrets from /metric_flow/uat/* in SSM at
+# boot via MetricFlow.Secrets.load!/1 (config/runtime.exs). The only env
+# Kamal carries is AWS bootstrap creds + APP_ENV.
 env:
+  clear:
+    APP_ENV: uat
+    AWS_REGION: us-east-1
   secret:
-    - DATABASE_URL
-    - SECRET_KEY_BASE
-    - PHX_HOST
-    - PHX_SERVER
-    - CLOAK_KEY
-    - SENTRY_DSN
-    - ANTHROPIC_API_KEY
-    - RESEND_API_KEY
-    - GOOGLE_CLIENT_ID
-    - GOOGLE_CLIENT_SECRET
-    - GOOGLE_ADS_DEVELOPER_TOKEN
-    - FACEBOOK_APP_ID
-    - FACEBOOK_APP_SECRET
-    - QUICKBOOKS_CLIENT_ID
-    - QUICKBOOKS_CLIENT_SECRET
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
 
 ssh:
   user: root
