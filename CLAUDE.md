@@ -1,19 +1,32 @@
 <!-- code_my_spec:start -->
-## CodeMySpec Project
+## CodeMySpec — Development Harness
 
-Read `.code_my_spec/AGENTS.md` for the full project development guide.
+This project is managed by **CodeMySpec**, a requirements-driven development harness.
+Read `.code_my_spec/AGENTS.md` for the full workflow guide.
 
-### Key Conventions
+### How It Works
 
-- All public context functions take `%Scope{}` as the first parameter
-- Contexts are the public API boundary — never call child modules directly
-- Use `use Boundary` in every module to enforce dependency rules
-- Check `.code_my_spec/architecture/overview.md` for the component graph before adding dependencies
+CodeMySpec tracks every artifact your project needs — specs, tests, implementations,
+reviews, BDD scenarios — as a **requirement graph**. Each requirement has prerequisites,
+so you always know what to work on next and in what order.
 
-### Before Writing Code
+### Your Workflow
 
-1. Check `.code_my_spec/status/metric_flow.md` for implementation status
-2. Read the spec in `.code_my_spec/spec/` for the module you're working on
-3. Read the rules in `.code_my_spec/rules/` for the component type (context, repository, schema, etc.)
-4. Check `.code_my_spec/issues/` for known problems in the area
+1. **`get_next_requirement`** — returns the highest-priority unsatisfied requirement
+   whose prerequisites are all met.
+2. **`start_task`** — begins work on that requirement. Returns a detailed prompt
+   with context, rules, file paths, and instructions.
+3. **Do the work** — write the spec, test, implementation, or review as instructed.
+4. The harness **automatically evaluates** your output on stop, checking file existence,
+   validity, compilation, and test results. If something is wrong, you get feedback.
+5. **Repeat** — call `get_next_requirement` again.
+
+### Key Rules
+
+- **Always follow the task prompt.** It contains spec templates, design rules, file paths,
+  and test patterns specific to the component you're working on.
+- **Read before you write.** The task prompt tells you which specs, rules, and existing
+  files to read. Do it.
+- **One requirement at a time.** The graph handles ordering. Don't skip ahead.
+- Specs live in `.code_my_spec/spec/`, rules in `.code_my_spec/rules/`, architecture in `.code_my_spec/architecture/`.
 <!-- code_my_spec:end -->

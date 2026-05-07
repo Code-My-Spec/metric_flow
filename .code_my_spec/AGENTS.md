@@ -1,133 +1,155 @@
-# Project Development Guide
+# CodeMySpec — Agent Workflow Guide
 
-This guide describes how the project's `.code_my_spec/` directory works so you can locate what you need efficiently.
+CodeMySpec is a requirements-driven development harness. It models your project as a
+graph of **stories**, **components**, and **requirements**, then guides you through
+building each piece in the right order: specs → tests → implementations → reviews → QA.
+
+## Core Loop
+
+```
+get_next_requirement → start_task → do the work → (auto-evaluate) → repeat
+```
+
+### Step 1: Get Your Next Requirement
+
+Call **`get_next_requirement`**. It syncs the filesystem, computes the requirement graph,
+and returns the single highest-priority unsatisfied requirement whose prerequisites are met.
+
+Three possible responses:
+- **init_required** — project not linked yet. Follow the bootstrap checklist.
+- **sync_required** — project exists but has no stories/components. Create them first.
+- **next requirement** — the requirement to work on, with entity type, name, and ID.
+
+### Step 2: Start the Task
+
+Call **`start_task`** with the requirement's `requirement_name`, `entity_type`, and
+`entity_id` (or `module_name` for components). This creates a task on your session and
+returns a **detailed work prompt** containing:
+
+- Which files to read (specs, rules, existing code)
+- The exact file path to write to
+- Templates and format requirements
+- Design rules and coding standards for the component type
+- Similar components to reference for patterns
+
+**Follow the prompt.** It is tailored to the specific component and requirement.
+
+### Step 3: Do the Work
+
+The requirement types you'll encounter, in dependency order:
+
+| Requirement | What You Produce |
+|---|---|
+| `spec_file` | Module specification in `.code_my_spec/spec/` |
+| `spec_valid` | Fix validation errors in the spec |
+| `review_file` | Design review for a context and its children |
+| `review_valid` | Fix validation errors in the review |
+| `test_file` | Test file following TDD — write tests before implementation |
+| `test_spec_alignment` | Ensure tests cover all spec assertions |
+| `implementation_file` | Implementation code in `lib/` |
+| `tests_passing` | Fix failing tests |
+| `bdd_specs_exist` | BDD scenario files for a story's acceptance criteria |
+| `bdd_specs_passing` | Fix failing BDD specs |
+| `qa_complete` | QA brief and results for a story |
+
+### Step 4: Automatic Evaluation
+
+When you finish (or the session stops), the harness evaluates your output:
+- Does the file exist at the expected path?
+- Does it parse/validate against the document schema?
+- Do tests compile and pass?
+- Is the test aligned with the spec's assertions?
+
+If evaluation finds problems, you receive structured feedback. Fix and continue.
 
 ## Project Structure
 
 ```
 .code_my_spec/
-├── architecture/          ← System component graph and dependencies
-├── status/                ← Implementation status of every component
-├── spec/                  ← Specifications for every module
-├── rules/                 ← Coding standards by component type
-├── knowledge/             ← Project-specific operational knowledge
-├── framework/             ← Framework reference (LiveView, DaisyUI, etc.) [symlink]
-├── tools/                 ← Helper scripts (set-story-component, etc.) [symlink]
-├── design/                ← Design system assets
-├── issues/                ← Known bugs and technical debt
-└── qa/                    ← QA test results
+├── architecture/     Component graph, dependency diagram, decisions
+├── spec/             Module specifications (*.spec.md)
+├── rules/            Design and test rules by component type
+├── status/           Implementation status per component
+├── issues/           Known bugs (incoming/, accepted/, dismissed/)
+├── knowledge/        Project-specific research
+├── framework/        Framework reference docs
+├── design/           Design system assets
+├── qa/               QA briefs, results, journey plans
+└── integrations/     Integration specs
 ```
 
-## Progressive Disclosure: Where to Look
+## MCP Tools Reference
 
-### 1. Orientation — What exists and how it's organized
+### Requirements & Tasks
+| Tool | Purpose |
+|---|---|
+| `get_next_requirement` | Get the next thing to work on |
+| `start_task` | Begin work — returns the detailed prompt |
+| `list_requirements` | See all requirements and their status |
+| `sync_project` | Re-sync filesystem state |
+| `evaluate_task` | Manually trigger evaluation |
+| `list_tasks` | See active/completed tasks |
 
-Start here to understand the system shape.
+### Stories & Architecture
+| Tool | Purpose |
+|---|---|
+| `list_stories` / `list_story_titles` | View user stories |
+| `set_story_component` | Link a story to its surface component |
+| `analyze_stories` | Analyze stories for architecture mapping |
+| `validate_dependency_graph` | Check for circular dependencies |
+
+### Issues
+| Tool | Purpose |
+|---|---|
+| `list_issues` / `get_issue` | View issues |
+| `create_issue` | Report a new issue |
+| `accept_issue` / `dismiss_issue` | Triage incoming issues |
+| `resolve_issue` | Mark an issue as fixed |
+
+### Bootstrap (first-time setup)
+| Tool | Purpose |
+|---|---|
+| `list_projects` | See available projects |
+| `init_project` | Link this directory to a project |
+| `install_claude_md` | Create/update CLAUDE.md managed section |
+| `install_agents_md` | Create/update this file |
+| `install_rules` | Copy design and test rules |
+
+## Component Types
+
+The harness supports these component types, each with their own requirement
+chain and design rules:
+
+- **context** — Domain boundary with public API (`.code_my_spec/rules/context_design.md`)
+- **schema** — Data structure with validation (`.code_my_spec/rules/schema_design.md`)
+- **repository** — Data access layer (`.code_my_spec/rules/repository_design.md`)
+- **liveview** — Phoenix LiveView page (`.code_my_spec/rules/liveview_design.md`)
+- **liveview_component** — Reusable LiveView component (`.code_my_spec/rules/liveview_component_design.md`)
+- **live_context** — LiveView grouping (spec + review only)
+- **controller** — Phoenix HTTP handler
+- **genserver** — Stateful process
+- **task** — Background job
+- **behaviour** — Callback definition (spec + implementation only)
+
+General Elixir rules: `.code_my_spec/rules/elixir_design.md`, `.code_my_spec/rules/elixir_test.md`
+
+## Key Principles
+
+1. **The graph is the plan.** Don't decide what to work on — ask `get_next_requirement`.
+2. **Specs before code.** Every component gets a specification first. Tests are written
+   from the spec. Implementation satisfies the tests.
+3. **Read the task prompt.** It contains everything you need: templates, rules, file paths,
+   and patterns from similar components.
+4. **One requirement at a time.** Complete it, let evaluation run, then get the next one.
+5. **Issues are first-class.** If you find a problem, create an issue. Don't fix unrelated
+   things inline.
+
+## Architecture Reference
 
 | Need | File |
 |---|---|
-| List of all components, types, and dependencies | `.code_my_spec/architecture/overview.md` |
-| Hierarchical tree view by Elixir namespace | `.code_my_spec/architecture/namespace_hierarchy.md` |
-| Dependency graph (Mermaid) | `.code_my_spec/architecture/dependency_graph.mmd` |
-
-### 2. Status — What's done and what's not
-
-Check here before starting work on a component.
-
-| Need | File |
-|---|---|
-| Top-level status of all contexts | `.code_my_spec/status/metric_flow.md` |
-| Web layer status | `.code_my_spec/status/metric_flow_web.md` |
-| Status of a specific context | `.code_my_spec/status/metric_flow/<context_name>.md` |
-
-Status files use a checklist format:
-```
-- [ ] spec_file - Context specification file exists
-- [x] implementation_file - Component implementation file exists
-- [ ] test_file - Component test file exists
-- [x] tests_passing - Component tests are passing
-```
-
-### 3. Specifications — What a module should do
-
-Read before implementing or modifying any module.
-
-| Need | File |
-|---|---|
-| Spec for a module | `.code_my_spec/spec/<module_path>.spec.md` |
-
-Specs follow a standard format:
-- **Title**: Fully qualified module name with type
-- **Delegates**: Functions delegated to other modules
-- **Functions**: Public API with `@spec`, process steps, and test assertions
-- **Dependencies**: Required modules
-- **Fields**: (schemas only) Ecto field definitions
-
-Spec paths mirror the Elixir module namespace.
-
-### 4. Rules — Coding standards for each component type
-
-Read before writing code. Rules are scoped by component type.
-
-| Component Type | Design Rules | Test Rules |
-|---|---|---|
-| Context | `.code_my_spec/rules/context_design.md` | — |
-| Repository | `.code_my_spec/rules/repository_design.md` | `.code_my_spec/rules/repository_test.md` |
-| Schema | `.code_my_spec/rules/schema_design.md` | — |
-| LiveView | `.code_my_spec/rules/liveview_design.md` | — |
-| LiveView component | `.code_my_spec/rules/liveview_component_design.md` | — |
-| Elixir (general) | `.code_my_spec/rules/elixir_design.md` | `.code_my_spec/rules/elixir_test.md` |
-
-### 5. Design System — Visual reference
-
-Read before building any UI (LiveViews, components, templates).
-
-| Need | File |
-|---|---|
-| Design system (colors, typography, components) | `.code_my_spec/design/design_system.html` |
-
-Open the HTML file in a browser to see the full visual reference. Use the DaisyUI classes and theme tokens defined there.
-
-### 6. Issues — Known problems and technical debt
-
-Check before working in an area to avoid known pitfalls.
-
-Issues live in `.code_my_spec/issues/` as individual markdown files describing the problem, reproduction steps, and possible solutions.
-
-### 7. Knowledge — Operational knowledge
-
-- `.code_my_spec/knowledge/` — Project-specific research (data providers, auth flows, etc.)
-- `.code_my_spec/framework/` — Framework knowledge (LiveView, DaisyUI, Boundary, etc.) [symlink]
-
-## Phoenix Contexts Architecture
-
-All code follows Phoenix Contexts conventions:
-
-- **Contexts** are the public API boundary. They live at `lib/metric_flow/<context_name>.ex` and delegate to child modules.
-- **Repositories** handle data access. They live under the context namespace.
-- **Schemas** define Ecto schemas. They live under the context namespace.
-- **Scope** is the first parameter to all public context functions. It carries user, account, project, and optionally working directory.
-
-### Key Conventions
-
-- All public functions accept `%Scope{}` as the first parameter
-- Database queries filter by scope foreign keys
-- Return consistent `{:ok, result}` / `{:error, reason}` tuples
-
-## Working with .code_my_spec/
-
-**Before implementing a component:**
-1. Check `.code_my_spec/status/` — is it already done?
-2. Read `.code_my_spec/spec/` — what should it do?
-3. Read `.code_my_spec/rules/` — what conventions apply to this component type?
-4. Check `.code_my_spec/issues/` — are there known problems in this area?
-
-**Before modifying an existing component:**
-1. Read the spec to understand the intended behavior
-2. Read the current implementation
-3. Check if there are open issues related to it
-4. Follow the rules for that component type
-
-**When you need context on the bigger picture:**
-1. Read `.code_my_spec/architecture/namespace_hierarchy.md` for the component tree
-2. Read `.code_my_spec/architecture/overview.md` for dependency relationships
+| Component graph with types and deps | `.code_my_spec/architecture/overview.md` |
+| Namespace hierarchy | `.code_my_spec/architecture/namespace_hierarchy.md` |
+| Dependency diagram (Mermaid) | `.code_my_spec/architecture/dependency_graph.mmd` |
+| Architecture decisions | `.code_my_spec/architecture/decisions/` |
+| Implementation status | `.code_my_spec/status/metric_flow.md` |
