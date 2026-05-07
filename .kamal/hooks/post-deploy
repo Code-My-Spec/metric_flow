@@ -33,8 +33,11 @@ for host in ${HOSTS//,/ }; do
     cid=\$(docker ps --filter label=service=$SERVICE --filter status=running --format '{{.ID}}' | head -1)
     [[ -n \"\$cid\" ]] || { echo 'no running container found'; exit 1; }
 
-    # Re-attach caddy_proxy with the right alias
-    if docker inspect \$cid --format '{{range \$n, \$c := .NetworkSettings.Networks}}{{\$n}}={{\$c.Aliases}} {{end}}' | grep -qE \"caddy_proxy=\\[.*$ALIAS\"; then
+    # Re-attach caddy_proxy with the right alias.
+    # Inspect just the caddy_proxy network's Aliases array — anchored, so we
+    # don't false-match the alias landing on a different network (kamal).
+    caddy_aliases=\$(docker inspect \$cid --format '{{with index .NetworkSettings.Networks \"caddy_proxy\"}}{{range .Aliases}}{{.}} {{end}}{{end}}')
+    if echo \" \$caddy_aliases \" | grep -q \" $ALIAS \"; then
       echo 'caddy_proxy already has the right alias'
     else
       docker network disconnect caddy_proxy \$cid 2>/dev/null || true
@@ -42,8 +45,9 @@ for host in ${HOSTS//,/ }; do
       echo 'caddy_proxy re-attached with alias'
     fi
 
-    # Connect db_net (idempotent)
-    if docker inspect \$cid --format '{{json .NetworkSettings.Networks}}' | grep -q '\"db_net\"'; then
+    # Connect db_net (idempotent) — check by network name presence in inspect.
+    db_net_present=\$(docker inspect \$cid --format '{{with index .NetworkSettings.Networks \"db_net\"}}1{{end}}')
+    if [[ \"\$db_net_present\" == \"1\" ]]; then
       echo 'db_net already connected'
     else
       docker network connect db_net \$cid
