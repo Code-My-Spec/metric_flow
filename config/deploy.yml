@@ -2,15 +2,12 @@
 # Run with: scripts/deploy
 #
 # Notes:
-# - kamal-proxy is intentionally disabled (proxy: false). The shared Caddy
-#   in /opt/shared/ continues to terminate TLS and route. The Caddy ->
-#   kamal-proxy swap will happen once all 4 apps on the box are on Kamal.
-# - The container is attached to caddy_proxy at deploy time, but Docker
-#   applies --network-alias only to the FIRST --network flag and Kamal puts
-#   `kamal` first. The post-deploy hook fixes the alias and connects db_net
-#   so the app can reach infra-postgres-1.
-# - Secrets come from AWS SSM Parameter Store via .kamal/secrets-common,
-#   which is sourced from the deploy script's env (set up by render-env).
+# - kamal-proxy serves traffic on :80/:443 directly (Caddy retired 2026-05-07).
+# - db_net is pre-attached so the container can reach infra-postgres-1 at start.
+# - App secrets are fetched at container boot from AWS SSM
+#   (`/metric_flow/prod/*`) by MetricFlow.Secrets.load!/1 in
+#   config/runtime.exs. Kamal carries only the AWS bootstrap credentials
+#   listed under env.secret below — never app secrets.
 
 service: metric-flow
 image: code-my-spec/metric_flow
@@ -19,10 +16,13 @@ servers:
   web:
     hosts:
       - 178.156.143.212
-    proxy: false
     options:
-      network: caddy_proxy
-      network-alias: metric-flow-prod-web
+      network: db_net
+
+proxy:
+  ssl: true
+  host: metric-flow.app
+  app_port: 4000
 
 registry:
   server: ghcr.io
@@ -34,25 +34,16 @@ builder:
   arch: amd64
   local: true
 
+# Container fetches its own secrets from /metric_flow/prod/* in SSM at
+# boot via MetricFlow.Secrets.load!/1 (config/runtime.exs). The only env
+# Kamal carries is AWS bootstrap creds + APP_ENV.
 env:
+  clear:
+    APP_ENV: prod
+    AWS_REGION: us-east-1
   secret:
-    - DATABASE_URL
-    - SECRET_KEY_BASE
-    - PHX_HOST
-    - PHX_SERVER
-    - CLOAK_KEY
-    - SENTRY_DSN
-    - ANTHROPIC_API_KEY
-    - RESEND_API_KEY
-    - GOOGLE_CLIENT_ID
-    - GOOGLE_CLIENT_SECRET
-    - GOOGLE_ADS_DEVELOPER_TOKEN
-    - GOOGLE_ADS_LOGIN_CUSTOMER_ID
-    - FACEBOOK_APP_ID
-    - FACEBOOK_APP_SECRET
-    - QUICKBOOKS_CLIENT_ID
-    - QUICKBOOKS_CLIENT_SECRET
-    - QUICKBOOKS_API_URL
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
 
 ssh:
   user: root
