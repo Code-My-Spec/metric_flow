@@ -92,7 +92,11 @@ defmodule MetricFlow.MixProject do
       {:ex_aws_s3, "~> 2.5"},
       # Secrets fetched from AWS SSM Parameter Store at boot in
       # config/runtime.exs. See priv/knowledge/devops/secrets-runtime.md.
+      # hackney is the HTTP client ExAws uses by default; listed
+      # explicitly so it can go in `extra_applications` and start with
+      # the release before runtime.exs runs.
       {:ex_aws_ssm, "~> 2.1"},
+      {:hackney, "~> 1.20"},
       {:sweet_xml, "~> 0.7"},
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
