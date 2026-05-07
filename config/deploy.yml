@@ -1,0 +1,58 @@
+# Kamal config for metric_flow PROD on the Hetzner prod box (Ashburn x86).
+# Run with: scripts/deploy
+#
+# Notes:
+# - kamal-proxy is intentionally disabled (proxy: false). The shared Caddy
+#   in /opt/shared/ continues to terminate TLS and route. The Caddy ->
+#   kamal-proxy swap will happen once all 4 apps on the box are on Kamal.
+# - The container is attached to caddy_proxy at deploy time, but Docker
+#   applies --network-alias only to the FIRST --network flag and Kamal puts
+#   `kamal` first. The post-deploy hook fixes the alias and connects db_net
+#   so the app can reach infra-postgres-1.
+# - Secrets come from AWS SSM Parameter Store via .kamal/secrets-common,
+#   which is sourced from the deploy script's env (set up by render-env).
+
+service: metric-flow
+image: code-my-spec/metric_flow
+
+servers:
+  web:
+    hosts:
+      - 178.156.143.212
+    proxy: false
+    options:
+      network: caddy_proxy
+      network-alias: metric-flow-prod-web
+
+registry:
+  server: ghcr.io
+  username: johns10
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  local: true
+
+env:
+  secret:
+    - DATABASE_URL
+    - SECRET_KEY_BASE
+    - PHX_HOST
+    - PHX_SERVER
+    - CLOAK_KEY
+    - SENTRY_DSN
+    - ANTHROPIC_API_KEY
+    - RESEND_API_KEY
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - GOOGLE_ADS_DEVELOPER_TOKEN
+    - GOOGLE_ADS_LOGIN_CUSTOMER_ID
+    - FACEBOOK_APP_ID
+    - FACEBOOK_APP_SECRET
+    - QUICKBOOKS_CLIENT_ID
+    - QUICKBOOKS_CLIENT_SECRET
+    - QUICKBOOKS_API_URL
+
+ssh:
+  user: root

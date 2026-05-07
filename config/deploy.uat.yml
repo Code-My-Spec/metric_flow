@@ -1,0 +1,48 @@
+# Kamal config for metric_flow UAT on the Hetzner UAT box (Nuremberg ARM).
+# Run with: scripts/deploy-uat
+#
+# Same shape as deploy.yml; differs in host, alias, and arch. Service name
+# matches deploy.yml so the multi-arch image labels resolve.
+
+service: metric-flow
+image: code-my-spec/metric_flow
+
+servers:
+  web:
+    hosts:
+      - 46.225.105.88
+    proxy: false
+    options:
+      network: caddy_proxy
+      network-alias: metric-flow-uat-web
+
+registry:
+  server: ghcr.io
+  username: johns10
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: arm64
+  local: true
+
+env:
+  secret:
+    - DATABASE_URL
+    - SECRET_KEY_BASE
+    - PHX_HOST
+    - PHX_SERVER
+    - CLOAK_KEY
+    - SENTRY_DSN
+    - ANTHROPIC_API_KEY
+    - RESEND_API_KEY
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - GOOGLE_ADS_DEVELOPER_TOKEN
+    - FACEBOOK_APP_ID
+    - FACEBOOK_APP_SECRET
+    - QUICKBOOKS_CLIENT_ID
+    - QUICKBOOKS_CLIENT_SECRET
+
+ssh:
+  user: root
