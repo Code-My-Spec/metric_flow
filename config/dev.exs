@@ -96,3 +96,8 @@ config :metric_flow, :cloudflare_tunnel,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# AppSignal off in local dev. Belt-and-suspenders alongside the agent's
+# default-inactive behaviour: prevents accidental data shipping if a dev
+# pastes APPSIGNAL_PUSH_API_KEY into a local .env.
+config :appsignal, :config, active: false
