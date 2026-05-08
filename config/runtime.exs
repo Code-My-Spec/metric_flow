@@ -158,15 +158,10 @@ if config_env() == :prod do
       ]
   end
 
-  # Sentry error tracking (ADR: monitoring_observability)
-  config :sentry,
-    dsn: System.get_env("SENTRY_DSN"),
-    environment_name: :prod,
-    enable_source_code_context: true,
-    root_source_code_paths: [File.cwd!()],
-    integrations: [
-      oban: [capture_errors: true]
-    ]
+  # AppSignal: configuration is env-var-driven and read by the :appsignal
+  # OTP app at start. APPSIGNAL_PUSH_API_KEY / APPSIGNAL_APP_NAME /
+  # APPSIGNAL_APP_ENV are populated by MetricFlow.Secrets.load!/1 above.
+  # No runtime block needed.
 
   # Tigris file storage (ADR: file_storage)
   config :ex_aws,

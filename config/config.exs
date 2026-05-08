@@ -93,8 +93,11 @@ config :metric_flow, Oban,
     {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
   ]
 
-# Sentry error tracking (ADR: monitoring_observability) — use Finch HTTP client (no Hackney)
-config :sentry, client: Sentry.FinchHTTPClient
+# AppSignal error tracking + APM (ADR: appsignal_observability_hetzner).
+# All runtime values (push_api_key, name, env, active) come from env vars
+# loaded by MetricFlow.Secrets at boot — see SSM keys APPSIGNAL_*.
+# This block exists so the :appsignal app starts; values are env-driven.
+config :appsignal, :config, otp_app: :metric_flow
 
 # ExAws for Tigris file storage (ADR: file_storage)
 # Use Req as the HTTP adapter to avoid adding Hackney as a dependency

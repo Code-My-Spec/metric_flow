@@ -21,11 +21,6 @@ defmodule MetricFlowWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Prometheus metrics endpoint (ADR: monitoring_observability)
-  scope "/" do
-    get "/metrics", PromEx.Plug, prom_ex_module: MetricFlowWeb.PromEx
-  end
-
   scope "/", MetricFlowWeb do
     pipe_through :browser
 

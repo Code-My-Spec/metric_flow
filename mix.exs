@@ -82,9 +82,10 @@ defmodule MetricFlow.MixProject do
       {:assent, "~> 0.2"},
       # Caching (ADR: caching_strategy)
       {:cachex, "~> 4.1"},
-      # Monitoring (ADR: monitoring_observability)
-      {:sentry, "~> 11.0"},
-      {:prom_ex, "~> 1.11"},
+      # Monitoring (ADR: appsignal_observability_hetzner — supersedes the
+      # 2026-02-21 Sentry+PromEx ADR after the move off Fly.io)
+      {:appsignal, "~> 2.16"},
+      {:appsignal_phoenix, "~> 2.5"},
       # Charting (ADR: charting_library)
       {:vega_lite, "~> 0.1.11"},
       # File storage + secrets (ADR: file_storage, secrets_management)

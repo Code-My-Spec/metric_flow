@@ -10,7 +10,6 @@ defmodule MetricFlowWeb.Application do
     children =
       [
         MetricFlowWeb.Telemetry,
-        MetricFlowWeb.PromEx,
         MetricFlow.Repo,
         {DNSCluster, query: Application.get_env(:metric_flow, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MetricFlow.PubSub},

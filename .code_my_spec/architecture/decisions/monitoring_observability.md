@@ -1,7 +1,16 @@
 # Monitoring and Observability
 
-**Status:** Proposed
+**Status:** Superseded by `appsignal_observability_hetzner.md` (2026-05-07)
 **Date:** 2026-02-21
+
+> **Superseded.** The Sentry + PromEx + Fly.io built-in Grafana decision below
+> assumed Fly.io as the deployment target. The project moved to Hetzner +
+> Kamal in 2026-05, removing Fly's managed Prometheus/Grafana from the
+> equation. The original ADR's own fallback recommendation — "if APM and
+> error tracking must be combined in one vendor (e.g., to reduce tooling
+> complexity for a solo developer), AppSignal is the recommended fallback
+> choice" — applies here. See the replacement ADR for the AppSignal-only
+> wiring on Hetzner.
 
 ## Context
 
