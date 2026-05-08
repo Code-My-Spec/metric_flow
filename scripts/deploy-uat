@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Deploy MetricFlow UAT to the Hetzner UAT box.
-# Same flow as scripts/deploy but uses /metric_flow/uat/* SSM path and
-# config/deploy.uat.yml. Image is shared — only env differs.
+#
+# Same flow as scripts/deploy: the container fetches app secrets from
+# /metric_flow/uat/* via MetricFlow.Secrets.load!/1 at boot. This
+# script only passes AWS bootstrap creds — no app secrets in the
+# operator's shell.
 
 set -euo pipefail
 
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
-DEVOPS_DIR="${DEVOPS_DIR:-$HOME/Documents/github/devops}"
+DEVOPS_ENV="${DEVOPS_ENV:-$HOME/Documents/github/devops/.env}"
 
 cd "$REPO_ROOT"
 
@@ -28,13 +31,15 @@ RUN_ID=$(gh run list --workflow=build.yml --branch="$BRANCH" --limit=1 --json da
 [[ -n "$RUN_ID" ]] || { echo "no workflow run found" >&2; exit 1; }
 gh run watch "$RUN_ID" --exit-status --interval 10
 
-export KAMAL_REGISTRY_PASSWORD
-KAMAL_REGISTRY_PASSWORD=$(gh auth token)
+AWS_ACCESS_KEY_ID=$(awk -F= '/^HETZNER_SECRETS_UAT_AWS_ACCESS_KEY_ID=/{print $2}' "$DEVOPS_ENV")
+AWS_SECRET_ACCESS_KEY=$(awk -F= '/^HETZNER_SECRETS_UAT_AWS_SECRET_ACCESS_KEY=/{print $2}' "$DEVOPS_ENV")
+[[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] || {
+  echo "ERROR: HETZNER_SECRETS_UAT_AWS_* not found in $DEVOPS_ENV" >&2
+  exit 1
+}
 
-set -a
-# shellcheck disable=SC1091
-source <("$DEVOPS_DIR/scripts/render-env" metric_flow uat)
-set +a
+export KAMAL_REGISTRY_PASSWORD AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
+KAMAL_REGISTRY_PASSWORD=$(gh auth token)
 
 kamal deploy -d uat --skip-push --version="$SHA" "$@"
 

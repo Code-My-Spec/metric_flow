@@ -8,12 +8,15 @@
 #   3. Runs `kamal deploy --skip-push --version=<sha>` against the image
 #      that the workflow just published.
 #
-# Secrets come from AWS SSM Parameter Store (/metric_flow/prod/*).
+# App secrets are fetched at container boot from /metric_flow/prod/* in
+# AWS SSM by MetricFlow.Secrets.load!/1 (config/runtime.exs). This script
+# carries only the two AWS bootstrap creds that let the container reach
+# SSM — no app secrets ever enter the operator's shell.
 
 set -euo pipefail
 
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
-DEVOPS_DIR="${DEVOPS_DIR:-$HOME/Documents/github/devops}"
+DEVOPS_ENV="${DEVOPS_ENV:-$HOME/Documents/github/devops/.env}"
 
 cd "$REPO_ROOT"
 
@@ -37,14 +40,20 @@ RUN_ID=$(gh run list --workflow=build.yml --branch="$BRANCH" --limit=1 --json da
 [[ -n "$RUN_ID" ]] || { echo "no workflow run found" >&2; exit 1; }
 gh run watch "$RUN_ID" --exit-status --interval 10
 
-# 3. Deploy via Kamal — pulls the just-built image from GHCR
-export KAMAL_REGISTRY_PASSWORD
-KAMAL_REGISTRY_PASSWORD=$(gh auth token)
+# 3. Read just the two AWS bootstrap creds from devops/.env. We extract
+#    individually rather than `source`ing the whole file so unrelated
+#    secrets (DB passwords, other IAM keys, UptimeRobot tokens) don't
+#    end up in this shell environment.
+AWS_ACCESS_KEY_ID=$(awk -F= '/^HETZNER_SECRETS_AWS_ACCESS_KEY_ID=/{print $2}' "$DEVOPS_ENV")
+AWS_SECRET_ACCESS_KEY=$(awk -F= '/^HETZNER_SECRETS_AWS_SECRET_ACCESS_KEY=/{print $2}' "$DEVOPS_ENV")
+[[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] || {
+  echo "ERROR: HETZNER_SECRETS_AWS_* not found in $DEVOPS_ENV" >&2
+  exit 1
+}
 
-set -a
-# shellcheck disable=SC1091
-source <("$DEVOPS_DIR/scripts/render-env" metric_flow prod)
-set +a
+# 4. Deploy via Kamal — pulls the just-built image from GHCR.
+export KAMAL_REGISTRY_PASSWORD AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
+KAMAL_REGISTRY_PASSWORD=$(gh auth token)
 
 kamal deploy --skip-push --version="$SHA" "$@"
 
