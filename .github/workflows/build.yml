@@ -8,6 +8,8 @@ on:
       - ".kamal/**"
       - "config/deploy*.yml"
       - "scripts/**"
+      - "justfile"
+      - ".env.schema"
   workflow_dispatch: {}
 
 permissions:
