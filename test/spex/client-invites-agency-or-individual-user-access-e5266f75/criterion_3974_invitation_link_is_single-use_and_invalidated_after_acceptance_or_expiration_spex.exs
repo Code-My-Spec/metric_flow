@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
   import Swoosh.TestAssertions
   import Ecto.Query
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Invitations
   alias MetricFlow.Repo

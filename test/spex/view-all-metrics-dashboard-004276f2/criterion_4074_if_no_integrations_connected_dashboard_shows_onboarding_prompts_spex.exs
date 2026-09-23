@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If no integrations connected, dashboard shows onboarding prompts" do
     scenario "user with no integrations sees an onboarding or empty state message" do

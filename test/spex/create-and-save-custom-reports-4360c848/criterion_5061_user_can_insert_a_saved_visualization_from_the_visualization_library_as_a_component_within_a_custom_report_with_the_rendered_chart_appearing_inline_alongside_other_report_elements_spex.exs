@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5061InsertSavedVizFromLibrarySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can insert a saved visualization from the library into a custom report" do
     scenario "the add visualization button opens a picker with available metrics" do

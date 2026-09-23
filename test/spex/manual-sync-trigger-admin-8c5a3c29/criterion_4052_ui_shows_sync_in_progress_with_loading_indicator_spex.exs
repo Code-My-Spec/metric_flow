@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "UI shows sync in progress with loading indicator" do
     scenario "before clicking Sync Now no Syncing badge is visible" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On first sync, system backfills 180 days of history; subsequent syncs fetch from the day after the last stored metric date" do
     scenario "the first Facebook Ads sync shows a large record count reflecting 180-day backfill in sync history" do

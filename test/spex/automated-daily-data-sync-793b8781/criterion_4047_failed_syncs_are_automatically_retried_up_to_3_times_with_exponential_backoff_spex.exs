@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Failed syncs are automatically retried up to 3 times with exponential backoff" do
     scenario "sync history page shows retry attempt count for a failed sync entry" do

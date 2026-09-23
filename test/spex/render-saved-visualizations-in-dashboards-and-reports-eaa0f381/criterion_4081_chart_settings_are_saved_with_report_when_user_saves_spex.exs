@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Chart settings are saved with the visualization when user saves" do
     scenario "saving a visualization persists the name, metric, and vega spec" do

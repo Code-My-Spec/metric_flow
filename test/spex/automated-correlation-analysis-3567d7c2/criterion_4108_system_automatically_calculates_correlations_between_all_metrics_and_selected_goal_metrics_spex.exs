@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System automatically calculates correlations between all metrics and selected goal metrics" do
     scenario "user sees computed correlation results on the correlations page" do

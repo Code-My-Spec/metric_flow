@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Webhook processing failures are captured gracefully" do
     scenario "malformed payload returns error without crashing" do

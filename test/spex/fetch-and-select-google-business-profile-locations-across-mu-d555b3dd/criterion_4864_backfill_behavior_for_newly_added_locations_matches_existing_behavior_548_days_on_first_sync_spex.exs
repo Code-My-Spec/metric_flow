@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Backfill behavior for newly added locations matches existing behavior: 548 days on first sync",
        fail_on_error_logs: false do

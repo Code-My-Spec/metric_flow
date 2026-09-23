@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "GA4-specific metrics that have no canonical equivalent are stored as platform-specific metrics labeled 'Google Analytics: [metric name]'" do
     scenario "a successful GA4 sync that includes platform-specific metrics appears in sync history" do

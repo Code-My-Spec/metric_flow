@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metrics are stored at location level (externalLocationId populated) unlike ad platforms (account level, null locationId)" do
     scenario "a sync completion for a specific location shows in sync history with records synced" do

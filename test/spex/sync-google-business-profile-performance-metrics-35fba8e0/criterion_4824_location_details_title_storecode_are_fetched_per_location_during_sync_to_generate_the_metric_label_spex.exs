@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Location details (title, storeCode) are fetched per location during sync to generate the metric label" do
     scenario "a successful Google Business Profile sync shows the location title in the sync history entry" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync retrieves metrics, review data, and financial data for each day" do
     scenario "sync history page communicates that syncs retrieve metrics data" do

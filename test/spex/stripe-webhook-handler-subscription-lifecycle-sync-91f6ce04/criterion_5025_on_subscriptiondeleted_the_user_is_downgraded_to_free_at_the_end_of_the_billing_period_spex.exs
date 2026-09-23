@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.SubscriptionDeletedDowngradesToFreeSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On subscription.deleted, user is downgraded to free" do
     scenario "subscription.deleted webhook is processed" do

@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Integration is saved only after successful OAuth completion",
        fail_on_error_logs: false do

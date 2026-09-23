@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each integration shows next scheduled sync time" do
     scenario "sync history page shows the scheduled sync time so users know when to expect the next sync" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DirectUsersCanInitiateCheckoutSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Direct (non-agency) users can initiate checkout from the paywall modal or from account settings" do
     scenario "free user is redirected to checkout when accessing paywalled page" do

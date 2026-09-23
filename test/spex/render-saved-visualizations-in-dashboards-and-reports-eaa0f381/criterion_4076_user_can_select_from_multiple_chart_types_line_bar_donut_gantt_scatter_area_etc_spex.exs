@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can select from multiple chart types in the visualization editor" do
     scenario "editor page displays multiple chart type options" do

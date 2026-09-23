@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Locations are fetched using the Google Business Profile API v1 with fields: name, title, storeCode, storefrontAddress, websiteUri, regularHours, primaryCategory",
        fail_on_error_logs: false do

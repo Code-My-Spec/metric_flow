@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Credits (money-in) stored as primary metric — revenue target variable for correlation analysis" do
     scenario "sync with credit metrics shows record count in sync history" do

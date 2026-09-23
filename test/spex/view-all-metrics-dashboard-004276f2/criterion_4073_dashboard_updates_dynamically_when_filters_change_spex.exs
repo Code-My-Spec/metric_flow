@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Dashboard updates dynamically when filters change" do
     scenario "changing the date range filter re-renders the dashboard without a page reload" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "AI can suggest visualizations or reports based on questions" do
     scenario "user asks about data trends and AI response includes a visualization suggestion" do

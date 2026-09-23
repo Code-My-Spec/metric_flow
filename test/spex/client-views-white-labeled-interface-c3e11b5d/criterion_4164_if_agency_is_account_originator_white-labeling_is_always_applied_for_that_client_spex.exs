@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If agency is account originator white-labeling is always applied for that client" do
     scenario "client originated by an agency always sees agency branding on agency subdomain" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All users on an account see the same data with account-level isolation" do
     scenario "two members of the same account see the same members list" do

@@ -8,7 +8,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
   alias MetricFlow.Invitations
   alias MetricFlow.Repo
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Expired invitations show clear error message" do
     scenario "user visits an expired invitation link and sees an error" do

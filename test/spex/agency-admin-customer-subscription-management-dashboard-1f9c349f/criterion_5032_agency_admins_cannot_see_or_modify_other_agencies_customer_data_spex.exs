@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminsCannotSeeOtherAgenciesDataSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admins cannot see or modify other agencies' customer data" do
     scenario "agency admin views subscriptions page which only shows their own agency's data" do

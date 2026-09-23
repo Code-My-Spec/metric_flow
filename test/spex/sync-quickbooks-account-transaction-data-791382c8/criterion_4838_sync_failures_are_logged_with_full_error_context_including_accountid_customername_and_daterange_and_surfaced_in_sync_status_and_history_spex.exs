@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "QuickBooks sync failures logged with full error context (accountId, customerName, dateRange) surfaced in history" do
     scenario "failed sync shows full error context including accountId, customerName, and dateRange" do

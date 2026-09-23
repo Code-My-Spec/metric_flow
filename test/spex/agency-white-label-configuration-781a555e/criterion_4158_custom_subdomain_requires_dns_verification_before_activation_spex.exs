@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Custom subdomain requires DNS verification before activation" do
     scenario "after saving a custom subdomain the user sees DNS verification instructions" do

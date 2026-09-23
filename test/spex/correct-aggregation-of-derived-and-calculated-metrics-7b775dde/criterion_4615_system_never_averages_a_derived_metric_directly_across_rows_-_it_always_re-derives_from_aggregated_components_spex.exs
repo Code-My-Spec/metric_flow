@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System never averages a derived metric directly across rows - it always re-derives from aggregated components" do
     scenario "dashboard loads for a user with integrations" do

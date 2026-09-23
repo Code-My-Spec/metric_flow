@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanDefinePlansSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admins can define subscription plans with name and monthly price" do
     scenario "agency admin creates a new plan via the plans page" do

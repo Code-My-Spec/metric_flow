@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.AgencyWebhookEventsRoutedCorrectlySpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Webhook events for agency customer subscriptions are routed and processed correctly" do
     scenario "webhook event arrives with agency Stripe account ID in the payload" do

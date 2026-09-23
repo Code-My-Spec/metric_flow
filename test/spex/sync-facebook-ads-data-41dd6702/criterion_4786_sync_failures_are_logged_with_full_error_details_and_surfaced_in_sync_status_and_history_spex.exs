@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncFailuresAreLoggedWithFullErrorDetailsAndSurfacedInS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with full error details and surfaced in Sync Status and History" do
     scenario "a Facebook Ads sync failure event is displayed in the sync history page with the error message" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Because GA4's runReport endpoint has a 10-metric limit per request, metrics are fetched in chunks of 10 and results are merged by date before storage; the final stored data is identical to a single-request response would be" do
     scenario "a successful GA4 sync with all core metrics appears in sync history as a single entry" do

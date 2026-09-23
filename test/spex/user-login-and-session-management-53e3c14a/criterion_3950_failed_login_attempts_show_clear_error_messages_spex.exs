@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Failed login attempts show clear error messages" do
     scenario "user submits incorrect password" do

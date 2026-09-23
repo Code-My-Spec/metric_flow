@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Platform connection belongs to client account and is not transferable to agency" do
     scenario "client user can view their own integrations" do

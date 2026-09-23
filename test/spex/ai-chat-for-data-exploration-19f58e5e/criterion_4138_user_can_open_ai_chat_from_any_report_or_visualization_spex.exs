@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can open AI chat from any report or visualization" do
     scenario "user sees an open AI chat button or link on the dashboard page" do

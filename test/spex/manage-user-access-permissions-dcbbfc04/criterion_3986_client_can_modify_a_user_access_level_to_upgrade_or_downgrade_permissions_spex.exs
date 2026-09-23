@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanModifyAUserAccessLevelToUpgradeOrDowngradePerm
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can modify a user access level to upgrade or downgrade permissions" do
     scenario "owner upgrades a member's role from read_only to admin" do

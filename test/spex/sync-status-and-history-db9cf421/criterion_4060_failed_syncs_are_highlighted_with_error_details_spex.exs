@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Failed syncs are highlighted with error details" do
     scenario "a failed sync entry shows a visual error badge" do

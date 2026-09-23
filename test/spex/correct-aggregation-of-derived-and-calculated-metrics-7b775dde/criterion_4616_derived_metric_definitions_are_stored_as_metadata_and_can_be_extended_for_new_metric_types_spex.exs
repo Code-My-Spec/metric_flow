@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Derived metric definitions are stored as metadata and can be extended for new metric types" do
     scenario "dashboard loads and displays the known set of derived metrics for a connected account" do

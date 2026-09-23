@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Disconnecting shows warning that historical data will remain but no new data will sync" do
     scenario "a warning appears when the user initiates a disconnect action" do

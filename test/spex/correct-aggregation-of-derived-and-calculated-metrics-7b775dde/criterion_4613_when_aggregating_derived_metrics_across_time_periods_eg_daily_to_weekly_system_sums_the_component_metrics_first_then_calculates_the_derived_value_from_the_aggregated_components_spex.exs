@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When aggregating derived metrics across time periods, system sums component metrics first then calculates derived value" do
     scenario "dashboard loads for an authenticated user with a time period selector" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Manual sync does not interfere with automated daily sync schedule" do
     scenario "after a manual sync completes, the integration still shows Connected status" do

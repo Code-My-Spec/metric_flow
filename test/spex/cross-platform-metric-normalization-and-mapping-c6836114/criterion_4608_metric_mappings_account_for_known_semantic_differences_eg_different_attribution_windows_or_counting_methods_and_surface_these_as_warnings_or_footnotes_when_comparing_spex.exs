@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metric mappings account for known semantic differences and surface warnings or footnotes when comparing" do
     scenario "authenticated user can access the dashboard to see semantic difference warnings" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessP
   use MetricFlowTest.ConnCase, async: false
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can initiate OAuth flow for Google Business Profile from the integrations settings page" do
     scenario "authenticated user sees Google Business listed as a provider on the connect page" do

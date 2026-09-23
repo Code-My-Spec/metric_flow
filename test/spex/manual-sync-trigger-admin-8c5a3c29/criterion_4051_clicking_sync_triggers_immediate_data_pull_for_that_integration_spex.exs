@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Clicking sync triggers immediate data pull for that integration" do
     scenario "clicking Sync Now on a connected integration shows a flash confirming sync was started" do

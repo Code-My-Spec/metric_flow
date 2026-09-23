@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data is fetched per facebookAdsAccountId from config; the 'act_' prefix is added by the fetcher at call time, not stored in config" do
     scenario "the integrations page shows Facebook Ads account IDs without the act_ prefix" do

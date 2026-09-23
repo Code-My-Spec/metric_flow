@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllIntegrationsTreatedUniformlyWithNoSpecialQuickbooksU
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All integrations treated uniformly with no special QuickBooks UI" do
     scenario "QuickBooks integration appears using the same card layout as other integrations" do

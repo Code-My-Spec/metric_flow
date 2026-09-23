@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminCanInitiateStripeConnectSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admin can navigate to Stripe Connect page and initiate onboarding" do
     scenario "admin visits Stripe Connect page" do

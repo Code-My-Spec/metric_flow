@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When OAuth token refresh fails, integration status changes to Needs Reconnection" do
     scenario "user sees a failure message after the system reports a token refresh failure" do

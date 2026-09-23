@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User is prompted to create an account name during registration" do
     scenario "registration form displays an account name field" do

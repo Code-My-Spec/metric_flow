@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlatformInitiatesStripeConnectOauthSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Platform initiates Stripe Connect OAuth flow and redirects to Stripe" do
     scenario "admin clicks connect and is redirected to Stripe onboarding" do

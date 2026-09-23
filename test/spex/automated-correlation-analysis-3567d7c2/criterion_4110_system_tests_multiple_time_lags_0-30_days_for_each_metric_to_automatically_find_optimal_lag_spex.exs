@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationTimeLagDetectionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System tests multiple time lags 0-30 days for each metric to automatically find optimal lag" do
     scenario "user sees optimal lag displayed for each correlation result" do

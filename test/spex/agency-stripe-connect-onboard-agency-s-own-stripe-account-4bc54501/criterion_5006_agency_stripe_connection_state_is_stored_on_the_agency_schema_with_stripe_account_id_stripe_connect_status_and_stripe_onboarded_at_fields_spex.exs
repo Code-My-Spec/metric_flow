@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyStripeStateStoredSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency Stripe connection state is stored and reflected in UI" do
     scenario "Stripe Connect page reflects stored connection state" do

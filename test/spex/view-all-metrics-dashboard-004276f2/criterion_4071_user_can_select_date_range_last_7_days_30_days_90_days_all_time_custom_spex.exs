@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can select date range: last 7 days, 30 days, 90 days, all time, custom" do
     scenario "dashboard shows a 7 days date range option" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "AI suggestions are based on correlation strength, trends, and business context" do
     scenario "AI suggestions reference correlation strength using qualitative or quantitative language" do

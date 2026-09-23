@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricsStoredAtLocationLevelMyBusinessOneRowPerMetricKe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metrics are stored at location level (externalLocationId populated) with platformServiceType 'mybusiness' — one row per metric key per day per location" do
     scenario "a single-location sync with 10 metrics shows 10 records in sync history" do

@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.SubscriptionCancellationsHandledGracefullySpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Subscription cancellations are handled gracefully with access until period end" do
     scenario "webhook for subscription.deleted downgrades user at period end" do

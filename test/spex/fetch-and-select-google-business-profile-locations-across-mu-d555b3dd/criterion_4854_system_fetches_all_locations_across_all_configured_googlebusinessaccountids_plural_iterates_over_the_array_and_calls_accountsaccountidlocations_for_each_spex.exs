@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesAllLocationsAcrossAllConfiguredGoogleBusin
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches all locations across all configured googleBusinessAccountIds", fail_on_error_logs: false do
     scenario "locations from multiple GBP accounts all appear in the selection list" do

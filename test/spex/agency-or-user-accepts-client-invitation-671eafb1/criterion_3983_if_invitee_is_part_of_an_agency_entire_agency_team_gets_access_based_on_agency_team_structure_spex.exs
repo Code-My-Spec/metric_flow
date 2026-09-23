@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If invitee is part of an agency, entire agency team gets access based on agency team structure" do
     scenario "agency user accepts an invitation and the client account appears in their account list" do

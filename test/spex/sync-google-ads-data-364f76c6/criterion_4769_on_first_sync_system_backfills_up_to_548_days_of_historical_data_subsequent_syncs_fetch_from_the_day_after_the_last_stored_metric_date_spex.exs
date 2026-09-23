@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On first sync, Google Ads backfills up to 548 days of historical data; subsequent syncs fetch from day after last stored metric date" do
     scenario "the sync history page describes historical backfill behavior in the schedule section" do

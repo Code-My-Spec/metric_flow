@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can log out from any page" do
     scenario "logged-in user sees log out link and can log out from settings" do

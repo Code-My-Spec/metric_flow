@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Selected location IDs are stored in customerConfig.includedLocations as an array, prefixed with their accountId for unambiguous reference across multiple accounts",
        fail_on_error_logs: false do

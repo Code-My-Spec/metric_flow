@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can view list of all saved reports" do
     scenario "authenticated user can navigate to the dashboards list page" do

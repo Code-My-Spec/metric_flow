@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4080MultipleChartsForComparisonSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can add multiple charts to the same dashboard for comparison" do
     scenario "dashboard editor allows adding multiple visualizations" do

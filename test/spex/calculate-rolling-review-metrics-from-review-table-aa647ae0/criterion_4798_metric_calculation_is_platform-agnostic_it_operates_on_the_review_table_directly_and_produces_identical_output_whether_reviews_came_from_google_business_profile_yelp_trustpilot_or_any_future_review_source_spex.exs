@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metric calculation is platform-agnostic — operates on Review table directly regardless of source platform" do
     scenario "report page loads for an authenticated user" do

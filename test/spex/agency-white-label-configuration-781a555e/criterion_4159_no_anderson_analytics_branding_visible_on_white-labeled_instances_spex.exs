@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "No Anderson Analytics branding visible on white-labeled instances" do
     scenario "white-labeled dashboard does not show Anderson Analytics or MetricFlow brand text" do

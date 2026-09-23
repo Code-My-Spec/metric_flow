@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System provides default dashboard templates (e.g., Marketing Overview, Revenue Analysis, Platform Comparison)" do
     scenario "authenticated user can navigate to the dashboards index page" do

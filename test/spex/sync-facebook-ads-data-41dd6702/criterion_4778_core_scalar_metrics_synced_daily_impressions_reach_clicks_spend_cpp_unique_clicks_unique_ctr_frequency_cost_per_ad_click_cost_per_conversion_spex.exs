@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CoreScalarMetricsSyncedDailyFacebookAdsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Core scalar metrics synced daily: impressions, reach, clicks, spend, cpp, unique_clicks, unique_ctr, frequency, cost_per_ad_click, cost_per_conversion" do
     scenario "sync history shows a completed Facebook Ads sync entry with records synced count matching expected core metrics" do

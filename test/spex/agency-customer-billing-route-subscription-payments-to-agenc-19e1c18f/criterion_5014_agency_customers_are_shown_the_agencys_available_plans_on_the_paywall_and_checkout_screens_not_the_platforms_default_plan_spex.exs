@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCustomersShownAgencyPlansSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency customers see the agency's plans on checkout, not the platform default" do
     scenario "agency customer visits checkout page" do

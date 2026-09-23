@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "After registration, user is logged in and directed to onboarding flow" do
     scenario "after completing email verification, the user is redirected to the onboarding flow" do

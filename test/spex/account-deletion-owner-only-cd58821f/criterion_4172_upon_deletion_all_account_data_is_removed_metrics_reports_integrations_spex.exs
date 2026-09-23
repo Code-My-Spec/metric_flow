@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Upon deletion, all account data is removed (metrics, reports, integrations)" do
     scenario "after account deletion, the deleted account no longer appears in the accounts list" do

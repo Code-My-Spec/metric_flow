@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.TheFollowingMetricsAreFetchedAsDailyTimeSeriesGoogleBus
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "GBP 10 daily metrics: impressions (desktop/mobile, maps/search), conversations, directions, calls, clicks, bookings, food orders/menu" do
     scenario "sync completion with 10 records shows correct count in sync history" do

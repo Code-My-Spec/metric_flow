@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PaywalledRoutesRedirectFreeUsersSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Paywalled routes return 402 or redirect with a flash message when accessed via direct URL by free users" do
     scenario "free user directly navigates to the visualizations page and is redirected or shown an upgrade prompt" do

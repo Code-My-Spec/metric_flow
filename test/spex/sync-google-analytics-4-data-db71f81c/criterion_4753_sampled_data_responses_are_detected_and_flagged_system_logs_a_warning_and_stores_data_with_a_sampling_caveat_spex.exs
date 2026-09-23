@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sampled data responses are detected and flagged — system logs a warning and stores data with a sampling caveat" do
     scenario "a GA4 sync completion with a sampling caveat appears in sync history" do

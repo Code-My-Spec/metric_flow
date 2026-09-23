@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can ask questions like Why did my revenue drop last week" do
     scenario "user sees a chat input field on the chat page" do

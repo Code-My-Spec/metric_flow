@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Google Ads metrics are fetched at account level only (customer entity) — one row per day per metric, no campaign or ad group segmentation" do
     scenario "sync history shows account-level Google Ads data without campaign or ad group columns" do

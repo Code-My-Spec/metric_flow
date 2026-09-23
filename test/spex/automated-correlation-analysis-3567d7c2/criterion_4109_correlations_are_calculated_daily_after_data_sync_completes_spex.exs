@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationsDailyCalculationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Correlations are calculated daily after data sync completes" do
     scenario "user sees when correlations were last calculated" do

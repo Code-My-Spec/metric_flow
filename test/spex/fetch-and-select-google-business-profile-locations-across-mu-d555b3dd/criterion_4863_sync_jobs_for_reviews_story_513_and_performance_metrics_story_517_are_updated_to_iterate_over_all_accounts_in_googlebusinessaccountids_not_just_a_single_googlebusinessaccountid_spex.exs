@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync jobs for reviews (story 513) and performance metrics (story 517) are updated to iterate over all accounts in googleBusinessAccountIds — not just a single googleBusinessAccountId",
        fail_on_error_logs: false do

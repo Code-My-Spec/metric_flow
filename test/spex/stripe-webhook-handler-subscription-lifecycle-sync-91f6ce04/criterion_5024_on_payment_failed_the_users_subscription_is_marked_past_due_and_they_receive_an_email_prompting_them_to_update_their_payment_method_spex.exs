@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.PaymentFailedMarksPastDueSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On payment_failed, subscription is marked past_due" do
     scenario "payment_failed webhook triggers past_due status" do

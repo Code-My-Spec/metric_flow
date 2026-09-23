@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Location details fetched for metric label — unavailable details cause sync failure" do
     scenario "a successful sync includes location details in the sync history entry" do

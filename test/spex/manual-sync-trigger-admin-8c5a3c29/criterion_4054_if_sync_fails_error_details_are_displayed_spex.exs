@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If sync fails, error details are displayed" do
     scenario "when an async sync fails the user sees an error message with the failure reason" do

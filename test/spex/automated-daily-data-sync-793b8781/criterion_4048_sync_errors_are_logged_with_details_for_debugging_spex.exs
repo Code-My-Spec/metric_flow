@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync errors are logged with details for debugging" do
     scenario "a failed sync entry on the sync history page shows the error message" do

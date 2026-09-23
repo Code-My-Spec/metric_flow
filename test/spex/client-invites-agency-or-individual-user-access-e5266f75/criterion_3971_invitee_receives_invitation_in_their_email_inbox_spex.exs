@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.InviteeReceivesInvitationInTheirEmailInboxSpex do
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Invitee receives invitation in their email inbox" do
     scenario "invitation email is addressed to the invitee's email address" do

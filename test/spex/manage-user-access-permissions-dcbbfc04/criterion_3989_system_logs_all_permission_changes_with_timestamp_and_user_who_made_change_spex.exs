@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System logs all permission changes with timestamp and user who made change" do
     scenario "a role change produces a confirmation with details" do

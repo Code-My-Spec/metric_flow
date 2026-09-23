@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyColorSchemeAppliedThroughoutInterfaceSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency color scheme is applied throughout interface" do
     scenario "client sees agency color scheme when white-labeling is active" do

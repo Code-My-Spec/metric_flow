@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "KNOWN LIMITATION: Full rebuild sync deletes all records before re-inserting; data lost if sync fails midway" do
     scenario "a failed sync after deletion shows zero records synced in sync history" do

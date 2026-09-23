@@ -70,7 +70,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
   # handle_event/3 ("delete")
   # ---------------------------------------------------------------------------
 
-  describe ~s(handle_event/3 ("delete")) do
+  describe ~s|handle_event/3 ("delete")| do
     test "shows delete confirmation for the targeted visualization", %{conn: conn} do
       user = user_fixture()
       viz = visualization_fixture(user)
@@ -93,7 +93,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
   # handle_event/3 ("cancel_delete")
   # ---------------------------------------------------------------------------
 
-  describe ~s(handle_event/3 ("cancel_delete")) do
+  describe ~s|handle_event/3 ("cancel_delete")| do
     test "hides delete confirmation", %{conn: conn} do
       user = user_fixture()
       viz = visualization_fixture(user)
@@ -118,7 +118,7 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
   # handle_event/3 ("confirm_delete")
   # ---------------------------------------------------------------------------
 
-  describe ~s(handle_event/3 ("confirm_delete")) do
+  describe ~s|handle_event/3 ("confirm_delete")| do
     test "removes visualization from list and flashes success", %{conn: conn} do
       user = user_fixture()
       viz = visualization_fixture(user, %{name: "Doomed Viz"})

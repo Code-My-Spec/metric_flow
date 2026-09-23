@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Registration form validates email format and password strength" do
     scenario "invalid email format shows an error" do

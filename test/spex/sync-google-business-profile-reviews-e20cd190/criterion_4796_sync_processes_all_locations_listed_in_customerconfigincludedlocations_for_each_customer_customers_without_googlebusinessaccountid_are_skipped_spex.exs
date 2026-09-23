@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync processes all includedLocations per customer; customers without googleBusinessAccountId are skipped" do
     scenario "multiple location syncs for the same customer all appear in sync history" do

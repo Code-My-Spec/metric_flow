@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationDailyAggregatedDataSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Correlation calculations use daily aggregated data" do
     scenario "user sees that correlations are based on daily data" do

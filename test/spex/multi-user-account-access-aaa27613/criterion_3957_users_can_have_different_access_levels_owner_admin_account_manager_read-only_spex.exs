@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Users can have different access levels: owner, admin, account manager, read-only" do
     scenario "invite form shows all available role options" do

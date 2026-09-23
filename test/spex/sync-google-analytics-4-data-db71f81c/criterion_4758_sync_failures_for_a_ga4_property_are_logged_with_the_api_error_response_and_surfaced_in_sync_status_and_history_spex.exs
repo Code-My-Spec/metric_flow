@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync failures for a GA4 property are logged with the API error response and surfaced in Sync Status and History" do
     scenario "a GA4 sync failure event is displayed in the sync history page with the error message" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can enable AI Suggestions option in Smart mode" do
     scenario "user in Smart mode sees the Enable AI Suggestions option" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System requires GOOGLE_DEVELOPER_TOKEN and GOOGLE_MANAGER_ACCOUNT_ID env vars to authenticate Google Ads API calls" do
     scenario "a successful Google Ads sync confirms that authentication credentials were accepted" do

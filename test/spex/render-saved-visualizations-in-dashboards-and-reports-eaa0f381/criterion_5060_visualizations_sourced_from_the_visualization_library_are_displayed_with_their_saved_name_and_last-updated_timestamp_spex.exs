@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Visualizations in the library display their saved name and last-updated timestamp" do
     scenario "saved visualization appears in the library with name and timestamp" do

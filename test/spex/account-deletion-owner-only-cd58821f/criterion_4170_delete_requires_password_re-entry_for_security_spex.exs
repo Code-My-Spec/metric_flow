@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Delete requires password re-entry for security" do
     scenario "deletion is rejected when password is incorrect" do

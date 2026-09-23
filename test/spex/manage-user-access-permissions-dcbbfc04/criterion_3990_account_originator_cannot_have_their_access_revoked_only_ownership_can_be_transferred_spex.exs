@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account originator cannot have their access revoked, only ownership can be transferred" do
     scenario "the sole account owner has no remove button on their own member row" do

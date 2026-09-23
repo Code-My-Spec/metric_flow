@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User sees client account added to their account switcher or list" do
     scenario "after accepting an invitation, the client account appears in the account switcher" do

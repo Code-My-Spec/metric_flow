@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can view pending invitations and cancel them before acceptance" do
     scenario "pending invitation appears in the invitations list after being sent" do

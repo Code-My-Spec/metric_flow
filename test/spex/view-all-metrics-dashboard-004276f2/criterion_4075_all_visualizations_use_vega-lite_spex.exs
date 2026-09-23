@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All visualizations use Vega-Lite" do
     scenario "dashboard page includes Vega-Lite visualization containers" do

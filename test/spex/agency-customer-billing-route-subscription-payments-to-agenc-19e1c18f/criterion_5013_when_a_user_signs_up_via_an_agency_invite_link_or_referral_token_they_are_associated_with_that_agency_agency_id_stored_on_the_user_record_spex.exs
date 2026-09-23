@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyUserAssociatedViaInviteSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User who signs up via an agency invite link is associated with that agency" do
     scenario "user navigates to checkout after signing up via agency invite token" do

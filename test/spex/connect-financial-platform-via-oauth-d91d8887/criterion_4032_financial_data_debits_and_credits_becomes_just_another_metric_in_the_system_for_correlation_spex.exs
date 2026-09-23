@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Financial data (debits and credits) becomes just another metric in the system for correlation" do
     scenario "the QuickBooks detail page describes syncing financial data" do

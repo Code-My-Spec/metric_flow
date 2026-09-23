@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Users can view which platform metrics are mapped to which canonical metrics" do
     scenario "authenticated user can access the dashboard to see metric mappings" do

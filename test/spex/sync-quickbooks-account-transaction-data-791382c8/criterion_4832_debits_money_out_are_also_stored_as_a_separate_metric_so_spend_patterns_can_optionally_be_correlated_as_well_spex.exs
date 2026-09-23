@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Debits (money out) are stored as a separate metric so spend patterns can optionally be correlated" do
     scenario "sync with both credit and debit metrics shows combined record count in sync history" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can access All Metrics dashboard showing data from all connected platforms" do
     scenario "authenticated user can navigate to the dashboard page" do

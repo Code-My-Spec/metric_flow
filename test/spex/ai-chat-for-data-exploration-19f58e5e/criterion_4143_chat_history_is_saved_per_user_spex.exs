@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Chat history is saved per user" do
     scenario "user's messages persist after navigating away and returning to chat" do

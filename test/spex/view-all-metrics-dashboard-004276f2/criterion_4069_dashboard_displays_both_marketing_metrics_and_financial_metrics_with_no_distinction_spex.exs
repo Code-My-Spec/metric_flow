@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingMetricsAndFinancialMetric
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Dashboard displays both marketing metrics and financial metrics with no distinction" do
     scenario "marketing metric types appear on the dashboard page" do

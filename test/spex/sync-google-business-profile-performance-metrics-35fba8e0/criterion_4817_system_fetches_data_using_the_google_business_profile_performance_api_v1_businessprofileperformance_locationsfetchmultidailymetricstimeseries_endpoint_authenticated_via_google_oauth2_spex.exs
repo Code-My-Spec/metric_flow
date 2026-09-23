@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches data using the Google Business Profile Performance API v1 (businessprofileperformance, locations.fetchMultiDailyMetricsTimeSeries endpoint) authenticated via Google OAuth2" do
     scenario "sync history shows a successful Google Business Profile sync entry with records synced" do

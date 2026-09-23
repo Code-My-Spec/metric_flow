@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Aggregator calculates daily review count, total reviews, and average rating per day" do
     scenario "a sync completion with aggregated review metrics shows the total record count" do

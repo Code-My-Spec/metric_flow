@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Email verification is required before account activation" do
     scenario "after registration, user is told to verify their email before accessing the app" do

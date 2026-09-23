@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4150EditVegaLiteSpecDirectlySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can edit Vega-Lite spec directly if desired (advanced mode)" do
     scenario "visualization editor has a spec editor textarea for direct JSON editing" do

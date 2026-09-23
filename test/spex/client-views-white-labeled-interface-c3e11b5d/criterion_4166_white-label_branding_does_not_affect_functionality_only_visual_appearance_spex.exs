@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "White-label branding does not affect functionality only visual appearance" do
     scenario "dashboard loads successfully with white-label branding active" do

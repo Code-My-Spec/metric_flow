@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "OAuth flow opens in popup or new tab with platform authentication" do
     scenario "connect button for Google is rendered with an OAuth initiation action" do

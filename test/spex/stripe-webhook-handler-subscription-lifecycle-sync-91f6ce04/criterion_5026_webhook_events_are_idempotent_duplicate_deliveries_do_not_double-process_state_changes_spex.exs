@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.WebhookEventsAreIdempotentSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Webhook events are idempotent" do
     scenario "sending the same event twice returns success both times" do

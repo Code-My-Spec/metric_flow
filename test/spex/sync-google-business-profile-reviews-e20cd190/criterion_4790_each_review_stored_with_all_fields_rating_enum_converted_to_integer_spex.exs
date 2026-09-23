@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each review stored with all fields: rating enum converted to integer (1-5)" do
     scenario "sync completion with reviews stored shows the record count in sync history" do

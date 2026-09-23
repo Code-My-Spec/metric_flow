@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Date arithmetic for the API call offsets the start date by +1 day — this is intentional to avoid re-fetching the last stored date" do
     scenario "two consecutive Google Business Profile syncs produce distinct entries with no date overlap" do

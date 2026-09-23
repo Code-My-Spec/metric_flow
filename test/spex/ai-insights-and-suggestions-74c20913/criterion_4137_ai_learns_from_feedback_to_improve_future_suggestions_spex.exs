@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "AI learns from feedback to improve future suggestions" do
     scenario "after providing feedback, user sees a message indicating feedback helps improve suggestions" do

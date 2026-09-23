@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Derived metrics that reference canonical component metrics automatically work across platforms once their components are mapped" do
     scenario "dashboard loads for a user with integrations" do

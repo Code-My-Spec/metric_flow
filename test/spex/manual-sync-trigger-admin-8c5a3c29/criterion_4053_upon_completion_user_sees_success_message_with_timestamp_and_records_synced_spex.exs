@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Upon completion, user sees success message with timestamp and records synced" do
     scenario "after sync completes successfully, user sees a success message containing the number of records synced" do

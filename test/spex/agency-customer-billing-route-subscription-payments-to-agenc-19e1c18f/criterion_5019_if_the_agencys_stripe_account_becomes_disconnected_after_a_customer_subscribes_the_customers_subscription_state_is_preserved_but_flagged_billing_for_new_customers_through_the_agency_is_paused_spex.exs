@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DisconnectedAgencyPreservesSubscriptionsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If agency Stripe account disconnects, existing subscriptions preserved and new billing paused" do
     scenario "user visits checkout when agency Stripe is disconnected" do

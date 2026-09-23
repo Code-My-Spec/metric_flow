@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data fetched per income account; multiple selected accounts are each synced independently" do
     scenario "per-account sync shows record count in sync history" do

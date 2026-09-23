@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can configure domain-based auto-enrollment for their email domain" do
     scenario "owner sees auto-enrollment configuration section on account settings page" do

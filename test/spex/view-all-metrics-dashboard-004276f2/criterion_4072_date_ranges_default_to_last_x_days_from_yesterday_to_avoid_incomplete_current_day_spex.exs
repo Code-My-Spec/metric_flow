@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Date ranges default to last X days from yesterday to avoid incomplete current day" do
     scenario "dashboard end date defaults to yesterday, not today, on initial load" do

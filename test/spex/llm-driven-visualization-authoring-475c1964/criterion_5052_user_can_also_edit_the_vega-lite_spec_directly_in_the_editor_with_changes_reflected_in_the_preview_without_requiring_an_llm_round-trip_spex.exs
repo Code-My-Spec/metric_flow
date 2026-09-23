@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can edit Vega-Lite spec directly without an LLM round-trip" do
     scenario "the visualization editor allows direct spec editing with live preview" do

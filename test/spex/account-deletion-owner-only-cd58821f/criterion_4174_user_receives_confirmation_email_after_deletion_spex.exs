@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User receives confirmation email after deletion" do
     scenario "after successful account deletion a success message is shown" do

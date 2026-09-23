@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync uses insert (not upsert) — re-running without clearing existing data will cause unique constraint violations; KNOWN LIMITATION: should be migrated to upsert consistent with the GSC integration" do
     scenario "a duplicate Google Business Profile sync attempt shows a constraint violation error in sync history" do

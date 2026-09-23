@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlanCreatesStripeProductSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Creating a plan creates a Stripe Product and Price on the agency's account" do
     scenario "plan creation syncs to Stripe" do

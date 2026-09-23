@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Already-accepted invitations cannot be reused" do
     scenario "user tries to use an already-accepted invitation and sees an error" do

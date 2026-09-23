@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   @video_completion_metrics [
     "video_p25_watched_actions",

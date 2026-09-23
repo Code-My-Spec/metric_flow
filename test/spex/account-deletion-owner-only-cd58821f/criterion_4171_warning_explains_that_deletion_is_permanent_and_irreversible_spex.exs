@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.WarningExplainsThatDeletionIsPermanentAndIrreversibleSp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Warning explains that deletion is permanent and irreversible" do
     scenario "owner sees permanent deletion warning on settings page" do

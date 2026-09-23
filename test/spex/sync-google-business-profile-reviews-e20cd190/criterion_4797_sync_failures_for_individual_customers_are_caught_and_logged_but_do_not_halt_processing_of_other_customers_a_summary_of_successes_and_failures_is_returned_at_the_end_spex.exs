@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync failures for individual customers are caught; a summary of successes and failures is returned" do
     scenario "a success and a failure for different customers both appear in sync history" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Delete requires confirmation with account name typed in" do
     scenario "deletion is rejected when typed account name does not match" do

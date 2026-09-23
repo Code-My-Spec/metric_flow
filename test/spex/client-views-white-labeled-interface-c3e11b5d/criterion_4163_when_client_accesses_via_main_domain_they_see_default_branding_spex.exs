@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When client accesses via main domain they see default branding" do
     scenario "client visiting via main domain sees default MetricFlow branding" do

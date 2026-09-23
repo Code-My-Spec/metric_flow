@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync pulls new data from all active integrations for all accounts" do
     scenario "sync history page lists an entry for the connected Google integration" do

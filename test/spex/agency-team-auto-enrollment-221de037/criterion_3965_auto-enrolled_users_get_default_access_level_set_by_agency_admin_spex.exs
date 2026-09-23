@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Auto-enrolled users get default access level set by agency admin" do
     scenario "agency admin can configure a default access level for auto-enrolled users on the settings page" do

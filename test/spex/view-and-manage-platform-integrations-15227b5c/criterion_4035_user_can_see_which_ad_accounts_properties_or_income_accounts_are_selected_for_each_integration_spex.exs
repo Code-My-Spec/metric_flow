@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can see which ad accounts, properties, or income accounts are selected for each integration" do
     scenario "the integrations page shows selected accounts for each marketing integration" do

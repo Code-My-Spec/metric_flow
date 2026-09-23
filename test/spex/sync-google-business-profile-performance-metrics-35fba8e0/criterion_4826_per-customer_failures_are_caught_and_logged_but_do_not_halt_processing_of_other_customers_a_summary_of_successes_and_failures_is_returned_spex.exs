@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Per-customer failures are caught and logged but do not halt processing of other customers; a summary of successes and failures is returned" do
     scenario "a success and a failure for different customers both appear in sync history" do

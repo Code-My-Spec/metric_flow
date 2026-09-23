@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   @cost_per_action_type_count 13
 

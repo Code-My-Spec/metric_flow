@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Mapped metrics can be compared side-by-side across platforms (e.g., Google Ads clicks vs Facebook Ads clicks on the same chart)" do
     scenario "dashboard loads for a user with integrations" do

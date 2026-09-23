@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4088DeleteSavedReportsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can delete saved reports" do
     scenario "user creates a dashboard then deletes it" do

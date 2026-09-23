@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can reconnect a previously disconnected platform" do
     scenario "the integrations page shows a reconnect option for disconnected platforms" do

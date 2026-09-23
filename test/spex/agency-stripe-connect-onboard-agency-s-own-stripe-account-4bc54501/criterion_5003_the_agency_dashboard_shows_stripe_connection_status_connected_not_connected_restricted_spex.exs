@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyDashboardShowsStripeStatusSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency dashboard shows Stripe connection status" do
     scenario "not connected agency sees status on Stripe Connect page" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Users who register with matching email domain are automatically added to agency account" do
     scenario "new user with matching email domain is auto-enrolled in the agency account after registration" do

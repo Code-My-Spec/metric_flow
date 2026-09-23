@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnlyAccountOwnerRoleCanAccessDeleteAccountOptionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Only account owner role can access delete account option" do
     scenario "owner can see the delete account section on settings page" do

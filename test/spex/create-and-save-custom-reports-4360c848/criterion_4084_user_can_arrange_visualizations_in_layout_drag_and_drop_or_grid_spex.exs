@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4084ArrangeVisualizationsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can arrange visualizations in layout" do
     scenario "user can reorder visualizations with move up/down controls" do

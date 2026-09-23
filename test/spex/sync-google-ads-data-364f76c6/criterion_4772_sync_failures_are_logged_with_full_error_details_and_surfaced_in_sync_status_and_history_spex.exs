@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with full error details and surfaced in Sync Status and History" do
     scenario "a failed Google Ads sync shows in sync history with full error details" do

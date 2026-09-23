@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanCustomizeDashboardsRegardlessOfWhiteLabelingSp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can still customize their own dashboards regardless of white-labeling" do
     scenario "client can use dashboard filters even with agency white-labeling active" do

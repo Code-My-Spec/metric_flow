@@ -161,7 +161,7 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       assert {:ok, []} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
     end
 
-    test "defaults :name to \"Ad Account #{account_id}\" when the \"name\" field is absent" do
+    test "defaults :name to \"Ad Account \#{account_id}\" when the \"name\" field is absent" do
       body = valid_response_body([account_without_name()])
       plug = build_stub_plug(200, body)
 

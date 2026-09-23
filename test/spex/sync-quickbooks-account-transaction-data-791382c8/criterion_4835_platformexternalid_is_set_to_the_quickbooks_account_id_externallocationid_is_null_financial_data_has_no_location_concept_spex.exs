@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlatformExternalIdIsQuickbooksAccountIdExternalLocation
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "platformExternalId is set to the QuickBooks account ID; externalLocationId is null (no location concept)" do
     scenario "sync history shows account-level data with no location columns for QuickBooks" do

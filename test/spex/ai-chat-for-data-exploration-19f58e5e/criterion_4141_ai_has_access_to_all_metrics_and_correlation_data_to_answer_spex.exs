@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "AI has access to all metrics and correlation data to answer" do
     scenario "AI response references metric-related terms when asked about metrics" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminCancelCustomerSubscriptionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admins can cancel a specific customer's subscription" do
     scenario "agency admin clicks cancel on a customer subscription" do

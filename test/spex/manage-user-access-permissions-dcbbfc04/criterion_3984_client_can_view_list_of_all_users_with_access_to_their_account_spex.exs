@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can view list of all users with access to their account" do
     scenario "owner navigates to members page and sees the members list" do

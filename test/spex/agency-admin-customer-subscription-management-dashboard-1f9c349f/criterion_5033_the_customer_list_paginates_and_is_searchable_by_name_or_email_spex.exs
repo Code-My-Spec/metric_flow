@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "The customer list paginates and is searchable by name or email" do
     scenario "agency admin sees a search input on the subscriptions page for filtering customers" do

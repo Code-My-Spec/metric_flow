@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync uses retryWithBackoff with 3 retries and 2-second initial delay; Facebook API errors are extracted from error.response.error" do
     scenario "a Facebook Ads sync failure after retries shows the extracted Facebook API error in sync history" do

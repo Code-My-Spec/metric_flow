@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion4146LlmGeneratesVegaLiteSpecSpex do
   import ExUnit.CaptureLog
   import ReqCassette
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   @cassette_opts [
     cassette_dir: "test/cassettes/ai",

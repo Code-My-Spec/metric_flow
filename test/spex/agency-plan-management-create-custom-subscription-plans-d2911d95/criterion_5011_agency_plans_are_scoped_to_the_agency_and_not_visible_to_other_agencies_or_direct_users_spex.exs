@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyPlansScopedToAgencySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency plans are scoped to the agency" do
     scenario "direct user cannot see agency plans" do

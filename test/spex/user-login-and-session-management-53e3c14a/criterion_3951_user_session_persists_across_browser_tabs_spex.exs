@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User session persists across browser tabs" do
     scenario "logged-in user can access authenticated pages in a new tab" do

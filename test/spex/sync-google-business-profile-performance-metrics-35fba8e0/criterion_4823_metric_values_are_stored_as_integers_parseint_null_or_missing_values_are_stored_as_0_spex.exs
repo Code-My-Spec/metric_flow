@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metric values are stored as integers (parseInt); null or missing values are stored as 0" do
     scenario "a Google Business Profile sync with all metrics present shows success with the full record count" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can configure custom subdomain (e.g., reports.andersonthefish.com)" do
     scenario "agency settings page shows a custom subdomain input field" do

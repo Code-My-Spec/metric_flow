@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System syncs the following GA4 metrics as core daily values: activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers" do
     scenario "sync history shows a completed Google Analytics sync entry with records synced count" do

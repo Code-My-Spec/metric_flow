@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
 
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Team members automatically inherit access to all client accounts the agency manages" do
     scenario "auto-enrolled team member can see all client accounts the agency manages on the accounts page" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "After successful authentication, user is redirected back to platform selection" do
     scenario "after OAuth callback with a success code, the user lands on the platform selection page" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account owner or admin can remove users from the account" do
     scenario "owner removes a member from the account" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can log in with email and password" do
     scenario "registered user logs in with valid email and password" do

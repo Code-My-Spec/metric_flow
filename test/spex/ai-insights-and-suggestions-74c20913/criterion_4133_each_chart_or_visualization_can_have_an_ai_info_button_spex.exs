@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each chart or visualization can have an AI info button" do
     scenario "user on dashboard with visualizations sees AI info buttons" do

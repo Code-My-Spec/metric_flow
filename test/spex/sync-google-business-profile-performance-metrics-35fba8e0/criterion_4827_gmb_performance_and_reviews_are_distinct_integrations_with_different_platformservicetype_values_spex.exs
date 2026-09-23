@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "GBP Performance is distinct from GMB Reviews — same config, different APIs, platformServiceType mybusiness vs mybusiness-reviews" do
     scenario "Google Business Profile performance sync and GMB Reviews sync produce distinct entries in sync history" do

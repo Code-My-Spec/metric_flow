@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Derived metrics are defined by a formula referencing their component raw metrics" do
     scenario "dashboard loads and displays CPC as spend divided by clicks" do

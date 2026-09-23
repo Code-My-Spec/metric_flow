@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Accounts
   alias MetricFlow.Agencies

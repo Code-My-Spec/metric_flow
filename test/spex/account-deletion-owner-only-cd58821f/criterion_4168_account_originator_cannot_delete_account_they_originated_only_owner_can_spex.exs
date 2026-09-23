@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account originator cannot delete account they originated (only owner can)" do
     scenario "originator who transferred ownership cannot see delete account section" do

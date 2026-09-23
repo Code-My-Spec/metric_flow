@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Derived metrics display identically to raw metrics in dashboards and reports - the aggregation logic is transparent to the user" do
     scenario "dashboard loads for an authenticated user with integrations" do

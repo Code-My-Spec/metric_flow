@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can share chat insights with team members" do
     scenario "each AI message or insight in chat has a share action" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "GA4 runReport 10-metric limit: chunked fetches are merged by date before storage" do
     scenario "a GA4 sync with all 11 core metrics stored successfully appears as one entry per day" do

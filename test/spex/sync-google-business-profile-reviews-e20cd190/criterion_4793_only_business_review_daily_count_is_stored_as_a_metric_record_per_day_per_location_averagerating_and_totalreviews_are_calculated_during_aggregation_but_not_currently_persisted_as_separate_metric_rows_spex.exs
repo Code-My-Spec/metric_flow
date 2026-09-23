@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Only BUSINESS_REVIEW_DAILY_COUNT is stored as a Metric record — averageRating and totalReviews are not persisted as separate rows" do
     scenario "a sync completion shows record count reflecting only daily count metrics per location" do

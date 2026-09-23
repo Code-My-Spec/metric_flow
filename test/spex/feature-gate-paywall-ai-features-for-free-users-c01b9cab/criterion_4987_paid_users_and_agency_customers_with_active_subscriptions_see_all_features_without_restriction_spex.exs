@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Paid users and agency customers with active subscriptions see all features without restriction" do
     scenario "paid user navigates to the correlations page and sees the feature content without a paywall" do

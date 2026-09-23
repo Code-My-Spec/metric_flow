@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can filter sync history by status (all, success, failed)" do
     scenario "sync history page shows filter controls for All, Success, and Failed" do

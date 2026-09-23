@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOwnerCanInviteUsersViaEmailSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account owner or admin can invite users to their account via email" do
     scenario "owner invites an existing user to their account" do

@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.UserClicksInvitationLinkAndIsTakenToAcceptancePageSpex 
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User clicks invitation link and is taken to acceptance page" do
     scenario "logged-in user visits a valid invitation link and sees the acceptance page" do

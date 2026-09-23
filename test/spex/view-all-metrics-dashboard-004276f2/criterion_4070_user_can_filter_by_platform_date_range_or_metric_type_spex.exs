@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can filter by platform, date range, or metric type" do
     scenario "dashboard displays a platform filter control" do

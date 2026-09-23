@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Changes preview in real-time before saving" do
     scenario "changing primary color updates the preview before form is submitted" do

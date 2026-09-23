@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SuccessfulPaymentStoresAgencySubscriptionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On successful payment, subscription is recorded as belonging to the agency's Stripe account" do
     scenario "user lands on checkout success page after payment" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Mapped metrics can be aggregated across platforms in dashboards and reports using canonical names" do
     scenario "dashboard loads for a user with integrations" do

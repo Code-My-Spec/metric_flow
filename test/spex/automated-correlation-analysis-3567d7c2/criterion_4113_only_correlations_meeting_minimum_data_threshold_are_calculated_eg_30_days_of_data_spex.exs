@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationMinimumDataThresholdSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Only correlations meeting minimum data threshold are calculated eg 30 days of data" do
     scenario "user sees explanation of minimum data requirement" do

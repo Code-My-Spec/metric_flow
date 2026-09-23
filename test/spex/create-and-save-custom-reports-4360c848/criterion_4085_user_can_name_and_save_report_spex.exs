@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4085NameAndSaveReportSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can name and save report" do
     scenario "user names a dashboard, adds a visualization, and saves" do

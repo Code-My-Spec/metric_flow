@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admins can view a list of all customers subscribed under their agency" do
     scenario "agency admin navigates to the subscriptions page and sees the customer list" do

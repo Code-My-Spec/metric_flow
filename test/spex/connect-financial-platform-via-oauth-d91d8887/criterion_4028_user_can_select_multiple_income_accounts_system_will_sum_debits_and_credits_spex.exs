@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can select multiple income accounts, system will sum debits and credits" do
     scenario "the account selection page allows selecting multiple accounts" do

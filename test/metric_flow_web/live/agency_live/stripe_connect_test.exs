@@ -128,6 +128,5 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
 
     refute html =~ "data-role=\"connect-stripe\""
-    end
   end
 end

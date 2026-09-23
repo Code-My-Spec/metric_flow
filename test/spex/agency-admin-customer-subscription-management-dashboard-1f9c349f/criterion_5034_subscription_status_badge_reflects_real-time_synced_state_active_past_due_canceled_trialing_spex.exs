@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SubscriptionStatusBadgeReflectsStateSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Subscription status badge reflects real-time synced state" do
     scenario "agency admin sees status badges displayed for subscriptions on the page" do

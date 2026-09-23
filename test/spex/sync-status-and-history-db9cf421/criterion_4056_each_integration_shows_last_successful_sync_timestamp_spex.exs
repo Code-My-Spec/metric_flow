@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each integration shows last successful sync timestamp" do
     scenario "a completed sync entry displays a 'Completed at' timestamp to the user" do

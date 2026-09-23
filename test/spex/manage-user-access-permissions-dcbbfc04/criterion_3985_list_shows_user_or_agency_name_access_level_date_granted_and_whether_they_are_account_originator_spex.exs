@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "List shows user or agency name, access level, date granted, and whether they are account originator" do
     scenario "member row displays the user email as the user name" do

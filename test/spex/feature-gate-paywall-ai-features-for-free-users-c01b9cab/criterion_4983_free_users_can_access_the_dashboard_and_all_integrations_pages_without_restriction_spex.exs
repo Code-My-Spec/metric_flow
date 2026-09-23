@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FreeUsersAccessDashboardAndIntegrationsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Free users can access the dashboard and all integrations pages without restriction" do
     scenario "free user navigates to the dashboard without seeing a paywall" do

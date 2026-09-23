@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanSpecifyAccessLevelInInvitationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can specify access level in invitation: read-only, account manager, or admin" do
     scenario "invite form offers read_only, account_manager, and admin role options" do

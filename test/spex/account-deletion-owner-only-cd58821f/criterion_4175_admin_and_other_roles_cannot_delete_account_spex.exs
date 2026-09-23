@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Admin and other roles cannot delete account" do
     scenario "admin member does not see delete account section" do

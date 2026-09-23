@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All locations from all accounts are merged into a single flat list for display and selection",
        fail_on_error_logs: false do

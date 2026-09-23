@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Default date ranges exclude today to avoid showing zero for incomplete day" do
     scenario "sync history page does not include today's date in the default date range end" do

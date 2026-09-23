@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each metric is stored as a daily time-series value keyed to the property and client account" do
     scenario "sync history shows a Google Analytics entry with a specific data date" do

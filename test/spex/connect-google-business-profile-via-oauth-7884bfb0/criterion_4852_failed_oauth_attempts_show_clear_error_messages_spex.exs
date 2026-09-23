@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Failed OAuth attempts show clear error messages", fail_on_error_logs: false do
     scenario "OAuth callback with access_denied error shows not-connected state on the detail page" do

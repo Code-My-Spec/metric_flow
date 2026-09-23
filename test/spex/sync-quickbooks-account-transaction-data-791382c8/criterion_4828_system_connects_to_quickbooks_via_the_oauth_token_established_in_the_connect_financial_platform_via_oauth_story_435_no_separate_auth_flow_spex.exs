@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System connects to QuickBooks via OAuth token from Story 435 — no separate auth flow" do
     scenario "successful QuickBooks sync shows in sync history" do

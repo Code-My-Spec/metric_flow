@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.StripeWebhookHandlerProcessesSubscriptionEventsSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A Stripe webhook handler processes subscription lifecycle events" do
     scenario "webhook endpoint accepts a subscription.created event" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Subsequent daily syncs fetch data for yesterday only (avoids incomplete current-day data)" do
     scenario "the sync history date range section shows coverage through yesterday, not today" do

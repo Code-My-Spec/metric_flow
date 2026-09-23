@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.StripeWebhookEndpointExistsSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A Stripe webhook endpoint exists at a well-known URL" do
     scenario "POST to /billing/webhooks returns a valid response" do

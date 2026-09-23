@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4083AddVisualizationsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can add visualizations by selecting metrics and chart types" do
     scenario "user adds a visualization via the metric picker" do

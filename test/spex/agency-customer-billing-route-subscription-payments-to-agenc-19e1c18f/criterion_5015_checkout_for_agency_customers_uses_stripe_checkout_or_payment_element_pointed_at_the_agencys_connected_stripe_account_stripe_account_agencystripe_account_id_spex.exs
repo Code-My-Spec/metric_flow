@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCheckoutUsesConnectedStripeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Checkout for agency customers uses the agency's connected Stripe account" do
     scenario "agency customer initiates checkout" do

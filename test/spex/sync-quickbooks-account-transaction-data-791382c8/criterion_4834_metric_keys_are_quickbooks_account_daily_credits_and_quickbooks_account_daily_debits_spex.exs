@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metric keys are quickbooks_account_daily_credits and quickbooks_account_daily_debits" do
     scenario "sync with 2 metric keys shows a record count of 2 in sync history" do

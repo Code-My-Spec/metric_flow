@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can initiate OAuth flow for supported providers: Google, Facebook, QuickBooks" do
     scenario "authenticated user sees the provider connection page with all supported providers listed" do

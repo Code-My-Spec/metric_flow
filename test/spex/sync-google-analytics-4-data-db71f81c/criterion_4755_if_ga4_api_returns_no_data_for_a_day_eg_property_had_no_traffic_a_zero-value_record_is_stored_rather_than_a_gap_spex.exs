@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If GA4 API returns no data for a day (e.g., property had no traffic), a zero-value record is stored rather than a gap" do
     scenario "a GA4 sync that stored zero-value records for a no-traffic day appears in sync history" do

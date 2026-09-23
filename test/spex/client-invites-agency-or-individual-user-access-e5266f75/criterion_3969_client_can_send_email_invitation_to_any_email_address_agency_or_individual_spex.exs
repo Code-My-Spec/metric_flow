@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanSendEmailInvitationToAnyEmailAddressSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can send email invitation to any email address (agency or individual)" do
     scenario "owner sends invitation to an external email address not yet in the system" do

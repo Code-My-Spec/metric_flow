@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ASubscriptionPlanRecordExistsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A subscription plan record exists in the system with a name, monthly price, and Stripe Price ID" do
     scenario "checkout page displays the available subscription plan" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can modify selected accounts later without re-authenticating" do
     scenario "user can access account selection without OAuth re-authentication" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4841ReportsUseVegaLiteSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Reports use Vega-Lite for chart rendering" do
     scenario "the all-metrics dashboard renders charts with VegaLite hook" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminsSeeSubscriberSummarySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admins can see total active subscribers and MRR in a summary view" do
     scenario "agency admin views the subscriptions page and sees summary metrics" do

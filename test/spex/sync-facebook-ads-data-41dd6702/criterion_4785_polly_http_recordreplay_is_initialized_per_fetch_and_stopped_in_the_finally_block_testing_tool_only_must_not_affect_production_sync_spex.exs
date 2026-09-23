@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Polly HTTP record/replay is a testing tool only and must not affect production sync" do
     scenario "a production Facebook Ads sync completion shows clean results with no testing tool references" do

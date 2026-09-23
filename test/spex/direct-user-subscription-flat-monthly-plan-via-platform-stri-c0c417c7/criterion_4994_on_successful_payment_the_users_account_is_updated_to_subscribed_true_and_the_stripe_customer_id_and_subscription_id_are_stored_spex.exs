@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnSuccessfulPaymentAccountUpdatedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On successful payment, the user's account is updated to subscribed" do
     scenario "user returns from Stripe checkout success URL and sees active subscription" do

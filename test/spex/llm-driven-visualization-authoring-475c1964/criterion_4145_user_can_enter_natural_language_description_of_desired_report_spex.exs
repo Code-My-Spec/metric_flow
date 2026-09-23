@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can enter natural language description of desired report" do
     scenario "report generator page has a prompt textarea" do

@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency customer subscription status is synced via webhooks" do
     scenario "subscription.updated webhook arrives for an agency customer" do

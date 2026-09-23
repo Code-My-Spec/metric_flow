@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On first sync after connection, system backfills all available historical data from platform" do
     scenario "sync history page shows an initial sync entry labeled as a backfill" do

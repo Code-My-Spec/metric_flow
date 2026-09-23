@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "OAuth refresh token from the stored Google token set is used per request — no separate Google Ads OAuth flow" do
     scenario "a successful Google Ads sync uses the existing Google OAuth without requiring a separate flow" do

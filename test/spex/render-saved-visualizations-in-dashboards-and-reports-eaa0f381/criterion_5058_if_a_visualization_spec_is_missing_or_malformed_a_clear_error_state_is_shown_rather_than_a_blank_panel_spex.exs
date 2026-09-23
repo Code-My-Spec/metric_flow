@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Malformed or missing visualization spec shows a clear error state" do
     scenario "submitting a non-object JSON spec shows an error" do

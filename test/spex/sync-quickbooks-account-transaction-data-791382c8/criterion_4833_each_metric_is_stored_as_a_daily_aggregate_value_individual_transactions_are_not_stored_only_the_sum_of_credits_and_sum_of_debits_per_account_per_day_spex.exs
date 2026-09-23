@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each metric is stored as a daily aggregate value — sums of credits and debits per account per day" do
     scenario "sync shows daily aggregate count rather than individual transaction count in sync history" do

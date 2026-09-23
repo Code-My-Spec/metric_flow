@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccessLevelsFollowHierarchySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Access levels follow hierarchy: only owners can add owners, only admins can add admins, etc." do
     scenario "owner can invite users at any role level" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can initiate OAuth flow for QuickBooks" do
     scenario "the connect page displays QuickBooks as an available platform" do

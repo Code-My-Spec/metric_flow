@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admin can view and manage all auto-enrolled team members" do
     scenario "auto-enrolled team members appear in the members list on the account members page" do

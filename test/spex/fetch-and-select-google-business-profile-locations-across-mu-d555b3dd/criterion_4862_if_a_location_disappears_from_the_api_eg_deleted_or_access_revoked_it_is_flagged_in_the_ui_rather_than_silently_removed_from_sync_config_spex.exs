@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If a location disappears from the API (e.g. deleted or access revoked), it is flagged in the UI rather than silently removed from sync config",
        fail_on_error_logs: false do

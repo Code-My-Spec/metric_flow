@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency logo appears in navigation header" do
     scenario "client sees agency logo in the navigation header when white-labeling is active" do

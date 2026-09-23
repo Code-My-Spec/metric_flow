@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User sees confirmation that integration is active and ready to sync" do
     scenario "OAuth callback page shows active and ready to sync confirmation" do

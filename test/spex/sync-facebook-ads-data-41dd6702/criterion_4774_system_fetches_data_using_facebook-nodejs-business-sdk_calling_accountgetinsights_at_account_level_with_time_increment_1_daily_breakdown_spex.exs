@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches data using facebook-nodejs-business-sdk, calling account.getInsights() at account level with time_increment: 1 (daily breakdown)" do
     scenario "the sync history page displays Facebook Ads sync results with daily data, indicating account-level insights were fetched" do

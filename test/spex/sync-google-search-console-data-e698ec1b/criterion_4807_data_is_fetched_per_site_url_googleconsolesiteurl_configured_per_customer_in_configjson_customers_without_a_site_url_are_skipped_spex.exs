@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerSiteUrlCustomersWithoutSiteUrlAreSkippe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data is fetched per site URL (googleConsoleSiteUrl) configured per customer; customers without a site URL are skipped" do
     scenario "sync history shows a Google Search Console entry for a customer with a configured site URL" do

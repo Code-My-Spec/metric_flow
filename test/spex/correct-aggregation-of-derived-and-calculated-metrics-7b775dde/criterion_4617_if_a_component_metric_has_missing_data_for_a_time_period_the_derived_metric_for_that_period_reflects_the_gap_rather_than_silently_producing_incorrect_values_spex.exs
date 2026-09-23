@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If a component metric has missing data for a time period, the derived metric reflects the gap rather than silently producing incorrect values" do
     scenario "dashboard loads for an authenticated user" do

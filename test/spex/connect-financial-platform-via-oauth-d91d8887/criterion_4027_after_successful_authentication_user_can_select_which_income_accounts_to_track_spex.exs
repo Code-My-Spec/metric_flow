@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "After successful authentication, user can select which income accounts to track" do
     scenario "the account selection page displays available income accounts" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data is fetched per location ID listed in customerConfig.includedLocations, scoped under the customer's googleBusinessAccountId" do
     scenario "a sync completion for a specific Google Business location shows in sync history with records synced" do

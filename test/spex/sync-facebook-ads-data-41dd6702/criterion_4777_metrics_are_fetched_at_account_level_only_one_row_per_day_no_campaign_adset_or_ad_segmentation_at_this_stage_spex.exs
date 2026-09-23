@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.MetricsAreFetchedAtAccountLevelOnlyOneRowPerDayNoCampai
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Metrics are fetched at account level only — one row per day; no campaign, adset, or ad segmentation at this stage" do
     scenario "Facebook Ads sync history shows account-level data without campaign, adset, or ad segmentation columns" do

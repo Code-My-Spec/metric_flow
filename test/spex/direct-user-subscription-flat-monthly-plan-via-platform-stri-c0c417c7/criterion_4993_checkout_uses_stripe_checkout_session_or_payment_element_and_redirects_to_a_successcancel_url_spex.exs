@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CheckoutUsesStripeCheckoutSessionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Checkout uses Stripe Checkout Session and redirects to a success/cancel URL" do
     scenario "user clicks subscribe and is redirected to Stripe checkout" do

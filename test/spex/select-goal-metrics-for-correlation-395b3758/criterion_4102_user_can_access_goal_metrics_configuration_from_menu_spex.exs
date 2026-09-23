@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can access Goal Metrics configuration from menu" do
     scenario "authenticated user navigates to the goal metrics page" do

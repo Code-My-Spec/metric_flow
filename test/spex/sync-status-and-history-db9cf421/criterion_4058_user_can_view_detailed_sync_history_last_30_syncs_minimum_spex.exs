@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can view detailed sync history (last 30 syncs minimum)" do
     scenario "sync history page shows at least 30 entries when 30 syncs have occurred" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User is presented with the full location list and can select which locations to include in syncing (includedLocations config)",
        fail_on_error_logs: false do

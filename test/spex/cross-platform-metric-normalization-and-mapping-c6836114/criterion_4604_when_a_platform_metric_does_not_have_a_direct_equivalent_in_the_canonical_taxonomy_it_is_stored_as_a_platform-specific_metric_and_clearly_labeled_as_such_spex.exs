@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When a platform metric has no canonical equivalent it is stored and labeled as platform-specific" do
     scenario "dashboard loads for user with integrations" do

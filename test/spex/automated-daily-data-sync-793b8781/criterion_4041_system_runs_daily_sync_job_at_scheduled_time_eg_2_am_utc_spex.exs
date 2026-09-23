@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemRunsDailySyncJobAtScheduledTimeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System runs daily sync job at scheduled time (2 AM UTC)" do
     scenario "sync history page displays the automated sync schedule" do

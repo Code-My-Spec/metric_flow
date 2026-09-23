@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data is fetched per Google Ads customer ID (googleAdsPropertyId) configured for each account" do
     scenario "a per-account Google Ads sync shows the record count for that account" do

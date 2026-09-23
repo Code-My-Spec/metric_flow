@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "New platform integrations can define their metric mappings without requiring changes to existing canonical definitions" do
     scenario "authenticated user can access the integrations page after a new integration is connected" do

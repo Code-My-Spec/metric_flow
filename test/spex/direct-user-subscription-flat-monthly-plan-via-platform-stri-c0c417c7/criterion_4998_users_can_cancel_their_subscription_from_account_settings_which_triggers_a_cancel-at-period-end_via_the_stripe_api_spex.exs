@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Users can cancel their subscription from account settings" do
     scenario "subscribed user sees cancel option in account settings" do

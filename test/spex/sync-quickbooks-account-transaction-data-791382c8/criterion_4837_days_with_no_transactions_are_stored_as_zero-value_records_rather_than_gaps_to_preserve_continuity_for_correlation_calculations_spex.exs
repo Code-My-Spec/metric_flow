@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "QuickBooks days with no transactions are stored as zero-value records, not gaps" do
     scenario "sync with zero-value days shows full record count with no failures" do

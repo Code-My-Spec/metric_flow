@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UnconnectedAgencyCustomersUseDefaultBillingSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Unconnected agency customers are prompted for default billing" do
     scenario "customer under unconnected agency sees platform billing" do

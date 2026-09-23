@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User who creates the account becomes the originator and default owner" do
     scenario "registration confirmation message acknowledges the account was created for the user" do

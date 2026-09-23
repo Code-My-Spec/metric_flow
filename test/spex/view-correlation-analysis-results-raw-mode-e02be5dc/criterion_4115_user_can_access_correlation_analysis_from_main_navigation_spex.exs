@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can access correlation analysis from main navigation" do
     scenario "authenticated user sees a Correlations link in the main navigation" do

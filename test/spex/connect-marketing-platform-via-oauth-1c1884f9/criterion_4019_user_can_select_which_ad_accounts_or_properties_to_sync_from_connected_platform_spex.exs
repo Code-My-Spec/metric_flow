@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can select which ad accounts or properties to sync from connected platform", fail_on_error_logs: false do
     scenario "after connecting a provider the user sees an account selection UI" do

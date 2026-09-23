@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can set custom color scheme (primary, secondary, accent colors)" do
     scenario "agency owner sees color scheme inputs in the White-Label Branding section" do

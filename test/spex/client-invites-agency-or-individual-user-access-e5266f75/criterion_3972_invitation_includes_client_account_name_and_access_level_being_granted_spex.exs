@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Invitation includes client account name and access level being granted" do
     scenario "invitation email subject contains the account name" do

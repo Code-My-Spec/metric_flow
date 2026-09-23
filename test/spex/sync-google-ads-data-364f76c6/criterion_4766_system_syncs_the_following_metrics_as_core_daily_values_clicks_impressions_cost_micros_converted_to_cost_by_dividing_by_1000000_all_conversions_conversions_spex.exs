@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemSyncsGoogleAdsCoreDailyMetricsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System syncs core daily Google Ads metrics: clicks, impressions, cost (from cost_micros), all_conversions, conversions" do
     scenario "sync history shows a completed Google Ads sync entry with 5 records synced" do

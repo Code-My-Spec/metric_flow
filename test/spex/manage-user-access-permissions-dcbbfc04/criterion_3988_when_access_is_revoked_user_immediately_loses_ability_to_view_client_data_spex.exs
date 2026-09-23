@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When access is revoked, user immediately loses ability to view client data" do
     scenario "removed member can no longer access the account members page" do

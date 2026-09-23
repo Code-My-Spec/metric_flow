@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Google Ads API errors extracted from error.response.errors[0] and surfaced with customerId, dateRange, errorCode" do
     scenario "a failed Google Ads sync shows the extracted error with full context details" do

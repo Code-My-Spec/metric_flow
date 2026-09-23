@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AbandonedOnboardingCanRetrySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Abandoned onboarding allows retry" do
     scenario "agency that abandoned onboarding sees retry option" do

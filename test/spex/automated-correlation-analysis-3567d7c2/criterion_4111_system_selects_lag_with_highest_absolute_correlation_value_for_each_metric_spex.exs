@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System selects lag with highest absolute correlation value for each metric" do
     scenario "correlation entries display the automatically selected optimal lag and coefficient" do

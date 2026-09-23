@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "OAuth flow authenticates user and grants access to financial data",
        fail_on_error_logs: false do

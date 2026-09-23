@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each platform integration defines mappings from its native metric names to canonical metrics" do
     scenario "dashboard loads successfully for user with integrations from multiple platforms" do

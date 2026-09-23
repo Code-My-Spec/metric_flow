@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Upon acceptance, user account is granted specified access level to client account" do
     scenario "invited user accepts the invitation and gains the granted access level" do

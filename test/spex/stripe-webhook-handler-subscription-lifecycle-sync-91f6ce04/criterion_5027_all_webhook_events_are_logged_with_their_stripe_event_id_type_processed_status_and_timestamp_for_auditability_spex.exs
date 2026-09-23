@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.WebhookEventsAreLoggedSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All webhook events are logged for auditability" do
     scenario "processed event returns response with event ID acknowledgment" do

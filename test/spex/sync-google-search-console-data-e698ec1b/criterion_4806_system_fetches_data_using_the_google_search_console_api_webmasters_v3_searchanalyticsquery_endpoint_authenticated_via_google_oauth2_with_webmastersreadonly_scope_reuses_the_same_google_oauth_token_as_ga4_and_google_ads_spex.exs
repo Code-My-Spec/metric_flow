@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleSearchConsoleApiSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches data using the Google Search Console API (webmasters v3, searchanalytics.query) authenticated via Google OAuth2 with webmasters.readonly scope — reuses the same Google OAuth token as GA4 and Google Ads" do
     scenario "the sync history page shows Google Search Console as a provider in sync history entries" do

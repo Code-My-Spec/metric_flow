@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can update location selection at any time without re-authenticating", fail_on_error_logs: false do
     scenario "user with existing google_business integration can access location selection" do

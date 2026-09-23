@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each integration shows platform name, connected date, and sync status" do
     scenario "the integrations page renders a platform name for each integration entry" do

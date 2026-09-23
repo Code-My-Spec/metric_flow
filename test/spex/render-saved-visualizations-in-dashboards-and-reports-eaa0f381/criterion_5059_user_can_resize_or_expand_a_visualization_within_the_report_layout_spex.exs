@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5059ResizeOrExpandVisualizationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can resize or expand a visualization within the report layout" do
     scenario "chart preview container is full-width and responsive" do

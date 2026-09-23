@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User sees confirmation that QuickBooks is connected and ready to sync" do
     scenario "successful OAuth callback displays a connection confirmation" do

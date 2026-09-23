@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches reviews via Google My Business API v4 (direct HTTP, Google OAuth token)" do
     scenario "sync history shows a successful Google Business Reviews sync entry" do

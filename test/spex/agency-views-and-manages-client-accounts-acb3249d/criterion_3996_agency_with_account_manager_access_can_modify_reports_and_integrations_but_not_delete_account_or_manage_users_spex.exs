@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   alias MetricFlowTest.AgenciesFixtures
   alias MetricFlowTest.UsersFixtures

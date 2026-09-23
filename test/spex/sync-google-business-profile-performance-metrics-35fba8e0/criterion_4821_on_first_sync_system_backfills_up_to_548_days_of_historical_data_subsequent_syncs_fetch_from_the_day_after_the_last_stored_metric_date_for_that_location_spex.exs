@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On first sync, system backfills up to 548 days of historical data; subsequent syncs fetch from the day after the last stored metric date for that location" do
     scenario "first Google Business sync shows a large record count reflecting 548-day backfill" do

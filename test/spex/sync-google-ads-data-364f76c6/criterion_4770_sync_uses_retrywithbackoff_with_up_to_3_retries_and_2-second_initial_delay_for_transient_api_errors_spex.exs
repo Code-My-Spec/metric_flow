@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync uses retryWithBackoff with up to 3 retries and 2-second initial delay for transient API errors" do
     scenario "failed Google Ads sync after all retries exhausted shows a specific API error in history" do

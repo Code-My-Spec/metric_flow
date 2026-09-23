@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account type is specified during registration (Client or Agency)" do
     scenario "registration form shows account type options" do

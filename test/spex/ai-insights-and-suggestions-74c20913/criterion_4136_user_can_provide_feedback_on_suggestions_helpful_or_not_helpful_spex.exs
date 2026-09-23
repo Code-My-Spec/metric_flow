@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can provide feedback on suggestions (helpful or not helpful)" do
     scenario "each AI recommendation has helpful and not-helpful feedback buttons" do

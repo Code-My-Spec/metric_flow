@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Pagination is handled — system follows nextPageToken until all locations are retrieved for each account",
        fail_on_error_logs: false do

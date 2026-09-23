@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Duplicate email addresses are rejected with clear error message" do
     scenario "second registration with the same email is rejected" do

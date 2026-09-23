@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All user access grants to this account are revoked" do
     scenario "after account deletion, a member no longer sees the account in their accounts list" do

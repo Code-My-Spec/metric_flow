@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can view list of all connected integrations (marketing and financial)" do
     scenario "authenticated user can navigate to the integrations index page" do

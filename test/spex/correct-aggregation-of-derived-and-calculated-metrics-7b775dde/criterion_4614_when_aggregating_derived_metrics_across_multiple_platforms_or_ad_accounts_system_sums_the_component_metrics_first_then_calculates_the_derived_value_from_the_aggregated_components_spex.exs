@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When aggregating derived metrics across multiple platforms or ad accounts, system sums component metrics first then calculates derived value" do
     scenario "dashboard loads for a user who has integrations with multiple platforms" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Sync history shows timestamp, status, records synced, and any error messages" do
     scenario "a successful sync entry shows the completion timestamp" do

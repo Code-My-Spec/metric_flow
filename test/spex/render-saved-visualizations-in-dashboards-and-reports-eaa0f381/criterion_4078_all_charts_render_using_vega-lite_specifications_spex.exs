@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All charts render using Vega-Lite specifications" do
     scenario "selecting a metric renders a chart with a vega-lite data-spec attribute" do

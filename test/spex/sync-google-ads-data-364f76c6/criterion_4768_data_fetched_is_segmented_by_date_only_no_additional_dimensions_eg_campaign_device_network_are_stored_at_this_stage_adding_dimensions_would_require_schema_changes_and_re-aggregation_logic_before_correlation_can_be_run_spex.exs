@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.GoogleAdsDataSegmentedByDateOnlyNoDimensionsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Google Ads data is segmented by date only — no additional dimensions (campaign, device, network) are stored at this stage" do
     scenario "sync history entry for Google Ads does not show Campaign, Device, or Network text" do

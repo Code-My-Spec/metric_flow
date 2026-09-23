@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FeatureGateEnforcedServerSideSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Feature access is enforced server-side: gating cannot be bypassed by manipulating client state" do
     scenario "free user navigating to correlations does not receive correlation data in the rendered page" do

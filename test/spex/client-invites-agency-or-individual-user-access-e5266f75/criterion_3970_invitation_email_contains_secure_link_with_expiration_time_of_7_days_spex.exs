@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.InvitationEmailContainsSecureLinkWithExpirationTimeOf7D
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Invitation email contains secure link with expiration time of 7 days" do
     scenario "email sent after owner submits invitation form contains a secure acceptance link" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "cost_micros is always divided by 1,000,000 before storage so all cost values are in standard currency units" do
     scenario "a Google Ads sync with cost metrics shows success and records synced in history" do

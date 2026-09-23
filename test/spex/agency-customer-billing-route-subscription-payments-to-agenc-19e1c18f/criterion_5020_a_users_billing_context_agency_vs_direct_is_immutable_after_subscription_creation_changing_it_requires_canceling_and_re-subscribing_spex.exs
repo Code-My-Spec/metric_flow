@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.BillingContextImmutableAfterSubscriptionSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A user's billing context is immutable after subscription creation" do
     scenario "user views checkout page which reflects their billing context" do

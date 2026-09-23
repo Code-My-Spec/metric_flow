@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Clicking AI button shows context-specific insights or opens chat about that metric" do
     scenario "clicking the AI info button on a visualization opens an insights panel or chat" do

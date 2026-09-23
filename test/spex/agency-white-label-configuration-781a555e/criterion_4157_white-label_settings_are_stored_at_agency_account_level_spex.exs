@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "White-label settings are stored at agency account level" do
     scenario "saved white-label settings persist after remounting the LiveView (page refresh)" do

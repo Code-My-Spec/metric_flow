@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4086SavedReportsInListSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Saved reports appear in user report list" do
     scenario "after saving a dashboard, it appears on the dashboards index" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FreeUsersSeePaswallOnAiFeaturesSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Free users who navigate to correlations, intelligence, or visualizations see a paywall/upgrade modal instead of the feature content" do
     scenario "free user navigates to correlations and sees an upgrade prompt instead of correlation data" do

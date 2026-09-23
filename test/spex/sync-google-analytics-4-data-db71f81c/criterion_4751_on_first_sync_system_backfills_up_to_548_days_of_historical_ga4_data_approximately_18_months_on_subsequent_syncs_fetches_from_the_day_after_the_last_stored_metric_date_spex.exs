@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On first sync, system backfills up to 548 days of historical GA4 data (approximately 18 months); on subsequent syncs, fetches from the day after the last stored metric date" do
     scenario "the sync history page describes historical backfill behavior in the schedule section" do

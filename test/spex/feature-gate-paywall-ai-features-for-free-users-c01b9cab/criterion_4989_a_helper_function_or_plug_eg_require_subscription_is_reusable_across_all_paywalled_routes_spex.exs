@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.RequireSubscriptionReusableSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A helper function or plug (e.g. require_subscription) is reusable across all paywalled routes" do
     scenario "free user navigating to the intelligence page also sees the same upgrade prompt as correlations" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4842ReportEditorIncludesVegaLiteEditorSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Report editor includes the Vega-Lite editor" do
     scenario "dashboard editor has chart type selector and metric picker" do

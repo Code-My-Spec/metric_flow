@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can modify selected accounts without re-authenticating" do
     scenario "the integrations page offers an edit action for an existing integration" do

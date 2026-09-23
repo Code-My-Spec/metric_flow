@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OnlyCurrentAccountOwnerCanInitiateOwnershipTransferSpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Only current account owner can initiate ownership transfer" do
     scenario "owner sees the transfer ownership section on the settings page" do

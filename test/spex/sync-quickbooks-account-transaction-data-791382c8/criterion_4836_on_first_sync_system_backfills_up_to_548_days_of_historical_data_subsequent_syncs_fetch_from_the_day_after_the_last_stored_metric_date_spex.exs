@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.QuickbooksFirstSyncBackfills548DaysSubsequentSyncsFetch
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "QuickBooks first sync backfills up to 548 days; subsequent syncs fetch from day after last stored metric date" do
     scenario "first sync completion event with large record count appears as initial backfill in history" do

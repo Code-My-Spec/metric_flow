@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Admin users see Sync Now button in integration settings" do
     scenario "connected integration shows a Sync Now button" do

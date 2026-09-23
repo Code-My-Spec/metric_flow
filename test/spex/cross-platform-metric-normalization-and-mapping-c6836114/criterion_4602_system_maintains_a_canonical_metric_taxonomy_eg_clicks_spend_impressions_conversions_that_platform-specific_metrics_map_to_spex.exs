@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System maintains a canonical metric taxonomy that platform-specific metrics map to" do
     scenario "dashboard page loads for an authenticated user" do

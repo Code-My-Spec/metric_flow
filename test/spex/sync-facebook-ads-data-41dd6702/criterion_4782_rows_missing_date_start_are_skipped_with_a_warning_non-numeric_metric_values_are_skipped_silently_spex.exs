@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Rows missing date_start are skipped with a warning; non-numeric metric values are skipped silently" do
     scenario "a Facebook Ads sync that encounters rows with missing date_start still completes with a partial record count" do

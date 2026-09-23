@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "AI analyzes correlation data and provides actionable recommendations" do
     scenario "user sees an AI recommendations section when AI suggestions are enabled in Smart mode" do

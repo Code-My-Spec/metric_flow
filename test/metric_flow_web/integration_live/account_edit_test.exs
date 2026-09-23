@@ -112,7 +112,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
   # handle_event/3 ("save_account_selection")
   # ---------------------------------------------------------------------------
 
-  describe ~s(handle_event/3 ("save_account_selection")) do
+  describe ~s|handle_event/3 ("save_account_selection")| do
     test "flashes success message and redirects to integrations", %{conn: conn} do
       user = user_fixture()
       integration_fixture(user, %{provider: :google_analytics})

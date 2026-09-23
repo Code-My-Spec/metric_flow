@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can create new report from template or blank canvas" do
     scenario "new dashboard page shows template chooser and blank canvas option" do

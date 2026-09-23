@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can upload custom logo (supports PNG, JPG, SVG)" do
     scenario "agency owner sees a Logo URL field in the White-Label Branding section" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System handles GA4 API quota limits with exponential backoff and retry (default quota: 10 requests/second/project)" do
     scenario "a GA4 sync failure due to quota limits is surfaced in sync history" do

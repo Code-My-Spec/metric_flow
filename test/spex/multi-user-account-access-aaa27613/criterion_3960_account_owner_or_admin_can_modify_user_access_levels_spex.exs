@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanModifyUserAccessLevelsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account owner or admin can modify user access levels" do
     scenario "owner changes a member's role from read-only to admin" do

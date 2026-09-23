@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "When client accesses system via agency custom subdomain they see agency branding" do
     scenario "authenticated client visiting via agency subdomain sees agency branding" do

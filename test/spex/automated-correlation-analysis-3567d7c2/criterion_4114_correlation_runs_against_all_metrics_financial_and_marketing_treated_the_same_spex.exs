@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Correlation runs against ALL metrics financial and marketing treated the same" do
     scenario "correlation results include both financial and marketing metrics" do

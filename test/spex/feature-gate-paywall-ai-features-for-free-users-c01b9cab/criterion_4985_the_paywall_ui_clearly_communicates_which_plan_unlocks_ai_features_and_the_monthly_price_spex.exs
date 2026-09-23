@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PaywallShowsPlanAndPriceSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "The paywall UI clearly communicates which plan unlocks AI features and the monthly price" do
     scenario "the paywall on the correlations page shows the plan name that unlocks AI features and its monthly price" do

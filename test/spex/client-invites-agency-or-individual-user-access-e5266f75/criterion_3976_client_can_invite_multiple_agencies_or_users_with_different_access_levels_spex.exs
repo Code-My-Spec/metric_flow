@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can invite multiple agencies or users with different access levels" do
     scenario "owner can send a second invitation to a different email after the first" do

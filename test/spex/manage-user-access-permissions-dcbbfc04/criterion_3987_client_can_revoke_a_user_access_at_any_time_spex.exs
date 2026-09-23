@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ClientCanRevokeAUserAccessAtAnyTimeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Client can revoke a user access at any time" do
     scenario "owner removes a member and sees them disappear from the list" do

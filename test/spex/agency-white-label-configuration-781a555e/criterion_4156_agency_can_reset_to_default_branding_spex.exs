@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can reset to default branding" do
     scenario "agency owner with custom branding sees a Reset to Default button" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4089MetricsFromAnyPlatformSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Reports can include metrics from any connected platform" do
     scenario "metric picker shows metrics from marketing and financial platforms" do

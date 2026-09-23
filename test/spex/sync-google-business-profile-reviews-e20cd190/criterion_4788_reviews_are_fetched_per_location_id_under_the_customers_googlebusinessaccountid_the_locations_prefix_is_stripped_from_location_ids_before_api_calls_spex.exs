@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Reviews fetched per location ID under googleBusinessAccountId; locations/ prefix stripped" do
     scenario "a sync completion for a specific location shows in sync history with records synced" do

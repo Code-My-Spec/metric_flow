@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "If not logged in, user is prompted to log in or register" do
     scenario "anonymous user visiting an invitation link sees log in and register options" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PlatformStoresStripeAccountIdSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "On completion, platform stores stripe_account_id and marks connected" do
     scenario "after Stripe onboarding completion, status shows connected" do

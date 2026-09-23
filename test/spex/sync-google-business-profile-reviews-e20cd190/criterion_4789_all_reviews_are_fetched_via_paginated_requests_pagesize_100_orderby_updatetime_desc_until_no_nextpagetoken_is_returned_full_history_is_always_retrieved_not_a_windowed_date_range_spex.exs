@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "All reviews are fetched via paginated requests (pageSize: 100, orderBy: updateTime desc) — full history always retrieved, not a windowed date range" do
     scenario "a sync completion shows a large record count reflecting full history retrieval" do

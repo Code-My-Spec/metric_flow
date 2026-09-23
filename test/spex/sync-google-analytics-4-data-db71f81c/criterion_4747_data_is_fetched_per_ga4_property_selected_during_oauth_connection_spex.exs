@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data is fetched per GA4 property selected during OAuth connection" do
     scenario "sync history shows a successful sync entry for a specific Google Analytics property" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyCanDisconnectStripeSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency can disconnect their Stripe account" do
     scenario "connected agency sees disconnect option" do

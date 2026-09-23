@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "In Smart/AI mode: analysis shows top 5 positive and top 5 negative correlations" do
     scenario "user switches to Smart mode and sees top positive and negative correlations" do

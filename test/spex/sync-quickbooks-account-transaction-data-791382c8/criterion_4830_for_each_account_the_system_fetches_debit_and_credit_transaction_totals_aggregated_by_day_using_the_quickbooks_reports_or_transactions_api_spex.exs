@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches debit and credit transaction totals aggregated by day via QuickBooks API" do
     scenario "sync completion with daily aggregates shows record count in sync history" do

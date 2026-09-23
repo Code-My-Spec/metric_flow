@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Chat context includes relevant data from current view" do
     scenario "chat page displays a context indicator when opened directly" do

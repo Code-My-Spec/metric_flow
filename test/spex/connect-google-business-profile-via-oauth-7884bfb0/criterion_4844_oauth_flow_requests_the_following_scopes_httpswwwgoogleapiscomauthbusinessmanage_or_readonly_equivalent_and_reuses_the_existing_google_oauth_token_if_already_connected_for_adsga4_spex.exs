@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
   use MetricFlowTest.ConnCase, async: false
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "OAuth flow requests business.manage scope and reuses existing Google OAuth token if already connected" do
     scenario "Google Business connect detail page renders an OAuth entry point for new users" do

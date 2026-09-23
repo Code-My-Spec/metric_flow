@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5056SavedVizRenderedInlineDashboardSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can view a saved Vega-Lite visualization rendered inline within a dashboard" do
     scenario "saved visualization appears on the dashboard with VegaLite rendering" do

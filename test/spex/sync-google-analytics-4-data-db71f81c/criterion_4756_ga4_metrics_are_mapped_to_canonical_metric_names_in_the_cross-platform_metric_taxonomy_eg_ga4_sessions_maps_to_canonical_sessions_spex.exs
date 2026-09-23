@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "GA4 metrics are mapped to canonical metric names in the cross-platform metric taxonomy (e.g., GA4 'sessions' maps to canonical 'sessions')" do
     scenario "a successful GA4 sync appears in sync history, indicating metric mapping completed successfully" do

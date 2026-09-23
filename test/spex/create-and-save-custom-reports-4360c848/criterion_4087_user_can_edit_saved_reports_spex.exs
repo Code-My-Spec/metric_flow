@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4087EditSavedReportsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can edit saved reports" do
     scenario "user creates a dashboard then edits it" do

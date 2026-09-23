@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Authentication uses a dedicated Facebook OAuth flow separate from Google OAuth, requiring FACEBOOK_APP_ID, FACEBOOK_APP_SECRET, and ads_read scope" do
     scenario "Facebook Ads appears as a separate platform on the connect page, distinct from Google" do

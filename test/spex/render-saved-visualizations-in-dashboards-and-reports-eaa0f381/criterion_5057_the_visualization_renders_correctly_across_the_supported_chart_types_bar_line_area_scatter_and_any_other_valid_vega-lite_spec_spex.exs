@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Visualization renders correctly across supported chart types" do
     scenario "editing the vega-lite spec directly updates the chart preview" do

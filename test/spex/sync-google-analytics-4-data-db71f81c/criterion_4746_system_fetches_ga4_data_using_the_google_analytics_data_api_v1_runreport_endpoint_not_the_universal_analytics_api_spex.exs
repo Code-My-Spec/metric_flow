@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches GA4 data using the Google Analytics Data API v1 (runReport endpoint), not the Universal Analytics API" do
     scenario "the sync history page displays Google Analytics sync results, indicating the GA4 API was used" do

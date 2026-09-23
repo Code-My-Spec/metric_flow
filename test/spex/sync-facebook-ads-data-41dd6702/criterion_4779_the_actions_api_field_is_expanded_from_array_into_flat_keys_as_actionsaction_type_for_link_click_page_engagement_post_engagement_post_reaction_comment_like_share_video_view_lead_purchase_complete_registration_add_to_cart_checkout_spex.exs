@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   @action_types [
     "link_click",

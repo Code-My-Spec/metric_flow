@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Integration is saved only after successful OAuth completion" do
     scenario "integrations page shows no platforms connected before OAuth completion" do

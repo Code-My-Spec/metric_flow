@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.UsersCanViewCurrentPlanAndBillingStatusSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Users can view their current plan and billing status in account settings" do
     scenario "free user sees their plan status as Free on account settings" do

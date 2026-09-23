@@ -2,7 +2,7 @@ defmodule MetricFlowSpex.WebhookVerifiesStripeSignatureSpex do
   use SexySpex
   use MetricFlowTest.ConnCase
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "The handler verifies the Stripe-Signature header" do
     scenario "request without Stripe-Signature header is rejected" do

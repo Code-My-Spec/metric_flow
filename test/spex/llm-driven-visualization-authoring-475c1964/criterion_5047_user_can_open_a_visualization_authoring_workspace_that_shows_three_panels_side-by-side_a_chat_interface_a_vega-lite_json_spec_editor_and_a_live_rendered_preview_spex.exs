@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion5047AuthoringWorkspaceThreePanelsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can open a visualization authoring workspace with prompt, spec editor, and preview" do
     scenario "report generator page has prompt input and preview areas" do

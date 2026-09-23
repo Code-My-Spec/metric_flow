@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Account owner can view all users in their account with their access levels" do
     scenario "owner sees themselves listed as owner on the members page" do

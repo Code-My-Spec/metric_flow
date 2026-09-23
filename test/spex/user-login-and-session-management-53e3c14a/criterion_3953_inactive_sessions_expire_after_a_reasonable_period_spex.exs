@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Inactive sessions expire after a reasonable period" do
     scenario "user with no session is redirected to login when accessing protected pages" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Each location row shows account name, location title, store code if present, and address", fail_on_error_logs: false do
     scenario "location rows display account name for disambiguation" do

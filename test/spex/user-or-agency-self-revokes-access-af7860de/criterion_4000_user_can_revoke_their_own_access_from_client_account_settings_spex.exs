@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "User can revoke their own access from client account settings" do
     scenario "a non-owner member sees a revoke access button on the account settings page" do

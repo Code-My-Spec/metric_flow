@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Financial data (debits and credits) is stored as metrics alongside marketing metrics" do
     scenario "sync history page lists both financial and marketing provider sync entries together" do

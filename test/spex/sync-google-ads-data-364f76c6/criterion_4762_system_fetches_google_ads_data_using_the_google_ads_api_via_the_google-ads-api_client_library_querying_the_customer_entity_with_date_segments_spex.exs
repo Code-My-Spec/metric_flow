@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System fetches Google Ads data using the Google Ads API client library, querying the customer entity with date segments" do
     scenario "a completed Google Ads sync appears in sync history" do

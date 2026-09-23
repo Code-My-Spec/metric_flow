@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Charts are interactive with hover and click capabilities" do
     scenario "rendered chart has interactive Vega-Lite configuration" do

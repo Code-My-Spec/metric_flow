@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Agency admin can disable auto-enrollment if desired" do
     scenario "agency admin sees a disable button or toggle when auto-enrollment is active" do

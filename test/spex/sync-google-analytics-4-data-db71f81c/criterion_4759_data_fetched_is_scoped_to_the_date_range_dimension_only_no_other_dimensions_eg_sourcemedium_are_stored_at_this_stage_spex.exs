@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "Data fetched is scoped to the date range dimension only — no other dimensions (e.g., source/medium) are stored at this stage" do
     scenario "a GA4 sync completion event with a data date appears in sync history" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "A CTA on the paywall routes the user to the subscription checkout flow" do
     scenario "the paywall on correlations includes a link or button pointing to the checkout page" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "OAuth tokens are automatically refreshed when needed" do
     scenario "when a sync completes successfully after an automatic token refresh the user sees a success status" do

@@ -3,7 +3,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
 
-  import_givens MetricFlowSpex.SharedGivens
+  import MetricFlowSpex.SharedGivens
 
   spex "System distinguishes between raw/additive metrics and derived/calculated metrics" do
     scenario "dashboard page loads for an authenticated user" do
