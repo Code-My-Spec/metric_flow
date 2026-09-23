@@ -1,3 +1,9 @@
+project_id: 5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c
+account_id: 1cf53ab2-14ea-4e5f-9560-f16c1ed310fa
+name: Metric Flow
+module_name: MetricFlow
+description: "Metric flow is a multi-account reporting solution that aggregates metrics from multiple platforms, aggregates and correlates them to business goals."
+
 ignored_paths:
   - lib/metric_flow/repo.ex
   - lib/metric_flow/mailer.ex
