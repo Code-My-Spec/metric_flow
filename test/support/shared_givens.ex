@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.SharedGivens do
 
       defmodule MetricFlowSpex.FeatureNameSpex do
         use SexySpex
-        import_givens MetricFlowSpex.SharedGivens.SharedGivens
+        import MetricFlowSpex.SharedGivens
         # ...
       end
 
@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.SharedGivens do
   import Phoenix.LiveViewTest
   @endpoint MetricFlowWeb.Endpoint
 
-  given :user_registered_with_password do
+  register_given :user_registered_with_password, _context do
     email = "testuser#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{registered_email: email, registered_password: password}}
   end
 
-  given :user_logged_in_as_owner do
+  register_given :user_logged_in_as_owner, _context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.SharedGivens do
      }}
   end
 
-  given :owner_with_integrations do
+  register_given :owner_with_integrations, _context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.SharedGivens do
      }}
   end
 
-  given :second_user_registered do
+  register_given :second_user_registered, _context do
     email = "member#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -181,7 +181,7 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{second_user_email: email, second_user_password: password}}
   end
 
-  given :owner_with_google_ads_integration do
+  register_given :owner_with_google_ads_integration, _context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -233,7 +233,7 @@ defmodule MetricFlowSpex.SharedGivens do
      }}
   end
 
-  given :owner_with_quickbooks_integration do
+  register_given :owner_with_quickbooks_integration, _context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -282,7 +282,7 @@ defmodule MetricFlowSpex.SharedGivens do
      }}
   end
 
-  given :owner_has_active_subscription do
+  register_given :owner_has_active_subscription, context do
     # Creates an active subscription for the test user's account
     # so paywalled routes (correlations, AI) don't redirect to checkout
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -302,7 +302,7 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{}}
   end
 
-  given :owner_has_agency_plan do
+  register_given :owner_has_agency_plan, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
     scope = MetricFlow.Users.Scope.for_user(user)
     account_id = MetricFlow.Accounts.get_personal_account_id(scope)
@@ -320,7 +320,7 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{agency_plan: plan}}
   end
 
-  given :owner_has_stripe_connect do
+  register_given :owner_has_stripe_connect, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
     scope = MetricFlow.Users.Scope.for_user(user)
     account_id = MetricFlow.Accounts.get_personal_account_id(scope)
@@ -336,7 +336,7 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, %{}}
   end
 
-  given :owner_has_metrics do
+  register_given :owner_has_metrics, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
     now = DateTime.utc_now()
 
@@ -377,12 +377,12 @@ defmodule MetricFlowSpex.SharedGivens do
     "t=#{timestamp},v1=#{signature}"
   end
 
-  given :with_oauth_stub_providers do
+  register_given :with_oauth_stub_providers, _context do
     MetricFlowTest.OAuthStub.setup_oauth_providers()
     {:ok, %{oauth_state: MetricFlowTest.OAuthStub.state_token()}}
   end
 
-  given :with_ai_stubs do
+  register_given :with_ai_stubs, _context do
     MetricFlowTest.AiStub.setup_ai_stubs()
     {:ok, %{}}
   end
