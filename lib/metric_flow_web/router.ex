@@ -141,12 +141,22 @@ defmodule MetricFlowWeb.Router do
   scope "/", MetricFlowWeb do
     pipe_through [:browser]
 
+    # `OnboardingLive` sets up *your* account — "Let's get started setting up your
+    # account" — and registration signs the user in before sending them here. It
+    # was in `:current_user` below, which only mounts the scope, so an anonymous
+    # visitor got the welcome page with Log in and Register in the navbar and
+    # nothing to set up. Its own session rather than the `/app` scope, because the
+    # path is `/onboarding` and the tests and links say so.
+    live_session :onboarding,
+      on_mount: [{MetricFlowWeb.UserAuth, :require_authenticated}] do
+      live "/onboarding", OnboardingLive, :index
+    end
+
     live_session :current_user,
       on_mount: [{MetricFlowWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
-      live "/onboarding", OnboardingLive, :index
 
       # Invitation acceptance — accessible to both authenticated and unauthenticated users
       live "/invitations/:token", InvitationLive.Accept, :new

@@ -82,6 +82,12 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
   test "shows subscribe button for free users", %{conn: conn} do
     user = user_fixture()
     _account = account_fixture(user)
+    # A platform plan — `agency_account_id: nil`, which is what
+    # `load_plans/1` falls back to and `maybe_filter_agency(query, nil)` selects.
+    # Without one the page renders its "No plans available. Please contact
+    # support." card, which carries the same "MetricFlow Pro" and "$49.99" text as
+    # the real one, so only the button assertion notices.
+    _plan = plan_fixture()
     conn = log_in_user(conn, user)
 
     {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")

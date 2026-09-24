@@ -183,14 +183,24 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
       bad_payload = "not valid json at all"
       signature = sign_payload(bad_payload)
 
-      conn =
-        conn
-        |> put_req_header("content-type", "application/json")
-        |> put_req_header("stripe-signature", signature)
-        |> Plug.Conn.assign(:raw_body, bad_payload)
-        |> post("/billing/webhooks", bad_payload)
-
-      assert json_response(conn, 400)["error"] =~ "Invalid JSON"
+      # The 400 comes from `Plug.Parsers`, not from the controller. The endpoint
+      # declares the `:json` parser, so a body sent as `application/json` that is
+      # not JSON is rejected before `handle/2` runs — its own "Invalid JSON
+      # payload" branch is unreachable on this path, and the previous version of
+      # this test asserted that branch and got the parser's exception instead.
+      #
+      # `Plug.Parsers.ParseError` carries `plug_status: 400`, so the contract
+      # `billing_webhook_controller.spec.md:36` states — "Return 400 for malformed
+      # payloads" — is what a client sees. `assert_error_sent/2` is how that is
+      # observed in a test, where the exception would otherwise propagate.
+      assert {400, _headers, _body} =
+               assert_error_sent(400, fn ->
+                 conn
+                 |> put_req_header("content-type", "application/json")
+                 |> put_req_header("stripe-signature", signature)
+                 |> Plug.Conn.assign(:raw_body, bad_payload)
+                 |> post("/billing/webhooks", bad_payload)
+               end)
     end
 
     test "handles duplicate event delivery idempotently (same event ID processed twice returns 200 both times)", %{conn: conn} do
