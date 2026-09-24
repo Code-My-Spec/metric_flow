@@ -100,9 +100,23 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
     end
 
     test "redirects with error flash when token exchange fails", %{conn: conn} do
-      MetricFlowTest.OAuthStub.setup_oauth_providers()
+      # Not an "invalid code": `OAuthStub.CassettePlug` matches on method and URI
+      # only, so every code replays the recorded success. What does fail is a token
+      # POST the cassette has no interaction for — the plug answers 404 — so this
+      # points `google_ads` at `google_authorize_url.json`, which holds only the
+      # openid-configuration GET.
+      original = Application.get_env(:metric_flow, :oauth_providers)
 
-      # Use an invalid code with a valid state so the token exchange fails
+      Application.put_env(:metric_flow, :oauth_providers, %{
+        google_ads: MetricFlowWeb.IntegrationOauthControllerTest.NoTokenProvider
+      })
+
+      on_exit(fn ->
+        if original,
+          do: Application.put_env(:metric_flow, :oauth_providers, original),
+          else: Application.delete_env(:metric_flow, :oauth_providers)
+      end)
+
       OAuthStateStore.store("bad-exchange-state", %{state: "bad-exchange-state"})
 
       conn =
@@ -199,14 +213,43 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
   # Test helper modules
   # ---------------------------------------------------------------------------
 
-  defmodule FailingProvider do
+  defmodule NoTokenProvider do
     @moduledoc false
     @behaviour MetricFlow.Integrations.Providers.Behaviour
 
     @impl true
     def config do
+      {plug_mod, plug_opts} = MetricFlowTest.OAuthStub.CassettePlug.load("google_authorize_url")
+
       [
-        client_id: "fail",
+        client_id: "stub-client-id",
+        client_secret: "stub-client-secret",
+        redirect_uri: "http://localhost:4002/integrations/oauth/callback/google_ads",
+        base_url: "https://oauth2.googleapis.com",
+        token_url: "https://oauth2.googleapis.com/token",
+        user_url: "https://www.googleapis.com/oauth2/v3/userinfo",
+        http_adapter: {Assent.HTTPAdapter.Req, [plug: {plug_mod, plug_opts}]}
+      ]
+    end
+
+    @impl true
+    def strategy, do: Assent.Strategy.OAuth2
+
+    @impl true
+    def normalize_user(_data), do: {:ok, %{}}
+  end
+
+  defmodule FailingProvider do
+    @moduledoc false
+    @behaviour MetricFlow.Integrations.Providers.Behaviour
+
+    @impl true
+    # No `client_id`. `Assent.Strategy.OAuth2.authorize_url/1` builds a string and
+    # makes no request, so an unreachable host cannot fail it — the previous
+    # config pointed at `invalid.example.com` and returned a perfectly good URL.
+    # A missing required key is what actually produces an error.
+    def config do
+      [
         client_secret: "fail",
         redirect_uri: "http://localhost:4002/integrations/oauth/callback/google_ads",
         base_url: "https://invalid.example.com",

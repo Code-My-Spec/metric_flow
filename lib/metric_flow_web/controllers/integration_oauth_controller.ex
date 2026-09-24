@@ -49,6 +49,17 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
         redirect(conn, external: url)
 
+      # `integration_oauth_controller.spec.md` lists "unsupported provider" and
+      # "authorize_url fails" as separate cases, so they need separate messages.
+      # This used to be distinguished by `String.to_existing_atom/1` raising —
+      # which it does not: atoms are never collected, so once anything in the
+      # system has mentioned `:nonexistent_provider` the lookup succeeds and the
+      # rescue below is unreachable. `Integrations.authorize_url/1` answers
+      # `{:error, :unsupported_provider}` (integrations.spec.md:57), which is a
+      # fact about the provider rather than about the atom table.
+      {:error, :unsupported_provider} ->
+        unsupported(conn)
+
       {:error, reason} ->
         Logger.error("Failed to generate OAuth URL for #{provider}: #{inspect(reason)}")
 
@@ -57,10 +68,14 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         |> redirect(to: ~p"/app/integrations/connect")
     end
   rescue
-    ArgumentError ->
-      conn
-      |> put_flash(:error, "This platform is not yet supported")
-      |> redirect(to: ~p"/app/integrations/connect")
+    # Still reachable for a provider string no code has ever named.
+    ArgumentError -> unsupported(conn)
+  end
+
+  defp unsupported(conn) do
+    conn
+    |> put_flash(:error, "This platform is not yet supported")
+    |> redirect(to: ~p"/app/integrations/connect")
   end
 
   @doc """
