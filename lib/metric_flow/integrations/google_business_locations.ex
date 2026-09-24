@@ -36,15 +36,12 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         # No account IDs stored — fetch them from the Account Management API
         case fetch_accounts(integration, opts) do
           {:ok, []} -> {:error, :no_accounts_configured}
-          {:ok, fetched_ids} ->
-            locations = Enum.flat_map(fetched_ids, &fetch_account_locations(integration, &1, opts))
-            {:ok, locations}
+          {:ok, fetched_ids} -> collect_locations(integration, fetched_ids, opts)
           {:error, reason} -> {:error, reason}
         end
 
       ids ->
-        locations = Enum.flat_map(ids, &fetch_account_locations(integration, &1, opts))
-        {:ok, locations}
+        collect_locations(integration, ids, opts)
     end
   end
 
@@ -85,6 +82,14 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
           {:error, :bad_request}
       end
     rescue
+      # A body that arrives with `content-type: application/json` and is not JSON
+      # is decoded by Req's own `decode_body` step, which raises before
+      # `handle_response/1` ever sees it — so the generic clause below reported a
+      # malformed payload as a network failure. Same clause, same reason, as
+      # `DataSync.DataProviders.FacebookAds`.
+      _e in Jason.DecodeError ->
+        {:error, :malformed_response}
+
       e ->
         Logger.error("GBP Account Management API request failed: #{Exception.message(e)}")
         {:error, {:network_error, Exception.message(e)}}
@@ -95,13 +100,30 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp fetch_account_locations(integration, account_id, opts) do
-    case fetch_locations_for_account(integration, account_id, opts) do
-      {:ok, locs} -> locs
-      {:error, reason} ->
-        Logger.warning("Failed to fetch locations for #{account_id}: #{inspect(reason)}")
-        []
-    end
+  # A 401 or 403 is about the credential, not about one account — every other
+  # account in the list is going to answer the same way — so it is returned.
+  # The spec says so outright: "On 401, return {:error, :unauthorized}", "On 403,
+  # return {:error, :api_disabled}". The version this replaces turned every error
+  # into an empty list, so an expired token arrived as `{:ok, []}` and read as
+  # "this account has no locations", which is the one answer a sync must not
+  # accept quietly.
+  #
+  # Anything genuinely per-account still degrades to a skip, because that is what
+  # the multi-account story wants: one unreachable account must not hide the rest.
+  defp collect_locations(integration, account_ids, opts) do
+    Enum.reduce_while(account_ids, {:ok, []}, fn account_id, {:ok, acc} ->
+      case fetch_locations_for_account(integration, account_id, opts) do
+        {:ok, locations} ->
+          {:cont, {:ok, acc ++ locations}}
+
+        {:error, reason} when reason in [:unauthorized, :api_disabled] ->
+          {:halt, {:error, reason}}
+
+        {:error, reason} ->
+          Logger.warning("Failed to fetch locations for #{account_id}: #{inspect(reason)}")
+          {:cont, {:ok, acc}}
+      end
+    end)
   end
 
   defp fetch_locations_for_account(integration, account_id, opts) do
@@ -120,6 +142,14 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
       response = Req.request!(req_opts)
       handle_response(response, integration, account_id, acc, opts)
     rescue
+      # A body that arrives with `content-type: application/json` and is not JSON
+      # is decoded by Req's own `decode_body` step, which raises before
+      # `handle_response/1` ever sees it — so the generic clause below reported a
+      # malformed payload as a network failure. Same clause, same reason, as
+      # `DataSync.DataProviders.FacebookAds`.
+      _e in Jason.DecodeError ->
+        {:error, :malformed_response}
+
       e ->
         Logger.error("GBP Locations API request failed: #{Exception.message(e)}")
         {:error, {:network_error, Exception.message(e)}}

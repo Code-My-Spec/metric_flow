@@ -64,6 +64,14 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
           {:error, :bad_request}
       end
     rescue
+      # A body that arrives with `content-type: application/json` and is not JSON
+      # is decoded by Req's own `decode_body` step, which raises before
+      # `handle_response/1` ever sees it — so the generic clause below reported a
+      # malformed payload as a network failure. Same clause, same reason, as
+      # `DataSync.DataProviders.FacebookAds`.
+      _e in Jason.DecodeError ->
+        {:error, :malformed_response}
+
       e ->
         Logger.error("Google Ads listAccessibleCustomers failed: #{Exception.message(e)}")
         {:error, {:network_error, Exception.message(e)}}
