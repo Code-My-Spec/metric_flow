@@ -10,6 +10,14 @@ defmodule MetricFlowSpex.SharedGivens do
         # ...
       end
 
+  **Every given merges into the context it is handed, never replaces it.**
+  Givens compose — `given_ :user_logged_in_as_owner` followed by
+  `given_ :owner_has_active_subscription` means the second one runs on the
+  first one's context — so a given that answers a fresh map erases whatever ran
+  before it. That is not a hypothetical: all twelve of these did it, and the
+  121 spex that failed with `key :owner_conn not found in: %{}` were reading a
+  context a later given had thrown away.
+
   Add new shared givens here when you find yourself duplicating setup code
   across multiple specs. Remember: spex files can only access the Web layer,
   so shared givens should set up state through UI interactions, not fixtures.
@@ -21,7 +29,7 @@ defmodule MetricFlowSpex.SharedGivens do
   import Phoenix.LiveViewTest
   @endpoint MetricFlowWeb.Endpoint
 
-  register_given :user_registered_with_password, _context do
+  register_given :user_registered_with_password, context do
     email = "testuser#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -47,10 +55,10 @@ defmodule MetricFlowSpex.SharedGivens do
     end
     drain.(drain)
 
-    {:ok, %{registered_email: email, registered_password: password}}
+    {:ok, Map.merge(context, %{registered_email: email, registered_password: password})}
   end
 
-  register_given :user_logged_in_as_owner, _context do
+  register_given :user_logged_in_as_owner, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -92,14 +100,14 @@ defmodule MetricFlowSpex.SharedGivens do
     authed_conn = recycle(logged_in_conn)
 
     {:ok,
-     %{
+     Map.merge(context, %{
        owner_conn: authed_conn,
        owner_email: email,
        owner_password: password
-     }}
+     })}
   end
 
-  register_given :owner_with_integrations, _context do
+  register_given :owner_with_integrations, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -145,14 +153,14 @@ defmodule MetricFlowSpex.SharedGivens do
     authed_conn = recycle(logged_in_conn)
 
     {:ok,
-     %{
+     Map.merge(context, %{
        owner_conn: authed_conn,
        owner_email: email,
        owner_password: password
-     }}
+     })}
   end
 
-  register_given :second_user_registered, _context do
+  register_given :second_user_registered, context do
     email = "member#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -178,10 +186,10 @@ defmodule MetricFlowSpex.SharedGivens do
     end
     drain.(drain)
 
-    {:ok, %{second_user_email: email, second_user_password: password}}
+    {:ok, Map.merge(context, %{second_user_email: email, second_user_password: password})}
   end
 
-  register_given :owner_with_google_ads_integration, _context do
+  register_given :owner_with_google_ads_integration, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -226,14 +234,14 @@ defmodule MetricFlowSpex.SharedGivens do
     authed_conn = recycle(logged_in_conn)
 
     {:ok,
-     %{
+     Map.merge(context, %{
        owner_conn: authed_conn,
        owner_email: email,
        owner_password: password
-     }}
+     })}
   end
 
-  register_given :owner_with_quickbooks_integration, _context do
+  register_given :owner_with_quickbooks_integration, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
 
@@ -275,11 +283,11 @@ defmodule MetricFlowSpex.SharedGivens do
     authed_conn = recycle(logged_in_conn)
 
     {:ok,
-     %{
+     Map.merge(context, %{
        owner_conn: authed_conn,
        owner_email: email,
        owner_password: password
-     }}
+     })}
   end
 
   register_given :owner_has_active_subscription, context do
@@ -299,7 +307,7 @@ defmodule MetricFlowSpex.SharedGivens do
         current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
       })
 
-    {:ok, %{}}
+    {:ok, context}
   end
 
   register_given :owner_has_agency_plan, context do
@@ -317,7 +325,7 @@ defmodule MetricFlowSpex.SharedGivens do
         stripe_price_id: "price_test_#{System.unique_integer([:positive])}"
       })
 
-    {:ok, %{agency_plan: plan}}
+    {:ok, Map.merge(context, %{agency_plan: plan})}
   end
 
   register_given :owner_has_stripe_connect, context do
@@ -333,7 +341,7 @@ defmodule MetricFlowSpex.SharedGivens do
         capabilities: %{charges_enabled: true, payouts_enabled: true}
       })
 
-    {:ok, %{}}
+    {:ok, context}
   end
 
   register_given :owner_has_metrics, context do
@@ -358,7 +366,7 @@ defmodule MetricFlowSpex.SharedGivens do
 
     MetricFlow.Repo.insert_all(MetricFlow.Metrics.Metric, metrics)
 
-    {:ok, %{}}
+    {:ok, context}
   end
 
   @doc """
@@ -377,13 +385,13 @@ defmodule MetricFlowSpex.SharedGivens do
     "t=#{timestamp},v1=#{signature}"
   end
 
-  register_given :with_oauth_stub_providers, _context do
+  register_given :with_oauth_stub_providers, context do
     MetricFlowTest.OAuthStub.setup_oauth_providers()
-    {:ok, %{oauth_state: MetricFlowTest.OAuthStub.state_token()}}
+    {:ok, Map.merge(context, %{oauth_state: MetricFlowTest.OAuthStub.state_token()})}
   end
 
-  register_given :with_ai_stubs, _context do
+  register_given :with_ai_stubs, context do
     MetricFlowTest.AiStub.setup_ai_stubs()
-    {:ok, %{}}
+    {:ok, context}
   end
 end
