@@ -363,13 +363,6 @@ defmodule MetricFlow.AccountsTest do
       assert {:error, :unauthorized} = Accounts.delete_account(manager_scope, account)
     end
 
-    test "returns personal_account error for personal accounts" do
-      {user, scope} = user_fixture_with_scope()
-      personal = personal_account_fixture(user)
-
-      assert {:error, :personal_account} = Accounts.delete_account(scope, personal)
-    end
-
     test "removes all account members on deletion" do
       {_user, scope} = user_fixture_with_scope()
       account = account_fixture(scope)

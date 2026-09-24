@@ -145,24 +145,27 @@ Updates an existing account's attributes. Only owners and admins may update an a
 Deletes an account and all associated data. Only owners may delete an account. Personal accounts cannot be deleted.
 
 ```elixir
-@spec delete_account(Scope.t(), Account.t()) :: {:ok, Account.t()} | {:error, :unauthorized} | {:error, :personal_account}
+@spec delete_account(Scope.t(), Account.t()) :: {:ok, Account.t()} | {:error, :unauthorized}
 ```
 
+> **`:personal_account` removed 2026-09-23.** The guard read
+> `account.type == "personal"`, and that value no longer exists — the type
+> enum is `[:client, :agency]` and Postgres agrees. Deleting an account an
+> owner owns is now governed by authorization alone.
+
 **Process**:
-1. Return {:error, :personal_account} if account.type is "personal"
-2. Check authorization via Authorization.can?(scope, :delete_account, account)
-3. Return {:error, :unauthorized} if the check fails
-4. Begin a database transaction
-5. Delete all AccountMember records for the account
-6. Delete the account record
-7. Broadcast {:deleted, account} to the account PubSub topic for the calling user
-8. Return ok tuple with the deleted Account
+1. Check authorization via Authorization.can?(scope, :delete_account, account)
+2. Return {:error, :unauthorized} if the check fails
+3. Begin a database transaction
+4. Delete all AccountMember records for the account
+5. Delete the account record
+6. Broadcast {:deleted, account} to the account PubSub topic for the calling user
+7. Return ok tuple with the deleted Account
 
 **Test Assertions**:
 - deletes the account when called by the owner
 - returns unauthorized for admin role
 - returns unauthorized for account_manager role
-- returns personal_account error for personal accounts
 - removes all account members on deletion
 
 ### list_account_members/2

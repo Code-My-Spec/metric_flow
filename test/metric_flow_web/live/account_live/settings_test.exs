@@ -296,19 +296,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
     end
   end
 
-  describe "prevents deletion of personal accounts" do
-    test "prevents deletion of personal accounts", %{conn: conn} do
-      user = user_with_password_fixture()
-      account = personal_account_fixture(user)
-      conn = log_in_user(conn, user)
-
-      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
-
-      refute has_element?(lv, "[data-role='delete-account']")
-      assert account.type == :client
-    end
-  end
-
   describe "shows read-only settings view for non-editor roles" do
     test "shows read-only settings view for non-editor roles", %{conn: conn} do
       owner = user_fixture()
