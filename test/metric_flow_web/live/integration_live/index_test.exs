@@ -152,7 +152,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert has_element?(lv, "[phx-click='sync'][phx-value-platform='google_ads']")
         assert has_element?(lv, "[data-role='edit-integration-accounts']")
-        assert has_element?(lv, "a[href='/integrations/connect/google_ads']", "Manage")
+        assert has_element?(lv, "a[href='/app/integrations/connect/google_ads']", "Manage")
         assert has_element?(lv, "[data-role='disconnect-integration']")
       end)
     end

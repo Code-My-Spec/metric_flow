@@ -98,9 +98,15 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/integrations/totally_fake_provider/accounts/edit")
+        # `handle_params/3` answers an unknown provider with `push_navigate`, and a
+        # navigate during the initial mount comes back from `live/2` as
+        # `{:error, {:live_redirect, _}}` — there is no view to hand to
+        # `assert_redirect/2`, which is what the `{:ok, lv, _html}` match was
+        # waiting for.
+        assert {:error, {:live_redirect, %{to: to}}} =
+                 live(conn, ~p"/app/integrations/totally_fake_provider/accounts/edit")
 
-        assert_redirect(lv, ~p"/app/integrations")
+        assert to == ~p"/app/integrations"
         send(self(), :done)
       end)
 
