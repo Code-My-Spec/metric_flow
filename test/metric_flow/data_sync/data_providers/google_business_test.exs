@@ -502,7 +502,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
                )
 
       assert is_list(metrics)
-      assert length(metrics) > 0
+      assert metrics != []
 
       # With two locations and the same response, we expect at least 2x the metrics
       single_location_plug =
@@ -888,7 +888,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
 
       log =
         capture_log(fn ->
-          assert {:ok, metrics} = GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
+          assert {:ok, metrics} =
+                   GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
+
           assert is_list(metrics)
         end)
 
@@ -908,7 +910,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
 
       log =
         capture_log(fn ->
-          assert {:ok, metrics} = GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
+          assert {:ok, metrics} =
+                   GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
+
           assert is_list(metrics)
         end)
 
@@ -1028,7 +1032,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
       if context[:skip], do: flunk("GBP integration not configured in .env.test")
 
       capture_log(fn ->
-        with_cassette "gbp_fetch_metrics", cassette_opts("gbp_fetch_metrics"), fn plug ->
+        with_cassette("gbp_fetch_metrics", cassette_opts("gbp_fetch_metrics"), fn plug ->
           assert {:ok, metrics} =
                    GoogleBusiness.fetch_metrics(context.integration,
                      http_plug: plug,
@@ -1045,7 +1049,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
             assert %DateTime{} = metric.recorded_at
             assert is_map(metric.dimensions)
           end
-        end
+        end)
       end)
     end
 
@@ -1053,7 +1057,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
       if context[:skip], do: flunk("GBP integration not configured in .env.test")
 
       capture_log(fn ->
-        with_cassette "gbp_unauthorized", cassette_opts("gbp_unauthorized"), fn plug ->
+        with_cassette("gbp_unauthorized", cassette_opts("gbp_unauthorized"), fn plug ->
           bad_token = %{context.integration | access_token: "invalid-token"}
 
           assert {:error, reason} =
@@ -1063,7 +1067,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
                    )
 
           assert reason in [:unauthorized, :insufficient_permissions]
-        end
+        end)
       end)
     end
   end

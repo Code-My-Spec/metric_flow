@@ -5,11 +5,14 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
 
   import MetricFlowSpex.SharedGivens
 
+  alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Users.Scope
+
   spex "Chat history is saved per user" do
     scenario "user's messages persist after navigating away and returning to chat" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :with_ai_stubs
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:with_ai_stubs)
 
       given_ "the user navigates to the AI chat page and sends a message", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -52,10 +55,10 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         message_persisted =
           html =~ context.sent_message or
             html =~ "revenue last month" or
-            has_element?(context.fresh_view, "[data-role='chat-messages']") and
-              render(context.fresh_view) =~ "revenue" or
-            has_element?(context.fresh_view, "[data-role='chat-history']") and
-              render(context.fresh_view) =~ "revenue" or
+            (has_element?(context.fresh_view, "[data-role='chat-messages']") and
+               render(context.fresh_view) =~ "revenue") or
+            (has_element?(context.fresh_view, "[data-role='chat-history']") and
+               render(context.fresh_view) =~ "revenue") or
             has_element?(context.fresh_view, "[data-role='user-message']") or
             html =~ "user-message" or
             html =~ "chat-history" or
@@ -69,9 +72,9 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
     end
 
     scenario "chat page shows a chat history section or previous messages list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :with_ai_stubs
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:with_ai_stubs)
 
       given_ "the user has previously sent a message in chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -131,9 +134,9 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
     end
 
     scenario "a second user does not see the first user's chat history" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :with_ai_stubs
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:with_ai_stubs)
 
       given_ "the first user sends a uniquely identifiable message in chat", context do
         unique_token = "UNIQUE_MSG_#{System.unique_integer([:positive])}"
@@ -170,33 +173,37 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: second_email,
-          password: second_password,
-          account_name: "Second User Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: second_email,
+            password: second_password,
+            account_name: "Second User Account"
+          }
+        )
         |> render_submit()
 
         # Log in as second user through UI
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: second_email,
-            password: second_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: second_email,
+              password: second_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         second_conn = recycle(logged_in_conn)
 
         # Create a subscription for the second user so /chat is accessible
         second_user = MetricFlowTest.UsersFixtures.get_user_by_email(second_email)
-        second_scope = MetricFlow.Users.Scope.for_user(second_user)
+        second_scope = Scope.for_user(second_user)
         second_account_id = MetricFlow.Accounts.get_personal_account_id(second_scope)
 
         {:ok, _} =
-          MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+          BillingRepository.upsert_subscription(%{
             stripe_subscription_id: "sub_test2_#{System.unique_integer([:positive])}",
             stripe_customer_id: "cus_test2_#{System.unique_integer([:positive])}",
             status: :active,

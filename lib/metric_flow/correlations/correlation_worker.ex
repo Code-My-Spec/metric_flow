@@ -46,7 +46,10 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
         {:error, :not_found}
 
       {:error, reason} ->
-        Logger.error("CorrelationWorker failed to start job_id=#{job_id} reason=#{inspect(reason)}")
+        Logger.error(
+          "CorrelationWorker failed to start job_id=#{job_id} reason=#{inspect(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -73,7 +76,8 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
       Metrics.list_metric_names(scope)
       |> Enum.reject(&(&1 == goal_metric_name))
 
-    goal_series = Metrics.query_time_series(scope, goal_metric_name, date_range: default_date_range())
+    goal_series =
+      Metrics.query_time_series(scope, goal_metric_name, date_range: default_date_range())
 
     {results, data_window} = compute_correlations(scope, metric_names, goal_series, job)
 
@@ -99,24 +103,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     results =
       metric_names
       |> Task.async_stream(
-        fn metric_name ->
-          metric_series = Metrics.query_time_series(scope, metric_name, date_range: default_date_range())
-          {metric_values, goal_aligned} = Math.extract_values(metric_series, goal_values)
-
-          case Math.cross_correlate(metric_values, goal_aligned) do
-            nil ->
-              nil
-
-            {optimal_lag, coefficient} ->
-              %{
-                metric_name: metric_name,
-                coefficient: coefficient,
-                optimal_lag: optimal_lag,
-                data_points: length(metric_values),
-                provider: detect_provider(metric_name)
-              }
-          end
-        end,
+        &compute_metric_correlation(scope, &1, goal_values),
         max_concurrency: System.schedulers_online(),
         timeout: 30_000,
         on_timeout: :kill_task
@@ -131,20 +118,47 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     {results, data_window}
   end
 
+  defp compute_metric_correlation(scope, metric_name, goal_values) do
+    metric_series =
+      Metrics.query_time_series(scope, metric_name, date_range: default_date_range())
+
+    {metric_values, goal_aligned} = Math.extract_values(metric_series, goal_values)
+
+    case Math.cross_correlate(metric_values, goal_aligned) do
+      nil ->
+        nil
+
+      {optimal_lag, coefficient} ->
+        %{
+          metric_name: metric_name,
+          coefficient: coefficient,
+          optimal_lag: optimal_lag,
+          data_points: length(metric_values),
+          provider: detect_provider(metric_name)
+        }
+    end
+  end
+
   defp persist_results(scope, job, results, goal_metric_name, {window_start, window_end}) do
     now = DateTime.utc_now()
 
     Enum.each(results, fn result ->
-      attrs = Map.merge(result, %{
-        correlation_job_id: job.id,
-        goal_metric_name: goal_metric_name,
-        calculated_at: now
-      })
+      attrs =
+        Map.merge(result, %{
+          correlation_job_id: job.id,
+          goal_metric_name: goal_metric_name,
+          calculated_at: now
+        })
 
       case CorrelationsRepository.create_correlation_result(scope, attrs) do
-        {:ok, _} -> :ok
+        {:ok, _} ->
+          :ok
+
         {:error, reason} ->
-          Logger.warning("CorrelationWorker failed to persist result metric=#{result.metric_name} reason=#{inspect(reason)}")
+          Logger.warning(
+            "CorrelationWorker failed to persist result metric=#{result.metric_name} " <>
+              "reason=#{inspect(reason)}"
+          )
       end
     end)
 

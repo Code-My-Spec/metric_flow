@@ -7,22 +7,24 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Invitations
+  alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Repo
 
   spex "Invitation link is single-use and invalidated after acceptance or expiration" do
     scenario "invitation link cannot be used a second time after it has been accepted" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -43,11 +45,13 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: false
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: false
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         invitee_conn = recycle(logged_in_conn)
@@ -72,17 +76,19 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
     end
 
     scenario "visiting an expired invitation link shows an error to the user" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -95,10 +101,10 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
             token
           end)
 
-        token_hash = MetricFlow.Invitations.Invitation.token_hash(token)
+        token_hash = Invitation.token_hash(token)
 
         Repo.update_all(
-          from(i in Invitations.Invitation, where: i.token_hash == ^token_hash),
+          from(i in Invitation, where: i.token_hash == ^token_hash),
           set: [inserted_at: ~N[2000-01-01 00:00:00]]
         )
 
@@ -118,17 +124,19 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
     end
 
     scenario "a valid pending invitation link can be visited and shows the accept page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -149,7 +157,8 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
         {:ok, Map.put(context, :accept_view, view)}
       end
 
-      then_ "the acceptance page is displayed confirming the invitation is still valid", context do
+      then_ "the acceptance page is displayed confirming the invitation is still valid",
+            context do
         assert render(context.accept_view) =~ "invited"
         {:ok, context}
       end

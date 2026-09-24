@@ -5,19 +5,22 @@ defmodule MetricFlowSpex.OnSuccessfulPaymentAccountUpdatedSpex do
 
   import MetricFlowSpex.SharedGivens
 
+  alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Users.Scope
+
   spex "On successful payment, the user's account is updated to subscribed" do
     scenario "user returns from Stripe checkout success URL and sees active subscription" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the user visits the checkout success callback URL", context do
         # The return URL after Stripe checkout is /subscriptions/checkout (with session_id param)
         # Create subscription directly to simulate successful payment
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = MetricFlow.Users.Scope.for_user(user)
+        scope = Scope.for_user(user)
         account_id = MetricFlow.Accounts.get_personal_account_id(scope)
 
         {:ok, _} =
-          MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+          BillingRepository.upsert_subscription(%{
             stripe_subscription_id: "sub_success_#{System.unique_integer([:positive])}",
             stripe_customer_id: "cus_success_#{System.unique_integer([:positive])}",
             status: :active,
@@ -44,6 +47,7 @@ defmodule MetricFlowSpex.OnSuccessfulPaymentAccountUpdatedSpex do
           assert html =~ "active" or html =~ "Active" or html =~ "Subscription" or
                    html =~ "Choose Your Plan" or html =~ "Cancel Subscription"
         end
+
         {:ok, context}
       end
     end

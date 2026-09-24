@@ -36,7 +36,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
     redirect_uri = build_redirect_uri()
 
     Logger.debug(
-      "QuickBooks OAuth config: client_id=#{client_id}, client_secret_set=#{client_secret != nil}, redirect_uri=#{redirect_uri}"
+      "QuickBooks OAuth config: client_id=#{client_id}, client_secret_set=#{client_secret != nil}, " <>
+        "redirect_uri=#{redirect_uri}"
     )
 
     [

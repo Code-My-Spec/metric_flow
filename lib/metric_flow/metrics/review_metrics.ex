@@ -74,12 +74,14 @@ defmodule MetricFlow.Metrics.ReviewMetrics do
     |> order_by([m], asc: fragment("?::date", m.recorded_at))
     |> select([m], %{
       date: fragment("?::date", m.recorded_at),
-      daily_count:
-        fragment("COUNT(*) FILTER (WHERE ? = 'review_count')", m.metric_name),
+      daily_count: fragment("COUNT(*) FILTER (WHERE ? = 'review_count')", m.metric_name),
       daily_rating_sum:
-        fragment("COALESCE(SUM(?) FILTER (WHERE ? = 'review_rating'), 0.0)", m.value, m.metric_name),
-      daily_rating_count:
-        fragment("COUNT(*) FILTER (WHERE ? = 'review_rating')", m.metric_name)
+        fragment(
+          "COALESCE(SUM(?) FILTER (WHERE ? = 'review_rating'), 0.0)",
+          m.value,
+          m.metric_name
+        ),
+      daily_rating_count: fragment("COUNT(*) FILTER (WHERE ? = 'review_rating')", m.metric_name)
     })
     |> Repo.all()
   end
@@ -102,7 +104,9 @@ defmodule MetricFlow.Metrics.ReviewMetrics do
 
   defp compute_rolling_metrics(daily_rows) do
     {review_count, review_total_count, review_average_rating, _, _} =
-      Enum.reduce(daily_rows, {[], [], [], 0, {0, 0.0}}, fn row, {counts, totals, avgs, running_count, {rating_count, rating_sum}} ->
+      Enum.reduce(daily_rows, {[], [], [], 0, {0, 0.0}}, fn row,
+                                                            {counts, totals, avgs, running_count,
+                                                             {rating_count, rating_sum}} ->
         day_count = to_integer(row.daily_count)
         day_rating_count = to_integer(row.daily_rating_count)
         day_rating_sum = to_float(row.daily_rating_sum)

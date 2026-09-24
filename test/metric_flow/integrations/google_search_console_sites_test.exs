@@ -3,8 +3,8 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSitesTest do
 
   import ExUnit.CaptureLog
 
-  alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.GoogleSearchConsoleSites
+  alias MetricFlow.Integrations.Integration
 
   # ---------------------------------------------------------------------------
   # Fixtures — Integration structs
@@ -99,7 +99,9 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSitesTest do
     test "returns {:ok, sites} with a list of site maps on a 200 response with valid JSON body" do
       plug = response_plug(200, site_list_response())
 
-      assert {:ok, sites} = GoogleSearchConsoleSites.list_sites(valid_integration(), http_plug: plug)
+      assert {:ok, sites} =
+               GoogleSearchConsoleSites.list_sites(valid_integration(), http_plug: plug)
+
       assert is_list(sites)
       assert length(sites) == 3
     end
@@ -171,7 +173,11 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSitesTest do
     end
 
     test "returns {:error, :api_disabled} on a 403 response" do
-      plug = response_plug(403, ~s({"error":{"code":403,"message":"The caller does not have permission"}}))
+      plug =
+        response_plug(
+          403,
+          ~s({"error":{"code":403,"message":"The caller does not have permission"}})
+        )
 
       capture_log(fn ->
         assert {:error, :api_disabled} =
@@ -180,7 +186,11 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSitesTest do
     end
 
     test "returns {:error, :unauthorized} on a 401 response" do
-      plug = response_plug(401, ~s({"error":{"code":401,"message":"Request had invalid authentication credentials"}}))
+      plug =
+        response_plug(
+          401,
+          ~s({"error":{"code":401,"message":"Request had invalid authentication credentials"}})
+        )
 
       assert {:error, :unauthorized} =
                GoogleSearchConsoleSites.list_sites(valid_integration(), http_plug: plug)
@@ -226,7 +236,9 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSitesTest do
       # The plug sends raw binary JSON; verify the module decodes it correctly
       plug = response_plug(200, site_list_response())
 
-      assert {:ok, sites} = GoogleSearchConsoleSites.list_sites(valid_integration(), http_plug: plug)
+      assert {:ok, sites} =
+               GoogleSearchConsoleSites.list_sites(valid_integration(), http_plug: plug)
+
       assert length(sites) == 3
       assert Enum.all?(sites, &is_map/1)
     end

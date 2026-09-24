@@ -126,10 +126,17 @@ defmodule MetricFlowWeb.FeedbackWidget do
   defp upload_screenshot(scope, data_url) do
     with [_, base64] <- Regex.run(~r/^data:image\/png;base64,(.+)$/, data_url),
          {:ok, binary} <- Base.decode64(base64),
-         {:ok, %{upload_url: url, s3_key: key}} <- Client.presign_upload(scope, "screenshot.png", "image/png") do
+         {:ok, %{upload_url: url, s3_key: key}} <-
+           Client.presign_upload(scope, "screenshot.png", "image/png") do
       case Req.put(url, body: binary, headers: [{"content-type", "image/png"}]) do
         {:ok, %Req.Response{status: status}} when status in 200..299 ->
-          {:ok, %{"s3_key" => key, "filename" => "screenshot.png", "content_type" => "image/png", "size" => byte_size(binary)}}
+          {:ok,
+           %{
+             "s3_key" => key,
+             "filename" => "screenshot.png",
+             "content_type" => "image/png",
+             "size" => byte_size(binary)
+           }}
 
         _ ->
           {:error, :upload_failed}
@@ -143,94 +150,156 @@ defmodule MetricFlowWeb.FeedbackWidget do
   def render(assigns) do
     ~H"""
     <div>
-    <script :type={Phoenix.LiveView.ColocatedHook} name=".CmsScreenshot">
-      export default {
-        mounted() {
-          this.el.addEventListener("click", async (e) => {
-            if (!e.target.closest("[data-capture-screenshot]")) return;
-            this.pushEventTo(this.el, "capture_start", {});
-            try {
-              const dataUrl = await window.__captureScreenshot();
-              this.pushEventTo(this.el, "screenshot_captured", { data: dataUrl });
-            } catch (err) {
-              console.error("Screenshot capture failed:", err);
-              this.pushEventTo(this.el, "screenshot_captured", { data: null });
-            }
-          });
-        },
-      }
-    </script>
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".CmsScreenshot">
+        export default {
+          mounted() {
+            this.el.addEventListener("click", async (e) => {
+              if (!e.target.closest("[data-capture-screenshot]")) return;
+              this.pushEventTo(this.el, "capture_start", {});
+              try {
+                const dataUrl = await window.__captureScreenshot();
+                this.pushEventTo(this.el, "screenshot_captured", { data: dataUrl });
+              } catch (err) {
+                console.error("Screenshot capture failed:", err);
+                this.pushEventTo(this.el, "screenshot_captured", { data: null });
+              }
+            });
+          },
+        }
+      </script>
 
-    <%= if Map.get(assigns, :connected, false) do %>
-      <div class="fixed bottom-4 right-4 z-50" id="cms-feedback" phx-hook=".CmsScreenshot" phx-target={@myself}>
-        <%= if @expanded do %>
-          <div class="card bg-base-100 shadow-2xl border border-base-300 w-80">
-            <div class="card-body p-4">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="card-title text-sm">Send Feedback</h3>
-                <button phx-click="toggle" phx-target={@myself} class="btn btn-ghost btn-xs btn-circle">&times;</button>
-              </div>
-
-              <%= if @submitted do %>
-                <div class="text-center py-4">
-                  <div class="text-success text-lg mb-2">&#10003;</div>
-                  <p class="text-sm text-base-content/70">Thanks for your feedback!</p>
-                  <button phx-click="toggle" phx-target={@myself} class="btn btn-ghost btn-sm mt-2">Close</button>
+      <%= if Map.get(assigns, :connected, false) do %>
+        <div
+          class="fixed bottom-4 right-4 z-50"
+          id="cms-feedback"
+          phx-hook=".CmsScreenshot"
+          phx-target={@myself}
+        >
+          <%= if @expanded do %>
+            <div class="card bg-base-100 shadow-2xl border border-base-300 w-80">
+              <div class="card-body p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="card-title text-sm">Send Feedback</h3>
+                  <button
+                    phx-click="toggle"
+                    phx-target={@myself}
+                    class="btn btn-ghost btn-xs btn-circle"
+                  >
+                    &times;
+                  </button>
                 </div>
-              <% else %>
-                <form phx-submit="submit_feedback" phx-change="validate" phx-target={@myself} class="space-y-3">
-                  <%= if @error do %>
-                    <div class="alert alert-error text-xs p-2"><span>{@error}</span></div>
-                  <% end %>
 
-                  <%= if @screenshot_data do %>
-                    <div class="relative">
-                      <img src={@screenshot_data} class="w-full rounded border border-base-300" />
-                      <button
-                        type="button"
-                        phx-click="remove_screenshot"
-                        phx-target={@myself}
-                        class="btn btn-circle btn-xs absolute top-1 right-1 btn-error"
-                      >&times;</button>
-                    </div>
-                  <% else %>
-                    <%= if @capturing do %>
-                      <button type="button" class="btn btn-ghost btn-xs w-full border-dashed border-base-300" disabled>
-                        <.icon name="hero-arrow-path" class="size-4 animate-spin" />
-                        Capturing...
-                      </button>
-                    <% else %>
-                      <button type="button" class="btn btn-ghost btn-xs w-full border-dashed border-base-300" data-capture-screenshot>
-                        <.icon name="hero-camera" class="size-4" />
-                        Capture Screenshot
-                      </button>
+                <%= if @submitted do %>
+                  <div class="text-center py-4">
+                    <div class="text-success text-lg mb-2">&#10003;</div>
+                    <p class="text-sm text-base-content/70">Thanks for your feedback!</p>
+                    <button phx-click="toggle" phx-target={@myself} class="btn btn-ghost btn-sm mt-2">
+                      Close
+                    </button>
+                  </div>
+                <% else %>
+                  <form
+                    phx-submit="submit_feedback"
+                    phx-change="validate"
+                    phx-target={@myself}
+                    class="space-y-3"
+                  >
+                    <%= if @error do %>
+                      <div class="alert alert-error text-xs p-2"><span>{@error}</span></div>
                     <% end %>
-                  <% end %>
 
-                  <input type="text" name="title" value={@form_title} placeholder="Brief summary" required class="input input-bordered input-sm w-full" />
-                  <textarea name="description" placeholder="Describe the issue..." rows="3" class="textarea textarea-bordered textarea-sm w-full">{@form_description}</textarea>
-                  <select name="severity" value={@form_severity} class="select select-bordered select-sm w-full">
-                    <option value="low" selected={@form_severity == "low"}>Low</option>
-                    <option value="medium" selected={@form_severity == "medium"}>Medium</option>
-                    <option value="high" selected={@form_severity == "high"}>High</option>
-                    <option value="critical" selected={@form_severity == "critical"}>Critical</option>
-                  </select>
-                  <button type="submit" class="btn btn-primary btn-sm w-full">Submit Feedback</button>
-                </form>
-              <% end %>
+                    <%= if @screenshot_data do %>
+                      <div class="relative">
+                        <img src={@screenshot_data} class="w-full rounded border border-base-300" />
+                        <button
+                          type="button"
+                          phx-click="remove_screenshot"
+                          phx-target={@myself}
+                          class="btn btn-circle btn-xs absolute top-1 right-1 btn-error"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    <% else %>
+                      <%= if @capturing do %>
+                        <button
+                          type="button"
+                          class="btn btn-ghost btn-xs w-full border-dashed border-base-300"
+                          disabled
+                        >
+                          <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Capturing...
+                        </button>
+                      <% else %>
+                        <button
+                          type="button"
+                          class="btn btn-ghost btn-xs w-full border-dashed border-base-300"
+                          data-capture-screenshot
+                        >
+                          <.icon name="hero-camera" class="size-4" /> Capture Screenshot
+                        </button>
+                      <% end %>
+                    <% end %>
+
+                    <input
+                      type="text"
+                      name="title"
+                      value={@form_title}
+                      placeholder="Brief summary"
+                      required
+                      class="input input-bordered input-sm w-full"
+                    />
+                    <textarea
+                      name="description"
+                      placeholder="Describe the issue..."
+                      rows="3"
+                      class="textarea textarea-bordered textarea-sm w-full"
+                    >{@form_description}</textarea>
+                    <select
+                      name="severity"
+                      value={@form_severity}
+                      class="select select-bordered select-sm w-full"
+                    >
+                      <option value="low" selected={@form_severity == "low"}>Low</option>
+                      <option value="medium" selected={@form_severity == "medium"}>Medium</option>
+                      <option value="high" selected={@form_severity == "high"}>High</option>
+                      <option value="critical" selected={@form_severity == "critical"}>
+                        Critical
+                      </option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm w-full">
+                      Submit Feedback
+                    </button>
+                  </form>
+                <% end %>
+              </div>
             </div>
-          </div>
-        <% else %>
-          <button phx-click="toggle" phx-target={@myself} class="btn btn-primary btn-circle shadow-lg" title="Send feedback">
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-        <% end %>
-      </div>
-    <% else %>
-      <div></div>
-    <% end %>
+          <% else %>
+            <button
+              phx-click="toggle"
+              phx-target={@myself}
+              class="btn btn-primary btn-circle shadow-lg"
+              title="Send feedback"
+            >
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </button>
+          <% end %>
+        </div>
+      <% else %>
+        <div></div>
+      <% end %>
     </div>
     """
   end

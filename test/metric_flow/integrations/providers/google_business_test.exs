@@ -16,9 +16,9 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
   # sync modules after every async one, so this is isolation in the only form the
   # environment offers rather than a reordering that happens to work.
 
-
   import ExUnit.CaptureLog
 
+  alias MetricFlow.Integrations.Providers.Google
   alias MetricFlow.Integrations.Providers.GoogleBusiness
 
   # ---------------------------------------------------------------------------
@@ -52,7 +52,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
     @describetag :integration
 
     test "returns keyword list with required OAuth configuration keys" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleBusiness.config()
@@ -66,7 +67,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
     end
 
     test "includes client_id from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleBusiness.config()
@@ -79,7 +81,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
     end
 
     test "includes redirect_uri pointing to the google_business callback path" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleBusiness.config()
@@ -92,7 +95,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
     end
 
     test "includes authorization_params with business.manage scope" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleBusiness.config()
@@ -107,7 +111,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
     end
 
     test "includes access_type offline for refresh token support" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleBusiness.config()
@@ -160,7 +165,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusinessTest do
 
     test "delegates to Google provider for normalization" do
       assert {:ok, from_business} = GoogleBusiness.normalize_user(valid_user_data())
-      assert {:ok, from_google} = MetricFlow.Integrations.Providers.Google.normalize_user(valid_user_data())
+      assert {:ok, from_google} = Google.normalize_user(valid_user_data())
 
       assert from_business == from_google
     end

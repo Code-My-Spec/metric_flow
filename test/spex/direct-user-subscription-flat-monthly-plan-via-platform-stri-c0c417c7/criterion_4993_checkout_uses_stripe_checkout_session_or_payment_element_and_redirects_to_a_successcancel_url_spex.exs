@@ -5,13 +5,15 @@ defmodule MetricFlowSpex.CheckoutUsesStripeCheckoutSessionSpex do
 
   import MetricFlowSpex.SharedGivens
 
+  alias MetricFlow.Billing.BillingRepository
+
   spex "Checkout uses Stripe Checkout Session and redirects to a success/cancel URL" do
     scenario "user clicks subscribe and is redirected to Stripe checkout" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a platform plan exists", context do
         {:ok, plan} =
-          MetricFlow.Billing.BillingRepository.create_plan(%{
+          BillingRepository.create_plan(%{
             name: "MetricFlow Pro",
             price_cents: 4999,
             currency: "usd",

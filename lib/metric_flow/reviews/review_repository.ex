@@ -12,8 +12,8 @@ defmodule MetricFlow.Reviews.ReviewRepository do
 
   import Ecto.Query
 
-  alias MetricFlow.Reviews.Review
   alias MetricFlow.Repo
+  alias MetricFlow.Reviews.Review
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -39,7 +39,8 @@ defmodule MetricFlow.Reviews.ReviewRepository do
           user_id: user.id,
           integration_id: Map.get(attrs, :integration_id) || Map.get(attrs, "integration_id"),
           provider: provider,
-          external_review_id: Map.get(attrs, :external_review_id) || Map.get(attrs, "external_review_id"),
+          external_review_id:
+            Map.get(attrs, :external_review_id) || Map.get(attrs, "external_review_id"),
           reviewer_name: Map.get(attrs, :reviewer_name) || Map.get(attrs, "reviewer_name"),
           star_rating: Map.get(attrs, :star_rating) || Map.get(attrs, "star_rating"),
           comment: Map.get(attrs, :comment) || Map.get(attrs, "comment"),
@@ -148,8 +149,11 @@ defmodule MetricFlow.Reviews.ReviewRepository do
 
   defp apply_date_range_filter(query, opts) do
     case Keyword.get(opts, :date_range) do
-      nil -> query
-      {start_date, end_date} -> where(query, [r], r.review_date >= ^start_date and r.review_date <= ^end_date)
+      nil ->
+        query
+
+      {start_date, end_date} ->
+        where(query, [r], r.review_date >= ^start_date and r.review_date <= ^end_date)
     end
   end
 
@@ -168,6 +172,9 @@ defmodule MetricFlow.Reviews.ReviewRepository do
   end
 
   defp normalize_provider(provider) when is_atom(provider), do: provider
-  defp normalize_provider(provider) when is_binary(provider), do: String.to_existing_atom(provider)
+
+  defp normalize_provider(provider) when is_binary(provider),
+    do: String.to_existing_atom(provider)
+
   defp normalize_provider(nil), do: nil
 end

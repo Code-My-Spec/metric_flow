@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
 
   spex "System never averages a derived metric directly across rows - it always re-derives from aggregated components" do
     scenario "dashboard loads for a user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,14 +29,15 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
     end
 
     scenario "dashboard displays derived metrics that are computed from aggregated component values" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows derived metrics rather than a simple average of per-row values", context do
+      then_ "the dashboard shows derived metrics rather than a simple average of per-row values",
+            context do
         html = render(context.view)
 
         has_derived_metrics =
@@ -60,23 +61,24 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
     end
 
     scenario "dashboard renders the raw component metrics that feed into derived metric calculations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders additive component metrics alongside derived metrics confirming the re-derive pattern", context do
+      then_ "the dashboard renders additive component metrics alongside derived metrics confirming the re-derive pattern",
+            context do
         html = render(context.view)
 
         has_component_metrics =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']") or
@@ -90,14 +92,15 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
     end
 
     scenario "no 'average' label is shown alongside a derived metric in the dashboard summary" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "derived metrics in the dashboard do not display an average indicator next to them", context do
+      then_ "derived metrics in the dashboard do not display an average indicator next to them",
+            context do
         html = render(context.view)
 
         # The dashboard should not label derived metrics as simple averages.

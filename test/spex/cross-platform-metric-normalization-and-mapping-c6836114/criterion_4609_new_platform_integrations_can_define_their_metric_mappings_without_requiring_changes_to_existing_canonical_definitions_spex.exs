@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
 
   spex "New platform integrations can define their metric mappings without requiring changes to existing canonical definitions" do
     scenario "authenticated user can access the integrations page after a new integration is connected" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         result = live(context.owner_conn, "/app/integrations")
@@ -29,27 +29,28 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
     end
 
     scenario "existing canonical metric names remain unchanged when a new integration is displayed" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the integrations page still references the standard canonical metric names", context do
+      then_ "the integrations page still references the standard canonical metric names",
+            context do
         html = render(context.view)
 
         # The canonical taxonomy (clicks, spend, impressions, conversions) must remain
         # stable on the integrations page regardless of which new platforms are connected.
         has_canonical_references =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             html =~ "conversions" or
-            html =~ "conversions" or
+            html =~ "Conversions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']") or
             has_element?(context.view, "[data-role='metric-mapping']")
@@ -73,25 +74,26 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
     end
 
     scenario "dashboard shows the new platform's metrics using the same canonical labels as existing platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard continues to display canonical metric names shared across all platforms", context do
+      then_ "the dashboard continues to display canonical metric names shared across all platforms",
+            context do
         html = render(context.view)
 
         # The canonical metric names should be present on the dashboard, unchanged
         # by the addition of any new platform integration.
         has_canonical_label =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']") or
             has_element?(context.view, "[data-role='metric-label']")
@@ -113,14 +115,15 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
     end
 
     scenario "dashboard does not expose raw new-platform-specific metric names as top-level canonical labels" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard does not display newly added platform-specific metric names as canonical labels", context do
+      then_ "the dashboard does not display newly added platform-specific metric names as canonical labels",
+            context do
         html = render(context.view)
 
         # A newly connected platform must map its native metric names to canonical ones.

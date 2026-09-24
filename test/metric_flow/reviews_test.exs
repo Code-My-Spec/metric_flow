@@ -4,9 +4,9 @@ defmodule MetricFlow.ReviewsTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.IntegrationsFixtures
 
+  alias MetricFlow.Repo
   alias MetricFlow.Reviews
   alias MetricFlow.Reviews.Review
-  alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -151,7 +151,12 @@ defmodule MetricFlow.ReviewsTest do
       integration = integration_fixture(user, provider: :google_business)
 
       day = days_ago(1)
-      insert_review!(user, integration, %{review_date: day, star_rating: 5, provider: :google_business})
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 5,
+        provider: :google_business
+      })
 
       result = Reviews.query_rolling_review_metrics(scope, provider: :google_business)
 
@@ -163,9 +168,24 @@ defmodule MetricFlow.ReviewsTest do
       integration = integration_fixture(user, provider: :google_business)
 
       day = days_ago(1)
-      insert_review!(user, integration, %{review_date: day, star_rating: 4, provider: :google_business})
-      insert_review!(user, integration, %{review_date: day, star_rating: 5, provider: :google_business})
-      insert_review!(user, integration, %{review_date: day, star_rating: 3, provider: :google_business})
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 4,
+        provider: :google_business
+      })
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 5,
+        provider: :google_business
+      })
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 3,
+        provider: :google_business
+      })
 
       result = Reviews.query_rolling_review_metrics(scope)
 

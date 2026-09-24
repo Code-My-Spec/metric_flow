@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
 
   spex "Derived metrics display identically to raw metrics in dashboards and reports - the aggregation logic is transparent to the user" do
     scenario "dashboard loads for an authenticated user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,23 +29,24 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
     end
 
     scenario "dashboard renders raw and derived metrics in a visually uniform manner" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "both raw and derived metrics appear in the dashboard without separate sections labeling them differently", context do
+      then_ "both raw and derived metrics appear in the dashboard without separate sections labeling them differently",
+            context do
         html = render(context.view)
 
         has_raw_metrics =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']")
@@ -71,14 +72,15 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
     end
 
     scenario "dashboard does not expose internal aggregation labels to the user" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard does not show internal implementation details like formula strings to the user", context do
+      then_ "the dashboard does not show internal implementation details like formula strings to the user",
+            context do
         html = render(context.view)
 
         # The aggregation logic should be transparent - users see metric values, not formulas.
@@ -97,14 +99,15 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
     end
 
     scenario "dashboard presents derived metrics with the same formatting and presentation as raw metrics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "derived and raw metrics share a consistent card or table presentation style visible to the user", context do
+      then_ "derived and raw metrics share a consistent card or table presentation style visible to the user",
+            context do
         html = render(context.view)
 
         # Both types of metrics should appear in the same UI container style -
@@ -132,14 +135,15 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
     end
 
     scenario "user does not see computation-type badges distinguishing raw from derived metric values" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page renders metric values without user-visible labels exposing how each metric was computed", context do
+      then_ "the page renders metric values without user-visible labels exposing how each metric was computed",
+            context do
         html = render(context.view)
 
         # Aggregation logic is transparent to the user -

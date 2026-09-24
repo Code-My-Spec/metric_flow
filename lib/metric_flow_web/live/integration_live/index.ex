@@ -16,12 +16,42 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   # Data platforms — each has its own OAuth provider and integration record.
   @data_platforms [
-    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics", provider: :google_analytics},
-    %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising", provider: :google_ads},
-    %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data", provider: :google_search_console},
-    %{key: :google_business, name: "Google Business", description: "Business profile locations and reviews", provider: :google_business},
-    %{key: :facebook_ads, name: "Facebook Ads", description: "Social media advertising", provider: :facebook_ads},
-    %{key: :quickbooks, name: "QuickBooks", description: "Accounting and financial data", provider: :quickbooks}
+    %{
+      key: :google_analytics,
+      name: "Google Analytics",
+      description: "Website traffic and user behavior analytics",
+      provider: :google_analytics
+    },
+    %{
+      key: :google_ads,
+      name: "Google Ads",
+      description: "Paid search and display advertising",
+      provider: :google_ads
+    },
+    %{
+      key: :google_search_console,
+      name: "Google Search Console",
+      description: "Search performance and indexing data",
+      provider: :google_search_console
+    },
+    %{
+      key: :google_business,
+      name: "Google Business",
+      description: "Business profile locations and reviews",
+      provider: :google_business
+    },
+    %{
+      key: :facebook_ads,
+      name: "Facebook Ads",
+      description: "Social media advertising",
+      provider: :facebook_ads
+    },
+    %{
+      key: :quickbooks,
+      name: "QuickBooks",
+      description: "Accounting and financial data",
+      provider: :quickbooks
+    }
   ]
 
   # Provider display names for messages.
@@ -45,11 +75,15 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       assigns
       |> assign(
         :connected_platforms,
-        Enum.filter(assigns.platforms, fn p -> provider_connected?(p.provider, assigns.integrations) end)
+        Enum.filter(assigns.platforms, fn p ->
+          provider_connected?(p.provider, assigns.integrations)
+        end)
       )
       |> assign(
         :unconnected_platforms,
-        Enum.reject(assigns.platforms, fn p -> provider_connected?(p.provider, assigns.integrations) end)
+        Enum.reject(assigns.platforms, fn p ->
+          provider_connected?(p.provider, assigns.integrations)
+        end)
       )
 
     ~H"""
@@ -60,205 +94,221 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto" data-role="integrations-index">
-      <div class="mb-8 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold">Integrations</h1>
-          <p class="mt-1 text-base-content/60">
-            Manage your connected marketing platforms
-          </p>
-        </div>
-        <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm">
-          Connect a Platform
-        </.link>
-      </div>
-
-      <%= if @integrations == [] do %>
-        <div class="text-center py-12">
-          <p class="text-base-content/60">No platforms connected yet.</p>
-          <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm mt-4">
-            Connect your first platform
+      <div class="mx-auto" data-role="integrations-index">
+        <div class="mb-8 flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold">Integrations</h1>
+            <p class="mt-1 text-base-content/60">
+              Manage your connected marketing platforms
+            </p>
+          </div>
+          <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm">
+            Connect a Platform
           </.link>
         </div>
-      <% end %>
 
-      <%= if @connected_platforms != [] do %>
-        <div class="mb-8">
-          <h2 class="text-lg font-semibold mb-4">Connected Platforms</h2>
-          <div data-role="integrations-list" class="space-y-4">
-            <div
-              :for={platform <- @connected_platforms}
-              data-role="integration-card"
-              data-platform={Atom.to_string(platform.key)}
-              data-status="connected"
-              class="mf-card p-5"
-            >
-              <div data-role="integration-row" class="flex items-start justify-between">
-                <div class="flex-1">
-                  <h3 data-role="integration-platform-name" class="font-semibold">
-                    {platform.name}
-                  </h3>
-                  <p class="text-sm text-base-content/60">{platform.description}</p>
+        <%= if @integrations == [] do %>
+          <div class="text-center py-12">
+            <p class="text-base-content/60">No platforms connected yet.</p>
+            <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm mt-4">
+              Connect your first platform
+            </.link>
+          </div>
+        <% end %>
 
-                  <div class="mt-1 flex flex-wrap items-center gap-2">
-                    <span data-status="connected" class="badge badge-success">Connected</span>
-                    <span data-role="integration-sync-status" class="flex items-center gap-1">
-                      <%= if MapSet.member?(@syncing, platform.key) do %>
-                        <span class="badge badge-warning">
-                          Syncing
-                          <span class="loading loading-spinner loading-xs ml-1"></span>
-                        </span>
-                      <% else %>
-                        <%= if result = Map.get(@sync_results, platform.key) do %>
-                          <span class="badge badge-success text-xs">
-                            Synced {result.records_synced} records at {Calendar.strftime(result.completed_at, "%Y-%m-%d %H:%M")} UTC
+        <%= if @connected_platforms != [] do %>
+          <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">Connected Platforms</h2>
+            <div data-role="integrations-list" class="space-y-4">
+              <div
+                :for={platform <- @connected_platforms}
+                data-role="integration-card"
+                data-platform={Atom.to_string(platform.key)}
+                data-status="connected"
+                class="mf-card p-5"
+              >
+                <div data-role="integration-row" class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 data-role="integration-platform-name" class="font-semibold">
+                      {platform.name}
+                    </h3>
+                    <p class="text-sm text-base-content/60">{platform.description}</p>
+
+                    <div class="mt-1 flex flex-wrap items-center gap-2">
+                      <span data-status="connected" class="badge badge-success">Connected</span>
+                      <span data-role="integration-sync-status" class="flex items-center gap-1">
+                        <%= if MapSet.member?(@syncing, platform.key) do %>
+                          <span class="badge badge-warning">
+                            Syncing <span class="loading loading-spinner loading-xs ml-1"></span>
                           </span>
+                        <% else %>
+                          <%= if result = Map.get(@sync_results, platform.key) do %>
+                            <span class="badge badge-success text-xs">
+                              Synced {result.records_synced} records at {Calendar.strftime(
+                                result.completed_at,
+                                "%Y-%m-%d %H:%M"
+                              )} UTC
+                            </span>
+                          <% end %>
                         <% end %>
-                      <% end %>
-                    </span>
-                  </div>
-
-                  <% integration = find_integration(@integrations, platform.provider) %>
-                  <%= if integration do %>
-                    <p data-role="integration-connected-date" class="text-xs text-base-content/50 mt-1">
-                      Connected
-                      <span :if={logged_in_account(integration)}>as <span class="font-medium">{logged_in_account(integration)}</span></span>
-                      via {provider_display_name(platform.provider)} on {Calendar.strftime(integration.inserted_at, "%Y-%m-%d")}
-                    </p>
-                    <div data-role="integration-selected-accounts" class="mt-2 text-sm text-base-content/60">
-                      <% account_value = selected_account_display(integration) %>
-                      <%= if account_value do %>
-                        <span class="text-xs">{account_value}</span>
-                      <% else %>
-                        <span class="text-xs italic">No accounts selected</span>
-                      <% end %>
+                      </span>
                     </div>
-                  <% end %>
-                </div>
 
-                <div class="flex flex-col items-end gap-2 ml-4">
-                  <% no_accounts = is_nil(selected_account_display(integration)) %>
-                  <button
-                    phx-click="sync"
-                    phx-value-platform={Atom.to_string(platform.key)}
-                    phx-value-provider={Atom.to_string(platform.provider)}
-                    phx-disable-with="Please wait..."
-                    disabled={MapSet.member?(@syncing, platform.key) or no_accounts}
-                    class="btn btn-outline btn-sm"
-                    title={if no_accounts, do: "Select accounts before syncing", else: ""}
-                  >
-                    Sync Now
-                  </button>
-                  <.link
-                    data-role="edit-integration-accounts"
-                    navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"}
-                    class={if no_accounts, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
-                  >
-                    Edit Accounts
-                  </.link>
-                  <.link
-                    data-role="integration-detail-link"
-                    navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}"}
-                    class="btn btn-ghost btn-xs"
-                  >
-                    Manage
-                  </.link>
-                  <button
-                    data-role="disconnect-integration"
-                    phx-click="confirm_disconnect"
-                    phx-value-provider={Atom.to_string(platform.provider)}
-                    class="btn btn-ghost btn-xs text-error"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      <% end %>
-
-      <%= if @unconnected_platforms != [] do %>
-        <div>
-          <h2 class="text-lg font-semibold mb-4">Available Platforms</h2>
-          <div data-role="available-platforms-list" class="space-y-4">
-            <div
-              :for={platform <- @unconnected_platforms}
-              data-role="integration-card"
-              data-platform={Atom.to_string(platform.key)}
-              data-status="available"
-              class="mf-card p-5"
-            >
-              <div data-role="integration-row" class="flex items-start justify-between">
-                <div class="flex-1">
-                  <h3 data-role="integration-platform-name" class="font-semibold">
-                    {platform.name}
-                  </h3>
-                  <p class="text-sm text-base-content/60">{platform.description}</p>
-
-                  <div class="mt-1 flex flex-wrap items-center gap-2">
-                    <span data-role="integration-sync-status" class="badge badge-ghost">
-                      Not connected
-                    </span>
+                    <% integration = find_integration(@integrations, platform.provider) %>
+                    <%= if integration do %>
+                      <p
+                        data-role="integration-connected-date"
+                        class="text-xs text-base-content/50 mt-1"
+                      >
+                        Connected
+                        <span :if={logged_in_account(integration)}>
+                          as <span class="font-medium">{logged_in_account(integration)}</span>
+                        </span>
+                        via {provider_display_name(platform.provider)} on {Calendar.strftime(
+                          integration.inserted_at,
+                          "%Y-%m-%d"
+                        )}
+                      </p>
+                      <div
+                        data-role="integration-selected-accounts"
+                        class="mt-2 text-sm text-base-content/60"
+                      >
+                        <% account_value = selected_account_display(integration) %>
+                        <%= if account_value do %>
+                          <span class="text-xs">{account_value}</span>
+                        <% else %>
+                          <span class="text-xs italic">No accounts selected</span>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
 
-                  <p class="text-xs text-base-content/40 mt-1 italic">
-                    Connect {provider_display_name(platform.provider)} first
-                  </p>
-                </div>
-
-                <div class="flex flex-col items-end gap-2 ml-4">
-                  <.link
-                    data-role="reconnect-integration"
-                    navigate={~p"/app/integrations/connect"}
-                    class="btn btn-primary btn-sm"
-                  >
-                    Connect {provider_display_name(platform.provider)}
-                  </.link>
+                  <div class="flex flex-col items-end gap-2 ml-4">
+                    <% no_accounts = is_nil(selected_account_display(integration)) %>
+                    <button
+                      phx-click="sync"
+                      phx-value-platform={Atom.to_string(platform.key)}
+                      phx-value-provider={Atom.to_string(platform.provider)}
+                      phx-disable-with="Please wait..."
+                      disabled={MapSet.member?(@syncing, platform.key) or no_accounts}
+                      class="btn btn-outline btn-sm"
+                      title={if no_accounts, do: "Select accounts before syncing", else: ""}
+                    >
+                      Sync Now
+                    </button>
+                    <.link
+                      data-role="edit-integration-accounts"
+                      navigate={
+                        ~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"
+                      }
+                      class={
+                        if no_accounts, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"
+                      }
+                    >
+                      Edit Accounts
+                    </.link>
+                    <.link
+                      data-role="integration-detail-link"
+                      navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}"}
+                      class="btn btn-ghost btn-xs"
+                    >
+                      Manage
+                    </.link>
+                    <button
+                      data-role="disconnect-integration"
+                      phx-click="confirm_disconnect"
+                      phx-value-provider={Atom.to_string(platform.provider)}
+                      class="btn btn-ghost btn-xs text-error"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      <% end %>
-      <%= if @disconnecting do %>
-        <% disc_provider_name = provider_display_name(@disconnecting) %>
-        <dialog
-          class="modal modal-open"
-          data-role="disconnect-modal"
-        >
-          <div class="modal-box">
-            <h3 class="font-bold text-lg">Disconnect {disc_provider_name}?</h3>
-            <p class="py-4" data-role="disconnect-warning">
-              Are you sure you want to disconnect <strong>{disc_provider_name}</strong>?
-              This will affect all platforms that use this connection.
-              Historical data will remain available, but no new data will sync after disconnecting.
-            </p>
-            <div class="modal-action">
-              <button
-                data-role="cancel-disconnect"
-                phx-click="cancel_disconnect"
-                class="btn"
+        <% end %>
+
+        <%= if @unconnected_platforms != [] do %>
+          <div>
+            <h2 class="text-lg font-semibold mb-4">Available Platforms</h2>
+            <div data-role="available-platforms-list" class="space-y-4">
+              <div
+                :for={platform <- @unconnected_platforms}
+                data-role="integration-card"
+                data-platform={Atom.to_string(platform.key)}
+                data-status="available"
+                class="mf-card p-5"
               >
-                Cancel
-              </button>
-              <button
-                data-role="confirm-disconnect"
-                phx-click="disconnect"
-                phx-value-provider={Atom.to_string(@disconnecting)}
-                class="btn btn-error"
-              >
-                Disconnect
-              </button>
+                <div data-role="integration-row" class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 data-role="integration-platform-name" class="font-semibold">
+                      {platform.name}
+                    </h3>
+                    <p class="text-sm text-base-content/60">{platform.description}</p>
+
+                    <div class="mt-1 flex flex-wrap items-center gap-2">
+                      <span data-role="integration-sync-status" class="badge badge-ghost">
+                        Not connected
+                      </span>
+                    </div>
+
+                    <p class="text-xs text-base-content/40 mt-1 italic">
+                      Connect {provider_display_name(platform.provider)} first
+                    </p>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-2 ml-4">
+                    <.link
+                      data-role="reconnect-integration"
+                      navigate={~p"/app/integrations/connect"}
+                      class="btn btn-primary btn-sm"
+                    >
+                      Connect {provider_display_name(platform.provider)}
+                    </.link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <form method="dialog" class="modal-backdrop">
-            <button phx-click="cancel_disconnect">close</button>
-          </form>
-        </dialog>
-      <% end %>
-    </div>
+        <% end %>
+        <%= if @disconnecting do %>
+          <% disc_provider_name = provider_display_name(@disconnecting) %>
+          <dialog
+            class="modal modal-open"
+            data-role="disconnect-modal"
+          >
+            <div class="modal-box">
+              <h3 class="font-bold text-lg">Disconnect {disc_provider_name}?</h3>
+              <p class="py-4" data-role="disconnect-warning">
+                Are you sure you want to disconnect <strong>{disc_provider_name}</strong>?
+                This will affect all platforms that use this connection.
+                Historical data will remain available, but no new data will sync after disconnecting.
+              </p>
+              <div class="modal-action">
+                <button
+                  data-role="cancel-disconnect"
+                  phx-click="cancel_disconnect"
+                  class="btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  data-role="confirm-disconnect"
+                  phx-click="disconnect"
+                  phx-value-provider={Atom.to_string(@disconnecting)}
+                  class="btn btn-error"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button phx-click="cancel_disconnect">close</button>
+            </form>
+          </dialog>
+        <% end %>
+      </div>
     </Layouts.app>
     """
   end
@@ -308,15 +358,27 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
         {:noreply, socket}
 
       {:error, :not_found} ->
-        {:noreply, put_flash(socket, :error, "#{platform_name} integration not found. Please connect it first.")}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "#{platform_name} integration not found. Please connect it first."
+         )}
 
       {:error, :not_connected} ->
-        {:noreply, put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
+        {:noreply,
+         put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
 
       {:error, reason} ->
         require Logger
         Logger.error("Sync failed for #{platform_name}: #{inspect(reason)}")
-        {:noreply, put_flash(socket, :error, "Failed to start sync for #{platform_name}: #{inspect(reason)}")}
+
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Failed to start sync for #{platform_name}: #{inspect(reason)}"
+         )}
     end
   end
 
@@ -366,7 +428,8 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
           |> assign(:disconnecting, nil)
           |> put_flash(
             :info,
-            "Disconnected from #{provider_display_name(provider)}. Historical data is retained; no new data will sync after disconnecting."
+            "Disconnected from #{provider_display_name(provider)}. " <>
+              "Historical data is retained; no new data will sync after disconnecting."
           )
 
         {:noreply, socket}
@@ -387,7 +450,8 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   @impl true
   def handle_info(
-        {:sync_completed, %{provider: provider, records_synced: count, completed_at: completed_at}},
+        {:sync_completed,
+         %{provider: provider, records_synced: count, completed_at: completed_at}},
         socket
       ) do
     result = %{records_synced: count, completed_at: completed_at}
@@ -472,7 +536,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   end
 
   defp provider_display_name(provider_key) do
-    Map.get(@provider_names, provider_key, provider_key |> Atom.to_string() |> derive_display_name())
+    Map.get(
+      @provider_names,
+      provider_key,
+      provider_key |> Atom.to_string() |> derive_display_name()
+    )
   end
 
   defp derive_display_name(provider_str) do
@@ -483,7 +551,8 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   end
 
   # Looks up the selected account value from provider_metadata using the correct key per provider.
-  defp selected_account_display(%{provider: provider, provider_metadata: meta}) when is_map(meta) do
+  defp selected_account_display(%{provider: provider, provider_metadata: meta})
+       when is_map(meta) do
     key = metadata_key_for_provider(provider)
     value = Map.get(meta, key)
 
@@ -508,8 +577,12 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   defp selected_account_display(_), do: nil
 
-  defp logged_in_account(%{provider_metadata: %{"email" => email}}) when is_binary(email) and email != "", do: email
-  defp logged_in_account(%{provider_metadata: %{"name" => name}}) when is_binary(name) and name != "", do: name
+  defp logged_in_account(%{provider_metadata: %{"email" => email}})
+       when is_binary(email) and email != "", do: email
+
+  defp logged_in_account(%{provider_metadata: %{"name" => name}})
+       when is_binary(name) and name != "", do: name
+
   defp logged_in_account(_), do: nil
 
   defp metadata_key_for_provider(:google_analytics), do: "property_id"

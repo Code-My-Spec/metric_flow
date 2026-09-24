@@ -4,9 +4,9 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.IntegrationsFixtures
 
+  alias MetricFlow.Repo
   alias MetricFlow.Reviews.Review
   alias MetricFlow.Reviews.ReviewRepository
-  alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -100,10 +100,22 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
 
       external_id = "ext-dedup-#{System.unique_integer([:positive])}"
 
-      initial_attrs = [valid_review_attrs(user.id, integration.id, %{external_review_id: external_id, star_rating: 3})]
+      initial_attrs = [
+        valid_review_attrs(user.id, integration.id, %{
+          external_review_id: external_id,
+          star_rating: 3
+        })
+      ]
+
       {:ok, 1} = ReviewRepository.create_reviews(scope, initial_attrs)
 
-      updated_attrs = [valid_review_attrs(user.id, integration.id, %{external_review_id: external_id, star_rating: 5})]
+      updated_attrs = [
+        valid_review_attrs(user.id, integration.id, %{
+          external_review_id: external_id,
+          star_rating: 5
+        })
+      ]
+
       {:ok, 1} = ReviewRepository.create_reviews(scope, updated_attrs)
 
       assert Repo.aggregate(Review, :count) == 1
@@ -329,8 +341,11 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
       {user, scope} = user_with_scope()
       integration = integration_fixture(user, provider: :google_business)
 
-      older = insert_review!(user.id, integration.id, %{review_date: Date.utc_today() |> Date.add(-5)})
-      newer = insert_review!(user.id, integration.id, %{review_date: Date.utc_today() |> Date.add(-1)})
+      older =
+        insert_review!(user.id, integration.id, %{review_date: Date.utc_today() |> Date.add(-5)})
+
+      newer =
+        insert_review!(user.id, integration.id, %{review_date: Date.utc_today() |> Date.add(-1)})
 
       results = ReviewRepository.list_reviews(scope)
       result_ids = Enum.map(results, & &1.id)
@@ -357,7 +372,8 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
       boundary_date = Date.utc_today() |> Date.add(-10)
       insert_review!(user.id, integration.id, %{review_date: boundary_date})
 
-      results = ReviewRepository.list_reviews(scope, date_range: {boundary_date, Date.utc_today()})
+      results =
+        ReviewRepository.list_reviews(scope, date_range: {boundary_date, Date.utc_today()})
 
       assert length(results) == 1
     end
@@ -369,7 +385,10 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
       boundary_date = Date.utc_today()
       insert_review!(user.id, integration.id, %{review_date: boundary_date})
 
-      results = ReviewRepository.list_reviews(scope, date_range: {Date.utc_today() |> Date.add(-10), boundary_date})
+      results =
+        ReviewRepository.list_reviews(scope,
+          date_range: {Date.utc_today() |> Date.add(-10), boundary_date}
+        )
 
       assert length(results) == 1
     end
@@ -421,7 +440,9 @@ defmodule MetricFlow.Reviews.ReviewRepositoryTest do
       other_integration = integration_fixture(other_user, provider: :google_business)
 
       insert_review!(user.id, integration.id, %{provider: :google_business})
-      other_review = insert_review!(other_user.id, other_integration.id, %{provider: :google_business})
+
+      other_review =
+        insert_review!(other_user.id, other_integration.id, %{provider: :google_business})
 
       {:ok, _count} = ReviewRepository.delete_reviews_by_provider(scope, :google_business)
 

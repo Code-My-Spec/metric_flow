@@ -8,6 +8,7 @@ defmodule MetricFlowTest.UsersFixtures do
 
   alias MetricFlow.Users
   alias MetricFlow.Users.Scope
+  alias MetricFlow.Users.UserToken
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
@@ -75,7 +76,7 @@ defmodule MetricFlowTest.UsersFixtures do
 
   def override_token_authenticated_at(token, authenticated_at) when is_binary(token) do
     MetricFlow.Repo.update_all(
-      from(t in Users.UserToken,
+      from(t in UserToken,
         where: t.token == ^token
       ),
       set: [authenticated_at: authenticated_at]
@@ -83,7 +84,7 @@ defmodule MetricFlowTest.UsersFixtures do
   end
 
   def generate_user_magic_link_token(user) do
-    {encoded_token, user_token} = Users.UserToken.build_email_token(user, "login")
+    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     MetricFlow.Repo.insert!(user_token)
     {encoded_token, user_token.token}
   end
@@ -92,7 +93,7 @@ defmodule MetricFlowTest.UsersFixtures do
     dt = DateTime.add(DateTime.utc_now(:second), amount_to_add, unit)
 
     MetricFlow.Repo.update_all(
-      from(ut in Users.UserToken, where: ut.token == ^token),
+      from(ut in UserToken, where: ut.token == ^token),
       set: [inserted_at: dt, authenticated_at: dt]
     )
   end

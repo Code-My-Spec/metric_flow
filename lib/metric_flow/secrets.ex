@@ -115,7 +115,8 @@ defmodule MetricFlow.Secrets do
         # Deliberately drop `reason` — it can include partial AWS auth
         # diagnostics. Log only the bounded fields.
         :logger.warning(
-          "MetricFlow.Secrets: SSM fetch failed for #{path} (attempt #{attempt}/#{@max_attempts}); retrying in #{@backoff_ms}ms"
+          "MetricFlow.Secrets: SSM fetch failed for #{path} " <>
+            "(attempt #{attempt}/#{@max_attempts}); retrying in #{@backoff_ms}ms"
         )
 
         Process.sleep(@backoff_ms)

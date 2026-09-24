@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
 
   spex "System distinguishes between raw/additive metrics and derived/calculated metrics" do
     scenario "dashboard page loads for an authenticated user" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,23 +29,24 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
     end
 
     scenario "dashboard displays raw additive metrics such as clicks, spend, and impressions" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders additive metric labels or containers for raw metrics", context do
+      then_ "the dashboard renders additive metric labels or containers for raw metrics",
+            context do
         html = render(context.view)
 
         has_raw_metrics =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']") or
@@ -59,23 +60,24 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
     end
 
     scenario "dashboard displays derived/calculated metrics such as CPC, CTR, or ROAS" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders derived metric labels or containers for calculated metrics", context do
+      then_ "the dashboard renders derived metric labels or containers for calculated metrics",
+            context do
         html = render(context.view)
 
         has_derived_metrics =
           html =~ "cpc" or
-            html =~ "cpc" or
+            html =~ "CPC" or
             html =~ "ctr" or
-            html =~ "ctr" or
+            html =~ "CTR" or
             html =~ "roas" or
-            html =~ "roas" or
+            html =~ "ROAS" or
             html =~ "Conversion Rate" or
             html =~ "conversion_rate" or
             html =~ "Cost Per Click" or
@@ -93,7 +95,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
     end
 
     scenario "dashboard does not mix up raw and derived metric categories" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

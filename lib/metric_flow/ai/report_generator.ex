@@ -65,7 +65,12 @@ defmodule MetricFlow.Ai.ReportGenerator do
 
     parts =
       if current_spec do
-        parts ++ ["\nCurrent Vega-Lite Spec:\n```json\n#{Jason.encode!(current_spec, pretty: true)}\n```\nEdit the above spec according to the user's request."]
+        spec_content =
+          "\nCurrent Vega-Lite Spec:\n```json\n" <>
+            Jason.encode!(current_spec, pretty: true) <>
+            "\n```\nEdit the above spec according to the user's request."
+
+        parts ++ [spec_content]
       else
         parts
       end

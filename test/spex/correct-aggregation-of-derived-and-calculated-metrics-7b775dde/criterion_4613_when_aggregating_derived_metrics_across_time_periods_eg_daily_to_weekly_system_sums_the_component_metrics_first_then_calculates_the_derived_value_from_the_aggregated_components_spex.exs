@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
 
   spex "When aggregating derived metrics across time periods, system sums component metrics first then calculates derived value" do
     scenario "dashboard loads for an authenticated user with a time period selector" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,14 +29,15 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
     end
 
     scenario "dashboard provides a way to switch between daily and weekly time period views" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders a time period control such as a date range selector or period tabs", context do
+      then_ "the dashboard renders a time period control such as a date range selector or period tabs",
+            context do
         html = render(context.view)
 
         has_time_period_control =
@@ -65,7 +66,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
     end
 
     scenario "switching to weekly view displays aggregated derived metrics rather than averages of daily values" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -100,7 +101,8 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
         end
       end
 
-      then_ "the dashboard still renders derived metrics such as CPC, CTR, or ROAS in the weekly view", context do
+      then_ "the dashboard still renders derived metrics such as CPC, CTR, or ROAS in the weekly view",
+            context do
         html = context.weekly_html
 
         has_derived_in_weekly_view =
@@ -124,23 +126,24 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
     end
 
     scenario "the weekly view shows component raw metrics that are summed before derived metrics are computed" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders the component raw metrics (clicks, spend, impressions) alongside derived metrics", context do
+      then_ "the dashboard renders the component raw metrics (clicks, spend, impressions) alongside derived metrics",
+            context do
         html = render(context.view)
 
         has_component_metrics =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']")

@@ -4,9 +4,9 @@ defmodule MetricFlow.Reviews.ReviewMetricsTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.IntegrationsFixtures
 
+  alias MetricFlow.Repo
   alias MetricFlow.Reviews.Review
   alias MetricFlow.Reviews.ReviewMetrics
-  alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -165,7 +165,8 @@ defmodule MetricFlow.Reviews.ReviewMetricsTest do
       start_date = days_ago(10)
       end_date = today()
 
-      result = ReviewMetrics.query_rolling_review_metrics(scope, date_range: {start_date, end_date})
+      result =
+        ReviewMetrics.query_rolling_review_metrics(scope, date_range: {start_date, end_date})
 
       assert length(result.review_count) == 1
       assert hd(result.review_count).date == in_range_date
@@ -244,9 +245,23 @@ defmodule MetricFlow.Reviews.ReviewMetricsTest do
 
       day = days_ago(1)
 
-      insert_review!(user, integration, %{review_date: day, star_rating: 4, provider: :google_business})
-      insert_review!(user, integration, %{review_date: day, star_rating: 2, provider: :google_business})
-      insert_review!(user, integration, %{review_date: day, star_rating: 5, provider: :google_business})
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 4,
+        provider: :google_business
+      })
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 2,
+        provider: :google_business
+      })
+
+      insert_review!(user, integration, %{
+        review_date: day,
+        star_rating: 5,
+        provider: :google_business
+      })
 
       result = ReviewMetrics.query_rolling_review_metrics(scope)
 

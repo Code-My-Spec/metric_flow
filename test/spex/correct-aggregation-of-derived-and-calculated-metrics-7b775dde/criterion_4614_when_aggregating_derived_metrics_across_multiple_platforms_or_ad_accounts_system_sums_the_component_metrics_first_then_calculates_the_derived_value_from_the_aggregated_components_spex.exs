@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
 
   spex "When aggregating derived metrics across multiple platforms or ad accounts, system sums component metrics first then calculates derived value" do
     scenario "dashboard loads for a user who has integrations with multiple platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,14 +29,15 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
     end
 
     scenario "dashboard provides a way to view metrics across all platforms combined" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders a platform or account filter or an all-platforms combined view", context do
+      then_ "the dashboard renders a platform or account filter or an all-platforms combined view",
+            context do
         html = render(context.view)
 
         has_platform_control =
@@ -66,14 +67,15 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
     end
 
     scenario "dashboard displays derived metrics when viewing data across multiple ad accounts" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders derived metrics regardless of whether single or multiple platforms are shown", context do
+      then_ "the dashboard renders derived metrics regardless of whether single or multiple platforms are shown",
+            context do
         html = render(context.view)
 
         has_derived_metrics =
@@ -97,23 +99,24 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
     end
 
     scenario "dashboard renders raw component metrics alongside derived metrics for cross-platform view" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders raw component metrics (clicks, spend, impressions) that are summed before derived metrics are computed", context do
+      then_ "the dashboard renders raw component metrics (clicks, spend, impressions) that are summed before derived metrics are computed",
+            context do
         html = render(context.view)
 
         has_component_metrics =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']") or
             has_element?(context.view, "[data-role='raw-metric']") or

@@ -30,6 +30,7 @@ defmodule MetricFlow.Ai do
   alias MetricFlow.Ai.InsightsGenerator
   alias MetricFlow.Ai.LlmClient
   alias MetricFlow.Ai.ReportGenerator
+  alias MetricFlow.Ai.VizChat
   alias MetricFlow.Correlations
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
@@ -102,7 +103,8 @@ defmodule MetricFlow.Ai do
          {:ok, results} <- load_results(scope, job),
          correlation_data <- build_correlation_data(job, results),
          metric_names <- extract_metric_names(results),
-         {:ok, insight_attrs_list} <- InsightsGenerator.generate(correlation_data, metric_names, opts) do
+         {:ok, insight_attrs_list} <-
+           InsightsGenerator.generate(correlation_data, metric_names, opts) do
       persist_insights(scope, insight_attrs_list, results)
     end
   end
@@ -147,7 +149,7 @@ defmodule MetricFlow.Ai do
   def viz_chat(%Scope{} = scope, context, user_message, opts \\ []) do
     metric_names = Metrics.list_normalized_metric_names(scope)
 
-    MetricFlow.Ai.VizChat.send_message(
+    VizChat.send_message(
       context,
       user_message,
       Keyword.merge(opts, metric_names: metric_names)
@@ -281,7 +283,11 @@ defmodule MetricFlow.Ai do
     case stream_fn.(system_prompt, messages, opts) do
       {:ok, stream_response} ->
         content = collect_stream(stream_response, caller)
-        content = if content == "", do: "I wasn't able to generate a response. Please try again.", else: content
+
+        content =
+          if content == "",
+            do: "I wasn't able to generate a response. Please try again.",
+            else: content
 
         {:ok, _msg} =
           AiRepository.create_chat_message(scope, %{

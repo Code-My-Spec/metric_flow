@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
 
   spex "Derived metrics that reference canonical component metrics automatically work across platforms once their components are mapped" do
     scenario "dashboard loads for a user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
     end
 
     scenario "dashboard displays the derived CPC metric computed from canonical spend and clicks" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
 
         has_cpc =
           html =~ "cpc" or
-            html =~ "cpc" or
+            html =~ "CPC" or
             html =~ "Cost per Click" or
             html =~ "cost per click" or
             has_element?(context.view, "[data-canonical-metric='cpc']") or
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
     end
 
     scenario "dashboard shows derived metrics that span across multiple connected platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -69,11 +69,11 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
 
         has_derived_metric =
           html =~ "cpc" or
-            html =~ "cpc" or
+            html =~ "CPC" or
             html =~ "ctr" or
-            html =~ "ctr" or
+            html =~ "CTR" or
             html =~ "roas" or
-            html =~ "roas" or
+            html =~ "ROAS" or
             html =~ "CPM" or
             html =~ "cpm" or
             has_element?(context.view, "[data-derived-metric]") or
@@ -96,14 +96,15 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
     end
 
     scenario "dashboard does not expose raw platform-specific metric names as the label for derived metrics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "derived metrics on the dashboard use canonical names not raw platform names", context do
+      then_ "derived metrics on the dashboard use canonical names not raw platform names",
+            context do
         html = render(context.view)
 
         # Derived metrics should reference canonical component names, not raw platform

@@ -86,7 +86,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
               error_message = Exception.message(e)
 
               Logger.error(
-                "SyncWorker encountered exception integration_id=#{integration_id} user_id=#{user_id} error=#{error_message}"
+                "SyncWorker encountered exception integration_id=#{integration_id} " <>
+                  "user_id=#{user_id} error=#{error_message}"
               )
 
               record_failure_with_integration(
@@ -174,10 +175,14 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
     case fetch_integration(integration_id) do
       {:ok, integration} ->
-        broadcast_sync_event(user_id, {:sync_failed, %{
-          provider: integration.provider,
-          reason: format_error(reason)
-        }})
+        broadcast_sync_event(
+          user_id,
+          {:sync_failed,
+           %{
+             provider: integration.provider,
+             reason: format_error(reason)
+           }}
+        )
 
       _ ->
         :ok
@@ -192,28 +197,28 @@ defmodule MetricFlow.DataSync.SyncWorker do
         {:error, :integration_not_found}
 
       {:ok, integration} ->
-        case ensure_fresh_tokens(scope, integration) do
-          {:ok, fresh_integration} ->
-            run_provider_sync(scope, fresh_integration, sync_job_id, http_plug, started_at)
+        sync_with_fresh_tokens(scope, integration, sync_job_id, http_plug, started_at)
+    end
+  end
 
-          {:error, :token_expired} ->
-            error_message = "Token expired and could not be refreshed"
+  defp sync_with_fresh_tokens(scope, integration, sync_job_id, http_plug, started_at) do
+    case ensure_fresh_tokens(scope, integration) do
+      {:ok, fresh_integration} ->
+        run_provider_sync(scope, fresh_integration, sync_job_id, http_plug, started_at)
 
-            record_history(
-              scope,
-              integration,
-              sync_job_id,
-              :failed,
-              0,
-              error_message,
-              started_at
-            )
+      {:error, :token_expired} ->
+        error_message = "Token expired and could not be refreshed"
 
-            {:error, :token_expired}
+        record_history(scope, integration, sync_job_id, started_at, %{
+          status: :failed,
+          records_synced: 0,
+          error_message: error_message
+        })
 
-          {:error, reason} ->
-            {:error, reason}
-        end
+        {:error, :token_expired}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -229,25 +234,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp run_all_providers(scope, integration, sync_job_id, provider_mods, opts, started_at) do
-    results =
-      Enum.map(provider_mods, fn provider_mod ->
-        case provider_mod.fetch_metrics(integration, opts) do
-          {:ok, metrics} ->
-            {:ok, provider_mod, metrics}
+    results = Enum.map(provider_mods, &fetch_provider_metrics(&1, integration, opts))
 
-          {:error, reason} ->
-            Logger.error(
-              "SyncWorker provider fetch_metrics failed integration_id=#{integration.id} provider_mod=#{inspect(provider_mod)} reason=#{inspect(reason)}"
-            )
-
-            {:error, provider_mod, reason}
-        end
+    all_metrics =
+      Enum.flat_map(results, fn
+        {:ok, _mod, metrics} -> metrics
+        {:error, _mod, _reason} -> []
       end)
-
-    all_metrics = Enum.flat_map(results, fn
-      {:ok, _mod, metrics} -> metrics
-      {:error, _mod, _reason} -> []
-    end)
 
     errors = Enum.filter(results, &match?({:error, _, _}, &1))
 
@@ -256,15 +249,39 @@ defmodule MetricFlow.DataSync.SyncWorker do
         provider = provider_name(mod, integration)
         error_msg = format_error(reason)
 
-        record_history_with_provider(
-          scope, integration, sync_job_id, provider,
-          :failed, 0, error_msg, started_at
-        )
+        record_history(scope, integration, sync_job_id, started_at, %{
+          provider: provider,
+          status: :failed,
+          records_synced: 0,
+          error_message: error_msg
+        })
       end)
 
       {:error, :all_providers_failed}
     else
-      persist_and_record_success(scope, integration, sync_job_id, all_metrics, results, started_at)
+      persist_and_record_success(
+        scope,
+        integration,
+        sync_job_id,
+        all_metrics,
+        results,
+        started_at
+      )
+    end
+  end
+
+  defp fetch_provider_metrics(provider_mod, integration, opts) do
+    case provider_mod.fetch_metrics(integration, opts) do
+      {:ok, metrics} ->
+        {:ok, provider_mod, metrics}
+
+      {:error, reason} ->
+        Logger.error(
+          "SyncWorker provider fetch_metrics failed integration_id=#{integration.id} " <>
+            "provider_mod=#{inspect(provider_mod)} reason=#{inspect(reason)}"
+        )
+
+        {:error, provider_mod, reason}
     end
   end
 
@@ -335,25 +352,31 @@ defmodule MetricFlow.DataSync.SyncWorker do
     # Record a history entry per provider module
     Enum.each(results, fn
       {:ok, mod, mod_metrics} ->
-        record_history_with_provider(
-          scope, integration, sync_job_id,
-          provider_name(mod, integration),
-          :success, length(mod_metrics), nil, started_at
-        )
+        record_history(scope, integration, sync_job_id, started_at, %{
+          provider: provider_name(mod, integration),
+          status: :success,
+          records_synced: length(mod_metrics),
+          error_message: nil
+        })
 
       {:error, mod, reason} ->
-        record_history_with_provider(
-          scope, integration, sync_job_id,
-          provider_name(mod, integration),
-          :failed, 0, format_error(reason), started_at
-        )
+        record_history(scope, integration, sync_job_id, started_at, %{
+          provider: provider_name(mod, integration),
+          status: :failed,
+          records_synced: 0,
+          error_message: format_error(reason)
+        })
     end)
 
-    broadcast_sync_event(scope.user.id, {:sync_completed, %{
-      provider: integration.provider,
-      records_synced: records_synced,
-      completed_at: DateTime.utc_now()
-    }})
+    broadcast_sync_event(
+      scope.user.id,
+      {:sync_completed,
+       %{
+         provider: integration.provider,
+         records_synced: records_synced,
+         completed_at: DateTime.utc_now()
+       }}
+    )
 
     case update_job_status(scope, sync_job_id, :completed) do
       {:ok, _} -> :ok
@@ -361,10 +384,20 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp record_failure_with_integration(scope, integration_id, sync_job_id, error_message, started_at) do
+  defp record_failure_with_integration(
+         scope,
+         integration_id,
+         sync_job_id,
+         error_message,
+         started_at
+       ) do
     case fetch_integration(integration_id) do
       {:ok, integration} ->
-        record_history(scope, integration, sync_job_id, :failed, 0, error_message, started_at)
+        record_history(scope, integration, sync_job_id, started_at, %{
+          status: :failed,
+          records_synced: 0,
+          error_message: error_message
+        })
 
       {:error, _} ->
         :ok
@@ -375,18 +408,16 @@ defmodule MetricFlow.DataSync.SyncWorker do
     if function_exported?(mod, :provider, 0), do: mod.provider(), else: integration.provider
   end
 
-  defp record_history_with_provider(scope, integration, sync_job_id, provider, status, records_synced, error_message, started_at) do
-    now = DateTime.utc_now()
-
+  defp record_history(scope, integration, sync_job_id, started_at, outcome) do
     attrs = %{
       integration_id: integration.id,
       sync_job_id: sync_job_id,
-      provider: provider,
-      status: status,
-      records_synced: records_synced,
-      error_message: error_message,
+      provider: Map.get(outcome, :provider, integration.provider),
+      status: outcome.status,
+      records_synced: outcome.records_synced,
+      error_message: outcome.error_message,
       started_at: started_at,
-      completed_at: now
+      completed_at: DateTime.utc_now()
     }
 
     case SyncHistoryRepository.create_sync_history(scope, attrs) do
@@ -395,34 +426,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
       {:error, reason} ->
         Logger.warning(
-          "SyncWorker failed to create SyncHistory integration_id=#{integration.id} sync_job_id=#{sync_job_id} reason=#{inspect(reason)}"
-        )
-
-        :ok
-    end
-  end
-
-  defp record_history(scope, integration, sync_job_id, status, records_synced, error_message, started_at) do
-    now = DateTime.utc_now()
-
-    attrs = %{
-      integration_id: integration.id,
-      sync_job_id: sync_job_id,
-      provider: integration.provider,
-      status: status,
-      records_synced: records_synced,
-      error_message: error_message,
-      started_at: started_at,
-      completed_at: now
-    }
-
-    case SyncHistoryRepository.create_sync_history(scope, attrs) do
-      {:ok, _history} ->
-        :ok
-
-      {:error, reason} ->
-        Logger.warning(
-          "SyncWorker failed to create SyncHistory integration_id=#{integration.id} sync_job_id=#{sync_job_id} reason=#{inspect(reason)}"
+          "SyncWorker failed to create SyncHistory integration_id=#{integration.id} " <>
+            "sync_job_id=#{sync_job_id} reason=#{inspect(reason)}"
         )
 
         :ok
@@ -444,12 +449,27 @@ defmodule MetricFlow.DataSync.SyncWorker do
     Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
   end
 
-  defp format_error(:missing_property_id), do: "No Google Analytics property configured. Go to the integration's account selection to choose a property."
-  defp format_error(:missing_customer_id), do: "No Google Ads customer ID configured. Go to the integration's account selection to choose an account."
+  defp format_error(:missing_property_id) do
+    "No Google Analytics property configured. " <>
+      "Go to the integration's account selection to choose a property."
+  end
+
+  defp format_error(:missing_customer_id) do
+    "No Google Ads customer ID configured. " <>
+      "Go to the integration's account selection to choose an account."
+  end
+
   defp format_error(:unauthorized), do: "Authorization expired. Please reconnect the integration."
-  defp format_error(:token_expired), do: "Token expired and could not be refreshed. Please reconnect."
-  defp format_error(:all_providers_failed), do: "All data providers failed. Check your integration settings."
-  defp format_error({:exception, _message}), do: "An unexpected error occurred during sync. Please try again."
+
+  defp format_error(:token_expired),
+    do: "Token expired and could not be refreshed. Please reconnect."
+
+  defp format_error(:all_providers_failed),
+    do: "All data providers failed. Check your integration settings."
+
+  defp format_error({:exception, _message}),
+    do: "An unexpected error occurred during sync. Please try again."
+
   defp format_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason), do: inspect(reason)

@@ -51,9 +51,19 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(white_label_config, attrs) do
     white_label_config
-    |> cast(attrs, [:agency_id, :logo_url, :primary_color, :secondary_color, :subdomain, :custom_domain, :custom_css])
+    |> cast(attrs, [
+      :agency_id,
+      :logo_url,
+      :primary_color,
+      :secondary_color,
+      :subdomain,
+      :custom_domain,
+      :custom_css
+    ])
     |> validate_required([:agency_id, :subdomain])
-    |> validate_format(:subdomain, ~r/^[a-z0-9-]+$/, message: "must contain only lowercase letters, numbers, and hyphens")
+    |> validate_format(:subdomain, ~r/^[a-z0-9-]+$/,
+      message: "must contain only lowercase letters, numbers, and hyphens"
+    )
     |> validate_length(:subdomain, min: 3, max: 63)
     |> validate_custom_domain()
     |> validate_hex_color(:primary_color)

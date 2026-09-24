@@ -13,6 +13,7 @@ defmodule MetricFlow.Billing do
   require Logger
 
   alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Billing.Subscription
 
   @doc """
   Process a verified Stripe webhook event.
@@ -104,7 +105,7 @@ defmodule MetricFlow.Billing do
 
       subscription ->
         subscription
-        |> MetricFlow.Billing.Subscription.changeset(%{status: :past_due})
+        |> Subscription.changeset(%{status: :past_due})
         |> MetricFlow.Repo.update()
 
         :ok
@@ -134,7 +135,8 @@ defmodule MetricFlow.Billing do
   @doc """
   Create a Stripe Checkout session and return the checkout URL.
   """
-  @spec create_checkout_session(integer(), map(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  @spec create_checkout_session(integer(), map(), String.t()) ::
+          {:ok, String.t()} | {:error, term()}
   def create_checkout_session(account_id, plan, return_url) do
     alias MetricFlow.Billing.StripeClient
 
@@ -168,7 +170,7 @@ defmodule MetricFlow.Billing do
         case StripeClient.cancel_subscription(subscription.stripe_subscription_id) do
           {:ok, _} ->
             subscription
-            |> MetricFlow.Billing.Subscription.changeset(%{
+            |> Subscription.changeset(%{
               status: :cancelled,
               cancelled_at: DateTime.utc_now()
             })
@@ -227,8 +229,10 @@ defmodule MetricFlow.Billing do
   defp map_status(_), do: :active
 
   defp from_unix(nil), do: nil
+
   defp from_unix(timestamp) when is_integer(timestamp) do
     DateTime.from_unix!(timestamp)
   end
+
   defp from_unix(_), do: nil
 end

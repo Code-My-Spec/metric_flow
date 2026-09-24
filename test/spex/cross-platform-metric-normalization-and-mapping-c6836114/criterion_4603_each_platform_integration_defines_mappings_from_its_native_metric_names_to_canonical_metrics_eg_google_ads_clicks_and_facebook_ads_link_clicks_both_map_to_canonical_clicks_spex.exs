@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
 
   spex "Each platform integration defines mappings from its native metric names to canonical metrics" do
     scenario "dashboard loads successfully for user with integrations from multiple platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,19 +29,20 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
     end
 
     scenario "dashboard shows the canonical 'clicks' metric consolidating platform-specific click metrics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard displays a unified clicks metric from platform-specific sources", context do
+      then_ "the dashboard displays a unified clicks metric from platform-specific sources",
+            context do
         html = render(context.view)
 
         has_clicks =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or
             has_element?(context.view, "[data-role='metric-clicks']")
@@ -54,14 +55,15 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
     end
 
     scenario "dashboard does not expose raw platform-specific metric names as separate top-level metrics when they map to a canonical metric" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard does not show 'Link Clicks' as a standalone top-level canonical metric", context do
+      then_ "the dashboard does not show 'Link Clicks' as a standalone top-level canonical metric",
+            context do
         html = render(context.view)
 
         # 'Link Clicks' is a Facebook Ads native metric name - if shown it should be
@@ -78,14 +80,15 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
     end
 
     scenario "dashboard groups platform-specific metric variants under their shared canonical name" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the canonical metric section references data from the connected integration platforms", context do
+      then_ "the canonical metric section references data from the connected integration platforms",
+            context do
         html = render(context.view)
 
         # The dashboard should show platform names (Google, Facebook) alongside metrics,

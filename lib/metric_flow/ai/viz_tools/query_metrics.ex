@@ -10,8 +10,7 @@ defmodule MetricFlow.Ai.VizTools.QueryMetrics do
   alias Anubis.Server.Response
 
   schema do
-    field :query, :string,
-      description: "Optional search filter for metric names"
+    field :query, :string, description: "Optional search filter for metric names"
   end
 
   @impl true
@@ -24,7 +23,7 @@ defmodule MetricFlow.Ai.VizTools.QueryMetrics do
       else
         "Available metrics for this account: #{Enum.join(metric_names, ", ")}\n\n" <>
           "Each metric has time series data with date and value fields. " <>
-          "Use named data sources like {\"data\": {\"name\": \"metricName\"}} to reference them."
+          ~s(Use named data sources like {"data": {"name": "metricName"}} to reference them.)
       end
 
     {:reply, Response.text(Response.tool(), result), frame}

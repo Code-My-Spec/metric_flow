@@ -11,6 +11,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   require Logger
 
   alias MetricFlow.DataSync
+  alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
 
@@ -26,8 +27,10 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   }
 
   @provider_metrics %{
-    "google_business" => ~w(review_count review_rating call_clicks direction_requests website_clicks),
-    "google_analytics" => ~w(sessions activeUsers screenPageViews bounceRate averageSessionDuration),
+    "google_business" =>
+      ~w(review_count review_rating call_clicks direction_requests website_clicks),
+    "google_analytics" =>
+      ~w(sessions activeUsers screenPageViews bounceRate averageSessionDuration),
     "google_ads" => ~w(impressions clicks cost conversions ctr cpc),
     "facebook_ads" => ~w(impressions clicks spend conversions ctr cpc),
     "quickbooks" => ~w(revenue expenses net_income gross_profit cash_on_hand)
@@ -47,13 +50,13 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div>
-      <%= if @connected do %>
-        <%= render_dashboard(assigns) %>
-      <% else %>
-        <%= render_empty_state(assigns) %>
-      <% end %>
-    </div>
+      <div>
+        <%= if @connected do %>
+          {render_dashboard(assigns)}
+        <% else %>
+          {render_empty_state(assigns)}
+        <% end %>
+      </div>
     </Layouts.app>
     """
   end
@@ -80,9 +83,15 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         <form phx-change="change_date_range" class="flex items-center gap-2">
           <select name="date_range" class="select select-bordered select-sm">
             <option value="last_7_days" selected={@date_range == "last_7_days"}>Last 7 days</option>
-            <option value="last_30_days" selected={@date_range == "last_30_days"}>Last 30 days</option>
-            <option value="last_90_days" selected={@date_range == "last_90_days"}>Last 90 days</option>
-            <option value="last_12_months" selected={@date_range == "last_12_months"}>Last 12 months</option>
+            <option value="last_30_days" selected={@date_range == "last_30_days"}>
+              Last 30 days
+            </option>
+            <option value="last_90_days" selected={@date_range == "last_90_days"}>
+              Last 90 days
+            </option>
+            <option value="last_12_months" selected={@date_range == "last_12_months"}>
+              Last 12 months
+            </option>
           </select>
         </form>
         <button
@@ -113,7 +122,13 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
             {format_metric_value(metric_name, current_value(@metrics, metric_name))}
           </div>
           <div data-role="metric-chart" data-metric={metric_name} class="h-20 w-full">
-            <canvas id={"chart-#{metric_name}"} phx-hook="VegaChart" data-spec={Jason.encode!(build_chart_spec(metric_name, @metrics))} class="w-full h-full"></canvas>
+            <canvas
+              id={"chart-#{metric_name}"}
+              phx-hook="VegaChart"
+              data-spec={Jason.encode!(build_chart_spec(metric_name, @metrics))}
+              class="w-full h-full"
+            >
+            </canvas>
           </div>
         </div>
       </div>
@@ -124,12 +139,18 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
           <div :if={@reviews == []} class="text-base-content/60 text-sm">
             No reviews available.
           </div>
-          <div :for={review <- @reviews} data-role="review-item" class="border-b border-base-200 py-3 last:border-0">
+          <div
+            :for={review <- @reviews}
+            data-role="review-item"
+            class="border-b border-base-200 py-3 last:border-0"
+          >
             <div class="flex items-center justify-between mb-1">
               <span class="font-medium">{Map.get(review, :reviewer_name, "Anonymous")}</span>
               <span class="badge badge-ghost text-xs">{Map.get(review, :rating, 0)} ★</span>
             </div>
-            <div class="text-base-content/50 text-xs mb-1">{format_date(Map.get(review, :recorded_at))}</div>
+            <div class="text-base-content/50 text-xs mb-1">
+              {format_date(Map.get(review, :recorded_at))}
+            </div>
             <div class="text-sm line-clamp-2">{Map.get(review, :comment, "")}</div>
           </div>
         </div>
@@ -140,7 +161,11 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         <div :if={@sync_history == []} class="text-base-content/60 text-sm">
           No sync history yet.
         </div>
-        <div :for={entry <- @sync_history} data-role="sync-history-row" class="flex items-center gap-3 py-2 border-b border-base-200 last:border-0">
+        <div
+          :for={entry <- @sync_history}
+          data-role="sync-history-row"
+          class="flex items-center gap-3 py-2 border-b border-base-200 last:border-0"
+        >
           <div class="flex-1">
             <div class="text-sm">{format_datetime(entry.completed_at)}</div>
           </div>
@@ -281,7 +306,8 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     date_range = socket.assigns.date_range
 
     if socket.assigns.connected do
-      {metrics, sync_history, reviews} = load_dashboard_data(scope, provider, provider_atom, date_range)
+      {metrics, sync_history, reviews} =
+        load_dashboard_data(scope, provider, provider_atom, date_range)
 
       last_synced_at =
         case sync_history do
@@ -388,7 +414,15 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   end
 
   defp format_metric_value(metric_name, value)
-       when metric_name in ["cost", "spend", "revenue", "expenses", "net_income", "gross_profit", "cash_on_hand"] do
+       when metric_name in [
+              "cost",
+              "spend",
+              "revenue",
+              "expenses",
+              "net_income",
+              "gross_profit",
+              "cash_on_hand"
+            ] do
     "$#{:erlang.float_to_binary(value * 1.0, decimals: 2)}"
   end
 
@@ -461,7 +495,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   defp format_duration(entry) do
     entry
-    |> MetricFlow.DataSync.SyncHistory.duration()
+    |> SyncHistory.duration()
     |> Integer.to_string()
   end
 
@@ -478,8 +512,16 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       "data" => %{"values" => data_points},
       "mark" => %{"type" => "line", "interpolate" => "monotone"},
       "encoding" => %{
-        "x" => %{"field" => "date", "type" => "temporal", "axis" => %{"labels" => false, "ticks" => false, "title" => nil}},
-        "y" => %{"field" => "value", "type" => "quantitative", "axis" => %{"labels" => false, "ticks" => false, "title" => nil}}
+        "x" => %{
+          "field" => "date",
+          "type" => "temporal",
+          "axis" => %{"labels" => false, "ticks" => false, "title" => nil}
+        },
+        "y" => %{
+          "field" => "value",
+          "type" => "quantitative",
+          "axis" => %{"labels" => false, "ticks" => false, "title" => nil}
+        }
       },
       "width" => "container",
       "height" => 80

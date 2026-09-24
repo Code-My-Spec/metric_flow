@@ -310,7 +310,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
                )
 
       assert is_list(locations)
-      assert length(locations) > 0
+      assert locations != []
     end
 
     test "returns {:error, :no_accounts_configured} when no account IDs found" do

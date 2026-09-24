@@ -103,7 +103,10 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         _ -> nil
       end
 
-    redirect_to = if provider == :codemyspec, do: ~p"/app/users/settings", else: ~p"/app/integrations/connect/#{provider_str}"
+    redirect_to =
+      if provider == :codemyspec,
+        do: ~p"/app/users/settings",
+        else: ~p"/app/integrations/connect/#{provider_str}"
 
     case handle_oauth_callback(scope, provider, params, session_params) do
       {:ok, _integration} ->
@@ -140,7 +143,9 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   defp fetch_session_params(%{"state" => state}) when is_binary(state) do
     case OAuthStateStore.fetch(state) do
-      {:ok, session_params} -> session_params
+      {:ok, session_params} ->
+        session_params
+
       :error ->
         Logger.warning("OAuth state not found in store for state=#{state}")
         %{}
@@ -170,7 +175,11 @@ defmodule MetricFlowWeb.IntegrationOauthController do
     "Access was denied. Please try again if you want to connect."
   end
 
-  defp format_oauth_error(%{"error" => error, "error_description" => description}, _provider, _reason) do
+  defp format_oauth_error(
+         %{"error" => error, "error_description" => description},
+         _provider,
+         _reason
+       ) do
     "Authorization failed: #{description} (#{error})"
   end
 

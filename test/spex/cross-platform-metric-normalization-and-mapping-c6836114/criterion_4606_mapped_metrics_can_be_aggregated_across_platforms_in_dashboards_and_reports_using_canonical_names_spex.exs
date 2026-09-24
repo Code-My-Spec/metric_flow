@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
 
   spex "Mapped metrics can be aggregated across platforms in dashboards and reports using canonical names" do
     scenario "dashboard loads for a user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,19 +29,20 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
     end
 
     scenario "dashboard displays an aggregated total for the canonical 'clicks' metric across platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows a combined clicks total using the canonical metric name", context do
+      then_ "the dashboard shows a combined clicks total using the canonical metric name",
+            context do
         html = render(context.view)
 
         has_aggregated_clicks =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or
             has_element?(context.view, "[data-role='metric-clicks']") or
@@ -55,14 +56,15 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
     end
 
     scenario "dashboard displays an aggregated total for the canonical 'spend' metric across platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows a combined spend total using the canonical metric name", context do
+      then_ "the dashboard shows a combined spend total using the canonical metric name",
+            context do
         html = render(context.view)
 
         has_aggregated_spend =
@@ -81,14 +83,15 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
     end
 
     scenario "dashboard displays aggregated metrics labeled with the canonical name, not a platform-specific name" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the aggregated metric row does not show raw platform-specific metric names as the label", context do
+      then_ "the aggregated metric row does not show raw platform-specific metric names as the label",
+            context do
         html = render(context.view)
 
         # The canonical 'clicks' aggregation should not be labeled with the raw platform
@@ -106,14 +109,15 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
     end
 
     scenario "the dashboard references platform sources alongside the aggregated canonical metric" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard indicates which platforms contribute to the aggregated metric total", context do
+      then_ "the dashboard indicates which platforms contribute to the aggregated metric total",
+            context do
         html = render(context.view)
 
         # The dashboard should reference the underlying platforms (e.g., Google, Facebook)

@@ -86,7 +86,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([active_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, accounts} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert is_list(accounts)
       assert length(accounts) == 1
     end
@@ -95,7 +97,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([active_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, [account]} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, [account]} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert Map.has_key?(account, :id)
       assert Map.has_key?(account, :name)
       assert Map.has_key?(account, :account)
@@ -105,7 +109,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([active_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, [account]} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, [account]} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert account.id == "123456789"
     end
 
@@ -113,7 +119,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([active_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, [account]} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, [account]} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert account.name == "My Active Ad Account"
     end
 
@@ -121,7 +129,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([active_account(), another_active_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, accounts} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert Enum.all?(accounts, fn a -> a.account == "Facebook Ads" end)
     end
 
@@ -129,7 +139,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body([inactive_account()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, accounts} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert accounts == []
     end
 
@@ -138,7 +150,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       body = valid_response_body(accounts)
       plug = build_stub_plug(200, body)
 
-      assert {:ok, result} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, result} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert length(result) == 2
       assert Enum.all?(result, fn a -> a.account == "Facebook Ads" end)
       ids = Enum.map(result, & &1.id)
@@ -161,11 +175,13 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       assert {:ok, []} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
     end
 
-    test "defaults :name to \"Ad Account \#{account_id}\" when the \"name\" field is absent" do
+    test ~S(defaults :name to "Ad Account #{account_id}" when the "name" field is absent) do
       body = valid_response_body([account_without_name()])
       plug = build_stub_plug(200, body)
 
-      assert {:ok, [account]} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, [account]} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert account.id == "777111222"
       assert account.name == "Ad Account 777111222"
     end
@@ -173,20 +189,23 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
     test "returns {:error, :unauthorized} on a 400 response" do
       plug = build_stub_plug(400, Jason.encode!(%{"error" => "bad request"}))
 
-      assert {:error, :unauthorized} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:error, :unauthorized} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
     end
 
     test "returns {:error, :unauthorized} on a 401 response" do
       plug = build_stub_plug(401, Jason.encode!(%{"error" => "unauthorized"}))
 
-      assert {:error, :unauthorized} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:error, :unauthorized} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
     end
 
     test "returns {:error, :api_disabled} on a 403 response" do
       plug = build_stub_plug(403, Jason.encode!(%{"error" => "forbidden"}))
 
       capture_log(fn ->
-        assert {:error, :api_disabled} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+        assert {:error, :api_disabled} =
+                 FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
       end)
     end
 
@@ -194,7 +213,8 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
       plug = build_stub_plug(500, Jason.encode!(%{"error" => "server error"}))
 
       capture_log(fn ->
-        assert {:error, :bad_request} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+        assert {:error, :bad_request} =
+                 FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
       end)
     end
 
@@ -240,7 +260,9 @@ defmodule MetricFlow.Integrations.FacebookAdsAccountsTest do
         |> Plug.Conn.send_resp(200, binary_body)
       end
 
-      assert {:ok, accounts} = FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               FacebookAdsAccounts.list_accounts(valid_integration(), http_plug: plug)
+
       assert length(accounts) == 1
       assert hd(accounts).id == "123456789"
     end

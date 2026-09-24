@@ -162,7 +162,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   end
 
   defp build_url(account_id, page_token) do
-    "#{@api_base}/#{account_id}/locations?readMask=name,title,storeCode,storefrontAddress,websiteUri&pageToken=#{page_token}"
+    build_url(account_id, nil) <> "&pageToken=#{page_token}"
   end
 
   defp handle_response(%Req.Response{status: 200, body: body}, integration, account_id, acc, opts)

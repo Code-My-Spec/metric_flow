@@ -37,7 +37,15 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
       http_plug = Keyword.get(opts, :http_plug)
 
       login_customer_id = resolve_login_customer_id(integration, opts)
-      do_fetch(integration.access_token, customer_id, login_customer_id, date_range, breakdown, http_plug)
+
+      do_fetch(
+        integration.access_token,
+        customer_id,
+        login_customer_id,
+        date_range,
+        breakdown,
+        http_plug
+      )
     else
       true -> {:error, :unauthorized}
       {:error, reason} -> {:error, reason}
@@ -72,7 +80,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
     {start_date, today}
   end
 
-  defp do_fetch(access_token, customer_id, login_customer_id, {start_date, end_date}, breakdown, http_plug) do
+  defp do_fetch(
+         access_token,
+         customer_id,
+         login_customer_id,
+         {start_date, end_date},
+         breakdown,
+         http_plug
+       ) do
     url = "#{@base_url}/#{customer_id}/googleAds:searchStream"
     query = build_gaql_query(start_date, end_date, breakdown)
     developer_token = Application.get_env(:metric_flow, :google_ads_developer_token, "")
@@ -98,91 +113,30 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
         e -> {:error, {:network_error, e}}
       end
 
-    case handle_http_result(result) do
-      {:ok, first_page_rows, next_page_token} ->
-        case fetch_remaining_pages(
-               access_token,
-               customer_id,
-               login_customer_id,
-               query,
-               developer_token,
-               http_plug,
-               first_page_rows,
-               next_page_token,
-               1
-             ) do
-          {:ok, all_rows} ->
-            metrics = Enum.flat_map(all_rows, &transform_row(&1, customer_id))
-            {:ok, metrics}
-
-          {:error, reason} ->
-            {:error, reason}
-        end
-
-      {:error, reason} ->
-        {:error, reason}
+    with {:ok, first_page_rows, next_page_token} <- handle_http_result(result),
+         {:ok, all_rows} <-
+           fetch_remaining_pages(req_opts, query, first_page_rows, next_page_token, 1) do
+      metrics = Enum.flat_map(all_rows, &transform_row(&1, customer_id))
+      {:ok, metrics}
     end
   end
 
-  defp fetch_remaining_pages(
-         _access_token,
-         _customer_id,
-         _login_customer_id,
-         _query,
-         _developer_token,
-         _http_plug,
-         rows,
-         nil,
-         _page_count
-       ) do
+  defp fetch_remaining_pages(_req_opts, _query, rows, nil, _page_count) do
     {:ok, rows}
   end
 
-  defp fetch_remaining_pages(
-         _access_token,
-         _customer_id,
-         _login_customer_id,
-         _query,
-         _developer_token,
-         _http_plug,
-         rows,
-         _page_token,
-         page_count
-       )
+  defp fetch_remaining_pages(_req_opts, _query, rows, _page_token, page_count)
        when page_count >= @max_pages do
     {:ok, rows}
   end
 
-  defp fetch_remaining_pages(
-         access_token,
-         customer_id,
-         login_customer_id,
-         query,
-         developer_token,
-         http_plug,
-         accumulated_rows,
-         page_token,
-         page_count
-       ) do
-    url = "#{@base_url}/#{customer_id}/googleAds:searchStream"
-
-    headers =
-      [
-        {"Authorization", "Bearer #{access_token}"},
-        {"Content-Type", "application/json"},
-        {"developer-token", developer_token}
-      ]
-      |> maybe_add_login_customer_id(login_customer_id)
-
+  defp fetch_remaining_pages(req_opts, query, accumulated_rows, page_token, page_count) do
     body = Jason.encode!(%{"query" => query, "pageToken" => page_token})
-
-    req_opts =
-      [method: :post, url: url, headers: headers, body: body]
-      |> maybe_add_plug(http_plug)
+    page_opts = Keyword.put(req_opts, :body, body)
 
     result =
       try do
-        Req.request(req_opts)
+        Req.request(page_opts)
       rescue
         e -> {:error, {:network_error, e}}
       end
@@ -190,12 +144,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
     case handle_http_result(result) do
       {:ok, page_rows, next_token} ->
         fetch_remaining_pages(
-          access_token,
-          customer_id,
-          login_customer_id,
+          req_opts,
           query,
-          developer_token,
-          http_plug,
           accumulated_rows ++ page_rows,
           next_token,
           page_count + 1
@@ -260,7 +210,10 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
   defp handle_http_result({:ok, %{status: 429}}), do: {:error, :rate_limited}
   defp handle_http_result({:ok, %{status: 500}}), do: {:error, :internal_server_error}
-  defp handle_http_result({:ok, %{status: status}}) when status >= 500, do: {:error, :server_error}
+
+  defp handle_http_result({:ok, %{status: status}}) when status >= 500,
+    do: {:error, :server_error}
+
   defp handle_http_result({:error, :malformed_response}), do: {:error, :malformed_response}
 
   defp handle_http_result({:error, {:network_error, reason}}),
@@ -342,7 +295,13 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
       build_metric("advertising", "conversions", conversions, recorded_at, base_metadata),
       build_metric("advertising", "ctr", ctr, recorded_at, base_metadata),
       build_metric("advertising", "average_cpc", average_cpc, recorded_at, base_metadata),
-      build_metric("advertising", "conversions_value", conversions_value, recorded_at, base_metadata)
+      build_metric(
+        "advertising",
+        "conversions_value",
+        conversions_value,
+        recorded_at,
+        base_metadata
+      )
     ]
   end
 

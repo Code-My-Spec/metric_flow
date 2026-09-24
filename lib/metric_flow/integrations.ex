@@ -73,8 +73,11 @@ defmodule MetricFlow.Integrations do
          true <- function_exported?(provider_mod, :revoke_token, 1),
          token when is_binary(token) <- integration.refresh_token || integration.access_token do
       case provider_mod.revoke_token(token) do
-        :ok -> :ok
-        {:error, reason} -> Logger.warning("Token revocation failed for #{provider}: #{inspect(reason)}")
+        :ok ->
+          :ok
+
+        {:error, reason} ->
+          Logger.warning("Token revocation failed for #{provider}: #{inspect(reason)}")
       end
     end
   end
@@ -174,14 +177,21 @@ defmodule MetricFlow.Integrations do
     with :ok <- verify_state(config, callback_params),
          {:ok, %{token: token} = result} <- strategy.callback(config, callback_params) do
       user_data = Map.get(result, :user) || %{}
-      Logger.warning("[OAuth] strategy.callback result keys=#{inspect(Map.keys(result))}, user_data=#{inspect(user_data)}, type=#{inspect(is_map(user_data))}")
+
+      Logger.warning(
+        "[OAuth] strategy.callback result keys=#{inspect(Map.keys(result))}, " <>
+          "user_data=#{inspect(user_data)}, type=#{inspect(is_map(user_data))}"
+      )
 
       case provider_mod.normalize_user(user_data) do
         {:ok, normalized} ->
           {:ok, %{token: token, normalized: normalized}}
 
         {:error, reason} = err ->
-          Logger.warning("[OAuth] normalize_user failed: #{inspect(reason)}, user_data=#{inspect(user_data)}")
+          Logger.warning(
+            "[OAuth] normalize_user failed: #{inspect(reason)}, user_data=#{inspect(user_data)}"
+          )
+
           err
       end
     end
@@ -342,7 +352,8 @@ defmodule MetricFlow.Integrations do
   @spec list_search_console_sites(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_search_console_sites(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_search_console) do
+    with {:ok, integration} <-
+           IntegrationRepository.get_integration(scope, :google_search_console) do
       GoogleSearchConsoleSites.list_sites(integration, opts)
     end
   end
@@ -402,7 +413,8 @@ defmodule MetricFlow.Integrations do
   """
   @spec update_provider_metadata(Scope.t(), atom(), map()) ::
           {:ok, Integration.t()} | {:error, term()}
-  def update_provider_metadata(%Scope{} = scope, provider, new_metadata) when is_map(new_metadata) do
+  def update_provider_metadata(%Scope{} = scope, provider, new_metadata)
+      when is_map(new_metadata) do
     with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
       merged = Map.merge(integration.provider_metadata || %{}, new_metadata)
       IntegrationRepository.update_integration(scope, provider, %{provider_metadata: merged})
@@ -448,7 +460,9 @@ defmodule MetricFlow.Integrations do
 
   # Keep existing provider_metadata during token refresh — the refresh response
   # has no user data, so build_integration_attrs produces an empty map.
-  defp maybe_preserve_provider_metadata(%{provider_metadata: meta} = attrs, %{provider_metadata: existing})
+  defp maybe_preserve_provider_metadata(%{provider_metadata: meta} = attrs, %{
+         provider_metadata: existing
+       })
        when meta == %{} and is_map(existing) and existing != %{} do
     %{attrs | provider_metadata: existing}
   end

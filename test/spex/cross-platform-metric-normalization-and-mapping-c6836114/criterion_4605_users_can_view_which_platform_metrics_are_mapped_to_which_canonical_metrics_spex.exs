@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
 
   spex "Users can view which platform metrics are mapped to which canonical metrics" do
     scenario "authenticated user can access the dashboard to see metric mappings" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
     end
 
     scenario "dashboard shows canonical metric names alongside platform source labels" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -41,11 +41,11 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
 
         has_canonical_metric =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-canonical-metric]") or
             has_element?(context.view, "[data-role='canonical-metric']")
 
@@ -57,14 +57,15 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
     end
 
     scenario "dashboard surfaces platform attribution for a canonical metric" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows a platform name associated with the displayed metrics", context do
+      then_ "the dashboard shows a platform name associated with the displayed metrics",
+            context do
         html = render(context.view)
 
         has_platform_label =
@@ -85,7 +86,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
     end
 
     scenario "user navigates to integrations page to view detailed metric mappings" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         result = live(context.owner_conn, "/app/integrations")
@@ -107,7 +108,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
     end
 
     scenario "integrations page shows which platform is connected" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

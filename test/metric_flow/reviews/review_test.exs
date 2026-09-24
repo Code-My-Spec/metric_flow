@@ -4,8 +4,8 @@ defmodule MetricFlow.Reviews.ReviewTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.IntegrationsFixtures
 
-  alias MetricFlow.Reviews.Review
   alias MetricFlow.Repo
+  alias MetricFlow.Reviews.Review
 
   # ---------------------------------------------------------------------------
   # Fixtures

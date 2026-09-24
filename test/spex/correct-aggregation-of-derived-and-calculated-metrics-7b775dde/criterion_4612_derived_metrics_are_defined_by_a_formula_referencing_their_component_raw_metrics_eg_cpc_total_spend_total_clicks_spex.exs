@@ -7,14 +7,15 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
 
   spex "Derived metrics are defined by a formula referencing their component raw metrics" do
     scenario "dashboard loads and displays CPC as spend divided by clicks" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard displays CPC as a derived metric calculated from spend and clicks", context do
+      then_ "the dashboard displays CPC as a derived metric calculated from spend and clicks",
+            context do
         html = render(context.view)
 
         has_cpc_metric =
@@ -34,14 +35,15 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
     end
 
     scenario "dashboard displays ROAS as revenue divided by spend" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard displays ROAS as a derived metric calculated from revenue and spend", context do
+      then_ "the dashboard displays ROAS as a derived metric calculated from revenue and spend",
+            context do
         html = render(context.view)
 
         has_roas_metric =
@@ -60,14 +62,15 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
     end
 
     scenario "dashboard displays CTR as clicks divided by impressions" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard displays CTR as a derived metric calculated from clicks and impressions", context do
+      then_ "the dashboard displays CTR as a derived metric calculated from clicks and impressions",
+            context do
         html = render(context.view)
 
         has_ctr_metric =
@@ -89,23 +92,24 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
     end
 
     scenario "dashboard shows both component raw metrics and the derived metric they produce" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders both raw component metrics and at least one derived metric", context do
+      then_ "the dashboard renders both raw component metrics and at least one derived metric",
+            context do
         html = render(context.view)
 
         has_raw_component =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             html =~ "total_cost" or
             html =~ "spend" or
             html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-metric-type='additive']") or
             has_element?(context.view, "[data-metric-type='raw']")
 

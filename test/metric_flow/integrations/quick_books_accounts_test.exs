@@ -152,7 +152,9 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "returns {:ok, accounts} with a list of account maps on a 200 response with valid JSON body" do
       plug = response_plug(200, account_list_response())
 
-      assert {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+
       assert is_list(accounts)
       assert length(accounts) == 2
     end
@@ -160,7 +162,8 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "each returned account map has :id, :name, and :account keys" do
       plug = response_plug(200, account_list_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       for account <- accounts do
         assert Map.has_key?(account, :id)
@@ -172,7 +175,8 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "extracts :id from the \"Id\" field as a string" do
       plug = response_plug(200, account_list_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       first = Enum.find(accounts, &(&1.id == "42"))
       assert first.id == "42"
@@ -182,7 +186,8 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "extracts :name from the \"Name\" field" do
       plug = response_plug(200, account_list_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       first = Enum.find(accounts, &(&1.id == "42"))
       assert first.name == "Sales of Product Income"
@@ -191,26 +196,29 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "extracts :account from the \"FullyQualifiedName\" field" do
       plug = response_plug(200, account_list_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       nested = Enum.find(accounts, &(&1.id == "99"))
       assert nested.account == "Services:Consulting"
     end
 
-    test "falls back to \"Name\" for :account when \"FullyQualifiedName\" is absent" do
+    test ~S(falls back to "Name" for :account when "FullyQualifiedName" is absent) do
       plug = response_plug(200, account_missing_fully_qualified_name_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       assert length(accounts) == 1
       [account] = accounts
       assert account.account == "Other Income"
     end
 
-    test "defaults :name to \"Unknown Account\" when the \"Name\" field is absent" do
+    test ~S(defaults :name to "Unknown Account" when the "Name" field is absent) do
       plug = response_plug(200, account_missing_name_response())
 
-      {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      {:ok, accounts} =
+        QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
 
       assert length(accounts) == 1
       [account] = accounts
@@ -220,13 +228,15 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
     test "returns {:ok, []} when \"Account\" key is absent in the QueryResponse" do
       plug = response_plug(200, empty_query_response())
 
-      assert {:ok, []} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, []} =
+               QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
     end
 
     test "returns {:ok, []} when \"QueryResponse\" key is absent in the response body" do
       plug = response_plug(200, missing_query_response_body())
 
-      assert {:ok, []} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, []} =
+               QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
     end
 
     test "returns {:error, :missing_realm_id} when provider_metadata has no \"realm_id\" key" do
@@ -302,7 +312,9 @@ defmodule MetricFlow.Integrations.QuickBooksAccountsTest do
       # The plug sends raw binary JSON; verify the module decodes it correctly
       plug = response_plug(200, account_list_response())
 
-      assert {:ok, accounts} = QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+      assert {:ok, accounts} =
+               QuickBooksAccounts.list_income_accounts(valid_integration(), http_plug: plug)
+
       assert length(accounts) == 2
       assert Enum.all?(accounts, &is_map/1)
     end

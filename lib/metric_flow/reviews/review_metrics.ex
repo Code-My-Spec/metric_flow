@@ -12,8 +12,8 @@ defmodule MetricFlow.Reviews.ReviewMetrics do
 
   import Ecto.Query
 
-  alias MetricFlow.Reviews.Review
   alias MetricFlow.Repo
+  alias MetricFlow.Reviews.Review
   alias MetricFlow.Users.Scope
 
   @type daily_review_row :: %{
@@ -61,7 +61,8 @@ defmodule MetricFlow.Reviews.ReviewMetrics do
       date: r.review_date,
       daily_count: count(r.id),
       daily_rating_sum: coalesce(sum(r.star_rating), 0),
-      daily_rating_count: fragment("COUNT(?) FILTER (WHERE ? IS NOT NULL)", r.star_rating, r.star_rating)
+      daily_rating_count:
+        fragment("COUNT(?) FILTER (WHERE ? IS NOT NULL)", r.star_rating, r.star_rating)
     })
     |> Repo.all()
   end
@@ -105,7 +106,8 @@ defmodule MetricFlow.Reviews.ReviewMetrics do
           new_totals = [%{date: date, value: new_running_count * 1.0} | totals]
           new_avgs = [%{date: date, value: rolling_avg} | avgs]
 
-          {new_counts, new_totals, new_avgs, new_running_count, {new_rating_count, new_rating_sum}}
+          {new_counts, new_totals, new_avgs, new_running_count,
+           {new_rating_count, new_rating_sum}}
         end
       )
 

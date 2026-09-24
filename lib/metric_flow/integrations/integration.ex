@@ -85,7 +85,10 @@ defmodule MetricFlow.Integrations.Integration do
     |> validate_required([:user_id, :provider, :access_token, :expires_at])
     |> validate_provider_metadata()
     |> assoc_constraint(:user)
-    |> unique_constraint([:user_id, :provider], name: :integrations_user_id_provider_index, message: "has already been taken")
+    |> unique_constraint([:user_id, :provider],
+      name: :integrations_user_id_provider_index,
+      message: "has already been taken"
+    )
   end
 
   @doc """

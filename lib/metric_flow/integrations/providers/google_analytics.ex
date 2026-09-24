@@ -10,6 +10,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalytics do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
+  alias MetricFlow.Integrations.Providers.Google
+
   @callback_path "/app/integrations/oauth/callback/google_analytics"
 
   @impl true
@@ -35,7 +37,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalytics do
 
   @impl true
   def normalize_user(user_data) when is_map(user_data) do
-    MetricFlow.Integrations.Providers.Google.normalize_user(user_data)
+    Google.normalize_user(user_data)
   end
 
   def normalize_user(_user_data), do: {:error, :invalid_user_data}

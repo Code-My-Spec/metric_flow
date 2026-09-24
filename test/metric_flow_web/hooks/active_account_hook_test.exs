@@ -4,8 +4,8 @@ defmodule MetricFlowWeb.Hooks.ActiveAccountHookTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.AgenciesFixtures
 
-  alias MetricFlowWeb.Hooks.ActiveAccountHook
   alias MetricFlow.Users.Scope
+  alias MetricFlowWeb.Hooks.ActiveAccountHook
 
   # ---------------------------------------------------------------------------
   # on_mount/4

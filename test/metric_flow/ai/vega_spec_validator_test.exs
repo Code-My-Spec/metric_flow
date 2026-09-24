@@ -47,7 +47,7 @@ defmodule MetricFlow.Ai.VegaSpecValidatorTest do
     test "rejects a spec with no valid structure" do
       assert {:error, errors} = VegaSpecValidator.validate(%{"foo" => "bar"})
       assert is_list(errors)
-      assert length(errors) > 0
+      assert errors != []
     end
 
     test "rejects non-map input" do

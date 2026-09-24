@@ -8,6 +8,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusiness do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
+  alias MetricFlow.Integrations.Providers.Google
+
   @callback_path "/app/integrations/oauth/callback/google_business"
 
   @impl true
@@ -21,8 +23,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusiness do
       client_secret: client_secret,
       redirect_uri: redirect_uri,
       authorization_params: [
-        scope:
-          "email profile https://www.googleapis.com/auth/business.manage",
+        scope: "email profile https://www.googleapis.com/auth/business.manage",
         access_type: "offline",
         prompt: "consent"
       ]
@@ -34,7 +35,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleBusiness do
 
   @impl true
   def normalize_user(user_data) when is_map(user_data) do
-    MetricFlow.Integrations.Providers.Google.normalize_user(user_data)
+    Google.normalize_user(user_data)
   end
 
   def normalize_user(_user_data), do: {:error, :invalid_user_data}

@@ -35,7 +35,15 @@ defmodule MetricFlow.Metrics.Metric do
           updated_at: DateTime.t() | nil
         }
 
-  @providers [:google_analytics, :google_ads, :google_search_console, :google_business, :google_business_reviews, :facebook_ads, :quickbooks]
+  @providers [
+    :google_analytics,
+    :google_ads,
+    :google_search_console,
+    :google_business,
+    :google_business_reviews,
+    :facebook_ads,
+    :quickbooks
+  ]
 
   schema "metrics" do
     field :metric_type, :string

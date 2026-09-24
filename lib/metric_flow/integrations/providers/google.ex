@@ -34,14 +34,19 @@ defmodule MetricFlow.Integrations.Providers.Google do
     client_secret = Application.fetch_env!(:metric_flow, :google_client_secret)
     redirect_uri = build_redirect_uri()
 
-    Logger.debug("Google OAuth config: client_id=#{client_id}, client_secret_set=#{client_secret != nil}, redirect_uri=#{redirect_uri}")
+    Logger.debug(
+      "Google OAuth config: client_id=#{client_id}, client_secret_set=#{client_secret != nil}, " <>
+        "redirect_uri=#{redirect_uri}"
+    )
 
     [
       client_id: client_id,
       client_secret: client_secret,
       redirect_uri: redirect_uri,
       authorization_params: [
-        scope: "email profile https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/adwords",
+        scope:
+          "email profile https://www.googleapis.com/auth/analytics.readonly " <>
+            "https://www.googleapis.com/auth/adwords",
         access_type: "offline",
         prompt: "consent"
       ]

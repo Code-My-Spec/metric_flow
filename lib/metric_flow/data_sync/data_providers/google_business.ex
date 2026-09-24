@@ -19,6 +19,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   require Logger
 
   alias MetricFlow.Integrations.Integration
+  alias MetricFlow.Metrics.NormalizedMetric
 
   @performance_api_base "https://businessprofileperformance.googleapis.com/v1"
   @reviews_api_base "https://mybusiness.googleapis.com/v4"
@@ -83,7 +84,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
 
   defp resolve_date_range(opts) do
     case Keyword.get(opts, :date_range) do
-      {start_date, end_date} -> {start_date, end_date}
+      {start_date, end_date} ->
+        {start_date, end_date}
+
       nil ->
         today = Date.utc_today()
         {Date.add(today, -548), Date.add(today, -1)}
@@ -139,48 +142,50 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
       "&dailyRange.endDate.day=#{end_date.day}"
   end
 
-  defp handle_performance_response(%Req.Response{status: 200, body: body}, location_id) when is_map(body) do
+  defp handle_performance_response(%Req.Response{status: 200, body: body}, location_id)
+       when is_map(body) do
     body
     |> Map.get("multiDailyMetricTimeSeries", [])
     |> Enum.flat_map(fn metric_group ->
       metric_group
       |> Map.get("dailyMetricTimeSeries", [])
-      |> Enum.flat_map(fn daily_metric ->
-        metric_name = Map.get(daily_metric, "dailyMetric", "UNKNOWN")
-        dated_values = get_in(daily_metric, ["timeSeries", "datedValues"])
-
-        (dated_values || [])
-        |> Enum.filter(&is_map/1)
-        |> Enum.filter(&Map.has_key?(&1, "date"))
-        |> Enum.map(fn data_point ->
-          date_map = data_point["date"]
-          recorded_at = parse_date_map(date_map)
-          value = parse_int_value(data_point["value"] || "0")
-          date_str = Date.to_iso8601(DateTime.to_date(recorded_at))
-
-          normalized_name = normalize_metric_name(metric_name)
-
-          %{
-            metric_type: "business_profile",
-            metric_name: normalized_name,
-            normalized_metric_name: MetricFlow.Metrics.NormalizedMetric.normalize(:google_business, normalized_name),
-            value: value * 1.0,
-            recorded_at: recorded_at,
-            dimensions: %{
-              location_id: location_id,
-              raw_metric: metric_name,
-              date: date_str
-            },
-            provider: :google_business
-          }
-        end)
-      end)
+      |> Enum.flat_map(&transform_daily_metric(&1, location_id))
     end)
   end
 
   defp handle_performance_response(%Req.Response{status: status, body: body}, location_id) do
     Logger.warning("GBP Performance API returned #{status} for #{location_id}: #{inspect(body)}")
     []
+  end
+
+  defp transform_daily_metric(daily_metric, location_id) do
+    metric_name = Map.get(daily_metric, "dailyMetric", "UNKNOWN")
+    dated_values = get_in(daily_metric, ["timeSeries", "datedValues"])
+
+    (dated_values || [])
+    |> Enum.filter(&is_map/1)
+    |> Enum.filter(&Map.has_key?(&1, "date"))
+    |> Enum.map(fn data_point ->
+      date_map = data_point["date"]
+      recorded_at = parse_date_map(date_map)
+      value = parse_int_value(data_point["value"] || "0")
+      date_str = Date.to_iso8601(DateTime.to_date(recorded_at))
+      normalized_name = normalize_metric_name(metric_name)
+
+      %{
+        metric_type: "business_profile",
+        metric_name: normalized_name,
+        normalized_metric_name: NormalizedMetric.normalize(:google_business, normalized_name),
+        value: value * 1.0,
+        recorded_at: recorded_at,
+        dimensions: %{
+          location_id: location_id,
+          raw_metric: metric_name,
+          date: date_str
+        },
+        provider: :google_business
+      }
+    end)
   end
 
   defp parse_date_map(%{"year" => y, "month" => m, "day" => d}) do
@@ -193,12 +198,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   defp parse_date_map(_), do: DateTime.utc_now()
 
   defp parse_int_value(val) when is_integer(val), do: val
+
   defp parse_int_value(val) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       :error -> 0
     end
   end
+
   defp parse_int_value(_), do: 0
 
   defp normalize_metric_name(name) do
@@ -213,7 +220,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
 
   defp fetch_review_metrics(integration, location_id, opts) do
     case fetch_review_pages(integration, location_id, opts, nil, [], @max_review_pages) do
-      {:ok, reviews} -> transform_reviews(reviews, location_id)
+      {:ok, reviews} ->
+        transform_reviews(reviews, location_id)
+
       {:error, reason} ->
         Logger.warning("GBP reviews fetch failed for #{location_id}: #{inspect(reason)}")
         []
@@ -230,7 +239,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
         {:ok, acc ++ reviews}
 
       {:ok, reviews, next_token} ->
-        fetch_review_pages(integration, location_id, opts, next_token, acc ++ reviews, pages_remaining - 1)
+        fetch_review_pages(
+          integration,
+          location_id,
+          opts,
+          next_token,
+          acc ++ reviews,
+          pages_remaining - 1
+        )
 
       {:error, _} = err ->
         err
@@ -268,7 +284,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   end
 
   defp build_reviews_url(location_id, page_token) do
-    "#{@reviews_api_base}/#{location_id}/reviews?pageSize=#{@review_page_size}&orderBy=updateTime+desc&pageToken=#{page_token}"
+    build_reviews_url(location_id, nil) <> "&pageToken=#{page_token}"
   end
 
   defp handle_review_response(%Req.Response{status: 200, body: body}) when is_map(body) do

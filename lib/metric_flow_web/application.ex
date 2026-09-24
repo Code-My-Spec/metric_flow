@@ -5,6 +5,8 @@ defmodule MetricFlowWeb.Application do
 
   use Application
 
+  alias MetricFlow.Ai.VegaSpecValidator
+
   @impl true
   def start(_type, _args) do
     children =
@@ -25,7 +27,7 @@ defmodule MetricFlowWeb.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     # Compile and cache the Vega-Lite JSON schema for spec validation
-    MetricFlow.Ai.VegaSpecValidator.init()
+    VegaSpecValidator.init()
 
     opts = [strategy: :one_for_one, name: MetricFlow.Supervisor]
     Supervisor.start_link(children, opts)
@@ -40,7 +42,8 @@ defmodule MetricFlowWeb.Application do
           Keyword.merge(tunnel_config,
             endpoint: MetricFlowWeb.Endpoint,
             otp_app: :metric_flow,
-            origin_url: tunnel_config[:origin_url] || "http://127.0.0.1:#{System.get_env("PORT") || "4000"}"
+            origin_url:
+              tunnel_config[:origin_url] || "http://127.0.0.1:#{System.get_env("PORT") || "4000"}"
           )
 
         children ++ [{ClientUtils.CloudflareTunnel, tunnel_opts}]

@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
 
   spex "Clicking AI button shows context-specific insights or opens chat about that metric" do
     scenario "clicking the AI info button on a visualization opens an insights panel or chat" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
     end
 
     scenario "the insights shown are context-specific and reference the visualization or metric name" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -81,21 +81,19 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
         html_before = render(view)
 
         visualization_name =
-          cond do
-            has_element?(view, "[data-role='visualization'][data-metric-name]") ->
-              view
-              |> element("[data-role='visualization'][data-metric-name]")
-              |> render()
-              |> then(fn _rendered ->
-                # Extract data-metric-name attribute if present
-                case Regex.run(~r/data-metric-name="([^"]+)"/, html_before) do
-                  [_, name] -> name
-                  _ -> nil
-                end
-              end)
-
-            true ->
-              nil
+          if has_element?(view, "[data-role='visualization'][data-metric-name]") do
+            view
+            |> element("[data-role='visualization'][data-metric-name]")
+            |> render()
+            |> then(fn _rendered ->
+              # Extract data-metric-name attribute if present
+              case Regex.run(~r/data-metric-name="([^"]+)"/, html_before) do
+                [_, name] -> name
+                _ -> nil
+              end
+            end)
+          else
+            nil
           end
 
         _clicked =
@@ -125,25 +123,24 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
          |> Map.put(:html_before, html_before)}
       end
 
-      then_ "the insights panel displays content specific to the selected metric or visualization", context do
+      then_ "the insights panel displays content specific to the selected metric or visualization",
+            context do
         html = render(context.view)
 
         # The insights panel should reference either the specific metric name, correlation data,
         # or contain metric-specific recommendations rather than generic placeholder text.
         has_metric_specific_content =
-          cond do
-            context.visualization_name != nil ->
-              html =~ context.visualization_name
-
-            true ->
-              has_element?(context.view, "[data-role='ai-insights-panel']") or
-                has_element?(context.view, "[data-role='ai-insights-panel'][data-metric]") or
-                html =~ "metric" or
-                html =~ "Metric" or
-                html =~ "correlation" or
-                html =~ "Correlation" or
-                html =~ "insight" or
-                html =~ "Insight"
+          if context.visualization_name != nil do
+            html =~ context.visualization_name
+          else
+            has_element?(context.view, "[data-role='ai-insights-panel']") or
+              has_element?(context.view, "[data-role='ai-insights-panel'][data-metric]") or
+              html =~ "metric" or
+              html =~ "Metric" or
+              html =~ "correlation" or
+              html =~ "Correlation" or
+              html =~ "insight" or
+              html =~ "Insight"
           end
 
         assert has_metric_specific_content,
@@ -154,7 +151,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
     end
 
     scenario "user can dismiss or close the AI insights panel" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

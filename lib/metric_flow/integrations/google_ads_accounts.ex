@@ -51,14 +51,18 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
           case Jason.decode(body) do
             {:ok, %{"resourceNames" => names}} ->
               {:ok, Enum.map(names, &String.replace(&1, "customers/", ""))}
+
             _ ->
               {:ok, []}
           end
 
-        %Req.Response{status: 401} -> {:error, :unauthorized}
+        %Req.Response{status: 401} ->
+          {:error, :unauthorized}
+
         %Req.Response{status: 403} ->
           Logger.warning("Google Ads API returned 403 — insufficient permissions")
           {:error, :api_disabled}
+
         %Req.Response{status: status} ->
           Logger.warning("Google Ads listAccessibleCustomers returned status #{status}")
           {:error, :bad_request}
@@ -93,10 +97,20 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
 
   defp fetch_single_customer_info(customer_id, headers, opts) do
     url = "#{@search_url}/#{customer_id}/googleAds:searchStream"
-    body = Jason.encode!(%{"query" => "SELECT customer.descriptive_name, customer.id, customer.manager FROM customer LIMIT 1"})
+
+    body =
+      Jason.encode!(%{
+        "query" =>
+          "SELECT customer.descriptive_name, customer.id, customer.manager FROM customer LIMIT 1"
+      })
 
     req_opts =
-      [method: :post, url: url, headers: headers ++ [{"content-type", "application/json"}], body: body]
+      [
+        method: :post,
+        url: url,
+        headers: headers ++ [{"content-type", "application/json"}],
+        body: body
+      ]
       |> maybe_put_plug(opts)
 
     try do
@@ -119,10 +133,12 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
     |> List.first()
     |> case do
       %{"customer" => customer} ->
-        name = case customer["descriptiveName"] do
-          n when is_binary(n) and n != "" -> n
-          _ -> "Account #{customer_id}"
-        end
+        name =
+          case customer["descriptiveName"] do
+            n when is_binary(n) and n != "" -> n
+            _ -> "Account #{customer_id}"
+          end
+
         {name, customer["manager"] == true}
 
       _ ->
@@ -133,10 +149,13 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
   defp extract_customer_info(body, customer_id) when is_map(body) do
     # Sometimes Req auto-decodes a single-element array
     customer = get_in(body, ["results", Access.at(0), "customer"]) || %{}
-    name = case customer["descriptiveName"] do
-      n when is_binary(n) and n != "" -> n
-      _ -> "Account #{customer_id}"
-    end
+
+    name =
+      case customer["descriptiveName"] do
+        n when is_binary(n) and n != "" -> n
+        _ -> "Account #{customer_id}"
+      end
+
     {name, customer["manager"] == true}
   end
 

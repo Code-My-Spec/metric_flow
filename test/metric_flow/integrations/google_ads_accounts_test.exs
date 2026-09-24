@@ -145,7 +145,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("Test Account")
         )
 
-      assert {:ok, customers} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, customers} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert is_list(customers)
     end
@@ -161,7 +162,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("My Business")
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert Map.has_key?(customer, :id)
       assert Map.has_key?(customer, :name)
@@ -179,14 +181,15 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("Account Name")
         )
 
-      assert {:ok, customers} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, customers} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       for customer <- customers do
         assert customer.account == "Google Ads"
       end
     end
 
-    test "extracts :id from the \"resourceNames\" list by stripping the \"customers/\" prefix" do
+    test ~S(extracts :id from the "resourceNames" list by stripping the "customers/" prefix) do
       resource_names = ["customers/1234567890"]
 
       plug =
@@ -197,7 +200,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("Test Business")
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.id == "1234567890"
     end
@@ -213,7 +217,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("Resolved Name From API")
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.name == "Resolved Name From API"
     end
@@ -248,7 +253,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           empty_search_stream_response()
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.name == "Account 777666555"
     end
@@ -264,7 +270,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           blank_name_search_stream_response()
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.name == "Account 111222333"
     end
@@ -349,7 +356,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
         |> Plug.Conn.send_resp(200, "not valid json {{{")
       end
 
-      assert {:ok, []} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: invalid_json_plug)
+      assert {:ok, []} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: invalid_json_plug)
     end
 
     test "accepts an :http_plug option for test injection without making real HTTP calls" do
@@ -358,6 +366,7 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
 
       plug = fn conn ->
         send(test_pid, :plug_called)
+
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(200, list_customers_response([]))
@@ -519,7 +528,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
           search_stream_response("List Style Name")
         )
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.name == "List Style Name"
     end
@@ -539,7 +549,8 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
         end
       end
 
-      assert {:ok, [customer]} = GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
+      assert {:ok, [customer]} =
+               GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
 
       assert customer.name == "Map Style Name"
     end

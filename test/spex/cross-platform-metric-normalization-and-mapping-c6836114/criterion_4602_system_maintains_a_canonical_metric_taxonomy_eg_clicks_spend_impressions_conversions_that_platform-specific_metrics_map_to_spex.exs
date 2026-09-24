@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
 
   spex "System maintains a canonical metric taxonomy that platform-specific metrics map to" do
     scenario "dashboard page loads for an authenticated user" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
     end
 
     scenario "dashboard displays canonical metric names like clicks" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
 
         has_clicks =
           html =~ "clicks" or
-            html =~ "clicks" or
+            html =~ "Clicks" or
             has_element?(context.view, "[data-canonical-metric='clicks']") or
             has_element?(context.view, "[data-metric-name='clicks']") or
             has_element?(context.view, "[data-role='metric-clicks']")
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
     end
 
     scenario "dashboard displays canonical metric names like spend" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
     end
 
     scenario "dashboard displays canonical metric names like impressions" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
 
         has_impressions =
           html =~ "impressions" or
-            html =~ "impressions" or
+            html =~ "Impressions" or
             has_element?(context.view, "[data-canonical-metric='impressions']") or
             has_element?(context.view, "[data-metric-name='impressions']") or
             has_element?(context.view, "[data-role='metric-impressions']")
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
     end
 
     scenario "dashboard displays canonical metric names like conversions" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
 
         has_conversions =
           html =~ "conversions" or
-            html =~ "conversions" or
+            html =~ "Conversions" or
             has_element?(context.view, "[data-canonical-metric='conversions']") or
             has_element?(context.view, "[data-metric-name='conversions']") or
             has_element?(context.view, "[data-role='metric-conversions']")

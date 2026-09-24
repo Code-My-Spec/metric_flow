@@ -27,6 +27,11 @@ defmodule MetricFlowSpex.SharedGivens do
 
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
+
+  alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Metrics.NormalizedMetric
+  alias MetricFlow.Users.Scope
+
   @endpoint MetricFlowWeb.Endpoint
 
   register_given :user_registered_with_password, context do
@@ -37,15 +42,18 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, view, _html} = live(conn, "/users/register")
 
     view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Test Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Test Account"
+      }
+    )
     |> render_submit()
 
     # Drain all emails from the mailbox so they don't interfere with later assert_email_sent calls
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -53,6 +61,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     {:ok, Map.merge(context, %{registered_email: email, registered_password: password})}
@@ -67,15 +76,18 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
     reg_view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Owner Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Owner Account"
+      }
+    )
     |> render_submit()
 
     # Drain all emails from the mailbox so they don't interfere with later assert_email_sent calls
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -83,6 +95,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     # Log in through UI
@@ -90,11 +103,13 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
     login_form =
-      form(login_view, "#login_form_password", user: %{
-        email: email,
-        password: password,
-        remember_me: true
-      })
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
@@ -116,15 +131,18 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
     reg_view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Owner Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Owner Account"
+      }
+    )
     |> render_submit()
 
     # Drain all emails from the mailbox so they don't interfere with later assert_email_sent calls
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -132,6 +150,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     # Look up the created user to insert an integration fixture
@@ -143,11 +162,13 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
     login_form =
-      form(login_view, "#login_form_password", user: %{
-        email: email,
-        password: password,
-        remember_me: true
-      })
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
@@ -168,15 +189,18 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
     reg_view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Member Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Member Account"
+      }
+    )
     |> render_submit()
 
     # Drain all emails from the mailbox so they don't interfere with later assert_email_sent calls
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -184,6 +208,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     {:ok, Map.merge(context, %{second_user_email: email, second_user_password: password})}
@@ -198,14 +223,17 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
     reg_view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Owner Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Owner Account"
+      }
+    )
     |> render_submit()
 
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -213,6 +241,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     # Create integration fixture
@@ -224,11 +253,13 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
     login_form =
-      form(login_view, "#login_form_password", user: %{
-        email: email,
-        password: password,
-        remember_me: true
-      })
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
@@ -249,14 +280,17 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
     reg_view
-    |> form("#registration_form", user: %{
-      email: email,
-      password: password,
-      account_name: "Owner Account"
-    })
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Owner Account"
+      }
+    )
     |> render_submit()
 
     Process.sleep(50)
+
     drain = fn drain_fn ->
       receive do
         {:email, _} -> drain_fn.(drain_fn)
@@ -264,6 +298,7 @@ defmodule MetricFlowSpex.SharedGivens do
         0 -> :ok
       end
     end
+
     drain.(drain)
 
     user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
@@ -273,11 +308,13 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
     login_form =
-      form(login_view, "#login_form_password", user: %{
-        email: email,
-        password: password,
-        remember_me: true
-      })
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
@@ -294,11 +331,11 @@ defmodule MetricFlowSpex.SharedGivens do
     # Creates an active subscription for the test user's account
     # so paywalled routes (correlations, AI) don't redirect to checkout
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-    scope = MetricFlow.Users.Scope.for_user(user)
+    scope = Scope.for_user(user)
     account_id = MetricFlow.Accounts.get_personal_account_id(scope)
 
     {:ok, _subscription} =
-      MetricFlow.Billing.BillingRepository.upsert_subscription(%{
+      BillingRepository.upsert_subscription(%{
         stripe_subscription_id: "sub_test_#{System.unique_integer([:positive])}",
         stripe_customer_id: "cus_test_#{System.unique_integer([:positive])}",
         status: :active,
@@ -312,11 +349,11 @@ defmodule MetricFlowSpex.SharedGivens do
 
   register_given :owner_has_agency_plan, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-    scope = MetricFlow.Users.Scope.for_user(user)
+    scope = Scope.for_user(user)
     account_id = MetricFlow.Accounts.get_personal_account_id(scope)
 
     {:ok, plan} =
-      MetricFlow.Billing.BillingRepository.create_plan(%{
+      BillingRepository.create_plan(%{
         name: "Agency Pro Plan",
         price_cents: 4999,
         currency: "usd",
@@ -330,11 +367,11 @@ defmodule MetricFlowSpex.SharedGivens do
 
   register_given :owner_has_stripe_connect, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-    scope = MetricFlow.Users.Scope.for_user(user)
+    scope = Scope.for_user(user)
     account_id = MetricFlow.Accounts.get_personal_account_id(scope)
 
     {:ok, _stripe_account} =
-      MetricFlow.Billing.BillingRepository.upsert_stripe_account(%{
+      BillingRepository.upsert_stripe_account(%{
         stripe_account_id: "acct_test_#{System.unique_integer([:positive])}",
         agency_account_id: account_id,
         onboarding_status: :complete,
@@ -349,10 +386,11 @@ defmodule MetricFlowSpex.SharedGivens do
     now = DateTime.utc_now()
 
     metrics =
-      for {name, i} <- Enum.with_index(["impressions", "clicks", "spend", "conversions", "sessions"]) do
+      for {name, i} <-
+            Enum.with_index(["impressions", "clicks", "spend", "conversions", "sessions"]) do
         %{
           metric_name: name,
-          normalized_metric_name: MetricFlow.Metrics.NormalizedMetric.normalize(:google_analytics, name),
+          normalized_metric_name: NormalizedMetric.normalize(:google_analytics, name),
           metric_type: "raw",
           value: 100.0 + i,
           recorded_at: DateTime.add(now, -i, :day),
