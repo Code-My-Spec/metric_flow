@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.CorrelationTimeLagDetectionSpex do
         assert has_lag_info,
                "Expected optimal lag information for each correlation. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.CorrelationTimeLagDetectionSpex do
         assert has_lag_range,
                "Expected lag range information (0-30 days) to be displayed. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.CorrelationsDailyCalculationSpex do
         assert has_last_calculated,
                "Expected a 'last calculated' timestamp to be displayed. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.CorrelationsDailyCalculationSpex do
         assert has_schedule_info,
                "Expected daily calculation schedule information. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
 
       then_ "the originator cannot see the delete account section", context do
         refute has_element?(context.originator_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
 
       then_ "the new owner can see the delete account section", context do
         assert has_element?(context.new_owner_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
   end

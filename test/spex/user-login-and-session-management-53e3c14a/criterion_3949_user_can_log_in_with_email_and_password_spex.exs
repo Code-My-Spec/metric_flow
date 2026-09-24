@@ -28,12 +28,12 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
       then_ "the user is redirected to the integrations page", context do
         assert redirected_to(context.login_conn) == "/app/integrations"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees a welcome message", context do
         assert Phoenix.Flash.get(context.login_conn.assigns.flash, :info) == "Welcome back!"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
       then_ "the user sees a message that login instructions were sent", context do
         assert context.result_html =~ "If your email is in our system"
-        :ok
+        {:ok, context}
       end
     end
   end

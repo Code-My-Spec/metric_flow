@@ -17,24 +17,24 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
       then_ "the page displays a connection confirmation", context do
         html = render(context.view)
         assert html =~ "Connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page mentions QuickBooks by name", context do
         html = render(context.view)
         assert html =~ "QuickBooks"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page indicates the account is ready to sync", context do
         html = render(context.view)
         assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows a Connected badge", context do
         assert has_element?(context.view, ".badge-success", "Connected")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
       then_ "the page has a link to view all integrations", context do
         html = render(context.view)
         assert html =~ "integrations" or html =~ "Integrations" or html =~ "Back"
-        :ok
+        {:ok, context}
       end
     end
   end

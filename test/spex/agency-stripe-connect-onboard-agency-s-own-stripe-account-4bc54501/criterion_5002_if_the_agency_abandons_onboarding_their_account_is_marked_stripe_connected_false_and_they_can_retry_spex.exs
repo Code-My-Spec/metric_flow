@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AbandonedOnboardingCanRetrySpex do
       then_ "the page shows an option to connect Stripe", context do
         html = render(context.view)
         assert html =~ "Connect"
-        :ok
+        {:ok, context}
       end
     end
   end

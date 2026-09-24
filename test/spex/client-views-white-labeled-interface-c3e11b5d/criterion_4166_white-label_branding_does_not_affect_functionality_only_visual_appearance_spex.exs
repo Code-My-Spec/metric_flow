@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
         assert has_metrics_area,
                "Expected the dashboard to load fully with all functional elements under white-labeling. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
         assert dashboard_still_functional,
                "Expected the dashboard to remain fully functional after filter interaction under white-labeling. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
         assert page_functional,
                "Expected the integrations page to be fully functional under white-labeling. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

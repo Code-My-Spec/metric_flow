@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.UserCanRegisterWithEmailAndPasswordSpex do
 
       then_ "the user sees a confirmation message that an email was sent", context do
         assert render(context.view) =~ "An email was sent to newuser@example.com"
-        :ok
+        {:ok, context}
       end
     end
   end

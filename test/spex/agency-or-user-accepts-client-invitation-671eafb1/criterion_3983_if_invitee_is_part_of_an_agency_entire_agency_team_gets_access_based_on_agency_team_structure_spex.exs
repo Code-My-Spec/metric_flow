@@ -61,14 +61,14 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
         {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "a success confirmation is shown after accepting", context do
         {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "You now have access" or html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "account_manager"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -173,7 +173,7 @@ defmodule MetricFlowSpex.IfInviteeIsPartOfAgencyEntireAgencyTeamGetsAccessSpex d
         {:ok, view, _html} = live(context.agency_user_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
   end

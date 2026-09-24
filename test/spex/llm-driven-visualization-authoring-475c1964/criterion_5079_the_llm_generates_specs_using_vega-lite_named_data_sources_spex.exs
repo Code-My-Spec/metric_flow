@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.Criterion5079LlmGeneratesNamedDataSourceSpecsSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

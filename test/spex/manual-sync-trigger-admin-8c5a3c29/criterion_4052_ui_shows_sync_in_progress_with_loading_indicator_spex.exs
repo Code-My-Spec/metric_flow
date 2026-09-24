@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
         html = render(context.view)
         refute html =~ "Syncing"
         refute html =~ "loading-spinner"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
         html = render(context.view)
         assert html =~ "Syncing"
         assert html =~ "badge-warning"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
 
       then_ "the page renders a loading spinner element inside the Syncing badge", context do
         assert has_element?(context.view, "[data-role='integration-sync-status'] .loading-spinner")
-        :ok
+        {:ok, context}
       end
     end
   end

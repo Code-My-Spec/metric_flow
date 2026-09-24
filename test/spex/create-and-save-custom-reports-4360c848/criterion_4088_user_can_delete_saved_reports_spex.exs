@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.Criterion4088DeleteSavedReportsSpex do
 
       then_ "the deleted dashboard is no longer in the list", context do
         refute context.html =~ "Deletable Report"
-        :ok
+        {:ok, context}
       end
     end
   end

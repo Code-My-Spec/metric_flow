@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason indicates data was lost due to the full rebuild deletion", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
                  html =~ "BUSINESS_REVIEW_" or html =~ "re-insertion",
                "Expected the failure reason to reference the full rebuild data loss, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no records synced count is shown for the failed entry", context do
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         refute html =~ "records synced" and html =~ ~r/\d+ records synced/ |> Regex.match?(html),
                "Expected no positive records synced count for a midway failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         assert html =~ "47",
                "Expected the restored record count (47) to appear in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -142,7 +142,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one failed, one success), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry is visible when filtering by Failed status", context do
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         assert html =~ "Failed" or html =~ "failed",
                "Expected the failed entry to appear under the Failed filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the successful entry is visible when filtering by Success status", context do
@@ -173,7 +173,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
         assert html =~ "Success" or html =~ "success",
                "Expected the success entry to appear under the Success filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

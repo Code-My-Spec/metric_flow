@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a sync history entry with data-status='success' confirming auth credentials were accepted"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a sync history entry with data-status='failed' for the auth error"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message references the authentication or developer token failure", context do
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
                  html =~ "Google Ads API error",
                "Expected the developer token auth error message to be displayed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a sync history entry with data-status='failed' for the manager account auth error"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message references authentication or token issues", context do
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.SystemRequiresAValidGoogleDeveloperTokenAndManagerAccou
         assert html =~ "OAUTH_TOKEN_INVALID" or html =~ "authentication" or html =~ "token",
                "Expected the error to reference authentication or token issues, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

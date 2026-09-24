@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         assert html =~ "75" or html =~ Integer.to_string(context.total_records),
                "Expected sync history to show total records count '75' (reviews + daily metrics), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry is labeled as Google Business Reviews", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         assert html =~ "Google Business Reviews" or html =~ "Google Business",
                "Expected sync history entry to be labeled 'Google Business Reviews', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         assert html =~ "Success" or html =~ "success",
                "Expected the Google Business Reviews sync entry to show 'Success' status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the records synced count", context do
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         assert html =~ "60" or html =~ "records synced",
                "Expected the sync history entry to show '60 records synced', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to show 'Failed' status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the aggregation error message is displayed in the sync history entry", context do
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
                  html =~ "review data",
                "Expected the aggregation error message to appear in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

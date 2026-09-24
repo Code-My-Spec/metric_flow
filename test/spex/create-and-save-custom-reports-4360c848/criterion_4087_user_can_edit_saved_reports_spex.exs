@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.Criterion4087EditSavedReportsSpex do
         html = render(context.view)
         assert html =~ "Editable Report"
         assert html =~ "/edit"
-        :ok
+        {:ok, context}
       end
     end
   end

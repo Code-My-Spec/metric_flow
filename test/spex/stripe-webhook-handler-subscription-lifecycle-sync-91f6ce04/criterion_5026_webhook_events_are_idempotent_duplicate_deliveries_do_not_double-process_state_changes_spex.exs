@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.WebhookEventsAreIdempotentSpex do
       then_ "both requests return success", context do
         assert context.first.status in [200, 202]
         assert context.second.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       then_ "the reports page is accessible to authenticated users", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
             flunk("Expected /reports to be accessible to an authenticated user, but was redirected to login")
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
                  has_element?(context.view, "[data-role='reports']"),
                "Expected the reports page to show review metrics content, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not gate review metrics behind a specific platform name", context do
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
                   html =~ "Trustpilot only"),
                "Expected review metrics to be platform-agnostic, but the page restricts them to a single platform"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
                  has_element?(context.view, "[data-role='reports-list']"),
                "Expected a platform-neutral review metrics section heading or reports page content"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,16 +91,16 @@ defmodule MetricFlowSpex.MetricCalculationIsPlatformAgnosticSpex do
       then_ "the user is redirected away from the reports page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "Review Metrics",
                    "Expected unauthenticated user to not see review metrics content"
 
-            :ok
+            {:ok, context}
         end
       end
     end

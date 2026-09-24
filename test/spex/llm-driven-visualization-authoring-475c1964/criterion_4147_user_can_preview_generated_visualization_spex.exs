@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.Criterion4147PreviewGeneratedVisualizationSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

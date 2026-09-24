@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
         assert render(context.view) =~ "Failed",
                "Expected the failed sync to show a 'Failed' badge text"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
         assert html =~ "Rate limit exceeded",
                "Expected the error reason text to be visible to the user, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
         assert has_element?(context.view, "[data-status='success'] .badge-success"),
                "Expected the success entry to have a badge-success inside the data-status='success' element"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
         assert has_element?(context.view, "[data-role='sync-provider']"),
                "Expected a data-role='sync-provider' element to identify which provider failed"
 
-        :ok
+        {:ok, context}
       end
     end
   end

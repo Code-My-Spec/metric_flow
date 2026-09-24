@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows the full count of records synced", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         assert html =~ "7" or html =~ "records synced" or html =~ "records",
                "Expected the sync entry to display the full record count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         assert html =~ "Success" or html =~ "success",
                "Expected the sync to succeed when null metric values are zero-filled (parseInt), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the record count is the same as a sync with all metrics present (zero-filled, not dropped)", context do
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         assert html =~ "7" or html =~ "records",
                "Expected the record count to match a full sync (null values stored as 0, not omitted), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -118,7 +118,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         refute html =~ "Failed" and html =~ "google_business",
                "Expected no failure entry for a Google Business Profile sync with null values (they should be zero-filled), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history page shows only a success entry for the Google Business Profile sync", context do
@@ -127,7 +127,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
         assert html =~ "Success" or html =~ "success",
                "Expected a success entry — null values stored as 0 (parseInt) must not cause a sync failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

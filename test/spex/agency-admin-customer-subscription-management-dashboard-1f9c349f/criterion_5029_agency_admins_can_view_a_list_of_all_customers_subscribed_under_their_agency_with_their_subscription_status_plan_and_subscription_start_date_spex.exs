@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
       then_ "the page displays a customer subscriptions list", context do
         html = render(context.view)
         assert html =~ "Subscriptions"
-        :ok
+        {:ok, context}
       end
 
       then_ "the list includes subscription status column", context do
@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
         # Status column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Status" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
 
       then_ "the list includes plan column", context do
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
         # Plan column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Plan" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
 
       then_ "the list includes subscription start date column", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
         # Start Date column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Start Date" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
     end
   end

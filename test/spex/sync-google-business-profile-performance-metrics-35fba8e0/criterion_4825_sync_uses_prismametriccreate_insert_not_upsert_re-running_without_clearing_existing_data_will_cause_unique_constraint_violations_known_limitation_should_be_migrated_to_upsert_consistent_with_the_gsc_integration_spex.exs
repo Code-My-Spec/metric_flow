@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert html =~ "Failed" or html =~ "failed",
                "Expected the duplicate sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message is specific about the unique constraint issue", context do
@@ -57,14 +57,14 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
                  html =~ "unique",
                "Expected the error message to mention the unique constraint issue, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "a sync-error element is visible for the failed entry", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the constraint violation failure"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one success, one failed duplicate), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success entry shows the correct record count from the original sync", context do
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert html =~ "30",
                "Expected the original sync record count (30) to remain visible, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "filtering by Failed shows only the constraint violation failure entry", context do
@@ -139,7 +139,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected the failed Google Business Profile entry to be shown in the Failed filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -176,7 +176,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected 'Google Business' to appear in the Failed filter results, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details reference the unique constraint to distinguish it from a generic failure", context do
@@ -185,7 +185,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
         assert html =~ "constraint" or html =~ "unique" or html =~ "violation",
                "Expected the unique constraint violation message to be present, distinguishing this from a generic sync failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

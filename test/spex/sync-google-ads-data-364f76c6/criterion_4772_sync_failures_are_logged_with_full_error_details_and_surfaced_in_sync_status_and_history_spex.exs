@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the full error details are visible in the history entry", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
                  html =~ "CUSTOMER_NOT_ENABLED" or html =~ "1234567890",
                "Expected the full error details to be surfaced in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
         assert entry_count >= 2,
                "Expected at least 2 Google Ads failure entries in sync history, but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Failed filter shows only failed entries using data-status selectors", context do
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
         refute has_element?(context.view, "[data-status='success']"),
                "Expected [data-status='success'] elements to be hidden after applying the Failed filter"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -144,7 +144,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
         refute has_element?(context.view, "[data-status='success']"),
                "Expected [data-status='success'] entries to not be shown when Failed filter is active"
 
-        :ok
+        {:ok, context}
       end
     end
   end

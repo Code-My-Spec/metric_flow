@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
         assert html =~ expected_date,
                "Expected sync history entry to show the data date '#{expected_date}', but not found in: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry is associated with the Google Analytics provider", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
         assert html =~ "Google Analytics",
                "Expected the sync history entry to be keyed to 'Google Analytics', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
         assert entry_count >= 3,
                "Expected at least 3 sync history entries (one per data date), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each entry displays its distinct data date", context do
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
                  "Expected sync history to include entry for date '#{Date.to_iso8601(date)}'"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -117,7 +117,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
         assert html =~ "yesterday" or html =~ "today excluded",
                "Expected the date range section to indicate that today is excluded and yesterday is the latest date"
 
-        :ok
+        {:ok, context}
       end
     end
   end

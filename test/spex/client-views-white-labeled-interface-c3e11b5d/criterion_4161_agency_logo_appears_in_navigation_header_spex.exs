@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
         assert has_agency_logo,
                "Expected the navigation header to display the agency logo. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
         assert has_logo_in_header,
                "Expected the header to contain the agency logo image element. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

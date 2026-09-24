@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.Criterion4089MetricsFromAnyPlatformSpex do
         assert has_element?(context.view, "[data-role='metric-list']")
         # Available metrics should include both marketing and financial metrics
         # (the exact list depends on connected integrations)
-        :ok
+        {:ok, context}
       end
     end
   end

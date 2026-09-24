@@ -35,12 +35,12 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanModifyUserAccessLevelsSpex do
         html = render(context.view)
         assert html =~ context.second_user_email
         assert html =~ "admin"
-        :ok
+        {:ok, context}
       end
 
       then_ "a success message is displayed", context do
         assert render(context.view) =~ "Role updated"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanModifyUserAccessLevelsSpex do
                  "[data-role='change-role'][data-user-email='#{context.owner_email}']"
                )
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ "newuser@testco.com"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,14 +78,14 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         refute html =~ "outsider@otherdomain.com"
-        :ok
+        {:ok, context}
       end
 
       then_ "only the owner remains in the agency members list", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.owner_email
-        :ok
+        {:ok, context}
       end
     end
   end

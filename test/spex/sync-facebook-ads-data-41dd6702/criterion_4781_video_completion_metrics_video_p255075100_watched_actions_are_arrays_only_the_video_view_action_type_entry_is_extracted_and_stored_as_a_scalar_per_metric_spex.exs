@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Facebook Ads sync failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason references the video metric processing error", context do
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
                  html =~ "Failed to extract" or html =~ "error",
                "Expected the failure reason to reference the video metric extraction error, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

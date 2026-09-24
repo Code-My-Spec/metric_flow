@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
       then_ "the admin does not see the delete account section", context do
         refute has_element?(context.member_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
       then_ "the account manager does not see the delete account section", context do
         refute has_element?(context.member_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.AdminAndOtherRolesCannotDeleteAccountSpex do
 
       then_ "the read-only member does not see the delete account section", context do
         refute has_element?(context.member_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Facebook Ads sync entry to be marked as failed after exhausting retries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message displayed is specific and comes from the Facebook API error response", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
                  html =~ "unauthorized",
                "Expected the sync history to surface the extracted Facebook API error message (from error.response.error), not a generic error, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
         assert html =~ "Failed" or html =~ "failed",
                "Expected the rate-limit failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error reason shown to the user contains Facebook API details rather than a generic failure message", context do
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
         assert html =~ "#17" or html =~ "request limit" or html =~ "Facebook API error",
                "Expected the sync history to show the specific Facebook API error code and message, not just 'sync failed', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
         assert html =~ "Success" or html =~ "success",
                "Expected the successful retry to be shown as a completed/success entry in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history also retains the earlier failed entry", context do
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
         assert html =~ "Failed" or html =~ "failed",
                "Expected the earlier failed attempt to still appear in sync history alongside the success entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

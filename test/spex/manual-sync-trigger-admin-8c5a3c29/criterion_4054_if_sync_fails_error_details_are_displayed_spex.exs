@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
                  html =~ "Error",
                "Expected the page to show an error message with the failure reason, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
                  has_element?(context.view, "[data-role='integration-sync-status']"),
                "Expected the page to show a Syncing indicator before failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the async sync failure message is received by the LiveView", context do
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
         refute html =~ "loading loading-spinner",
                "Expected the Syncing spinner to be gone after sync failed, but it was still present"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Sync Now button is re-enabled so the user can retry", context do
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
         ),
         "Expected the Sync Now button to be re-enabled after sync failed, but it was still disabled"
 
-        :ok
+        {:ok, context}
       end
     end
   end

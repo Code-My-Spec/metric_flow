@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected sync history to show 'Google Business' provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows the number of records synced for that location", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert html =~ "28" or html =~ "records",
                "Expected sync history entry to show the records synced count (28), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status", context do
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one per location), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both entries show success status", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert html =~ "Success" or html =~ "success",
                "Expected both sync entries to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -143,7 +143,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details are surfaced in the failed sync entry", context do
@@ -153,14 +153,14 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
                  html =~ "Location access denied" or html =~ "Google Business Profile API error",
                "Expected the location-specific error details to be shown in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry is associated with the error data role", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the location-specific error details"
 
-        :ok
+        {:ok, context}
       end
     end
   end

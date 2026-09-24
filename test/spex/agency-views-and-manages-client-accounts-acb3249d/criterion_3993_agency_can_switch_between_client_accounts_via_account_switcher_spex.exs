@@ -36,12 +36,12 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
 
       then_ "the client account card shows a switch account action", context do
         assert has_element?(context.view, "[data-role='switch-account']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the switch account action is labeled with the client account name", context do
         assert has_element?(context.view, "[data-role='switch-account']", context.client_account_name)
-        :ok
+        {:ok, context}
       end
     end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       then_ "the UI reflects the selected client account as the active context", context do
         html = render(context.view)
         assert html =~ context.client_account_name
-        :ok
+        {:ok, context}
       end
     end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
 
       then_ "the settings page displays the client account as the active account", context do
         assert render(context.settings_view) =~ context.client_account_name
-        :ok
+        {:ok, context}
       end
     end
 
@@ -152,17 +152,17 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
         html = render(context.view)
         assert html =~ context.client_one_name
         assert html =~ context.client_two_name
-        :ok
+        {:ok, context}
       end
 
       then_ "the switch action is available for the first client account", context do
         assert has_element?(context.view, "[data-role='switch-account']", context.client_one_name)
-        :ok
+        {:ok, context}
       end
 
       then_ "the switch action is available for the second client account", context do
         assert has_element?(context.view, "[data-role='switch-account']", context.client_two_name)
-        :ok
+        {:ok, context}
       end
     end
   end

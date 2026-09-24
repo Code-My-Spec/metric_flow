@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.ClientCanRevokeAUserAccessAtAnyTimeSpex do
 
       then_ "the second user appears in the members list before removal", context do
         assert render(context.view) =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       when_ "the owner clicks the remove button for the second user", context do
@@ -39,12 +39,12 @@ defmodule MetricFlowSpex.ClientCanRevokeAUserAccessAtAnyTimeSpex do
 
       then_ "the second user no longer appears in the members list", context do
         refute render(context.view) =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "a success flash message confirms the member was removed", context do
         assert render(context.view) =~ "Member removed"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.ClientCanRevokeAUserAccessAtAnyTimeSpex do
           context.view,
           "[data-role='remove-member'][data-user-email='#{context.second_user_email}']"
         )
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.ClientCanRevokeAUserAccessAtAnyTimeSpex do
           context.view,
           "[data-role='remove-member'][data-user-email='#{context.owner_email}']"
         )
-        :ok
+        {:ok, context}
       end
     end
   end

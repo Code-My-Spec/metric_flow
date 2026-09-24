@@ -14,19 +14,19 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
 
       then_ "the user sees an account type field on the form", context do
         assert has_element?(context.view, "[name='user[account_type]']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees a Client option", context do
         html = render(context.view)
         assert html =~ "Client"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees an Agency option", context do
         html = render(context.view)
         assert html =~ "Agency"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
 
       then_ "the user sees a confirmation message that registration was successful", context do
         assert render(context.view) =~ "An email was sent to client_user@example.com"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
 
       then_ "the user sees a confirmation message that registration was successful", context do
         assert render(context.view) =~ "An email was sent to agency_user@example.com"
-        :ok
+        {:ok, context}
       end
     end
   end

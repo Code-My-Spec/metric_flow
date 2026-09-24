@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
 
       then_ "the integrations page is accessible and renders the integrations heading", context do
         assert render(context.view) =~ "Integrations"
-        :ok
+        {:ok, context}
       end
 
       then_ "the account manager can see platform management options", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
                  html =~ "Connect a Platform" or
                  html =~ "No platforms connected yet"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -107,12 +107,12 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
 
       then_ "the Delete Account section is not visible", context do
         refute has_element?(context.view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the delete account form is not rendered in the page", context do
         refute render(context.view) =~ "Delete Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -158,12 +158,12 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
 
       then_ "the Transfer Ownership section is not visible", context do
         refute has_element?(context.view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
 
       then_ "no transfer ownership controls are rendered in the page", context do
         refute render(context.view) =~ "Transfer Ownership"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -209,12 +209,12 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
 
       then_ "the account name input is shown as read-only", context do
         assert has_element?(context.view, "input[readonly]")
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no editable settings form with a save button", context do
         refute has_element?(context.view, "#account-settings-form")
-        :ok
+        {:ok, context}
       end
     end
   end

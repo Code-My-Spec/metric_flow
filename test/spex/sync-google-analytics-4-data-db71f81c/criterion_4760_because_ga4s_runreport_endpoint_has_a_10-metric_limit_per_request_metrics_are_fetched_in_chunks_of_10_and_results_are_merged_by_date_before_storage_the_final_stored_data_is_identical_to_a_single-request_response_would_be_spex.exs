@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
         assert entry_count == 1,
                "Expected exactly 1 sync history entry for a single daily GA4 sync (not one per chunk), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows 11 records synced representing all merged GA4 metrics", context do
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
         assert html =~ "11" or html =~ "records",
                "Expected the sync entry to show 11 records synced (all GA4 metrics merged from multiple API chunks), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
         assert entry_count == 1,
                "Expected exactly 1 failure entry in sync history (not one per chunk), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected the sync history section to be present"
 
-        :ok
+        {:ok, context}
       end
     end
   end

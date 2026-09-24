@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
         assert has_chat_entry_point,
                "Expected an AI chat button or link on the dashboard page (data-role='open-ai-chat'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
         assert has_chat_entry_point,
                "Expected an AI chat button or link on the correlations page (data-role='open-ai-chat'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
         assert has_chat_entry_point,
                "Expected an AI chat button or link on the insights page (data-role='open-ai-chat'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -164,7 +164,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
         assert chat_opened,
                "Expected clicking the AI chat button to navigate to /chat or open a chat interface. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

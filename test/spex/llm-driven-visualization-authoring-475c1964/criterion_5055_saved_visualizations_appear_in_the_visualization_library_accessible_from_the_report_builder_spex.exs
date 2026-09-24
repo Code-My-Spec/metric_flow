@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.Criterion5055SavedVizInLibrarySpex do
 
       then_ "the saved visualization appears in the list", context do
         assert context.html =~ "LLM Generated Chart"
-        :ok
+        {:ok, context}
       end
     end
   end

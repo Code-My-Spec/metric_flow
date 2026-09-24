@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.ClientCanCustomizeDashboardsRegardlessOfWhiteLabelingSp
         assert has_filter_controls,
                "Expected the client to have access to dashboard filter controls regardless of white-labeling. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.ClientCanCustomizeDashboardsRegardlessOfWhiteLabelingSp
         assert has_dashboard_content,
                "Expected the dashboard to display full metrics content regardless of white-labeling. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

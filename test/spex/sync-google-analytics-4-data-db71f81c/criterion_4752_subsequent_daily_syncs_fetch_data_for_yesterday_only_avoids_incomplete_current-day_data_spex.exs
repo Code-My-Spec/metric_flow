@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         assert html =~ yesterday,
                "Expected the date range to show yesterday's date #{yesterday} as the end of coverage, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page explains that today is excluded to avoid incomplete data", context do
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         assert html =~ "today excluded" or html =~ "incomplete day" or html =~ "incomplete current",
                "Expected the page to explain that today is excluded because the current day's data is incomplete, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         assert html =~ expected_date or html =~ "Date:",
                "Expected the sync entry to show yesterday's date #{expected_date}, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status for the Google Analytics provider", context do
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         assert html =~ "Success" or html =~ "success",
                "Expected sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         assert has_element?(context.view, "[data-role='date-range']"),
                "Expected a [data-role='date-range'] element to be present on the sync history page"
 
-        :ok
+        {:ok, context}
       end
     end
   end

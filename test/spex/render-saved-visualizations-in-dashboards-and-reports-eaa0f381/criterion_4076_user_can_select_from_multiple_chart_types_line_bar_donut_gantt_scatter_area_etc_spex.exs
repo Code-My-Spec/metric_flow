@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
         assert html =~ "Point"
         assert html =~ "Arc"
         assert html =~ "Rect"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
                  "Expected #{type} button to have active styling after click"
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

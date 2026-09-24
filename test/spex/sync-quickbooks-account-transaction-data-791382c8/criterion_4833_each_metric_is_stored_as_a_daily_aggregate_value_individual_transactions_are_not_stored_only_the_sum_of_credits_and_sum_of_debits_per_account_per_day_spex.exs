@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
         assert html =~ "Success" or html =~ "success",
                "Expected the QuickBooks sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
         refute has_element?(context.view, "[data-role='filter-transaction']"),
                "Expected no transaction-level filter element on the sync history page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the sync history entry to be associated with QuickBooks, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed after all retries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message is specific and not generic", context do
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
                  html =~ "retries" or html =~ "retry",
                "Expected the error message to be specific (503/UNAVAILABLE/retry count), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
         refute html =~ "Unknown error" and not (html =~ "INTERNAL_ERROR" or html =~ "Transient"),
                "Expected the specific error details to be surfaced, not a generic unknown error message"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status after eventual completion, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the successful entry shows a record count", context do
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
         assert html =~ "5" or html =~ "records",
                "Expected the successful sync entry to show records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

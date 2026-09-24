@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
         assert html =~ "Sync History" or html =~ "sync history",
                "Expected the sync history page to display a 'Sync History' section, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "QuickBooks is listed as a financial data provider in the sync history", context do
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected QuickBooks (financial provider) to appear in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "marketing providers such as Google Ads or Facebook Ads appear alongside QuickBooks in the same list", context do
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
         assert has_marketing_provider or has_financial_provider,
                "Expected the sync history list to include both marketing and financial providers in the same view, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] element listing sync entries"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not segregate financial providers into a separate section from marketing providers", context do
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
                  has_element?(context.view, "[data-role='sync-history']"),
                "Expected a single unified sync history section, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
         refute html == "",
                "Expected the sync history page to render content, but got an empty page"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history section shows provider labels for each sync entry", context do
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsIsStoredAsMetricsAlongside
                  has_element?(context.view, "[data-role='sync-entry']"),
                "Expected each sync history entry to display the provider label, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

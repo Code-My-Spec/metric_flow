@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
         assert has_recommendations,
                "Expected an AI recommendations section to be visible after enabling AI suggestions. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
         assert has_metric_references,
                "Expected AI recommendations to mention metric names and correlation values. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
         assert has_actionable_language,
                "Expected AI recommendations to contain actionable language (e.g., 'increase', 'optimize', 'budget'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

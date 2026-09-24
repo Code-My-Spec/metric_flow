@@ -16,17 +16,17 @@ defmodule MetricFlowSpex.ClientCanSpecifyAccessLevelInInvitationSpex do
 
       then_ "the role select contains a read_only option", context do
         assert has_element?(context.view, "select[name='invitation[role]'] option[value='read_only']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the role select contains an account_manager option", context do
         assert has_element?(context.view, "select[name='invitation[role]'] option[value='account_manager']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the role select contains an admin option", context do
         assert has_element?(context.view, "select[name='invitation[role]'] option[value='admin']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.ClientCanSpecifyAccessLevelInInvitationSpex do
 
       then_ "a success message confirms the member was invited", context do
         assert render(context.view) =~ "Invitation sent"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.ClientCanSpecifyAccessLevelInInvitationSpex do
 
       then_ "a success message confirms the member was invited", context do
         assert render(context.view) =~ "Invitation sent"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.ClientCanSpecifyAccessLevelInInvitationSpex do
 
       then_ "a success message confirms the member was invited", context do
         assert render(context.view) =~ "Invitation sent"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert entry_count >= 2,
                "Expected at least 2 distinct sync history entries (one for google_business, one for google_business_reviews), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both entries are visible in the rendered sync history", context do
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert has_reviews,
                "Expected sync history to include a GMB Reviews entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
                  html =~ "mybusiness",
                "Expected a Google Business Profile performance entry in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows a successful sync status", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the Google Business Profile performance entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -143,7 +143,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
                  html =~ "Reviews",
                "Expected a GMB Reviews entry in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the GMB Reviews entry shows a successful sync status", context do
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the GMB Reviews sync entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -200,7 +200,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert performance_label_present and reviews_label_present,
                "Expected both a Google Business performance label and a GMB Reviews label to be present in sync history. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "there are at least two sync history entries in the page", context do
@@ -215,7 +215,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
         assert entry_count >= 2,
                "Expected at least 2 sync history entries when both google_business and google_business_reviews syncs ran, found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

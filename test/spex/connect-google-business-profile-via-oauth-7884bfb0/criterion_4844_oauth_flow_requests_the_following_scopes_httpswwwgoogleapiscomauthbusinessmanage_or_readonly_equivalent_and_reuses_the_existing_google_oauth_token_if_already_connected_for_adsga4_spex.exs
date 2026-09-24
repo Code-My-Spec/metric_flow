@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
         has_not_configured_notice = html =~ "OAuth is not configured for this provider"
 
         assert has_connect_button or has_not_configured_notice
-        :ok
+        {:ok, context}
       end
     end
 
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
       then_ "the connect page shows Google Business as its own distinct provider card", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         assert has_element?(view, "[data-platform='google_business']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,13 +57,13 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
       then_ "the detail page shows the integration is connected", context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the detail page shows a select accounts button for account management", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "[data-role='select-accounts-button']")
-        :ok
+        {:ok, context}
       end
     end
   end

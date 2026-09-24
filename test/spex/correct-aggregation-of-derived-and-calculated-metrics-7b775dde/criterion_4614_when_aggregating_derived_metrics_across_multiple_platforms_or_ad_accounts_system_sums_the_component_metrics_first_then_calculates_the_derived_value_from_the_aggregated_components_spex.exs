@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
         assert has_platform_control,
                "Expected the dashboard to display a platform or account filter for cross-platform metric aggregation, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
         assert has_derived_metrics,
                "Expected the dashboard to display derived metrics (CPC, CTR, ROAS) that are computed from summed cross-platform components, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossMultiplePlatformsSpex do
         assert has_component_metrics,
                "Expected the dashboard to display raw component metrics (clicks, spend, impressions) that are summed across platforms before derived metric calculation, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

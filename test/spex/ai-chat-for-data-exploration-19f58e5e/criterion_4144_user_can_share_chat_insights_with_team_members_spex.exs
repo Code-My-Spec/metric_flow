@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
         assert has_share_action,
                "Expected a share action (button, link, or menu item) to be visible on AI messages or insights in the chat. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -147,7 +147,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
         assert share_options_visible,
                "Expected a share dialog, copy link, or share options to appear after clicking the share action. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -228,7 +228,7 @@ defmodule MetricFlowSpex.UserCanShareChatInsightsWithTeamMembersSpex do
         assert indicates_recipients,
                "Expected the share UI to indicate who the insight can be shared with (e.g., team, account members, or show a copy link option). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

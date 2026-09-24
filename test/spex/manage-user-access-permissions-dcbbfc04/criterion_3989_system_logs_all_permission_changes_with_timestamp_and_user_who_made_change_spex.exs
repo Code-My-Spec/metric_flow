@@ -34,14 +34,14 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
       then_ "the system confirms the role change was recorded", context do
         html = render(context.members_view)
         assert html =~ "Role updated"
-        :ok
+        {:ok, context}
       end
 
       then_ "the updated role is reflected in the members list with the change visible", context do
         html = render(context.members_view)
         assert html =~ context.second_user_email
         assert html =~ "admin"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,13 +73,13 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
       then_ "the system confirms the member removal was recorded", context do
         html = render(context.view)
         assert html =~ "Member removed"
-        :ok
+        {:ok, context}
       end
 
       then_ "the removed member no longer appears in the list", context do
         html = render(context.view)
         refute html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
     end
   end

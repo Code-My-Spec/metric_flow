@@ -36,12 +36,12 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
 
       then_ "the originated client account is listed", context do
         assert render(context.view) =~ context.client_name
-        :ok
+        {:ok, context}
       end
 
       then_ "an Originator badge is visible for that client account", context do
         assert render(context.view) =~ "Originator"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,17 +69,17 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
 
       then_ "the invited client account is listed", context do
         assert render(context.view) =~ context.client_name
-        :ok
+        {:ok, context}
       end
 
       then_ "no Originator badge is shown for the invited client account", context do
         refute render(context.view) =~ "Originator"
-        :ok
+        {:ok, context}
       end
 
       then_ "an Invited badge is shown instead", context do
         assert render(context.view) =~ "Invited"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -117,17 +117,17 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
         html = render(context.view)
         assert html =~ context.originated_client_name
         assert html =~ context.invited_client_name
-        :ok
+        {:ok, context}
       end
 
       then_ "the Originator badge appears for the originated client", context do
         assert render(context.view) =~ "Originator"
-        :ok
+        {:ok, context}
       end
 
       then_ "the Invited badge appears for the invited client", context do
         assert render(context.view) =~ "Invited"
-        :ok
+        {:ok, context}
       end
     end
   end

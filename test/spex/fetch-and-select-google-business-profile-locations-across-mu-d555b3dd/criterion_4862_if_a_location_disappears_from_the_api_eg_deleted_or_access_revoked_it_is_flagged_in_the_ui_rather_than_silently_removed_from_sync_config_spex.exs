@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
         assert flagged,
                "Expected the UI to flag the missing location 'accounts/123/locations/deleted-loc-1' with a warning or indicator, but no such element was found. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -160,7 +160,7 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
         assert location_present,
                "Expected the previously configured location to be visible in the UI with a flag, but it was absent entirely. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

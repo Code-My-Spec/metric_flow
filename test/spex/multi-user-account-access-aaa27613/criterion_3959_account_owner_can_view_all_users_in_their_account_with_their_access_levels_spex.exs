@@ -17,13 +17,13 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
       then_ "the owner sees their own email in the members list", context do
         html = render(context.view)
         assert html =~ context.owner_email
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner's role is displayed as owner", context do
         html = render(context.view)
         assert html =~ "owner"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -48,14 +48,14 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
         html = render(context.view)
         assert html =~ context.owner_email
         assert html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "each member's role is displayed", context do
         html = render(context.view)
         assert html =~ "owner"
         assert html =~ "admin"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,12 +70,12 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
       then_ "the page header shows Members", context do
         html = render(context.view)
         assert html =~ "Members"
-        :ok
+        {:ok, context}
       end
 
       then_ "each member row has a member data role", context do
         assert has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
     end
   end

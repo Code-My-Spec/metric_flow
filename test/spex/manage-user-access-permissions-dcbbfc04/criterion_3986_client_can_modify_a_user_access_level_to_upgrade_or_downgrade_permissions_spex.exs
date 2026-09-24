@@ -34,14 +34,14 @@ defmodule MetricFlowSpex.ClientCanModifyAUserAccessLevelToUpgradeOrDowngradePerm
 
       then_ "a role updated confirmation message is displayed", context do
         assert render(context.members_view) =~ "Role updated"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user's role now shows as admin in the members list", context do
         html = render(context.members_view)
         assert html =~ context.second_user_email
         assert html =~ "admin"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,14 +73,14 @@ defmodule MetricFlowSpex.ClientCanModifyAUserAccessLevelToUpgradeOrDowngradePerm
 
       then_ "a role updated confirmation message is displayed", context do
         assert render(context.members_view) =~ "Role updated"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user's role now shows as read_only in the members list", context do
         html = render(context.members_view)
         assert html =~ context.second_user_email
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -112,12 +112,12 @@ defmodule MetricFlowSpex.ClientCanModifyAUserAccessLevelToUpgradeOrDowngradePerm
 
       then_ "a role updated confirmation message is displayed", context do
         assert render(context.members_view) =~ "Role updated"
-        :ok
+        {:ok, context}
       end
 
       then_ "the updated role is reflected in the members list", context do
         assert render(context.members_view) =~ "account_manager"
-        :ok
+        {:ok, context}
       end
     end
   end

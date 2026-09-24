@@ -29,12 +29,12 @@ defmodule MetricFlowSpex.AccountOwnerCanInviteUsersViaEmailSpex do
       then_ "the invited user appears in the members list", context do
         html = render(context.view)
         assert html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "a success message is displayed", context do
         assert render(context.view) =~ "Member invited successfully"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.AccountOwnerCanInviteUsersViaEmailSpex do
 
       then_ "an error message is displayed", context do
         assert render(context.view) =~ "User not found"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.AccountOwnerCanInviteUsersViaEmailSpex do
 
       then_ "the invite member form is displayed", context do
         assert has_element?(context.view, "#invite_member_form")
-        :ok
+        {:ok, context}
       end
     end
   end

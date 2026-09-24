@@ -38,12 +38,12 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
 
       then_ "the page prompts the user to log in", context do
         assert has_element?(context.view, "[data-role=log-in-btn]", "Log In to Accept")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page prompts the user to register", context do
         assert has_element?(context.view, "[data-role=register-btn]", "Create an Account")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
 
       then_ "a register link is present on the page", context do
         assert has_element?(context.view, "[data-role=register-btn]", "Create an Account")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
 
       then_ "a log in link is present on the page", context do
         assert has_element?(context.view, "[data-role=log-in-btn]", "Log In to Accept")
-        :ok
+        {:ok, context}
       end
     end
   end

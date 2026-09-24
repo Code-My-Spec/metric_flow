@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status after cost metrics were processed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows the record count confirming cost data was processed", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
         assert html =~ "5" or html =~ "records",
                "Expected the sync entry to show records synced confirming cost data was stored, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,14 +78,14 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to be marked as success confirming cost conversion succeeded, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry exists for the cost sync", context do
         assert has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected a [data-role='sync-history-entry'] element for the cost metrics sync"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed when cost conversion fails, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message references the cost conversion failure details", context do
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
                  html =~ "1234567890" or html =~ "convert",
                "Expected the error message to reference cost_micros conversion failure details, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

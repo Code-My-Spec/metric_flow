@@ -16,17 +16,17 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
 
       then_ "the White-Label Branding section is visible", context do
         assert render(context.view) =~ "White-Label Branding"
-        :ok
+        {:ok, context}
       end
 
       then_ "a Subdomain input field is present in the white-label form", context do
         assert has_element?(context.view, "#white-label-form input[name='white_label[subdomain]']")
-        :ok
+        {:ok, context}
       end
 
       then_ "helper text describes the subdomain format requirements", context do
         assert render(context.view) =~ "Lowercase letters, numbers, and hyphens only"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -53,12 +53,12 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the saved subdomain is reflected in the rendered page", context do
         assert render(context.view) =~ "reports-andersonthefish"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
           context.view,
           "#white-label-form input[name='white_label[subdomain]'][value='andersonthefish']"
         )
-        :ok
+        {:ok, context}
       end
     end
   end

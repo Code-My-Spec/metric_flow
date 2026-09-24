@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
         {_path, flash} = assert_redirect(context.view)
         message = flash["info"] || flash["error"] || ""
         assert message =~ "deleted" or message =~ "Deleted" or message =~ "success" or message =~ "Success"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.UserReceivesConfirmationEmailAfterDeletionSpex do
         assert context.redirect_path == "/app/accounts"
         message = context.redirect_flash["info"] || context.redirect_flash["success"] || ""
         assert message != "", "Expected a flash message to be present after account deletion"
-        :ok
+        {:ok, context}
       end
     end
   end

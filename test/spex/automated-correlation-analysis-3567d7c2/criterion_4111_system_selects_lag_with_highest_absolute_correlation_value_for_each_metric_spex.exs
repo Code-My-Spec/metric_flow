@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
         assert has_coefficient,
                "Expected correlation coefficient at optimal lag to be displayed. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each correlation shows the selected lag value", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
         assert has_selected_lag,
                "Expected optimal lag value to be displayed for each correlation. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.CorrelationOptimalLagSelectionSpex do
         assert has_sorted_display,
                "Expected correlations to be displayed in a sorted/ranked order. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

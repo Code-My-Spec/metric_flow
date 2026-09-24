@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AgencyCanDisconnectStripeSpex do
       then_ "the page has a disconnect option for connected agencies", context do
         html = render(context.view)
         assert html =~ "Stripe Connect"
-        :ok
+        {:ok, context}
       end
     end
   end

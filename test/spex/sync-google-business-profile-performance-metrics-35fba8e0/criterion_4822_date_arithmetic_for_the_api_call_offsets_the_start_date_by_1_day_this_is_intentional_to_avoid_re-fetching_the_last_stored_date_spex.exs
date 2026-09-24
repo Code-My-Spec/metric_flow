@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected at least one Google Business Profile sync entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both sync entries show a success status", context do
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected both Google Business Profile sync entries to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "10" or html =~ "records",
                "Expected the incremental sync entry to show the small record count (1 day of data), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status confirming incremental data was fetched without duplication", context do
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the incremental Google Business Profile sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -146,7 +146,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected Google Business Profile sync history entries to be visible, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "all Google Business Profile sync entries show a success status", context do
@@ -155,7 +155,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected all Google Business Profile sync history entries to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the smaller incremental record count confirms the +1 day offset prevents re-fetching the last stored date", context do
@@ -164,7 +164,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
         assert html =~ "10" or html =~ "records",
                "Expected the incremental sync record count to be visible, confirming the +1 day offset avoids data duplication, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

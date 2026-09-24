@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
       then_ "QuickBooks is shown as a connectable platform", context do
         html = render(context.view)
         assert html =~ "QuickBooks"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
       then_ "the user is redirected to the QuickBooks OAuth authorization page", context do
         assert {:error, {:redirect, %{to: url}}} = context.click_result
         assert url =~ "quickbooks" or url =~ "intuit"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
         assert has_element?(context.view, "[data-platform='quickbooks']")
         html = render(context.view)
         assert html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
   end

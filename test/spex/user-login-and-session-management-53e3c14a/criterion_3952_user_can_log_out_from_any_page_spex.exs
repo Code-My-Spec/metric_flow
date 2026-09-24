@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
 
       then_ "the user sees a log out link on the page", context do
         assert context.settings_html =~ "Log out"
-        :ok
+        {:ok, context}
       end
 
       when_ "the user clicks the log out link", context do
@@ -41,14 +41,14 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
 
       then_ "the user is redirected to the login page", context do
         assert redirected_to(context.logout_conn) == "/users/log-in"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees a logged out confirmation", context do
         assert Phoenix.Flash.get(context.logout_conn.assigns.flash, :info) ==
                  "Logged out successfully."
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
       then_ "the user is redirected to the login page", context do
         {:error, {:redirect, %{to: path}}} = live(context.after_logout_conn, "/app/users/settings")
         assert path =~ "/users/log-in"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.WebhookProcessesSubscriptionEventsSpex do
 
       then_ "the endpoint returns 200", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.WebhookProcessesSubscriptionEventsSpex do
 
       then_ "the endpoint returns 200", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

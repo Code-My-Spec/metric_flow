@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
       then_ "the user sees the settings page with their email", context do
         assert context.settings_html =~ "Account Settings"
         assert context.settings_html =~ context.registered_email
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
 
       then_ "the user is not redirected to login", context do
         assert context.accounts_html =~ "Accounts"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       then_ "the integrations page loads successfully without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /integrations to load but was redirected to #{path}")
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
         assert has_canonical_references or has_existing_integration,
                "Expected the integrations page to still show canonical metric references (clicks, spend, impressions, conversions) or existing integration data. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
         assert has_canonical_label or has_platform_source,
                "Expected the dashboard to display canonical metric names or platform sources after a new integration is added. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -133,7 +133,7 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
         refute shows_link_clicks_as_canonical,
                "Expected the canonical taxonomy to remain stable — 'Link Clicks' should map to 'clicks', not appear as a new canonical definition. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -146,16 +146,16 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
       then_ "the user is redirected away from the integrations page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "canonical-metric",
                    "Unauthenticated user should not see canonical metric definitions or platform metric mappings"
 
-            :ok
+            {:ok, context}
         end
       end
     end

@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.AgencyAdminsCannotSeeOtherAgenciesDataSpex do
       then_ "the page does not show the second agency's email", context do
         html = render(context.view)
         refute html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.DisconnectedAgencyPreservesSubscriptionsSpex do
         html = render(context.view)
         assert html =~ "disconnected" or html =~ "unavailable" or html =~ "warning" or
                  html =~ "paused" or html =~ "checkout" or html =~ "Checkout"
-        :ok
+        {:ok, context}
       end
     end
   end

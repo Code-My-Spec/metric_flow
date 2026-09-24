@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
 
       then_ "the owner sees an error message about the account name not matching", context do
         assert render(context.view) =~ "Account name does not match"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.DeleteRequiresConfirmationWithAccountNameTypedInSpex do
 
       then_ "the owner is redirected to the accounts list", context do
         assert_redirect(context.view, "/app/accounts")
-        :ok
+        {:ok, context}
       end
     end
   end

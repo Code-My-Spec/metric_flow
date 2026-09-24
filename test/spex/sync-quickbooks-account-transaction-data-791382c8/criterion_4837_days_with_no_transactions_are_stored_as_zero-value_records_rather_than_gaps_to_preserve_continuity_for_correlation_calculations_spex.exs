@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         assert html =~ "Success" or html =~ "success",
                "Expected the sync with zero-value days to show success (records were stored, not gaps), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows the expected full record count covering all days including zero-transaction days", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         assert html =~ "548" or html =~ "records",
                "Expected the sync entry to show the full record count (zero-value days included), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no failure entry appears in the history due to empty transaction days", context do
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         refute has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected no failed sync history entries — zero-transaction days should be stored as zero-value records, not cause failures"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         assert html =~ "Success" or html =~ "success",
                "Expected the no-transaction day sync to show success (a zero-value record was stored), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows 0 records synced indicating a zero-value record was stored", context do
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         assert html =~ "0 records" or html =~ "records synced" or html =~ "0",
                "Expected the sync entry to show 0 records synced for the no-transaction day, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -140,7 +140,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one with transactions, one without), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no failure entries appear — zero-transaction days cause no failures", context do
@@ -148,7 +148,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
         refute has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected no failed sync history entries — zero-transaction days should produce zero-value records, not failures"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
         assert html =~ "Success" or html =~ "success",
                "Expected the zero-records sync to still show a success status (a zero-value record was stored), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows 0 records synced for the no-traffic day", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
         assert html =~ "0 records" or html =~ "records synced",
                "Expected the sync entry to show 0 records synced for the day with no traffic, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (covering days with and without traffic), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
         assert html =~ "Success" or html =~ "success",
                "Expected the zero-traffic day sync to show success (zero-value record was stored, not a gap), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

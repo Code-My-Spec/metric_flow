@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       then_ "the dashboard page loads successfully", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
                  has_element?(context.view, "[data-role='dashboard-heading']") or
                  has_element?(context.view, "h1")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
                  has_element?(context.view, "[data-platform]") or
                  has_element?(context.view, "[data-role='platform-metrics']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
                  render(context.view) =~ "metric" or
                  render(context.view) =~ "Metric"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -102,14 +102,14 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "All Metrics"
-            :ok
+            {:ok, context}
         end
       end
     end

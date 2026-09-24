@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
         {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
         {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
   end

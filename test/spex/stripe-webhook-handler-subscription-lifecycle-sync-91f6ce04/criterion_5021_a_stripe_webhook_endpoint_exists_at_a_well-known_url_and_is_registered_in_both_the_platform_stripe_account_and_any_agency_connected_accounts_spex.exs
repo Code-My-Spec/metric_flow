@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.StripeWebhookEndpointExistsSpex do
 
       then_ "the endpoint responds without a 404", context do
         refute context.response.status == 404
-        :ok
+        {:ok, context}
       end
     end
   end

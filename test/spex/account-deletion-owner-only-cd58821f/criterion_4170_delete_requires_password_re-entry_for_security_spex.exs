@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
 
       then_ "the owner sees an error message about the incorrect password", context do
         assert render(context.view) =~ "Incorrect password"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
       then_ "the owner sees an error message about the password being required", context do
         html = render(context.view)
         assert html =~ "password" or html =~ "Password"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
 
       then_ "the owner is redirected to the accounts list", context do
         assert_redirect(context.view, "/app/accounts")
-        :ok
+        {:ok, context}
       end
     end
   end

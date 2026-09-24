@@ -25,12 +25,12 @@ defmodule MetricFlowSpex.Criterion5061InsertSavedVizFromLibrarySpex do
 
       then_ "the metric picker panel opens", context do
         assert has_element?(context.view, "[data-role='metric-picker']")
-        :ok
+        {:ok, context}
       end
 
       then_ "a confirm button allows adding the selected visualization", context do
         assert has_element?(context.view, "[data-role='confirm-add-btn']")
-        :ok
+        {:ok, context}
       end
     end
   end

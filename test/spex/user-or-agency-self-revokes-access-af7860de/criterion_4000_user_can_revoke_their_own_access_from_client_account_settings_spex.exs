@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       then_ "the user sees a revoke access button for the client account", context do
         html = render(context.view)
         assert html =~ "Revoke Access" or html =~ "Leave Account" or html =~ "revoke"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -131,7 +131,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
       then_ "the user sees a success message confirming access was revoked", context do
         html = render(context.view)
         assert html =~ "access has been revoked" or html =~ "You have left" or html =~ "revoked"
-        :ok
+        {:ok, context}
       end
     end
   end

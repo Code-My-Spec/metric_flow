@@ -18,13 +18,13 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
       then_ "the page shows an account selection interface", context do
         assert has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page title references QuickBooks", context do
         html = render(context.view)
         assert html =~ "QuickBooks"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
         assert has_element?(context.view, "[data-role='account-checkbox']") or
                  has_element?(context.view, "[data-role='manual-property-input']") or
                  has_element?(context.view, "[data-role='manual-entry']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
       then_ "the user is redirected to the provider detail page", context do
         {path, _flash} = assert_redirect(context.view)
         assert path =~ "/app/integrations"
-        :ok
+        {:ok, context}
       end
     end
   end

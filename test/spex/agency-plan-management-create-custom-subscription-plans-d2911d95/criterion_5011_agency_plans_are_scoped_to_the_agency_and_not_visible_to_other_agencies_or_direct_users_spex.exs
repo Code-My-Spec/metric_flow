@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.AgencyPlansScopedToAgencySpex do
       then_ "only platform plans are visible, not other agency plans", context do
         html = render(context.view)
         refute html =~ "Agency Custom Plan"
-        :ok
+        {:ok, context}
       end
     end
   end

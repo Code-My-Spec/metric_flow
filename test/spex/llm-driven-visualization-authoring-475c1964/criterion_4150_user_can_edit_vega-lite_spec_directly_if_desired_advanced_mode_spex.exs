@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Criterion4150EditVegaLiteSpecDirectlySpex do
           |> render()
 
         assert textarea_html =~ "mark"
-        :ok
+        {:ok, context}
       end
     end
   end

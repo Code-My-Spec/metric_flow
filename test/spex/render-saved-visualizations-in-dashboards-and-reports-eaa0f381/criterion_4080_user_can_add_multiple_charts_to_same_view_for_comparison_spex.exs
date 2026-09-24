@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.Criterion4080MultipleChartsForComparisonSpex do
 
       then_ "the dashboard editor has an add visualization button", context do
         assert has_element?(context.view, "[data-role='add-visualization-btn']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.Criterion4080MultipleChartsForComparisonSpex do
       then_ "the page loads successfully and shows dashboard content", context do
         # The dashboards index should render without error
         assert context.html =~ "Dashboard" || context.html =~ "dashboard"
-        :ok
+        {:ok, context}
       end
     end
   end

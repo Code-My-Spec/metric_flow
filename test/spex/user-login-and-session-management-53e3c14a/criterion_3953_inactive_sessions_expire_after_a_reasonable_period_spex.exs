@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
 
       then_ "the user is redirected to the login page", context do
         assert context.redirect.to =~ "/users/log-in"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -36,12 +36,12 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
 
       then_ "the user sees a message to log in", context do
         assert context.flash["error"] == "You must log in to access this page."
-        :ok
+        {:ok, context}
       end
 
       then_ "the redirect points to the login page", context do
         assert context.redirect_path == "/users/log-in"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
 
       then_ "the user sees the settings page", context do
         assert context.settings_html =~ "Account Settings"
-        :ok
+        {:ok, context}
       end
     end
   end

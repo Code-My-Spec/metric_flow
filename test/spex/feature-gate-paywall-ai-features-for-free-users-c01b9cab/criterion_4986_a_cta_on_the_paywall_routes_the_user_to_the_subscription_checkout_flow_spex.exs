@@ -34,16 +34,16 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
             assert has_checkout_cta,
                    "Expected a CTA on the paywall that routes to /subscriptions/checkout. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
         end
       end
     end

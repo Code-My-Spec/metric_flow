@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
         assert has_strength_language,
                "Expected AI suggestions to reference correlation strength (e.g., 'strong', 'moderate', 'weak', or numeric coefficients). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
         assert has_trend_language,
                "Expected AI suggestions to reference trends (e.g., 'increasing', 'trending', 'declining', 'growing'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -167,7 +167,7 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
         assert has_business_context,
                "Expected AI suggestions to reference business context (e.g., 'revenue', 'spend', 'budget', 'ROI', 'investment'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

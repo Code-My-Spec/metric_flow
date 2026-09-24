@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert html =~ "Google Business Reviews",
                "Expected sync history to show 'Google Business Reviews' provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows the number of records synced for that location", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert html =~ "Success" or html =~ "success",
                "Expected sync entry to be marked as successful, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert entry_count >= 2,
                "Expected at least 2 sync history entries for two location syncs, got #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each entry reflects a distinct sync result", context do
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert html =~ "7" or html =~ "5",
                "Expected both location record counts to appear in history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -132,7 +132,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the location-specific error details are displayed in the entry", context do
@@ -144,7 +144,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the location error details"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
         assert html =~ "data-spec="
         # No spec error shown
         refute has_element?(context.view, ".text-error")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
       then_ "an error message is displayed", context do
         html = render(context.view)
         assert html =~ "Invalid JSON"
-        :ok
+        {:ok, context}
       end
     end
   end

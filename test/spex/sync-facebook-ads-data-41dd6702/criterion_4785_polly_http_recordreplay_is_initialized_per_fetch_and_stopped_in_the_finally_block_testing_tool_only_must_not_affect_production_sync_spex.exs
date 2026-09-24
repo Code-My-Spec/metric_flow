@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no Polly or testing tool references are visible in the sync history", context do
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         refute html =~ "record/replay",
                "Expected no 'record/replay' testing tool reference in sync history"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         assert html =~ "7" or html =~ "records",
                "Expected sync history to show the records synced count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no testing infrastructure text appears in the sync history entry", context do
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         refute html =~ "recording",
                "Expected no 'recording' testing infrastructure text in the sync history entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Facebook Ads sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message shown is the real API error, not a Polly or testing tool error", context do
@@ -137,7 +137,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
         refute html =~ "Polly",
                "Expected no Polly testing tool error in sync history for a production sync failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

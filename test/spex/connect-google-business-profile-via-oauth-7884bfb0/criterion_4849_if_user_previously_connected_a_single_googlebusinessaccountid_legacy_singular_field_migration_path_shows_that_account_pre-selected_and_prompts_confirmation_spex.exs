@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the save selection button is present so the user can confirm a selection", context do
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

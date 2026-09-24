@@ -61,12 +61,12 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
       then_ "the user sees a message indicating the invitation has already been used", context do
         {:error, {:redirect, %{flash: flash}}} = context.live_result
         assert flash["error"] =~ "invalid or has already been used"
-        :ok
+        {:ok, context}
       end
 
       then_ "the accept button is not shown for the already-used invitation", context do
         # The redirect means no LiveView is rendered, so there is no accept button
-        :ok
+        {:ok, context}
       end
     end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
       then_ "the owner sees that the invitation is no longer valid", context do
         {:error, {:redirect, %{flash: flash}}} = context.live_result
         assert flash["error"] =~ "invalid or has already been used"
-        :ok
+        {:ok, context}
       end
     end
   end

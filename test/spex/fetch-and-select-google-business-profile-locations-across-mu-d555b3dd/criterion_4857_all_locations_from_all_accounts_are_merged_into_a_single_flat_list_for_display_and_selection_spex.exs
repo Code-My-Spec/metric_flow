@@ -66,14 +66,14 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       then_ "the page renders a single location selection interface, not multiple account sections", context do
         html = render(context.view)
         assert html =~ "location" or html =~ "Location"
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no per-account grouping or tab switcher", context do
         html = render(context.view)
         refute html =~ "accounts/123" and html =~ "accounts/456" and
                  has_element?(context.view, "[data-role='account-tab']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the location list is presented as a single selectable list", context do
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
                  has_element?(context.view, "[data-role='account-list']") or
                  has_element?(context.view, "input[type='checkbox']") or
                  has_element?(context.view, "[data-role='location-checkbox']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -145,7 +145,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       then_ "there is no requirement to switch between account tabs to see locations", context do
         refute has_element?(context.view, "[data-role='account-tab']")
         refute has_element?(context.view, "[data-role='account-switcher']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page contains a save or confirm selection action", context do
@@ -154,7 +154,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
                  has_element?(context.view, "button", "Confirm") or
                  has_element?(context.view, "button", "Save Selection") or
                  has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -35,22 +35,22 @@ defmodule MetricFlowSpex.FreeUsersSeePaswallOnAiFeaturesSpex do
             assert has_paywall,
                    "Expected a paywall or upgrade prompt on /correlations for free user. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout",
                    "Expected redirect to upgrade/checkout, got redirect to #{path}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout",
                    "Expected live-redirect to upgrade/checkout, got live-redirect to #{path}"
 
-            :ok
+            {:ok, context}
         end
       end
     end

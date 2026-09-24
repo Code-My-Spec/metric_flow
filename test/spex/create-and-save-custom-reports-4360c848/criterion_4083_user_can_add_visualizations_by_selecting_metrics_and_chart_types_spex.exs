@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Criterion4083AddVisualizationsSpex do
         html = render(context.view)
         assert has_element?(context.view, "[data-role='visualization-card']")
         assert html =~ "impressions"
-        :ok
+        {:ok, context}
       end
     end
   end

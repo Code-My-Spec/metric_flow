@@ -22,12 +22,12 @@ defmodule MetricFlowSpex.Criterion4842ReportEditorIncludesVegaLiteEditorSpex do
 
       then_ "a chart type selector is available in the metric picker", context do
         assert has_element?(context.view, "[data-role='chart-type-selector']")
-        :ok
+        {:ok, context}
       end
 
       then_ "metric list shows available metrics for selection", context do
         assert has_element?(context.view, "[data-role='metric-list']")
-        :ok
+        {:ok, context}
       end
     end
   end

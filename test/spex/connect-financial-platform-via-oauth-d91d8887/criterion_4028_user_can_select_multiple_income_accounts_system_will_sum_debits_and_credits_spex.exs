@@ -20,14 +20,14 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
         assert has_element?(context.view, "[data-role='account-checkbox']") or
                  has_element?(context.view, "[data-role='manual-property-input']") or
                  has_element?(context.view, "[data-role='manual-entry']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows an account list or manual entry section", context do
         assert has_element?(context.view, "[data-role='account-list']") or
                  has_element?(context.view, "[data-role='manual-entry']") or
                  has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
       then_ "the user is redirected back to the provider detail page", context do
         {path, _flash} = assert_redirect(context.view)
         assert path =~ "/app/integrations"
-        :ok
+        {:ok, context}
       end
     end
   end

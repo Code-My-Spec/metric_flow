@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
         # Search input has placeholder="Search by customer ID or email..."
         assert html =~ "Search" or html =~ "search" or
                  has_element?(context.view, "input[name='query']")
-        :ok
+        {:ok, context}
       end
 
       then_ "pagination controls are present on the page", context do
@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
                  has_element?(context.view, "[phx-click='prev_page']") or
                  has_element?(context.view, "nav[aria-label='Pagination']") or
                  html =~ "Next" or html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
     end
   end

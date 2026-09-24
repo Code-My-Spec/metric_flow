@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.AgencySettingsListsActivePlansSpex do
       then_ "the page shows plans with their status", context do
         html = render(context.view)
         assert html =~ "Plans" or html =~ "plans"
-        :ok
+        {:ok, context}
       end
     end
   end

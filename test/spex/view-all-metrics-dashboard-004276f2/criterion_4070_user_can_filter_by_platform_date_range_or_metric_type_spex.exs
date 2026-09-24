@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         assert has_platform_filter,
                "Expected the dashboard to display a platform filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         assert has_date_filter,
                "Expected the dashboard to display a date range filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         assert has_metric_type_filter,
                "Expected the dashboard to display a metric type filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -136,7 +136,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         assert is_binary(html),
                "Expected the dashboard to remain rendered after platform filter interaction, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -181,7 +181,7 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         assert is_binary(html),
                "Expected the dashboard to remain rendered after metric type filter interaction, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

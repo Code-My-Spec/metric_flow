@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
 
       then_ "the first user is logged in successfully", context do
         assert redirected_to(context.first_user_conn) == "/app/integrations"
-        :ok
+        {:ok, context}
       end
 
       when_ "the second user logs in with different credentials", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
 
       then_ "the second user is also logged in successfully", context do
         assert redirected_to(context.second_user_conn) == "/app/integrations"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         assert Phoenix.Flash.get(context.result_conn.assigns.flash, :error) ==
                  "Invalid email or password"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -131,7 +131,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
 
       then_ "the user sees their own email", context do
         assert context.page_html =~ context.registered_email
-        :ok
+        {:ok, context}
       end
     end
   end

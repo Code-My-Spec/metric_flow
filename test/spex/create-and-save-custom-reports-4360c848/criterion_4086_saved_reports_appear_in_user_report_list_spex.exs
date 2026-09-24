@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.Criterion4086SavedReportsInListSpex do
 
       then_ "the saved dashboard appears in the list", context do
         assert context.html =~ "Listed Report"
-        :ok
+        {:ok, context}
       end
     end
   end

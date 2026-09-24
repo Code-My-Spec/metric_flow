@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
                  html =~ "Google Business Profile",
                "Expected the sync history to show a Google Business entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows a success status", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the initial backfill sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry is labeled as an Initial Sync", context do
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "Initial Sync" or html =~ "initial",
                "Expected the initial backfill entry to be labeled 'Initial Sync', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows the large number of records backfilled", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "548" or html =~ "records",
                "Expected the initial backfill entry to show 548 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
                  html =~ "Google Business Profile",
                "Expected the sync history to show a Google Business entry for the incremental sync, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the incremental sync entry shows success status", context do
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the incremental sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the incremental sync entry does not show the Initial Sync label", context do
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         refute html =~ "Initial Sync",
                "Expected the subsequent incremental sync entry to NOT be labeled 'Initial Sync' (that label is only for first-ever syncs)"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -155,7 +155,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert length(entries) >= 2,
                "Expected at least 2 sync history entries (initial + subsequent), got #{length(entries)}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the history shows the large backfill record count from the initial sync", context do
@@ -164,7 +164,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "548",
                "Expected the sync history to include the 548-record initial backfill count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the history also shows the small incremental record count from the subsequent sync", context do
@@ -173,7 +173,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
         assert html =~ "7",
                "Expected the sync history to include the 7-record incremental sync count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -42,18 +42,18 @@ defmodule MetricFlowSpex.Criterion4077SwitchChartTypesRetainsSelectionsSpex do
         # The metric selector dropdown should show the selected metric name
         html = render(context.view)
         assert html =~ "impressions"
-        :ok
+        {:ok, context}
       end
 
       then_ "the visualization name is preserved", context do
         html = render(context.view)
         assert html =~ "My Test Chart"
-        :ok
+        {:ok, context}
       end
 
       then_ "the bar chart type is now active", context do
         assert has_element?(context.view, "[phx-value-chart_type='bar'].btn-primary")
-        :ok
+        {:ok, context}
       end
     end
   end

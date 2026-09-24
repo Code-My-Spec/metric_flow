@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.AccessLevelsFollowHierarchySpex do
         assert html =~ "admin"
         assert html =~ "account_manager"
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,12 +59,12 @@ defmodule MetricFlowSpex.AccessLevelsFollowHierarchySpex do
 
       then_ "the invite form is not visible to the read-only member", context do
         refute has_element?(context.member_view, "#invite_member_form")
-        :ok
+        {:ok, context}
       end
 
       then_ "the role change controls are not visible", context do
         refute has_element?(context.member_view, "[data-role='change-role']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.AccessLevelsFollowHierarchySpex do
         assert html =~ "admin"
         assert html =~ "account_manager"
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
   end

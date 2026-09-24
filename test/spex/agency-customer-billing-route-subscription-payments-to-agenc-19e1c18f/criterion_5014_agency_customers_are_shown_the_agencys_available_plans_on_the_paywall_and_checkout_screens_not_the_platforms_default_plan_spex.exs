@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AgencyCustomersShownAgencyPlansSpex do
       then_ "the checkout page shows agency-specific plans", context do
         html = render(context.view)
         assert html =~ "plan" or html =~ "Plan" or html =~ "pricing" or html =~ "Pricing"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
         assert does_not_see_agency_branding,
                "Expected the client NOT to see agency branding on the main domain. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
         assert has_no_agency_color_overrides,
                "Expected the interface to use default theme colors without agency overrides. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
         assert has_default_branding,
                "Expected the home page to show default MetricFlow branding. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

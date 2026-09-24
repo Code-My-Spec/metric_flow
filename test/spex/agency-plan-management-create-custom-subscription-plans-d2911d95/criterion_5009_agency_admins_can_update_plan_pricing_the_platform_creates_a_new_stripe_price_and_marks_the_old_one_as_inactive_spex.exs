@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanUpdatePlanPricingSpex do
       then_ "the updated price is displayed", context do
         html = render(context.view)
         assert html =~ "Edit" or html =~ "Update"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -51,12 +51,12 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
 
       then_ "the editable account settings form is rendered", context do
         assert has_element?(context.view, "#account-settings-form")
-        :ok
+        {:ok, context}
       end
 
       then_ "the Save Changes button is visible", context do
         assert render(context.view) =~ "Save Changes"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
 
       then_ "the integrations page is accessible and renders content", context do
         assert render(context.view) =~ "Integrations"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -148,7 +148,7 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
 
       then_ "the members page is accessible and renders member content", context do
         assert render(context.view) =~ "Members"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -194,12 +194,12 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
 
       then_ "the Delete Account section is not visible", context do
         refute has_element?(context.view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the delete account form is not rendered in the page", context do
         refute render(context.view) =~ "Delete Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -245,12 +245,12 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
 
       then_ "the Transfer Ownership section is not visible", context do
         refute has_element?(context.view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
 
       then_ "no transfer ownership controls are rendered in the page", context do
         refute render(context.view) =~ "Transfer Ownership"
-        :ok
+        {:ok, context}
       end
     end
   end

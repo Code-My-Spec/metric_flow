@@ -32,22 +32,22 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
       then_ "the saved logo URL is pre-filled in the form", context do
         assert render(context.refreshed_view) =~ "https://cdn.agencytest.com/stored-logo.png"
-        :ok
+        {:ok, context}
       end
 
       then_ "the saved subdomain is pre-filled in the form", context do
         assert render(context.refreshed_view) =~ "storedagency"
-        :ok
+        {:ok, context}
       end
 
       then_ "the saved primary color is pre-filled in the form", context do
         assert render(context.refreshed_view) =~ "#AA1122"
-        :ok
+        {:ok, context}
       end
 
       then_ "the saved secondary color is pre-filled in the form", context do
         assert render(context.refreshed_view) =~ "#334455"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,27 +101,27 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
       then_ "the second user sees the White-Label Branding section", context do
         assert render(context.admin_view) =~ "White-Label Branding"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user sees the owner's saved logo URL", context do
         assert render(context.admin_view) =~ "https://agency.example.com/shared-logo.svg"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user sees the owner's saved subdomain", context do
         assert render(context.admin_view) =~ "sharedagency"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user sees the owner's saved primary color", context do
         assert render(context.admin_view) =~ "#112233"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user sees the owner's saved secondary color", context do
         assert render(context.admin_view) =~ "#AABBCC"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -178,12 +178,12 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
       then_ "the separate user does not see the first owner's logo URL", context do
         refute render(context.separate_view) =~ "https://owner-agency.example.com/private-logo.png"
-        :ok
+        {:ok, context}
       end
 
       then_ "the separate user does not see the first owner's subdomain", context do
         refute render(context.separate_view) =~ "owneragency"
-        :ok
+        {:ok, context}
       end
     end
   end

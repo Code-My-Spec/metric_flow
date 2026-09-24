@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         assert html =~ "Connected",
                "Expected the integration to still show 'Connected' status after manual sync, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the connected integration does not show an error or disconnected state", context do
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         ),
         "Expected the connected Google Analytics integration to still show 'Connected' status"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         ),
         "Expected the Sync Now button to be disabled while sync is in progress"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the manual sync completes successfully", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         ),
         "Expected the Sync Now button to be re-enabled after manual sync completed, but it was still disabled"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Sync Now button is present and available for the user to trigger another sync", context do
@@ -121,7 +121,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         ),
         "Expected the Sync Now button to still be present on the page after sync completed"
 
-        :ok
+        {:ok, context}
       end
     end
   end

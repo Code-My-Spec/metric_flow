@@ -79,13 +79,13 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
       then_ "the auto-enrolled member sees the first client account on the accounts page", context do
         html = render(context.accounts_view)
         assert html =~ context.client_account_1
-        :ok
+        {:ok, context}
       end
 
       then_ "the auto-enrolled member sees the second client account on the accounts page", context do
         html = render(context.accounts_view)
         assert html =~ context.client_account_2
-        :ok
+        {:ok, context}
       end
     end
 
@@ -157,14 +157,14 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
       then_ "the client account is listed in the member's accounts view", context do
         html = render(context.accounts_view)
         assert html =~ context.client_account_name
-        :ok
+        {:ok, context}
       end
 
       then_ "the member's access level for the client account is shown as read_only", context do
         html = render(context.accounts_view)
         assert html =~ context.client_account_name
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
   end

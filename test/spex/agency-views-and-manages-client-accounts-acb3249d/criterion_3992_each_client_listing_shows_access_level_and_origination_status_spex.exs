@@ -47,23 +47,23 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
 
       then_ "the originated client account shows admin access level", context do
         assert render(context.view) =~ "admin"
-        :ok
+        {:ok, context}
       end
 
       then_ "the originated client account shows originator status", context do
         assert render(context.view) =~ "Originator"
-        :ok
+        {:ok, context}
       end
 
       then_ "the invited client account shows read only access level", context do
         html = render(context.view)
         assert html =~ "read_only" or html =~ "Read Only" or html =~ "read only"
-        :ok
+        {:ok, context}
       end
 
       then_ "the invited client account shows invited status", context do
         assert render(context.view) =~ "Invited"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,18 +101,18 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
         html = render(context.view)
         assert html =~ context.manager_client_name
         assert html =~ context.admin_client_name
-        :ok
+        {:ok, context}
       end
 
       then_ "the account manager access level is shown on its client listing", context do
         html = render(context.view)
         assert html =~ "account_manager" or html =~ "Account Manager" or html =~ "account manager"
-        :ok
+        {:ok, context}
       end
 
       then_ "the invited origination status is shown for both invited client accounts", context do
         assert render(context.view) =~ "Invited"
-        :ok
+        {:ok, context}
       end
     end
   end

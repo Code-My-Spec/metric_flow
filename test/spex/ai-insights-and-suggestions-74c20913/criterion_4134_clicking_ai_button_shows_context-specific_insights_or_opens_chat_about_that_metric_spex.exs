@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
         assert has_insights_panel,
                "Expected an AI insights panel or chat interface to appear after clicking the AI info button. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -149,7 +149,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
         assert has_metric_specific_content,
                "Expected the AI insights panel to display content specific to the selected metric. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -234,7 +234,7 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
         assert panel_dismissed,
                "Expected the AI insights panel to be dismissed after the user closes it. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

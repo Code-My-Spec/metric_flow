@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.ClientCanSendEmailInvitationToAnyEmailAddressSpex do
 
       then_ "a success message is displayed confirming the invitation was sent", context do
         assert render(context.view) =~ "Invitation sent"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.ClientCanSendEmailInvitationToAnyEmailAddressSpex do
       then_ "the invited user appears in the members list or a success message is shown", context do
         html = render(context.view)
         assert html =~ context.second_user_email or html =~ "Invitation sent"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.ClientCanSendEmailInvitationToAnyEmailAddressSpex do
       then_ "the invite member form is displayed for entering any email address", context do
         assert has_element?(context.view, "#invite_member_form")
         assert has_element?(context.view, "input[name='invitation[email]']")
-        :ok
+        {:ok, context}
       end
     end
   end

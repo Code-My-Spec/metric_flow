@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
       then_ "the visualization is saved and user sees confirmation", context do
         # After save, user stays on the editor and sees a success flash
         assert render(context.view) =~ "Visualization saved"
-        :ok
+        {:ok, context}
       end
     end
   end

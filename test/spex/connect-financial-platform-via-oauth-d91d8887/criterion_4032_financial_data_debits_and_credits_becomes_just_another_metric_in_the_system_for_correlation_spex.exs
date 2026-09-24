@@ -19,13 +19,13 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
       then_ "the page describes QuickBooks as a data source", context do
         html = render(context.view)
         assert html =~ "QuickBooks"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page mentions syncing data", context do
         html = render(context.view)
         assert html =~ "sync" or html =~ "syncing" or html =~ "data"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
         html = render(context.view)
         assert html =~ "QuickBooks"
         assert html =~ "Google Ads" or html =~ "Facebook Ads"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
       then_ "the callback confirms the integration is active", context do
         html = render(context.view)
         assert html =~ "Active" or html =~ "connected" or html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -24,14 +24,14 @@ defmodule MetricFlowSpex.FailedOauthAttemptsShowClearErrorMessagesSpex do
         html = render(context.view)
         assert html =~ "denied" or html =~ "Denied" or html =~ "error" or html =~ "Error" or
                  html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page provides a way to try again or go back", context do
         html = render(context.view)
         assert html =~ "Connect" or html =~ "Back" or html =~ "integrations" or
                  has_element?(context.view, "a")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.FailedOauthAttemptsShowClearErrorMessagesSpex do
         html = render(context.view)
         assert html =~ "server_error" or html =~ "Something went wrong" or html =~ "error" or
                  html =~ "Error" or html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.FailedOauthAttemptsShowClearErrorMessagesSpex do
         html = render(context.view)
         assert html =~ "error" or html =~ "Error" or html =~ "Failed" or html =~ "Could not" or
                  html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.FailedOauthAttemptsShowClearErrorMessagesSpex do
       then_ "the page has a link back to integrations", context do
         html = render(context.view)
         assert html =~ "Back to integrations" or html =~ "integrations" or html =~ "Integrations"
-        :ok
+        {:ok, context}
       end
     end
   end

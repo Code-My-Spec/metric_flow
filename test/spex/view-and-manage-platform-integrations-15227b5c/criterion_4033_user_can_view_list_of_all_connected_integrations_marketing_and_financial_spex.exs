@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       then_ "the integrations page loads successfully", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /integrations to load but was redirected to #{path}")
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
                  has_element?(context.view, "[data-role='integrations-list']") or
                  has_element?(context.view, "[data-role='integrations-index']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
                  html =~ "Marketing" or
                  has_element?(context.view, "[data-platform]")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
                  html =~ "Accounting" or
                  has_element?(context.view, "[data-platform]")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -102,14 +102,14 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
       then_ "the user is redirected away from the integrations page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "Integration"
-            :ok
+            {:ok, context}
         end
       end
     end

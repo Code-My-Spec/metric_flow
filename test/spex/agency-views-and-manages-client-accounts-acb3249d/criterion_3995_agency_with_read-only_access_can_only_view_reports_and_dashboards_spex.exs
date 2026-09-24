@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
 
       then_ "the client account is listed on the accounts page", context do
         assert render(context.view) =~ context.client_account_name
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,12 +103,12 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
 
       then_ "the account name input is shown as read-only", context do
         assert has_element?(context.view, "input[readonly]")
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no editable settings form with a save button", context do
         refute has_element?(context.view, "#account-settings-form")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -154,12 +154,12 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
 
       then_ "the Delete Account section is not visible", context do
         refute has_element?(context.view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the delete account form is not rendered in the page", context do
         refute render(context.view) =~ "Delete Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -205,12 +205,12 @@ defmodule MetricFlowSpex.AgencyWithReadOnlyAccessCanOnlyViewReportsAndDashboards
 
       then_ "the Transfer Ownership section is not visible", context do
         refute has_element?(context.view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
 
       then_ "no transfer ownership controls are rendered in the page", context do
         refute render(context.view) =~ "Transfer Ownership"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
       then_ "the user sees a successful connection confirmation", context do
         html = render(context.view)
         assert html =~ "connected" or html =~ "Active" or html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
         html = render(context.view)
         assert html =~ "denied" or html =~ "failed" or html =~ "Failed" or html =~ "error" or
                  html =~ "Error" or html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDat
         html = render(context.view)
         assert html =~ "No authorization code" or html =~ "Failed" or html =~ "error" or html =~ "Error" or
                  html =~ "Could not complete" or html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
   end

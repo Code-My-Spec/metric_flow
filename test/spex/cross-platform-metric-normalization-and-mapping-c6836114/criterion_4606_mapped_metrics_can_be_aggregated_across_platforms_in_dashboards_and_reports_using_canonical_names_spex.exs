@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         assert has_aggregated_clicks,
                "Expected the dashboard to display aggregated 'clicks' across platforms using the canonical name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         assert has_aggregated_spend,
                "Expected the dashboard to display aggregated 'spend' across platforms using the canonical name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         refute shows_link_clicks_as_aggregated_label,
                "Expected the aggregated metric to use the canonical name 'clicks', not the platform-specific 'Link Clicks'. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -131,7 +131,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
         assert has_platform_source,
                "Expected the dashboard to indicate platform sources contributing to the aggregated canonical metric, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -144,14 +144,14 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "aggregated"
-            :ok
+            {:ok, context}
         end
       end
     end

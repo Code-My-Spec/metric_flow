@@ -30,13 +30,13 @@ defmodule MetricFlowSpex.PaywallShowsPlanAndPriceSpex do
             assert has_plan_name,
                    "Expected paywall to show a plan name that unlocks AI features. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
         end
       end
 
@@ -55,13 +55,13 @@ defmodule MetricFlowSpex.PaywallShowsPlanAndPriceSpex do
             assert has_price,
                    "Expected paywall to display a monthly price. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
         end
       end
     end

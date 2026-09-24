@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
                  render(context.view) =~ "vega-lite" or
                  render(context.view) =~ "vega_lite"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
                  html =~ ~s(phx-hook="VegaLite") or
                  has_element?(context.view, "[data-role='vega-lite-chart']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
         refute has_element?(context.view, "canvas[data-chartjs]")
         refute has_element?(context.view, "[data-chart-library='chartjs']")
         refute render(context.view) =~ "chart.js"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
         refute has_element?(context.view, "[data-chart-library='d3']")
         refute has_element?(context.view, "svg[data-d3-chart]")
         refute render(context.view) =~ "d3.js"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.AllVisualizationsUseVegaLiteSpex do
         assert has_vega_lite, "Expected Vega-Lite chart containers to be present on the dashboard"
         refute has_other_charting_library, "Expected no other charting libraries (Chart.js, Highcharts, etc.) to be used"
 
-        :ok
+        {:ok, context}
       end
     end
   end

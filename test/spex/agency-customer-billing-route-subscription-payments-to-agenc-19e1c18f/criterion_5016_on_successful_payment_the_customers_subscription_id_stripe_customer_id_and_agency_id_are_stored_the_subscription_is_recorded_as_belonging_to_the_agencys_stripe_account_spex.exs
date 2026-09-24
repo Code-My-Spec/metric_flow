@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SuccessfulPaymentStoresAgencySubscriptionSpex do
       then_ "the page shows the subscription as active", context do
         html = render(context.view)
         assert html =~ "active" or html =~ "Active" or html =~ "subscri" or html =~ "success" or html =~ "Success"
-        :ok
+        {:ok, context}
       end
     end
   end

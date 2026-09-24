@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
       then_ "the page displays the sync history list", context do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] element listing sync history entries"
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history list shows the connected integration provider name", context do
@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
 
         assert html =~ "Google" or html =~ "google",
                "Expected the sync history to include the connected Google integration, got: #{html}"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
 
         assert html =~ "Google" or html =~ "google",
                "Expected the sync history entry to show the provider name 'Google', got: #{html}"
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync result entry shows the number of records synced", context do
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
 
         assert html =~ "25" or html =~ "records" or html =~ "synced",
                "Expected the sync history entry to show the number of records synced, got: #{html}"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -79,13 +79,13 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
 
         assert html =~ "Sync History" or html =~ "sync history" or html =~ "sync-history",
                "Expected the sync history page to render, got: #{html}"
-        :ok
+        {:ok, context}
       end
 
       then_ "no sync entries are shown for the user with no connected integrations", context do
         refute has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected no sync history entries when no integrations are connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
       then_ "the sync history section is present on the page", context do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected the sync history page to have a [data-role='sync-history'] section"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page heading or label references sync history or synced data", context do
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
 
         assert html =~ "Sync History" or html =~ "Sync history" or html =~ "sync history",
                "Expected the page to display a 'Sync History' heading, got: #{html}"
-        :ok
+        {:ok, context}
       end
     end
   end

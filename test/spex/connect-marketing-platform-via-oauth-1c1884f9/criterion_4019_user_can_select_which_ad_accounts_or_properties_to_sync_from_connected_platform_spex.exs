@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
         html = render(context.view)
         assert html =~ "account" or html =~ "Account" or
                  html =~ "propert" or html =~ "select" or html =~ "Select"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
         assert has_element?(context.view, "[data-role='account-list']") or
                  has_element?(context.view, "[data-role='property-list']") or
                  has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
                  has_element?(context.view, "input[type='radio']") or
                  has_element?(context.view, "[data-role='account-toggle']") or
                  has_element?(context.view, "[data-role='manual-property-input']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
                  has_element?(context.view, "button", "Save") or
                  has_element?(context.view, "button", "Confirm") or
                  has_element?(context.view, "button", "Start Syncing")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
         html = render(context.view)
         assert html =~ "propert" or html =~ "Propert" or
                  html =~ "account" or html =~ "Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page has a mechanism to select which properties to sync", context do
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.UserCanSelectWhichAdAccountsOrPropertiesToSyncFromConne
                  has_element?(context.view, "[data-role='property-toggle']") or
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='manual-property-input']")
-        :ok
+        {:ok, context}
       end
     end
   end

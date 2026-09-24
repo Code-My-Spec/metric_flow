@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
         assert Phoenix.Flash.get(context.result_conn.assigns.flash, :error) ==
                  "Invalid email or password"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
         assert Phoenix.Flash.get(context.result_conn.assigns.flash, :error) ==
                  "Invalid email or password"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
         assert Phoenix.Flash.get(context.result_conn.assigns.flash, :error) ==
                  "Invalid email or password"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -30,14 +30,14 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
       then_ "DNS verification instructions are visible on the page", context do
         html = render(context.view)
         assert html =~ "DNS"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees guidance on how to point the subdomain", context do
         html = render(context.view)
         assert html =~ "reports-myagency"
         assert html =~ "verif"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -66,13 +66,13 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
         html = render(context.view)
         assert html =~ "Pending" or html =~ "pending" or html =~ "unverified" or
                html =~ "Unverified" or html =~ "not active" or html =~ "Not active"
-        :ok
+        {:ok, context}
       end
 
       then_ "the subdomain is not shown as active", context do
         html = render(context.view)
         refute html =~ "Active" and html =~ "pending-subdomain"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.CustomSubdomainRequiresDnsVerificationBeforeActivationS
                has_element?(context.view, "[data-role='verify-dns']") or
                has_element?(context.view, "button", "Verify DNS") or
                has_element?(context.view, "a", "Verify DNS")
-        :ok
+        {:ok, context}
       end
     end
   end

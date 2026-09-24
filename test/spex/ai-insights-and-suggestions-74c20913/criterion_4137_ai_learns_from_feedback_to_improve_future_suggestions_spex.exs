@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
         assert has_feedback_message,
                "Expected a message indicating feedback helps improve suggestions after clicking helpful. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
         assert has_learning_language,
                "Expected the AI suggestions section to communicate learning or personalization. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -168,7 +168,7 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
         assert has_preference_message,
                "Expected an indication that not-helpful feedback will improve future suggestions. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

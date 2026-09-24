@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details include customerId or errorCode information", context do
@@ -43,14 +43,14 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
                  html =~ "CUSTOMER_NOT_ENABLED" or html =~ "PERMISSION_DENIED",
                "Expected the error details to include customerId or errorCode, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "a sync-error element is present in the sync history", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the extracted API error details"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
                  error_html =~ "customerId" or error_html =~ "dateRange",
                "Expected the sync-error element to contain extracted error context, got: #{error_html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -113,14 +113,14 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
                  html =~ "5555555555" or html =~ "errorCode",
                "Expected the sync history to surface the API errorCode from error.response.errors[0], got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the data-role sync-error element is present for the failed entry", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the Google Ads API error entry"
 
-        :ok
+        {:ok, context}
       end
     end
   end

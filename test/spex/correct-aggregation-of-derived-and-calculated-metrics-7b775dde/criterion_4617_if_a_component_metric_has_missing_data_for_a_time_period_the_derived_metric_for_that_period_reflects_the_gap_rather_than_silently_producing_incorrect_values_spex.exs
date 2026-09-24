@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
         assert shows_gap_awareness,
                "Expected the dashboard to either display metric data or provide explicit gap indicators for missing data periods, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
         refute html =~ "NaN",
                "Expected the dashboard to handle missing component metric data gracefully rather than displaying 'NaN' for a derived metric"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.DerivedMetricReflectsDataGapSpex do
         assert has_period_navigation,
                "Expected the dashboard to provide time period navigation so users can see which periods have missing data, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

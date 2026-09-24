@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.Criterion4084ArrangeVisualizationsSpex do
       then_ "move up and move down controls are visible on each visualization card", context do
         assert has_element?(context.view, "[phx-click='move_visualization_up']")
         assert has_element?(context.view, "[phx-click='move_visualization_down']")
-        :ok
+        {:ok, context}
       end
 
       when_ "user clicks move down on the first visualization", context do
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Criterion4084ArrangeVisualizationsSpex do
       then_ "the visualization order changes", context do
         # The canvas should still have visualization cards (order changed)
         assert has_element?(context.view, "[data-role='visualization-card']")
-        :ok
+        {:ok, context}
       end
     end
   end

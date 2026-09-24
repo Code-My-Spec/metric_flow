@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.Criterion4841ReportsUseVegaLiteSpex do
         html = render(context.view)
         # The dashboard uses VegaLite for chart rendering
         assert html =~ "VegaLite" || html =~ "vega-lite" || has_element?(context.view, "[phx-hook='VegaLite']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one per location), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both entries show a success status", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected both location sync entries to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
                  not (html =~ "Google Business Reviews"),
                "Expected empty sync history when no syncs have run for skipped customer, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
         assert html =~ "Success" or html =~ "badge-success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "there are no error or failed entries from the skipped customer", context do
@@ -133,7 +133,7 @@ defmodule MetricFlowSpex.SyncProcessesAllLocationsCustomersWithoutGoogleBusiness
         refute has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected no failed entries for the customer silently skipped due to missing googleBusinessAccountId"
 
-        :ok
+        {:ok, context}
       end
     end
   end

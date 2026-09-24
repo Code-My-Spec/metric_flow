@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.AgencyColorSchemeAppliedThroughoutInterfaceSpex do
         assert has_custom_colors,
                "Expected the interface to apply the agency color scheme (#FF0000 primary, #00FF00 secondary). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.AgencyColorSchemeAppliedThroughoutInterfaceSpex do
         assert has_color_application,
                "Expected agency colors (#334455, #667788) to be applied in the interface. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

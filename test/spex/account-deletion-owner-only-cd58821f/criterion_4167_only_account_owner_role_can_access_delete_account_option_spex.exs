@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.OnlyAccountOwnerRoleCanAccessDeleteAccountOptionSpex do
 
       then_ "the delete account section is visible", context do
         assert has_element?(context.view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.OnlyAccountOwnerRoleCanAccessDeleteAccountOptionSpex do
 
       then_ "the delete account section is not visible to the admin", context do
         refute has_element?(context.admin_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.OnlyAccountOwnerRoleCanAccessDeleteAccountOptionSpex do
 
       then_ "the delete account section is not visible to the read-only member", context do
         refute has_element?(context.member_view, "[data-role='delete-account']")
-        :ok
+        {:ok, context}
       end
     end
   end

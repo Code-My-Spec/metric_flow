@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
         has_disable_text = html =~ "Disable" or html =~ "disable"
         assert has_disable_button or has_disable_text,
           "Expected a disable auto-enrollment control to be present on the settings page"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
       then_ "a confirmation is shown that auto-enrollment has been disabled", context do
         assert render(context.settings_view) =~ "Auto-enrollment disabled"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
         {:ok, members_view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(members_view)
         refute html =~ context.newbie_email
-        :ok
+        {:ok, context}
       end
     end
   end

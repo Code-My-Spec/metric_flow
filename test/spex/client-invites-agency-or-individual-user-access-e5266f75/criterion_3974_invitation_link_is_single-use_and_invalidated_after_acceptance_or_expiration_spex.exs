@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
       then_ "the invitation link is no longer valid", context do
         assert {:error, {:redirect, %{flash: flash}}} = context.second_visit_result
         assert flash["error"] =~ "invalid or has already been used"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
       then_ "the user sees an error message explaining the invitation has expired", context do
         assert {:error, {:redirect, %{flash: flash}}} = context.visit_result
         assert flash["error"] =~ "expired"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -151,7 +151,7 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
 
       then_ "the acceptance page is displayed confirming the invitation is still valid", context do
         assert render(context.accept_view) =~ "invited"
-        :ok
+        {:ok, context}
       end
     end
   end

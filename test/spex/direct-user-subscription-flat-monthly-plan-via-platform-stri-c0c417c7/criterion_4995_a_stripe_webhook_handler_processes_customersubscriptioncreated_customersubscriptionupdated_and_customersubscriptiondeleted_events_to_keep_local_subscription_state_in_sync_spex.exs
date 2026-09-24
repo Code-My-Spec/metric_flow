@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.StripeWebhookHandlerProcessesSubscriptionEventsSpex do
 
       then_ "the endpoint returns a success status", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

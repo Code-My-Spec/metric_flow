@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
         assert html =~ "Google Ads",
                "Expected sync history to show 'Google Ads' provider name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows a success status with a record count", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
         assert html =~ "42",
                "Expected sync history entry to show the records synced count of 42, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
         assert has_element?(context.view, "[data-role='sync-schedule']"),
                "Expected a [data-role='sync-schedule'] element describing the automated schedule"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a sync history entry with data-status='failed'"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details from the API are displayed on the entry", context do
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.SystemFetchesGoogleAdsDataUsingTheGoogleAdsApiViaTheGoo
         assert html =~ "Google Ads API error" or html =~ "INVALID_CUSTOMER_ID" or html =~ "customer entity",
                "Expected the Google Ads API error message to be displayed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

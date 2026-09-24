@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
         assert has_unified_results,
                "Expected unified correlation results for all metric types. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
         assert no_segregation,
                "Expected no separate financial/marketing sections — metrics should be unified. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
                  has_element?(context.view, "[data-provider='google_business']") or
                  has_element?(context.view, "[data-role='integration']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -136,7 +136,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
                  render(context.view) =~ "Google Business" or
                  render(context.view) =~ "google_business"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -198,7 +198,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
       then_ "the sync history page loads successfully for the multi-account google_business integration", context do
         case context.sync_history_result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /integrations/sync-history to load but was redirected to #{path}")
@@ -271,7 +271,7 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
                  render(context.view) =~ "history" or
                  render(context.view) =~ "History"
 
-        :ok
+        {:ok, context}
       end
     end
   end

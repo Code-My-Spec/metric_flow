@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a successful sync history entry with data-status='success'"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one per customer account), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success filter shows both Google Ads entries", context do
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected successful Google Ads entries to appear after filtering by Success"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a failed sync history entry with data-status='failed'"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message references the specific customer account failure", context do
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
         assert html =~ "CUSTOMER_NOT_FOUND" or html =~ "customer ID" or html =~ "Google Ads API error",
                "Expected the customer-specific error message to be displayed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         assert html =~ expected_date or html =~ "Date:",
                "Expected the sync entry to show the data date #{expected_date}, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry does not show breakdown by source or medium dimensions", context do
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         refute html =~ "source/medium" and html =~ "source" and html =~ "medium",
                "Expected the sync history entry to not show source/medium dimension breakdowns"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         assert html =~ "yesterday" or html =~ Date.to_iso8601(Date.add(Date.utc_today(), -1)),
                "Expected the date range to reference yesterday as the end of coverage, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -118,7 +118,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         assert entry_count == 2,
                "Expected exactly 2 sync history entries (one per date, not per dimension), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

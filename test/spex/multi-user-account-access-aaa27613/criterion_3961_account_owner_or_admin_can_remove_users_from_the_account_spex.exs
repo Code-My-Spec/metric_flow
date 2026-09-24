@@ -34,12 +34,12 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
       then_ "the member is removed from the list", context do
         html = render(context.view)
         refute html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "a success message is displayed", context do
         assert render(context.view) =~ "Member removed"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
                  "[data-role='remove-member'][data-user-email='#{context.owner_email}']"
                )
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
 
       then_ "no remove buttons are visible", context do
         refute has_element?(context.member_view, "[data-role='remove-member']")
-        :ok
+        {:ok, context}
       end
     end
   end

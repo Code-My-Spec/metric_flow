@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.InvitationEmailContainsSecureLinkWithExpirationTimeOf7D
 
       then_ "an invitation email is sent to the recipient address", context do
         assert_email_sent(to: context.second_user_email)
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.InvitationEmailContainsSecureLinkWithExpirationTimeOf7D
           assert email.text_body =~ "/invitations/"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.InvitationEmailContainsSecureLinkWithExpirationTimeOf7D
           assert email.text_body =~ "7 days"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
   end

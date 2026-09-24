@@ -18,13 +18,13 @@ defmodule MetricFlowSpex.Criterion5047AuthoringWorkspaceThreePanelsSpex do
       then_ "a prompt form for chat-style input is present", context do
         assert has_element?(context.view, "[data-role='prompt-form']")
         assert has_element?(context.view, "[data-role='prompt-input']")
-        :ok
+        {:ok, context}
       end
 
       then_ "a chart preview section is available (shown after generation)", context do
         # Before generation, the empty state is shown
         assert has_element?(context.view, "[data-role='empty-state']")
-        :ok
+        {:ok, context}
       end
     end
   end

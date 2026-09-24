@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       then_ "the deleted account is not listed for the second user", context do
         html = render(context.accounts_view)
         refute html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
       then_ "the deleted account does not appear and cannot be accessed", context do
         html = render(context.accounts_view)
         refute html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
   end

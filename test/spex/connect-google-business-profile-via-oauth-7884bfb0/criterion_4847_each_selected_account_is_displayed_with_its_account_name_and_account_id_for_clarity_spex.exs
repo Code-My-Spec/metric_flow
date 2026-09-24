@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each location entry shows an account name via data-role attribute", context do
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

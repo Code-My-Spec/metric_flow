@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert has_all_filter,
                "Expected the sync history page to display an 'All' filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows a filter control for Success status", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert has_success_filter,
                "Expected the sync history page to display a 'Success' filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows a filter control for Failed status", context do
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert has_failed_filter,
                "Expected the sync history page to display a 'Failed' filter control, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert html =~ "failed" or html =~ "Failed" or html =~ "API rate limit exceeded",
                "Expected only failed sync entries to be shown after filtering by failed status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the successful sync entry is not visible", context do
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         refute html =~ "150 records synced" or html =~ "150 records",
                "Expected the successful sync entry (150 records) to be hidden when filtered by 'failed', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -164,7 +164,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert html =~ "200 records" or html =~ "records synced" or html =~ "Success",
                "Expected only successful sync entries to be shown after filtering by success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed sync entry is not visible", context do
@@ -173,7 +173,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         refute html =~ "Connection timeout",
                "Expected the failed sync entry (Connection timeout) to be hidden when filtered by 'success', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -227,7 +227,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
         assert has_success_entry and has_failed_entry,
                "Expected all sync entries (both success and failed) to be visible after selecting 'All', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

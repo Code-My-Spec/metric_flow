@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.Criterion4151SystemLogsLlmInteractionsSpex do
         # The AI module logs the generation request/response
         # Even if the log content varies, the generation should produce some log output
         assert is_binary(log)
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
       then_ "the integrations page is scoped to the client's account", context do
         html = render(context.view)
         assert html =~ "integrations" or html =~ "Integrations" or html =~ "Connect"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
 
       then_ "the agency user does not see the client's integration data", context do
         refute context.agency_html =~ context.owner_email
-        :ok
+        {:ok, context}
       end
 
       when_ "the client owner views their own integrations page", context do
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
 
       then_ "the client owner does not see the agency account's integration data", context do
         refute context.client_html =~ context.agency_email
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,14 +87,14 @@ defmodule MetricFlowSpex.PlatformConnectionBelongsToClientAccountAndNotTransfera
         refute html =~ "Transfer to agency"
         refute html =~ "Assign to agency"
         refute html =~ "Move to agency"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page is scoped to the current user's account", context do
         html = render(context.view)
         assert html =~ "Connect" or html =~ "Google" or
                  html =~ "provider" or html =~ "integration"
-        :ok
+        {:ok, context}
       end
     end
   end

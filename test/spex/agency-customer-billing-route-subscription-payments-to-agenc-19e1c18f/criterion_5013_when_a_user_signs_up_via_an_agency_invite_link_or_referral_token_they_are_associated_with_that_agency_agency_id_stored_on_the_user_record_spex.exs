@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.AgencyUserAssociatedViaInviteSpex do
         html = render(context.view)
         assert html =~ "agency" or html =~ "Agency" or html =~ "checkout" or html =~ "Checkout" or
                  html =~ "Plan" or html =~ "Subscribe" or html =~ "Choose Your Plan"
-        :ok
+        {:ok, context}
       end
     end
   end

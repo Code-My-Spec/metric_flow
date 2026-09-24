@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanDeactivatePlanSpex do
         html = render(context.view)
         assert html =~ "Inactive" or html =~ "Deactivated" or html =~ "deactivated" or
                  html =~ "Plan deactivated"
-        :ok
+        {:ok, context}
       end
     end
   end

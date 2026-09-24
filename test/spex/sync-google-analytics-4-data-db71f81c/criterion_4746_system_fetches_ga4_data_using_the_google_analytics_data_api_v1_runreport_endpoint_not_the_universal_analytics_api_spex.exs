@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "Google Analytics",
                "Expected the sync history page to show 'Google Analytics' provider name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry reflects a completed data fetch with records synced", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "11" or html =~ "records",
                "Expected sync history entry to show the number of records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "Google Analytics",
                "Expected the sync history schedule section to mention 'Google Analytics', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section explains that data is fetched per provider per day", context do
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "provider" or html =~ "metrics",
                "Expected the schedule section to mention per-provider data fetching, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason from the GA4 API is displayed", context do
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
         assert html =~ "GA4 Data API error" or html =~ "INVALID_ARGUMENT" or html =~ "error",
                "Expected the failure reason to be shown in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

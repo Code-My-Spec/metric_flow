@@ -46,12 +46,12 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
 
       then_ "the first client account name is visible in the accounts list", context do
         assert render(context.view) =~ context.client_account_1
-        :ok
+        {:ok, context}
       end
 
       then_ "the second client account name is visible in the accounts list", context do
         assert render(context.view) =~ context.client_account_2
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,14 +65,14 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
 
       then_ "only their own account name is shown", context do
         assert render(context.view) =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "no client accounts appear in the list", context do
         html = render(context.view)
         refute html =~ "Client Alpha"
         refute html =~ "Client Beta"
-        :ok
+        {:ok, context}
       end
     end
   end

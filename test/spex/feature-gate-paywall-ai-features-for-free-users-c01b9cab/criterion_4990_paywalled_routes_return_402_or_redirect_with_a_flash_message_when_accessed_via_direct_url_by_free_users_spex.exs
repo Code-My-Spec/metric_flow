@@ -36,21 +36,21 @@ defmodule MetricFlowSpex.PaywalledRoutesRedirectFreeUsersSpex do
             assert has_upgrade_or_flash,
                    "Expected /visualizations to show upgrade prompt or redirect free user. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout" or
                      path =~ "dashboard",
                    "Expected redirect to upgrade/checkout or dashboard with flash, got redirect to #{path}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout" or
                      path =~ "dashboard",
                    "Expected live-redirect to upgrade/checkout or dashboard with flash, got live-redirect to #{path}"
 
-            :ok
+            {:ok, context}
         end
       end
     end

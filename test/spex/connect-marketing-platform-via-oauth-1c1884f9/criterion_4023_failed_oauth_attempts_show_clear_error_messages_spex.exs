@@ -27,14 +27,14 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
                  html =~ "denied" or html =~ "unsuccessful" or html =~ "not connected" or
                  html =~ "Not connected"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the user is not shown a success confirmation", context do
         html = render(context.view)
         refute html =~ "Integration saved"
         refute html =~ "successfully connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
                  html =~ "Connect" or
                  html =~ "integrations"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
                  html =~ "failed" or html =~ "expired" or html =~ "not connected" or
                  html =~ "Not connected"
 
-        :ok
+        {:ok, context}
       end
     end
   end

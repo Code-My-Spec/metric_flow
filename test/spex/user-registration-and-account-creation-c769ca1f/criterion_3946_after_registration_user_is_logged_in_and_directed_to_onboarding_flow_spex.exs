@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
                    "Expected to land on onboarding page after email verification"
         end
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
                  html =~ "Onboarding",
                "Expected the onboarding page to contain a welcome or setup message"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
         refute html =~ "Sign in to continue",
                "User should be authenticated automatically, not asked to sign in"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the post-registration view confirms the user's account setup journey has begun", context do
@@ -117,7 +117,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
                  html =~ "Get Started" or html =~ "set up" or html =~ "Set up",
                "Expected confirmation that user's account journey is beginning"
 
-        :ok
+        {:ok, context}
       end
     end
   end

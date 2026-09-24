@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
         assert has_platform_specific_label,
                "Expected the dashboard to label non-canonical metrics as platform-specific using visible text or a data attribute. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
         assert has_separation,
                "Expected the dashboard to visually separate or group platform-specific metrics from canonical metrics. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -120,7 +120,7 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
         assert has_platform_context,
                "Expected the dashboard to show the originating platform alongside platform-specific metrics. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -133,14 +133,14 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "platform-specific"
-            :ok
+            {:ok, context}
         end
       end
     end

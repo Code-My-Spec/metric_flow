@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
         assert has_raw_metrics or has_derived_metrics,
                "Expected the dashboard to display metrics (raw or derived) in a uniform way, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
         refute html =~ "sum(revenue)/sum(spend)",
                "Expected dashboard to hide internal ROAS aggregation formula from users"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -127,7 +127,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
         assert uses_consistent_presentation,
                "Expected derived and raw metrics to share the same visual presentation in the dashboard, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -156,7 +156,7 @@ defmodule MetricFlowSpex.DerivedMetricsDisplayIdenticallyToRawMetricsSpex do
         refute html =~ "aggregation method",
                "Expected aggregation logic to be hidden; found 'aggregation method' exposed to user in dashboard"
 
-        :ok
+        {:ok, context}
       end
     end
   end

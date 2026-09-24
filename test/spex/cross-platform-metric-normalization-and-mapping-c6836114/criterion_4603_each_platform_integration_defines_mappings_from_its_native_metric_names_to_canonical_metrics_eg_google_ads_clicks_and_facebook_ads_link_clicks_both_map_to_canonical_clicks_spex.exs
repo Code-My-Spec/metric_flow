@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
         assert has_clicks,
                "Expected the dashboard to display the canonical metric 'clicks' aggregated from platform-specific metrics (e.g., Google Ads 'Clicks', Facebook Ads 'Link Clicks'), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
         refute shows_link_clicks_as_canonical,
                "Expected 'Link Clicks' to be mapped to the canonical 'clicks' metric, not shown as its own canonical metric. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
         assert has_platform_reference,
                "Expected the dashboard to reference platform sources (e.g., Google, Facebook) when displaying metrics from multiple integrations, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -115,14 +115,14 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "Link Clicks"
-            :ok
+            {:ok, context}
         end
       end
     end

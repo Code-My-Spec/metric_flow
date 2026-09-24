@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
         assert has_yesterday,
                "Expected the dashboard to show yesterday (#{yesterday_str}) as the default end date, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
         refute end_date_is_today,
                "Expected today (#{today_str}) NOT to be the default end date, but found it marked as such"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
         assert communicates_exclusion,
                "Expected the dashboard to indicate that today's data is excluded or the current day is incomplete, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
         assert ends_at_yesterday,
                "Expected the default date range to end at yesterday (#{yesterday_str}), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.AgencyAdminCancelCustomerSubscriptionSpex do
         # Cancel button shown for active subscriptions; empty state shows "No customer subscriptions yet"
         assert html =~ "Cancel" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
     end
   end

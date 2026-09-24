@@ -28,13 +28,13 @@ defmodule MetricFlowSpex.FeatureGateEnforcedServerSideSpex do
             refute renders_correlation_data,
                    "Expected correlation data NOT to be rendered for free users (server-side gate). Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
         end
       end
     end

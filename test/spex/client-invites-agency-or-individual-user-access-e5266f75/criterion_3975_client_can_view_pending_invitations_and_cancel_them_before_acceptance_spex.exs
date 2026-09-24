@@ -25,12 +25,12 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
 
       then_ "the pending invitation is listed on the members page", context do
         assert render(context.view) =~ "pending@agency.com"
-        :ok
+        {:ok, context}
       end
 
       then_ "the pending invitation shows a status of pending", context do
         assert render(context.view) =~ "pending"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,12 +60,12 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
 
       then_ "the cancelled invitation no longer appears in the pending list", context do
         refute has_element?(context.view, "[data-role='pending-invitation-row'] [data-role='invitation-email']", "tocancel@agency.com")
-        :ok
+        {:ok, context}
       end
 
       then_ "a confirmation message is shown that the invitation was cancelled", context do
         assert render(context.view) =~ "cancelled"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
 
       then_ "a pending invitations section is displayed on the members page", context do
         assert has_element?(context.view, "[data-role='pending-invitations']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       then_ "the invitee sees an error telling them the invitation is invalid", context do
         assert {:error, {:redirect, %{flash: flash}}} = context.visit_result
         assert flash["error"] =~ "invalid or has already been used"
-        :ok
+        {:ok, context}
       end
     end
   end

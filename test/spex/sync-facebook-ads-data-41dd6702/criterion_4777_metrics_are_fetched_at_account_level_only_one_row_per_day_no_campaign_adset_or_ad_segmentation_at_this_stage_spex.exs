@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.MetricsAreFetchedAtAccountLevelOnlyOneRowPerDayNoCampai
         assert html =~ "1" or html =~ "record",
                "Expected the sync entry to reflect a single account-level daily record, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no campaign, adset, or ad segmentation columns are visible in the sync history", context do
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.MetricsAreFetchedAtAccountLevelOnlyOneRowPerDayNoCampai
         refute html =~ "Ad Name" and html =~ "ad_id",
                "Expected no ad-level segmentation columns in sync history"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.MetricsAreFetchedAtAccountLevelOnlyOneRowPerDayNoCampai
         assert entry_count == 2,
                "Expected exactly 2 sync history entries (one per date, not per campaign or adset), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.MetricsAreFetchedAtAccountLevelOnlyOneRowPerDayNoCampai
         refute html =~ "Filter by Campaign" or html =~ "Group by Ad",
                "Expected no campaign or ad grouping controls in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

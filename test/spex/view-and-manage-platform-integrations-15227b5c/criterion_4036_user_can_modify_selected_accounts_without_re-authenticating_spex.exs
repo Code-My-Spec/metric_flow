@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
 
       then_ "the page shows a button or link to edit the account selection for each integration", context do
         assert has_element?(context.view, "[data-role='edit-integration-accounts']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -30,12 +30,12 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
 
       then_ "the account selection page is accessible without OAuth prompts", context do
         assert has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not contain a re-authenticate button", context do
         refute has_element?(context.view, "[data-role='re-authenticate-button']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -49,12 +49,12 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
 
       then_ "the page has a save button to apply changes to the account selection", context do
         assert has_element?(context.view, "[data-role='save-account-selection']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not redirect the user to an external OAuth provider", context do
         refute render(context.view) =~ "accounts.google.com"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsWithoutReAuthenticatingSpe
 
       then_ "the account list has checkboxes for selecting accounts", context do
         assert has_element?(context.view, "input[type='checkbox'][data-role='account-checkbox']")
-        :ok
+        {:ok, context}
       end
     end
   end

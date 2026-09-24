@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert html =~ "Google Business Reviews" or html =~ "Google Business",
                "Expected a 'Google Business Reviews' entry in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows a success status and records synced count", context do
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert html =~ "48" or html =~ "records synced",
                "Expected the sync entry to show '48 records synced', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one per location), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the record counts for both location syncs are visible in the history", context do
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert html =~ "18",
                "Expected sync history to show record count '18' for the second location, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -143,7 +143,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert html =~ "Google Ads",
                "Expected 'Google Ads' label in the sync history alongside the Business Reviews entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the two entries carry different provider labels confirming location vs account level storage", context do
@@ -158,7 +158,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         assert entry_count >= 2,
                "Expected at least 2 distinct provider entries (Google Business Reviews + Google Ads), found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

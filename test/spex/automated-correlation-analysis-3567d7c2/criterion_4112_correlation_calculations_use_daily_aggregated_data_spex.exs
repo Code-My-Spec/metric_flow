@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.CorrelationDailyAggregatedDataSpex do
         assert has_daily_info,
                "Expected indication that correlations use daily aggregated data. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.CorrelationDailyAggregatedDataSpex do
         assert has_date_range,
                "Expected data window or date range information. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

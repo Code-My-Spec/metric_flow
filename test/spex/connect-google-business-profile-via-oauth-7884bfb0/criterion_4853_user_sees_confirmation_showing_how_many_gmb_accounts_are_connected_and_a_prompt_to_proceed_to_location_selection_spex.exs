@@ -41,13 +41,13 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
       then_ "the detail page shows Connected status", context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the detail page shows a link to the location selection page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "a[href*='google_business/accounts']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

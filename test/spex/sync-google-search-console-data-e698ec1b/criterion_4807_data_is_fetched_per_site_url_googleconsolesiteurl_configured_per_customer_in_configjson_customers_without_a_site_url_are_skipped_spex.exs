@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerSiteUrlCustomersWithoutSiteUrlAreSkippe
                  html =~ "google_search_console",
                "Expected a Google Search Console sync history entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows a success status indicating data was fetched", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerSiteUrlCustomersWithoutSiteUrlAreSkippe
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerSiteUrlCustomersWithoutSiteUrlAreSkippe
                  not (html =~ "Google Search Console"),
                "Expected empty sync history when no syncs have run, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

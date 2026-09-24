@@ -16,12 +16,12 @@ defmodule MetricFlowSpex.OnlyCurrentAccountOwnerCanInitiateOwnershipTransferSpex
 
       then_ "the Transfer Ownership section is visible", context do
         assert has_element?(context.view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the Transfer Ownership button is present", context do
         assert render(context.view) =~ "Transfer Ownership"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.OnlyCurrentAccountOwnerCanInitiateOwnershipTransferSpex
 
       then_ "the Transfer Ownership section is not visible to the non-owner", context do
         refute has_element?(context.view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
     end
   end

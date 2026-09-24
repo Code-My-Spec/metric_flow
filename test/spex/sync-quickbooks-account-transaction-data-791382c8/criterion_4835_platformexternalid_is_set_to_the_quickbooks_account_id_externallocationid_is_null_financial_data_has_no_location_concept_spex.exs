@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.PlatformExternalIdIsQuickbooksAccountIdExternalLocation
         refute html =~ "Location" and html =~ "external_location_id",
                "Expected no 'Location' or 'external_location_id' column — financial data has no location concept"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.PlatformExternalIdIsQuickbooksAccountIdExternalLocation
         refute has_element?(context.view, "[data-role='filter-location']"),
                "Expected no [data-role='filter-location'] filter on the sync history page — QuickBooks has no location concept"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -82,14 +82,14 @@ defmodule MetricFlowSpex.PlatformExternalIdIsQuickbooksAccountIdExternalLocation
         assert html =~ "Success" or html =~ "success",
                "Expected the QuickBooks account-level sync to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry element is present", context do
         assert has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected a sync history entry element after QuickBooks account-level sync"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
 
       then_ "a current account name indicator is visible in the navigation", context do
         assert has_element?(context.view, "[data-role='current-account-name']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,12 +73,12 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
         html = render(context.view)
         assert html =~ context.client_account_name or
                html =~ context.owner_account_name
-        :ok
+        {:ok, context}
       end
 
       then_ "the current account name element is present in the page", context do
         assert has_element?(context.view, "[data-role='current-account-name']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,14 +92,14 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
 
       then_ "their own account name is visible in the navigation", context do
         assert render(context.view) =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "the current account indicator reflects the user's own account", context do
         html = render(context.view)
         # The navigation element should contain the user's own account name
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -130,7 +130,7 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
 
       then_ "the navigation shows the current account context indicator", context do
         assert has_element?(context.view, "[data-role='current-account-name']")
-        :ok
+        {:ok, context}
       end
     end
   end

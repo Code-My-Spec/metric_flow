@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
                  html =~ "Synced",
                "Expected the sync history to show a success status after token refresh, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the user does not see any authentication error or token expiry notice", context do
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
         refute html =~ "re-authenticate" or html =~ "Re-authenticate",
                "Expected no re-authentication prompt when token refresh succeeded, but found one"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
                  html =~ "Token expired",
                "Expected the sync history to show a failure entry when token refresh fails, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message informs the user that their token expired and re-authentication is needed", context do
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
                  html =~ "Reconnect",
                "Expected the sync history to prompt the user to re-authenticate when token refresh fails, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

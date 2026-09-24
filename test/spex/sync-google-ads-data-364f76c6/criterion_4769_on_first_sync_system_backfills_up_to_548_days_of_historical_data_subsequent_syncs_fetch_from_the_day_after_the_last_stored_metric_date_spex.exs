@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         assert html =~ "backfill" or html =~ "historical",
                "Expected the sync history page to mention historical data backfill, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section is present and visible", context do
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
                  schedule_html =~ "historical",
                "Expected the schedule section to mention first sync backfill behavior, got: #{schedule_html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         assert html =~ "Success" or html =~ "success",
                "Expected the initial backfill sync entry to have a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial sync entry shows the large backfilled record count", context do
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         assert html =~ "548" or html =~ "records",
                "Expected the initial backfill entry to show 548 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial sync entry is labeled as an Initial Sync", context do
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         assert html =~ "Initial Sync" or html =~ "initial",
                "Expected the initial backfill sync entry to be labeled 'Initial Sync', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         refute html =~ "Initial Sync",
                "Expected the subsequent incremental sync entry to NOT be labeled 'Initial Sync'"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -168,7 +168,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (initial backfill + incremental), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

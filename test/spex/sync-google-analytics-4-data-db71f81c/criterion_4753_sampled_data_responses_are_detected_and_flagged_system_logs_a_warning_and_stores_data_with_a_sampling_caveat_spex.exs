@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sampled data sync entry to still show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason mentioning sampling is visible in the sync history entry", context do
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
         assert html =~ "sampled" or html =~ "sampling" or html =~ "GA4 response",
                "Expected the failure reason to mention sampling, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the failed sampling entry to be shown, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

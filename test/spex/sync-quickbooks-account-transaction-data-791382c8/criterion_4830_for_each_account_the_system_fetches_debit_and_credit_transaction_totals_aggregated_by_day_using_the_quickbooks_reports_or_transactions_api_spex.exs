@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the daily aggregate sync to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -63,14 +63,14 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the sync history entry to identify QuickBooks as the data provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success entry has the expected data-status attribute", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a sync history entry with data-status='success' for the QuickBooks transaction sync"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
         assert html =~ "Failed" or html =~ "failed",
                "Expected the transaction fetch failure to be marked as failed in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the API error details are surfaced in the failed entry", context do
@@ -111,14 +111,14 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
                  html =~ "Reports API" or html =~ "unavailable",
                "Expected the transaction API error to be surfaced in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry has a sync-error element", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the failed transaction fetch"
 
-        :ok
+        {:ok, context}
       end
     end
   end

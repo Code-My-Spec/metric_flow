@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status even with partial records, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the records synced count reflects only the valid rows that had a date_start", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert html =~ "7" or html =~ "records",
                "Expected sync history to show the count of valid records synced (7), not the skipped rows, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert html =~ "Success" or html =~ "success",
                "Expected the sync to show success — non-numeric values are silently skipped and do not cause a failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no error or failure indicator is shown to the user for the silently skipped values", context do
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         refute html =~ "Failed" and not (html =~ "Success" or html =~ "success"),
                "Expected no failure status when only non-numeric values were silently skipped, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert html =~ "Success" or html =~ "success",
                "Expected a completed/success status reflecting that valid records were stored, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the records synced count matches only the valid rows, not the total rows including bad data", context do
@@ -128,7 +128,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert html =~ "3" or html =~ "records",
                "Expected the synced count to reflect only the 3 valid records (excluding rows with missing date_start or non-numeric values), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history does not show a separate failed entry for the skipped rows", context do
@@ -141,7 +141,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
         assert entry_count <= 1,
                "Expected only one sync history entry for the Facebook Ads sync, not a separate failed entry for skipped rows, found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

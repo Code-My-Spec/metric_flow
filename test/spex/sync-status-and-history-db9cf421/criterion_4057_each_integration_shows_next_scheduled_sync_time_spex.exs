@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
                "Expected the sync history page to show when the next sync will run " <>
                  "(e.g. 'Next sync', '2:00 AM UTC'), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
         assert has_element?(context.view, "[data-role='sync-schedule']"),
                "Expected a [data-role='sync-schedule'] element showing the sync schedule"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync schedule section shows when the next sync will run", context do
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
                "Expected the [data-role='sync-schedule'] section to show when the next sync will run " <>
                  "(e.g. '2:00 AM UTC' or 'Next sync'), got: #{schedule_html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
         assert schedule_html =~ "Daily" or schedule_html =~ "daily",
                "Expected the sync schedule section to indicate the sync runs daily, got: #{schedule_html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows the exact time the daily sync runs", context do
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
                "Expected the sync schedule section to display the scheduled sync time " <>
                  "(e.g. '2:00 AM UTC'), got: #{schedule_html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

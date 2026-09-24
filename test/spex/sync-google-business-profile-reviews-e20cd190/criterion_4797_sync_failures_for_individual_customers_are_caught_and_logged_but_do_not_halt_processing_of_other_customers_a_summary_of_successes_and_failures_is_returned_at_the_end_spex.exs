@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one success, one failure), but found #{entry_count}. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success entry is marked as succeeded", context do
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         assert html =~ "Success",
                "Expected a Success badge in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure entry is marked as failed", context do
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         assert html =~ "Failed",
                "Expected a Failed badge in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         assert html =~ "Success",
                "Expected a Success entry to be visible despite the earlier failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure entry for the first customer is also visible", context do
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         assert html =~ "Failed",
                "Expected a Failed entry for the first customer to remain visible, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -160,7 +160,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         refute has_element?(context.view, "[data-status='success']"),
                "Expected no success entries to be visible after clicking the Failed filter"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the user clicks the Success filter tab", context do
@@ -180,7 +180,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
         refute has_element?(context.view, "[data-status='failed']"),
                "Expected no failed entries to be visible after clicking the Success filter"
 
-        :ok
+        {:ok, context}
       end
     end
   end

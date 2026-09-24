@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
       then_ "a clear error is shown explaining the spec must be an object", context do
         html = render(context.view)
         assert html =~ "Spec must be a JSON object"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
         assert has_element?(context.view, "[data-role='chart-placeholder']")
         assert context.html =~ "Select a metric"
         refute has_element?(context.view, "[data-role='vega-lite-chart']")
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
         assert html =~ "7",
                "Expected sync history entry to show 7 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry is associated with the Google Business Reviews provider", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
                  html =~ "Business Reviews",
                "Expected sync history entry to show Google Business Reviews provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the Google Business Reviews sync entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the count of stored review records", context do
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
         assert html =~ "3",
                "Expected the sync history entry to display 3 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the completion timestamp", context do
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
         assert html =~ "Mar 17, 2026" or html =~ "2026" or html =~ "Completed at",
                "Expected the sync entry to display a completion timestamp, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
         assert html =~ "Failed" or html =~ "failed" or html =~ "badge-error",
                "Expected the sync history to show a failed entry for Google Business Reviews, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the error reason describing the invalid data", context do
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
                  html =~ "review data",
                "Expected the sync history entry to display the error reason, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry indicates the Google Business Reviews provider", context do
@@ -145,7 +145,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
                  html =~ "Business Reviews",
                "Expected the failed entry to identify the Google Business Reviews provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

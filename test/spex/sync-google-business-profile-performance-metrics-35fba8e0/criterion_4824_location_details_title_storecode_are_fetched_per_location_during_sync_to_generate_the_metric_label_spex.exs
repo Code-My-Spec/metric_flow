@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
                  html =~ "google_business",
                "Expected the sync history entry to include location details (title or store code), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows a success status", context do
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the sync history entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
                  html =~ "google_business",
                "Expected the sync history entry to show the store code as a fallback label, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync history entry to show a failed status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message surfaces the location details fetch failure", context do
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
                  html =~ "location details",
                "Expected the sync history to surface the location details error, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

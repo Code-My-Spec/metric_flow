@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
         assert html =~ "Failed" or html =~ "failed",
                "Expected the GA4 API failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the API error message is displayed in the sync history entry", context do
@@ -43,14 +43,14 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
                  html =~ "Property access denied",
                "Expected the GA4 API error response to be surfaced in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message is associated with the correct provider entry", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the API error details"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
         assert entry_count >= 2,
                "Expected at least 2 failed sync history entries (one per API error), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Failed filter shows only the failed entries", context do
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Failed filter to show failed entries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -141,7 +141,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Failed status to be shown in the filtered results, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

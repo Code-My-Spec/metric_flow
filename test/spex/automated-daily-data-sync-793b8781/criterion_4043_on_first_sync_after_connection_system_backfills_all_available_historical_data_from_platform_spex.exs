@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
                  html =~ "backfill",
                "Expected the sync history page to show an 'Initial Sync' or 'Backfill' entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] section to be present on the sync history page"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial backfill entry is labeled to distinguish it from routine daily syncs", context do
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
                  has_element?(context.view, "[data-role='initial-sync']"),
                "Expected a data-sync-type='initial' or data-sync-type='backfill' or data-role='initial-sync' element identifying the backfill sync entry"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
                  html =~ "initial sync",
                "Expected the sync history page to communicate that historical data was backfilled, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.OnFirstSyncAfterConnectionSystemBackfillsAllAvailableHi
                  html =~ "historical",
                "Expected the sync history page to include date range information for the initial backfill sync, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

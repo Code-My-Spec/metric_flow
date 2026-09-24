@@ -30,9 +30,9 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
             assert conn.status in [400, 422]
           {:error, :parse_error} ->
             # ParseError raised before controller — treated as 400-equivalent
-            :ok
+            {:ok, context}
         end
-        :ok
+        {:ok, context}
       end
     end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
 
       then_ "the endpoint returns success without crashing", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

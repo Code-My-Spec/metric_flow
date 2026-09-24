@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.Criterion5050FollowUpMessagesRefineVizSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

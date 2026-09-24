@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.AgencyAdminsCanDefinePlansSpex do
       then_ "the new plan appears in the plans list", context do
         html = render(context.view)
         assert html =~ "Pro Plan"
-        :ok
+        {:ok, context}
       end
     end
   end

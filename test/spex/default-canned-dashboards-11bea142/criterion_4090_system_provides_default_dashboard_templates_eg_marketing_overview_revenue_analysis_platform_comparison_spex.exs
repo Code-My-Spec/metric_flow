@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       then_ "the dashboards page loads successfully", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboards to load but was redirected to #{path}")
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
                  has_element?(context.view, "[data-template='marketing_overview']") or
                  has_element?(context.view, "[data-role='dashboard-template']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
                  has_element?(context.view, "[data-template='revenue_analysis']") or
                  has_element?(context.view, "[data-role='dashboard-template']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -129,7 +129,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
                  has_element?(context.view, "[data-template='platform_comparison']") or
                  has_element?(context.view, "[data-role='dashboard-template']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -165,7 +165,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
                  html =~ "Built-in" or
                  html =~ "System Dashboards"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -178,14 +178,14 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       then_ "the user is redirected away from the dashboards page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "Marketing Overview"
-            :ok
+            {:ok, context}
         end
       end
     end

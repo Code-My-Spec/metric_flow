@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Facebook Ads" or html =~ "facebook_ads" or html =~ "Facebook",
                "Expected the sync history to show a Facebook Ads entry for the initial backfill, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status", context do
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Success" or html =~ "success",
                "Expected the initial backfill sync entry to have a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial sync entry shows the large number of records backfilled", context do
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "180" or html =~ "records",
                "Expected the initial backfill entry to show 180 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial sync entry is labeled as an initial sync", context do
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Initial Sync" or html =~ "initial" or html =~ "backfill",
                "Expected the initial backfill sync entry to be labeled 'Initial Sync' or reference backfill, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Success" or html =~ "success",
                "Expected the subsequent sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the subsequent sync entry shows a small incremental record count", context do
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "1" or html =~ "records",
                "Expected the subsequent sync entry to show a small incremental record count (1 day of data), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the subsequent sync entry is not labeled as an initial sync", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         refute html =~ "Initial Sync",
                "Expected the subsequent sync entry to NOT be labeled 'Initial Sync' (that label is only for first-ever syncs)"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Facebook Ads" or html =~ "facebook_ads" or html =~ "Facebook",
                "Expected the sync history to show Facebook Ads entries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both sync entries are visible in the history", context do
@@ -164,7 +164,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
         assert html =~ "Success" or html =~ "success",
                "Expected at least one success status entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

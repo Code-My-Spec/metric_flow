@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
         assert html =~ "marketing" or html =~ "metrics",
                "Expected the schedule section to mention metrics fetching for marketing providers, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason mentions the metric fetch error", context do
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
         assert html =~ "quota exceeded" or html =~ "Failed to fetch" or html =~ "error",
                "Expected the failure reason to describe the metric fetch error, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

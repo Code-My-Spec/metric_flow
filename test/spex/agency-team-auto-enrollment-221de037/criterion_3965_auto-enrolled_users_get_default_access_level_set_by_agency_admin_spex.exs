@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
 
       then_ "the owner sees a default role selector in the auto-enrollment section", context do
         assert has_element?(context.view, "[data-role='auto-enrollment-default-role']")
-        :ok
+        {:ok, context}
       end
 
       when_ "the owner selects read_only as the default role and saves", context do
@@ -34,12 +34,12 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
 
       then_ "a success confirmation is shown that the default role has been saved", context do
         assert render(context.view) =~ "Auto-enrollment enabled"
-        :ok
+        {:ok, context}
       end
 
       then_ "the saved default role read_only is shown on the settings page", context do
         assert render(context.view) =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,14 +87,14 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
       then_ "the auto-enrolled user appears in the members list", context do
         html = render(context.members_view)
         assert html =~ context.employee_email
-        :ok
+        {:ok, context}
       end
 
       then_ "the auto-enrolled user's role is displayed as read_only", context do
         html = render(context.members_view)
         assert html =~ context.employee_email
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.WebhookEventsAreLoggedSpex do
 
       then_ "the response confirms the event was received", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

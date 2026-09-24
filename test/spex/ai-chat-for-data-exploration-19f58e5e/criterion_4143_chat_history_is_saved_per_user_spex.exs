@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         assert message_persisted,
                "Expected the previously sent message to still be visible after navigating away and returning. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         assert has_history_section,
                "Expected the chat page to display a history section or previous messages. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -216,7 +216,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         refute html =~ context.first_user_token,
                "Expected the second user NOT to see the first user's unique chat message token '#{context.first_user_token}', but it was found in: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

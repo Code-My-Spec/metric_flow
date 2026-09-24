@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
         assert has_element?(context.view, "[data-role='smart-mode']"),
                "Expected smart-mode panel to be rendered"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the analysis shows a section for top positive correlations", context do
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
                  has_element?(context.view, "[data-role='top-positive-correlations']"),
                "Expected top positive correlations section. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the analysis shows a section for top negative correlations", context do
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
                  has_element?(context.view, "[data-role='top-negative-correlations']"),
                "Expected top negative correlations section. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no more than 5 positive correlations are shown", context do
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
         assert positive_count <= 5,
                "Expected at most 5 positive correlations in Smart mode, got #{positive_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no more than 5 negative correlations are shown", context do
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
         assert negative_count <= 5,
                "Expected at most 5 negative correlations in Smart mode, got #{negative_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

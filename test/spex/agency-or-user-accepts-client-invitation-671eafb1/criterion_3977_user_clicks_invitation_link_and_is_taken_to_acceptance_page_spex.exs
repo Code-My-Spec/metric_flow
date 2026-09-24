@@ -54,13 +54,13 @@ defmodule MetricFlowSpex.UserClicksInvitationLinkAndIsTakenToAcceptancePageSpex 
       then_ "the user sees the invitation acceptance page", context do
         html = render(context.view)
         assert html =~ "invited"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows the client account details for the invitation", context do
         html = render(context.view)
         assert html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.UserClicksInvitationLinkAndIsTakenToAcceptancePageSpex 
       then_ "the user sees the invitation acceptance page", context do
         html = render(context.view)
         assert html =~ "invited"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
         assert has_not_helpful_button,
                "Expected each AI recommendation to have a 'not helpful' feedback button. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -118,7 +118,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
         assert has_confirmation,
                "Expected to see confirmation after clicking 'helpful' on an AI suggestion. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -192,7 +192,7 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
         assert has_confirmation,
                "Expected to see confirmation after clicking 'not helpful' on an AI suggestion. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

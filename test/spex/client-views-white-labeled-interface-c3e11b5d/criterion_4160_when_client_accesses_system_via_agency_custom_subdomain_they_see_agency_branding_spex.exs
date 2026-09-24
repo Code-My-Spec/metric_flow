@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
             flunk("Expected dashboard to load with agency branding but was live-redirected to #{path}")
         end
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,13 +70,13 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
       then_ "the user is redirected to the login page", context do
         case context.result do
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, _view, _html} ->
             flunk("Expected unauthenticated user to be redirected away from dashboard")

@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
         assert html =~ "11" or html =~ "records",
                "Expected the sync entry to show 11 records synced (matching the canonical GA4 metrics), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
         assert html =~ "Failed" or html =~ "failed",
                "Expected the metric mapping failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected the sync history section to be present on the sync history page"
 
-        :ok
+        {:ok, context}
       end
     end
   end

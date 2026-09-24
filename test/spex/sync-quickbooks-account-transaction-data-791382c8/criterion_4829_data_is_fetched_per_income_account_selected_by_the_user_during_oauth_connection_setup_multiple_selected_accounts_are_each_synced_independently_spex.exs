@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the sync history entry to be associated with QuickBooks, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -80,14 +80,14 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one per income account), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entries are each marked as successful", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected sync history entries with data-status='success' for the completed account syncs"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -119,14 +119,14 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
         assert html =~ "Failed" or html =~ "failed",
                "Expected the per-account failure to be marked as failed in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry has a sync-error element", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the failed income account sync"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the user filters sync history by Failed status", context do
@@ -143,7 +143,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the failed QuickBooks income account entry to appear in the Failed filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       then_ "the user sees an email format validation error", context do
         assert render(context.view) =~ "must have the @ sign and no spaces"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       then_ "the user sees a required field error for email", context do
         assert render(context.view) =~ "can&#39;t be blank"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       then_ "the user sees a password length validation error", context do
         assert render(context.view) =~ "should be at least 12 character"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       then_ "the user sees a required field error for password", context do
         assert render(context.view) =~ "can&#39;t be blank"
-        :ok
+        {:ok, context}
       end
     end
   end

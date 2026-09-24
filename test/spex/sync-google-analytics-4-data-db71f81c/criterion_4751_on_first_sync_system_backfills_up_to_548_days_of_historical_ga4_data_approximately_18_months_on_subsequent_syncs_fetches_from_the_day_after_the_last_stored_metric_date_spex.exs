@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert html =~ "backfill" or html =~ "historical",
                "Expected the sync history page to mention historical data backfill, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section is present and visible", context do
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert schedule_html =~ "first sync" or schedule_html =~ "backfill" or schedule_html =~ "historical",
                "Expected the schedule section to mention first sync backfill behavior, got: #{schedule_html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert html =~ "Success" or html =~ "success",
                "Expected the initial backfill sync entry to have a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry is labeled as an Initial Sync", context do
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert html =~ "Initial Sync" or html =~ "initial",
                "Expected the initial backfill sync entry to be labeled 'Initial Sync', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the initial sync entry shows the large number of records backfilled", context do
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert html =~ "548" or html =~ "records",
                "Expected the initial backfill entry to show 548 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -121,7 +121,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         refute html =~ "Initial Sync",
                "Expected the subsequent sync entry to NOT be labeled 'Initial Sync' (that label is only for first-ever syncs)"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -140,7 +140,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
                  html =~ "Initial Sync" or html =~ "backfill",
                "Expected the empty state to explain the initial sync and backfill behavior, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

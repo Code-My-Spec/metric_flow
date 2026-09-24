@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
       then_ "the page is accessible to the authenticated user", context do
         case context.page_result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
             flunk(
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
                  html =~ "Select" or html =~ "Connect",
                "Expected the location selection page to be accessible with some content, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -132,7 +132,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
                  has_element?(context.view, "[data-role='account-selection']"),
                "Expected the locations page to be accessible with some content"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -145,10 +145,10 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
       then_ "the user is redirected away from the location selection page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             html = render(view)
@@ -156,7 +156,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
             refute html =~ "548",
                    "Expected unauthenticated user to not see backfill information"
 
-            :ok
+            {:ok, context}
         end
       end
     end

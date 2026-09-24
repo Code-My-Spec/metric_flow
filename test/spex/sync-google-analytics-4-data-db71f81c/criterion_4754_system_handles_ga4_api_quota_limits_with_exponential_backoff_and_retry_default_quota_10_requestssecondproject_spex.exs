@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
         assert html =~ "Failed" or html =~ "failed",
                "Expected the quota-exceeded sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason with quota information is visible to the user", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
         assert html =~ "quota" or html =~ "RESOURCE_EXHAUSTED" or html =~ "GA4 API",
                "Expected the sync history to show the quota-related failure reason, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
         assert html =~ "retried" or html =~ "retry" or html =~ "backoff",
                "Expected the sync history schedule section to mention automatic retry behavior, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
         assert html =~ "Failed" or html =~ "failed",
                "Expected the retry failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
       then_ "the user sees a flash message confirming sync was started", context do
         html = render(context.view)
         assert html =~ "Sync started for Google Analytics"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
 
       then_ "the Sync Now button is disabled so the user cannot trigger a duplicate sync", context do
         assert has_element?(context.view, "[data-platform='google_analytics'] button[phx-click='sync'][disabled]", "Sync Now")
-        :ok
+        {:ok, context}
       end
     end
   end

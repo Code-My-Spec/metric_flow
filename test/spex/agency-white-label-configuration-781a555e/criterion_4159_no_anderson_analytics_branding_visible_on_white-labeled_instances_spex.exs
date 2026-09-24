@@ -38,14 +38,14 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         refute html =~ "Anderson Analytics",
                "Expected white-labeled page to NOT show 'Anderson Analytics'. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the rendered page does not show the default MetricFlow platform logo", context do
         refute has_element?(context.view, "[data-role='default-logo']"),
                "Expected white-labeled page to NOT show the default-logo element when white-labeling is active"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the rendered page shows the agency logo instead", context do
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         assert has_agency_logo,
                "Expected white-labeled page to display the agency logo. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         refute html =~ "Anderson Analytics",
                "Expected white-labeled settings page to NOT show 'Anderson Analytics'. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the white-label indicator is present confirming branding is active", context do
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
                  has_element?(context.view, "[data-white-label]"),
                "Expected the white-label branding indicator to be present on the page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -128,7 +128,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         assert has_no_white_label_active,
                "Expected no white-label indicator when accessing via the main domain"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no Anderson Analytics branding appears on the main domain dashboard either", context do
@@ -137,7 +137,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         refute html =~ "Anderson Analytics",
                "Expected the main domain dashboard to NOT contain 'Anderson Analytics'. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

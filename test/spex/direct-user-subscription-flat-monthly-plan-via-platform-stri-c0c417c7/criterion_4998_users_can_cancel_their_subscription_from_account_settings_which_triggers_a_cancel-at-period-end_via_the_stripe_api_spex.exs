@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
       then_ "the page shows a cancel subscription option for subscribed users", context do
         html = render(context.view)
         assert html =~ "Cancel" or html =~ "cancel"
-        :ok
+        {:ok, context}
       end
     end
   end

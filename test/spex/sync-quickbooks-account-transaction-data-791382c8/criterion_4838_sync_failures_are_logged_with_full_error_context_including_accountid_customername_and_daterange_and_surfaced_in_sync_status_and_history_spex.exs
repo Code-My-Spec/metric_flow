@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert html =~ "Failed" or html =~ "failed",
                "Expected the QuickBooks sync failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error entry contains the accountId from the error context", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert html =~ "9341" or html =~ "accountId",
                "Expected the failure entry to surface the accountId from the error context, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error entry contains the customerName from the error context", context do
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert html =~ "Acme Corp" or html =~ "customerName",
                "Expected the failure entry to surface the customerName from the error context, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error entry contains the dateRange from the error context", context do
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert html =~ "2025-01-01" or html =~ "dateRange" or html =~ "2025-03-17",
                "Expected the failure entry to surface the dateRange from the error context, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert entry_count >= 2,
                "Expected at least 2 failed QuickBooks sync history entries (one per error context), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -144,14 +144,14 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
         assert has_element?(context.view, "[data-status='failed']"),
                "Expected at least one [data-status='failed'] element after applying the Failed filter"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no success entries with data-status='success' are visible", context do
         refute has_element?(context.view, "[data-status='success']"),
                "Expected no [data-status='success'] elements to be visible when the Failed filter is active"
 
-        :ok
+        {:ok, context}
       end
     end
   end

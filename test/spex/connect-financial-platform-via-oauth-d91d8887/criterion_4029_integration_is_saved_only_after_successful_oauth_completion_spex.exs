@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
       then_ "no QuickBooks integration is listed as connected", context do
         html = render(context.view)
         refute html =~ "QuickBooks" and html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
         html = render(context.view)
         assert html =~ "denied" or html =~ "Failed" or html =~ "error" or html =~ "Error" or
                  html =~ "not connected" or html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
 
       when_ "the user navigates to the integrations list", context do
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
       then_ "QuickBooks is not shown as a connected integration", context do
         html = render(context.list_view)
         refute html =~ "QuickBooks" and html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
       then_ "the callback page shows the integration is active", context do
         html = render(context.view)
         assert html =~ "Active" or html =~ "connected" or html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
   end

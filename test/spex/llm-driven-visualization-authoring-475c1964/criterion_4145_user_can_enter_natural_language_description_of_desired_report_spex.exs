@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
       then_ "a prompt input is visible for entering a description", context do
         assert has_element?(context.view, "[data-role='prompt-input']")
         assert has_element?(context.view, "[data-role='generate-btn']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
 
       then_ "the generate button becomes enabled", context do
         refute has_element?(context.view, "[data-role='generate-btn'][disabled]")
-        :ok
+        {:ok, context}
       end
     end
   end

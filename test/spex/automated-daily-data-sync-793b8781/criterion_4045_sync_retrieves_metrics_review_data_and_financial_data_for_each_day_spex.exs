@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
         assert html =~ "metrics" or html =~ "Metrics",
                "Expected the sync history page to mention 'metrics' data type, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
                  html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the sync history page to mention financial data (or QuickBooks), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] element on the page"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each sync history entry displays the date the data covers", context do
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
                  html =~ "date",
                "Expected each sync history entry to display the date the data covers, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
         assert has_data_type_label or has_provider_name,
                "Expected each sync entry to show a data type or provider label so users can identify what was retrieved, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -127,7 +127,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
         assert html =~ "42" or html =~ "records" or html =~ "synced",
                "Expected the sync history entry to show the records synced count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -146,7 +146,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
                  has_element?(context.view, "[data-role='sync-history']"),
                "Expected the page to render a 'Sync History' section, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history communicates per-day data retrieval to the user", context do
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.SyncRetrievesMetricsReviewDataAndFinancialDataForEachDa
                  html =~ "each day" or html =~ "Date",
                "Expected the sync history to communicate daily granularity (e.g., 'Daily', 'per day', or a date column), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

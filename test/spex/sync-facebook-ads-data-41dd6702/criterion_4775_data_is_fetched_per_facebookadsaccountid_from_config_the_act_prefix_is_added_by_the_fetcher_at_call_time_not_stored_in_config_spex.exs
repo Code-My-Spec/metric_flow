@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
         refute html =~ "act_987654321",
                "Expected the account ID to NOT include the 'act_' prefix in stored config, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -120,7 +120,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
         assert html =~ "Success" or html =~ "success",
                "Expected the Facebook Ads sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry includes a data date reflecting the account data that was fetched", context do
@@ -131,7 +131,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
         assert html =~ yesterday or html =~ "Date:",
                "Expected the sync entry to show the data date for the fetched account, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -182,7 +182,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
         assert html =~ "Facebook Ads",
                "Expected sync history to show 'Facebook Ads' provider entries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

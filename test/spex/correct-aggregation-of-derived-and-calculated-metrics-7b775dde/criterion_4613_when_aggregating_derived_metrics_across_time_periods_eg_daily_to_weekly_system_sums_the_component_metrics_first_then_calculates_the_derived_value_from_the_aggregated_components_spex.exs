@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
         assert has_time_period_control,
                "Expected the dashboard to display a time period control (daily/weekly/monthly selector or date range picker), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
         assert has_derived_in_weekly_view,
                "Expected the weekly view to display derived metrics (CPC, CTR, ROAS) calculated from summed components, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -148,7 +148,7 @@ defmodule MetricFlowSpex.AggregatingDerivedMetricsAcrossTimePeriodsSpex do
         assert has_component_metrics,
                "Expected the dashboard to display raw component metrics (clicks, spend, impressions) that feed into derived metric calculations, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
       then_ "the dashboard loads successfully for the authenticated user", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
         assert has_semantic_warning,
                "Expected the dashboard to surface a warning or footnote about semantic differences (e.g., attribution windows, counting methods) when comparing cross-platform metrics, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
         assert has_attribution_context,
                "Expected the dashboard to communicate attribution window differences for click metrics, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -133,7 +133,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
         refute lacks_any_caveat_indicator,
                "Expected the dashboard to surface semantic difference warnings or footnotes when comparing cross-platform metrics. The UI must not silently hide these caveats. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -146,16 +146,16 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "semantic-warning",
                    "Unauthenticated user should not see semantic difference warning data"
 
-            :ok
+            {:ok, context}
         end
       end
     end

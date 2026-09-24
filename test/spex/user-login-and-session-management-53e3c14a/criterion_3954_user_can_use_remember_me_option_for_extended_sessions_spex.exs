@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
       then_ "the user sees both login options", context do
         assert context.login_html =~ "Log in and stay logged in"
         assert context.login_html =~ "Log in only this time"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -41,12 +41,12 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
 
       then_ "the user is successfully logged in", context do
         assert redirected_to(context.login_conn) == "/app/integrations"
-        :ok
+        {:ok, context}
       end
 
       then_ "the remember me cookie is set", context do
         assert context.login_conn.resp_cookies["_metric_flow_web_user_remember_me"]
-        :ok
+        {:ok, context}
       end
     end
 
@@ -71,12 +71,12 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
 
       then_ "the user is successfully logged in", context do
         assert redirected_to(context.login_conn) == "/app/integrations"
-        :ok
+        {:ok, context}
       end
 
       then_ "no remember me cookie is set", context do
         refute context.login_conn.resp_cookies["_metric_flow_web_user_remember_me"]
-        :ok
+        {:ok, context}
       end
     end
   end

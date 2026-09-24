@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
                  html =~ "Reviews",
                "Expected the sync history to show a Google Business Profile Reviews entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows the total record count reflecting full paginated history retrieval", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
         assert html =~ "347" or html =~ "records",
                "Expected the sync history entry to show 347 records (full history across paginated requests), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the Google Business Profile reviews sync entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the total review count from all pages", context do
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
         assert html =~ "250",
                "Expected the sync history entry to display the total review count (250) from all paginated pages, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the failed sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details from the pagination failure are displayed", context do
@@ -125,7 +125,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
                  html =~ "Pagination error" or html =~ "page 3",
                "Expected the pagination failure error to be surfaced in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

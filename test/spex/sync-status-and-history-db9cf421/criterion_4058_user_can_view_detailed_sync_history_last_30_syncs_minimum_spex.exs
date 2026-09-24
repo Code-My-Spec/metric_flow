@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] container element to be present on the page"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page displays at least 30 sync history entries", context do
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
         assert entry_count >= 30,
                "Expected at least 30 sync history entries to be visible, but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] container element to be present for displaying sync history entries"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "31 sync completion events are received", context do
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
                "Expected all 31 sync history entries to be visible, but found #{entry_count}. " <>
                  "The page must display at least 30 syncs without pagination or truncation."
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -145,7 +145,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
         assert html =~ "Google",
                "Expected each sync history entry to identify the provider by name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

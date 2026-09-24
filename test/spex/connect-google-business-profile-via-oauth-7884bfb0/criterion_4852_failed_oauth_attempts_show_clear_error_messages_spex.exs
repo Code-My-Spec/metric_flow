@@ -26,13 +26,13 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
             context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the detail page does not show a Connected badge after a failed attempt", context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         refute html =~ "badge-success"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
             context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Not connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
         has_not_configured = html =~ "OAuth is not configured for this provider"
 
         assert has_connect_button or has_not_configured
-        :ok
+        {:ok, context}
       end
     end
   end

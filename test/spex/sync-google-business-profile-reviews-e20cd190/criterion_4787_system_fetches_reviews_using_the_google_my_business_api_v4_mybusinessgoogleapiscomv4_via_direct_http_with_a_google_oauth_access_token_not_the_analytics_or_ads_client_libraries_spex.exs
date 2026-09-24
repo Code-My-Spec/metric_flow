@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "Google Business" or html =~ "Business Reviews" or html =~ "google_business_reviews",
                "Expected sync history to show 'Google Business Reviews' provider name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status and records synced count", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "42" or html =~ "records",
                "Expected sync entry to show the number of records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "Google Business" or html =~ "Business Reviews" or html =~ "google_business",
                "Expected the sync history page to mention Google Business Reviews as a covered provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section describes the automated daily sync cadence", context do
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "Daily" or html =~ "daily",
                "Expected the schedule section to describe daily syncs, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "Failed" or html =~ "failed" or html =~ "badge-error",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details from the My Business API are displayed", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
         assert html =~ "My Business API" or html =~ "PERMISSION_DENIED" or html =~ "error",
                "Expected the failure reason to be shown in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

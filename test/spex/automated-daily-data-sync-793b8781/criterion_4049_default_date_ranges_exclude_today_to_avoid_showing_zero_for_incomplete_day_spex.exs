@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
         refute html =~ "through #{today}",
                "Expected the default date range end to be yesterday, not today (#{today})"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows a date range end of yesterday", context do
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
         assert html =~ yesterday,
                "Expected the sync history page to display yesterday (#{yesterday}) as the end of the default date range, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
         assert has_element?(context.view, "[data-role='date-range']"),
                "Expected a [data-role='date-range'] element showing the current date range filter"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the date range element shows yesterday as the end date", context do
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
         assert date_range_html =~ yesterday,
                "Expected the [data-role='date-range'] element to display yesterday (#{yesterday}) as the end date, got: #{date_range_html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "today's date does not appear as the range end date", context do
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
                  date_range_html =~ "- #{today}",
                "Expected today (#{today}) to be excluded from the default date range end, got: #{date_range_html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.DefaultDateRangesExcludeTodayToAvoidShowingZeroForIncom
                "Expected the sync history page to communicate that the default range ends at yesterday " <>
                  "(e.g. 'through yesterday', 'excludes today', or 'incomplete day'), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

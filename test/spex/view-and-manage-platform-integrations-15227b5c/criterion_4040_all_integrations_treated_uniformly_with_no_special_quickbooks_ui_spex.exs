@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.AllIntegrationsTreatedUniformlyWithNoSpecialQuickbooksU
         assert html =~ "QuickBooks" or
                  has_element?(context.view, "[data-platform='quickbooks']") or
                  has_element?(context.view, "[data-role='integration-card']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.AllIntegrationsTreatedUniformlyWithNoSpecialQuickbooksU
 
       then_ "all integration cards share a uniform data-role structure", context do
         assert has_element?(context.view, "[data-role='integration-card']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.AllIntegrationsTreatedUniformlyWithNoSpecialQuickbooksU
 
       then_ "there is no QuickBooks-only section rendered outside the standard integration card layout", context do
         refute has_element?(context.view, "[data-role='quickbooks-special-section']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.AllIntegrationsTreatedUniformlyWithNoSpecialQuickbooksU
                  html =~ "Connect" or
                  html =~ "Reconnect" or
                  has_element?(context.view, "[data-role='integration-card']")
-        :ok
+        {:ok, context}
       end
     end
   end

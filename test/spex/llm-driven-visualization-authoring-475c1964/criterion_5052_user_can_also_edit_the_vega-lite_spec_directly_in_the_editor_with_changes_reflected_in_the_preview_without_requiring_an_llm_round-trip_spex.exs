@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
       then_ "the chart preview updates without any LLM call", context do
         assert has_element?(context.view, "[data-role='vega-lite-chart']")
         refute has_element?(context.view, ".text-error")
-        :ok
+        {:ok, context}
       end
     end
   end

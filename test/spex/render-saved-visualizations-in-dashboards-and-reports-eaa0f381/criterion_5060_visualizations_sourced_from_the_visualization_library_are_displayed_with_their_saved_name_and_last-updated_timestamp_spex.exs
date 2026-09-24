@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
 
       then_ "the visualization name is displayed", context do
         assert context.html =~ "Library Viz Test"
-        :ok
+        {:ok, context}
       end
 
       then_ "an updated timestamp is visible", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
         # Should show some form of timestamp (date, "ago", etc.)
         assert html =~ ~r/\d{4}/ || html =~ "ago" || html =~ "today" || html =~ "Updated",
                "Expected a timestamp or date to be displayed for the visualization"
-        :ok
+        {:ok, context}
       end
     end
   end

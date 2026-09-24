@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         assert has_clicks,
                "Expected the dashboard to display the canonical metric 'clicks', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         assert has_spend,
                "Expected the dashboard to display the canonical metric 'spend', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         assert has_impressions,
                "Expected the dashboard to display the canonical metric 'impressions', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
         assert has_conversions,
                "Expected the dashboard to display the canonical metric 'conversions', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -137,14 +137,14 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "clicks"
-            :ok
+            {:ok, context}
         end
       end
     end

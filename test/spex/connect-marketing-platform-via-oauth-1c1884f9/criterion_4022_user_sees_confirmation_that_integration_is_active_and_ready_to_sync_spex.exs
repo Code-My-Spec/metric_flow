@@ -18,13 +18,13 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
         html = render(context.view)
         assert html =~ "active" or html =~ "Active" or html =~ "ready" or html =~ "Ready" or
                  html =~ "Connected" or html =~ "connected"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees messaging about data syncing", context do
         html = render(context.view)
         assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected" or html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
                  render(context.view) =~ "status" or
                  render(context.view) =~ "Status"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
                  html =~ "dashboard" or
                  html =~ "integrations"
 
-        :ok
+        {:ok, context}
       end
     end
   end

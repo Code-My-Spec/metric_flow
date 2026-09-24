@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.Criterion4085NameAndSaveReportSpex do
       then_ "the dashboard is saved and user is redirected to dashboards", context do
         {path, _} = assert_redirect(context.view)
         assert path =~ "/app/dashboards"
-        :ok
+        {:ok, context}
       end
     end
   end

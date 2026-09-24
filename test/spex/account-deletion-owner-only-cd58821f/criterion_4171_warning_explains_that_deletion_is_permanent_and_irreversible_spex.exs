@@ -18,14 +18,14 @@ defmodule MetricFlowSpex.WarningExplainsThatDeletionIsPermanentAndIrreversibleSp
         delete_section = element(context.view, "[data-role='delete-account']")
         html = render(delete_section)
         assert html =~ "permanent"
-        :ok
+        {:ok, context}
       end
 
       then_ "the delete section contains a warning that deletion is irreversible", context do
         delete_section = element(context.view, "[data-role='delete-account']")
         html = render(delete_section)
         assert html =~ "irreversible"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.WarningExplainsThatDeletionIsPermanentAndIrreversibleSp
         html = render(delete_section)
         assert html =~ "permanent"
         assert html =~ "irreversible"
-        :ok
+        {:ok, context}
       end
     end
   end

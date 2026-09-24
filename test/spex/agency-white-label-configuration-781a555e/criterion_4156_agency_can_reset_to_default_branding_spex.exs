@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
 
       then_ "a Reset to Default button is visible in the White-Label Branding section", context do
         assert has_element?(context.view, "[data-role='reset-white-label']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
 
       then_ "a confirmation message is shown that branding has been reset", context do
         assert render(context.view) =~ "Branding reset to default"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,20 +92,20 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
       then_ "the logo URL field is empty", context do
         html = render(context.view)
         refute html =~ "https://cdn.example.com/logo.png"
-        :ok
+        {:ok, context}
       end
 
       then_ "the subdomain field is empty", context do
         html = render(context.view)
         refute html =~ context.subdomain
-        :ok
+        {:ok, context}
       end
 
       then_ "the color fields are empty", context do
         html = render(context.view)
         refute html =~ "#FF5733"
         refute html =~ "#3498DB"
-        :ok
+        {:ok, context}
       end
     end
   end

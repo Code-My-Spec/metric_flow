@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
         assert html =~ "2" or html =~ "records",
                "Expected the record count to be 2 (one per metric key: credits and debits), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -66,14 +66,14 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected success status for QuickBooks entry after syncing credits and debits metric keys, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry element is present on the page", context do
         assert has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected a sync history entry element after QuickBooks sync with both metric keys"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,14 +104,14 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
         assert html =~ "Failed" or html =~ "failed",
                "Expected the QuickBooks metric key sync failure to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync error element is present for the failed entry", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the failed QuickBooks metric key sync"
 
-        :ok
+        {:ok, context}
       end
     end
   end

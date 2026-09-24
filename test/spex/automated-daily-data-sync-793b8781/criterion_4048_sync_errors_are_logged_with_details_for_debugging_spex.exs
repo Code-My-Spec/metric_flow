@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
                  html =~ "Error",
                "Expected the sync history page to display the sync failure reason, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
                  html =~ "Error",
                "Expected the error entry to show the failure reason details, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
         assert has_error_indicator,
                "Expected the sync history page to visually distinguish failed entries, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
                  html =~ "Error",
                "Expected the page to show error information for debugging failed syncs, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

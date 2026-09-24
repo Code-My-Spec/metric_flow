@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert has_7_days,
                "Expected the dashboard to show a '7 days' date range option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert has_30_days,
                "Expected the dashboard to show a '30 days' date range option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert has_90_days,
                "Expected the dashboard to show a '90 days' date range option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -117,7 +117,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert has_all_time,
                "Expected the dashboard to show an 'All time' date range option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -144,7 +144,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert has_custom,
                "Expected the dashboard to show a 'Custom' date range option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -197,7 +197,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert html =~ "7" or html =~ "days",
                "Expected the dashboard to reference the selected date range, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -250,7 +250,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert html =~ "30" or html =~ "days",
                "Expected the dashboard to reference the selected date range, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -303,7 +303,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert html =~ "90" or html =~ "days",
                "Expected the dashboard to reference the selected date range, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -353,7 +353,7 @@ defmodule MetricFlowSpex.UserCanSelectDateRangeLast7Days30Days90DaysAllTimeCusto
         assert is_binary(html),
                "Expected the dashboard to remain rendered after selecting all time range, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

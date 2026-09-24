@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
         assert entry_count == 3,
                "Expected exactly 3 sync history entries (one merged entry per date), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "all three entries show success status indicating complete data was stored for each date", context do
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
         assert success_count >= 3,
                "Expected 3 success badges (one per date with fully merged metrics), but found #{success_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
         assert html =~ "Failed" or html =~ "failed",
                "Expected a single failed entry for the chunk merge failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

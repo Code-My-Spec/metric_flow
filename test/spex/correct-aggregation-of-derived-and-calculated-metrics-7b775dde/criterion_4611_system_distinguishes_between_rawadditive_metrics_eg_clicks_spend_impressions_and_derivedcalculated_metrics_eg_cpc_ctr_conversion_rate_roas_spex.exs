@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
         assert has_raw_metrics,
                "Expected the dashboard to display raw/additive metrics (clicks, spend, impressions), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
         assert has_derived_metrics,
                "Expected the dashboard to display derived/calculated metrics (CPC, CTR, ROAS, conversion rate), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.SystemDistinguishesBetweenRawAdditiveMetricsAndDerivedC
         assert has_any_metric,
                "Expected the dashboard to display at least one metric section, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

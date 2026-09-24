@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
             assert html =~ "account" or html =~ "Account" or
                      html =~ "location" or html =~ "Location",
                    "Expected the locations page to render location content, got: #{String.slice(html, 0, 500)}"
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
             flunk("Expected the locations page to be accessible to an authenticated user, but was redirected to login")
@@ -90,10 +90,10 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
                      has_element?(view, "[data-role='location-account-name']") or
                      has_element?(view, "[data-role='location-row']"),
                    "Expected each location row to show an account name for disambiguation"
-            :ok
+            {:ok, context}
 
           _ ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -164,10 +164,10 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
                      has_element?(view, "[data-role='location-title']") or
                      has_element?(view, "[data-role='location-name']"),
                    "Expected location rows to display location name or title"
-            :ok
+            {:ok, context}
 
           {:error, _} ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -239,10 +239,10 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
                      render(view) =~ "address" or render(view) =~ "Address" or
                      render(view) =~ "Location" or render(view) =~ "location",
                    "Expected the locations page to show address data or location selection UI"
-            :ok
+            {:ok, context}
 
           {:error, _} ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -314,10 +314,10 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
                      render(view) =~ "code" or render(view) =~ "Code" or
                      render(view) =~ "Location" or render(view) =~ "Select",
                    "Expected the locations page to support showing store code or location selection UI"
-            :ok
+            {:ok, context}
 
           {:error, _} ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -331,15 +331,15 @@ defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio
       then_ "the unauthenticated user is redirected away from the locations page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "location" and render(view) =~ "store code",
                    "Expected unauthenticated user to not see location management content"
-            :ok
+            {:ok, context}
         end
       end
     end

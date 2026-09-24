@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.PlanCreatesStripeProductSpex do
       then_ "the plan shows a Stripe Price ID", context do
         html = render(context.view)
         assert html =~ "Starter Plan"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -18,13 +18,13 @@ defmodule MetricFlowSpex.AgencyAdminsSeeSubscriberSummarySpex do
       then_ "the page shows a summary section with active subscriber count", context do
         html = render(context.view)
         assert html =~ "Active Subscribers"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows monthly recurring revenue in the summary", context do
         html = render(context.view)
         assert html =~ "MRR"
-        :ok
+        {:ok, context}
       end
     end
   end

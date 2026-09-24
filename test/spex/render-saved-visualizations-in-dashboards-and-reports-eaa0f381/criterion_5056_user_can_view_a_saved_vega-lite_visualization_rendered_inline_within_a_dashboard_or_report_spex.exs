@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.Criterion5056SavedVizRenderedInlineDashboardSpex do
 
       then_ "the saved visualization appears in the list", context do
         assert context.html =~ "Inline Viz Test"
-        :ok
+        {:ok, context}
       end
     end
   end

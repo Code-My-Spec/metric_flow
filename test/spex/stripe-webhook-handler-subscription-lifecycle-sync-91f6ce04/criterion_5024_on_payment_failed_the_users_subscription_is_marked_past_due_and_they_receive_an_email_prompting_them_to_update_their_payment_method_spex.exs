@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.PaymentFailedMarksPastDueSpex do
 
       then_ "the webhook is processed successfully", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

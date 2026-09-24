@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the credit metric sync entry to identify QuickBooks, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -63,14 +63,14 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the sync entry to show success confirming credit/revenue data was stored, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the successful entry has the expected data-status attribute", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a sync history entry with data-status='success' for the QuickBooks credit sync"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
         assert html =~ "Failed" or html =~ "failed",
                "Expected the credit processing failure to be marked as failed in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the credit processing error details are surfaced in the failed entry", context do
@@ -111,14 +111,14 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
                  html =~ "unavailable" or html =~ "transaction",
                "Expected the credit processing error to be surfaced in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry has a sync-error element", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the failed credit processing entry"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the user filters sync history by Failed status", context do
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the failed QuickBooks credit entry to appear in the Failed filter results, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,14 +69,14 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected success status for QuickBooks debit sync entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry is visible in the sync history list", context do
         assert has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected at least one sync history entry element on the page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -107,14 +107,14 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
         assert html =~ "Failed" or html =~ "failed",
                "Expected the QuickBooks debit sync failure to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync error element is present for the failed entry", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element for the failed QuickBooks debit sync"
 
-        :ok
+        {:ok, context}
       end
     end
   end

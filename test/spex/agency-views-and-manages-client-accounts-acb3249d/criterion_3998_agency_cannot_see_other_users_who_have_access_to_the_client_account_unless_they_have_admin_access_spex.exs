@@ -51,12 +51,12 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
 
       then_ "the members list section is not visible to the read-only user", context do
         refute has_element?(context.view, "[data-role='members-list']")
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no member email or row rendered in the page", context do
         refute has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -102,12 +102,12 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
 
       then_ "the members list section is visible to the admin user", context do
         assert has_element?(context.view, "[data-role='members-list']")
-        :ok
+        {:ok, context}
       end
 
       then_ "member information is rendered in the page", context do
         assert has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -153,12 +153,12 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
 
       then_ "the members list section is not visible to the account manager", context do
         refute has_element?(context.view, "[data-role='members-list']")
-        :ok
+        {:ok, context}
       end
 
       then_ "no member rows are rendered in the page for the account manager", context do
         refute has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
     end
   end

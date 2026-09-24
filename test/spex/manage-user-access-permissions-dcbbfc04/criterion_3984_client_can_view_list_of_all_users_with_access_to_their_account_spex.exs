@@ -16,17 +16,17 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
 
       then_ "the Members heading is displayed", context do
         assert render(context.view) =~ "Members"
-        :ok
+        {:ok, context}
       end
 
       then_ "the members list is present on the page", context do
         assert has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner's own email appears in the list", context do
         assert render(context.view) =~ context.owner_email
-        :ok
+        {:ok, context}
       end
     end
 
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
         html = render(context.view)
         assert html =~ context.owner_email
         assert html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "each user has their own member row", context do
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
           |> Floki.find("[data-role='member-row']")
 
         assert length(member_rows) >= 2
-        :ok
+        {:ok, context}
       end
     end
 
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
       then_ "the unauthenticated user is redirected away from the members page", context do
         result = live(context.unauth_conn, "/app/accounts/members")
         assert {:error, {:redirect, %{to: "/users/log-in"}}} = result
-        :ok
+        {:ok, context}
       end
     end
   end

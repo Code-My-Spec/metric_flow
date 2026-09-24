@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         assert html =~ "30" or html =~ "records",
                "Expected sync history entry to show the records synced count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry includes a data date reflecting the property data that was fetched", context do
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         assert html =~ yesterday or html =~ "Date:",
                "Expected the sync entry to show the data date for the fetched property, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         assert html =~ "Success" or html =~ "success",
                "Expected sync entries to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -125,7 +125,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

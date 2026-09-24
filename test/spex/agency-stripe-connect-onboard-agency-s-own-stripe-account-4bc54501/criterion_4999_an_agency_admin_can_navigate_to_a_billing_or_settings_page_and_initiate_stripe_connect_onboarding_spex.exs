@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AgencyAdminCanInitiateStripeConnectSpex do
       then_ "the page displays Stripe Connect onboarding options", context do
         html = render(context.view)
         assert html =~ "Stripe Connect"
-        :ok
+        {:ok, context}
       end
     end
   end

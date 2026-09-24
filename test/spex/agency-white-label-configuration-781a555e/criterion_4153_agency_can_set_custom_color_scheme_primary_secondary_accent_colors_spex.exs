@@ -16,17 +16,17 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       then_ "the White-Label Branding section is visible", context do
         assert render(context.view) =~ "White-Label Branding"
-        :ok
+        {:ok, context}
       end
 
       then_ "a Primary Color input field is present in the white-label form", context do
         assert has_element?(context.view, "#white-label-form input[name='white_label[primary_color]']")
-        :ok
+        {:ok, context}
       end
 
       then_ "a Secondary Color input field is present in the white-label form", context do
         assert has_element?(context.view, "#white-label-form input[name='white_label[secondary_color]']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -53,12 +53,12 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the primary color value is reflected in the rendered page", context do
         assert render(context.view) =~ "#1A2B3C"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,12 +85,12 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the secondary color value is reflected in the rendered page", context do
         assert render(context.view) =~ "#E74C3C"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -117,17 +117,17 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the primary color is reflected in the rendered page", context do
         assert render(context.view) =~ "#3498DB"
-        :ok
+        {:ok, context}
       end
 
       then_ "the secondary color is reflected in the rendered page", context do
         assert render(context.view) =~ "#2ECC71"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the accounts page shows checkboxes so the user can modify their selection",
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
       then_ "the detail page contains a link to the google_business accounts path", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert has_element?(view, "a[href*='google_business/accounts']")
-        :ok
+        {:ok, context}
       end
     end
   end

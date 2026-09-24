@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         assert has_cpc_metric,
                "Expected dashboard to display CPC as a derived metric (spend / clicks), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         assert has_roas_metric,
                "Expected dashboard to display ROAS as a derived metric (revenue / spend), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         assert has_ctr_metric,
                "Expected dashboard to display CTR or conversion rate as a derived metric (clicks / impressions), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -125,7 +125,7 @@ defmodule MetricFlowSpex.DerivedMetricsAreDefinedByFormulaReferencingComponentRa
         assert has_derived_metric,
                "Expected dashboard to display at least one derived metric (CPC, CTR, ROAS, conversion rate), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.GoogleAdsDataSegmentedByDateOnlyNoDimensionsSpex do
         refute html =~ "Network" or html =~ "network",
                "Expected the sync entry to NOT show network dimension breakdown"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.GoogleAdsDataSegmentedByDateOnlyNoDimensionsSpex do
         refute has_element?(context.view, "[data-status='network-filter']"),
                "Expected no network dimension filter element on the sync history page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.GoogleAdsDataSegmentedByDateOnlyNoDimensionsSpex do
         assert html =~ expected_date or html =~ "Date:",
                "Expected the sync entry to show the data date #{expected_date}, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

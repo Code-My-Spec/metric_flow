@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
                  html =~ "records",
                "Expected the page to show a success message with records synced count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success message includes a timestamp indicating when the sync completed", context do
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
                  html =~ "timestamp",
                "Expected the page to show a timestamp for the sync completion, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
                  has_element?(context.view, "[data-role='integration-sync-status']"),
                "Expected the page to show a Syncing indicator, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the async sync completion message is received by the LiveView", context do
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
         refute html =~ "loading loading-spinner",
                "Expected the Syncing spinner to be gone after sync completed, but it was still present"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Sync Now button is re-enabled for the integration", context do
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
         ),
         "Expected the Sync Now button to be re-enabled after sync completed, but it was still disabled"
 
-        :ok
+        {:ok, context}
       end
     end
   end

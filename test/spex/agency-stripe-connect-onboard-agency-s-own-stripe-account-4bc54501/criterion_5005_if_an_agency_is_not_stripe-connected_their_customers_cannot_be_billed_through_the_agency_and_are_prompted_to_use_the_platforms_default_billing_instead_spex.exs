@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.UnconnectedAgencyCustomersUseDefaultBillingSpex do
         # Page shows "Subscribe" button when plans exist, or "No plans available" as fallback
         assert html =~ "Subscribe" or html =~ "No plans available" or
                  html =~ "Choose Your Plan" or html =~ "MetricFlow Pro"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
         assert has_element?(context.view, "[data-platform='google_analytics'] [data-role='connect-button']") or
                  has_element?(context.view, "[data-platform='google_ads'] [data-role='connect-button']"),
                "Expected a Google provider (google_analytics or google_ads) to have a connect button"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
         html = render(context.view)
         assert html =~ "Facebook"
         assert has_element?(context.view, "[data-platform='facebook_ads'] [data-role='connect-button']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
         html = render(context.view)
         assert html =~ "QuickBooks"
         assert has_element?(context.view, "[data-platform='quickbooks'] [data-role='connect-button']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,12 +69,12 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
         assert html =~ "Google"
         assert html =~ "Facebook"
         assert html =~ "QuickBooks"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page contains OAuth connect buttons for the providers", context do
         assert has_element?(context.view, "[data-role='connect-button']")
-        :ok
+        {:ok, context}
       end
     end
   end

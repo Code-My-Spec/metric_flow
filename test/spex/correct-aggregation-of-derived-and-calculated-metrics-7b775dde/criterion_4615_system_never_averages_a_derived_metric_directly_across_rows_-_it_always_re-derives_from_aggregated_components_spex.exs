@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
         assert has_derived_metrics,
                "Expected the dashboard to display derived metrics (CPC, CTR, ROAS) computed from aggregated components rather than averaged row-level values, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
         assert has_component_metrics,
                "Expected the dashboard to display raw additive component metrics (clicks, spend, impressions) from which derived metrics are re-computed rather than averaged, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.SystemNeverAveragesDerivedMetricDirectlySpex do
         refute has_incorrect_average_label,
                "Expected derived metrics (CPC, CTR, ROAS) to be re-derived from aggregated components, not labeled as direct averages"
 
-        :ok
+        {:ok, context}
       end
     end
   end

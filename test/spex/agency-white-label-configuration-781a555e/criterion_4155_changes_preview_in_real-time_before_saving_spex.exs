@@ -29,12 +29,12 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       then_ "the preview section reflects the new primary color before saving", context do
         html = render(context.view)
         assert html =~ "#E74C3C"
-        :ok
+        {:ok, context}
       end
 
       then_ "the white-label form has not been submitted yet", context do
         refute render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,12 +61,12 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
       then_ "the preview section reflects the new secondary color before saving", context do
         html = render(context.view)
         assert html =~ "#2ECC71"
-        :ok
+        {:ok, context}
       end
 
       then_ "the white-label form has not been submitted yet", context do
         refute render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -93,17 +93,17 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
 
       then_ "the preview reflects the new primary color", context do
         assert render(context.view) =~ "#9B59B6"
-        :ok
+        {:ok, context}
       end
 
       then_ "the preview reflects the new secondary color", context do
         assert render(context.view) =~ "#F39C12"
-        :ok
+        {:ok, context}
       end
 
       then_ "the form has not been saved", context do
         refute render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -129,7 +129,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
 
       then_ "the partial color value is visible in the preview area", context do
         assert render(context.view) =~ "#1A"
-        :ok
+        {:ok, context}
       end
 
       when_ "the owner completes typing the full color value", context do
@@ -146,7 +146,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
 
       then_ "the complete color value is reflected in the preview", context do
         assert render(context.view) =~ "#1ABC9C"
-        :ok
+        {:ok, context}
       end
     end
   end

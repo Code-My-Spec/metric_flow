@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
 
       then_ "the user sees an error that the email has already been taken", context do
         assert render(context.view) =~ "has already been taken"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
         html = render(context.view)
         assert html =~ "has already been taken"
         assert has_element?(context.view, "#registration_form")
-        :ok
+        {:ok, context}
       end
     end
   end

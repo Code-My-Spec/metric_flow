@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
         assert html =~ "Facebook",
                "Expected the connect page to list Facebook as a platform, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page also lists Google as a separate platform", context do
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
         assert html =~ "Google",
                "Expected the connect page to list Google as a separate platform, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "Facebook Ads has its own connect button separate from Google", context do
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
                  has_element?(context.view, "[data-platform='google_ads'] [data-role='connect-button']"),
                "Expected Google to have its own connect button with data-platform='google_analytics' or 'google_ads'"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
         assert html =~ "Facebook",
                "Expected the Facebook Ads detail page to show 'Facebook', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not show Google branding as the authentication provider", context do
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
         refute html =~ "Google Analytics",
                "Expected the Facebook Ads detail page to not reference 'Google Analytics', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -105,7 +105,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
         refute path =~ "google",
                "Expected redirect to not target the Google OAuth endpoint, got path: #{path}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
                ),
                "Expected the Facebook Ads connect button to have phx-value-provider='facebook_ads'"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the Google connect button uses a google provider key, not facebook_ads", context do
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.AuthenticationUsesADedicatedFacebookOAuthFlowSeparateFr
                ),
                "Expected a Google connect button (google_analytics or google_ads provider), confirming the two OAuth flows are separate"
 
-        :ok
+        {:ok, context}
       end
     end
   end

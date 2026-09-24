@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       then_ "the owner sees both members", context do
         assert context.owner_members_html =~ context.owner_email
         assert context.owner_members_html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       when_ "the second user logs in and views the same members page", context do
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
       then_ "the second user sees the same members", context do
         assert context.member_members_html =~ context.owner_email
         assert context.member_members_html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
     end
 
@@ -94,12 +94,12 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
 
       then_ "they do not see the owner from the first account", context do
         refute context.separate_members_html =~ context.owner_email
-        :ok
+        {:ok, context}
       end
 
       then_ "they only see their own email", context do
         assert context.separate_members_html =~ context.separate_email
-        :ok
+        {:ok, context}
       end
     end
   end

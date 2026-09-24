@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
         assert has_onboarding_message,
                "Expected the dashboard to show an onboarding or empty state message when no integrations are connected, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
         assert mentions_integrations_or_platforms,
                "Expected the dashboard onboarding state to mention connecting integrations or platforms, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
         assert has_connect_link,
                "Expected the dashboard to show a link or button to the integrations page when no integrations are connected"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
         assert shows_onboarding_not_data,
                "Expected the dashboard to show an empty/onboarding state rather than populated metrics data when no integrations are connected, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

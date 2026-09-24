@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
 
       then_ "the connected integration card shows a Sync Now button", context do
         assert has_element?(context.view, "button", "Sync Now")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
           "[data-role='integration-card'][data-status='available'] button",
           "Sync Now"
         )
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
         # Verify a non-disabled Sync Now button exists for the connected integration
         refute has_element?(context.view, "button[disabled]", "Sync Now")
         assert has_element?(context.view, "button", "Sync Now")
-        :ok
+        {:ok, context}
       end
     end
   end

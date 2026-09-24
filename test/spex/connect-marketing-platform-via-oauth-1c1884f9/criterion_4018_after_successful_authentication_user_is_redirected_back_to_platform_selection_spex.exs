@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       then_ "the user is redirected to the integrations connect page", context do
         assert redirected_to(context.callback_conn) == "/app/integrations/connect" or
                  redirected_to(context.callback_conn) =~ "/app/integrations"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
       then_ "the user is redirected back to the integrations page after Facebook OAuth completes", context do
         assert redirected_to(context.callback_conn) == "/app/integrations/connect" or
                  redirected_to(context.callback_conn) =~ "/app/integrations"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
         html = render(context.view)
         assert html =~ "connected" or html =~ "Connected" or html =~ "success" or
                  html =~ "Success" or html =~ "Google"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserIsRedirectedBackToPlat
         html = render(context.view)
         assert html =~ "Google"
         assert html =~ "connected" or html =~ "Connected" or html =~ "select" or html =~ "Select"
-        :ok
+        {:ok, context}
       end
     end
   end

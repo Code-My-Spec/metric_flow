@@ -14,12 +14,12 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
 
       then_ "the user sees an account name input field on the form", context do
         assert has_element?(context.view, "input[name='user[account_name]']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the form prompts the user to enter an account name", context do
         assert render(context.view) =~ "account name"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
 
       then_ "the user sees a validation error indicating account name is required", context do
         assert render(context.view) =~ "can&#39;t be blank"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -67,7 +67,7 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
 
       then_ "the user sees a confirmation message that registration was successful", context do
         assert render(context.view) =~ "An email was sent to with_account@example.com"
-        :ok
+        {:ok, context}
       end
     end
   end

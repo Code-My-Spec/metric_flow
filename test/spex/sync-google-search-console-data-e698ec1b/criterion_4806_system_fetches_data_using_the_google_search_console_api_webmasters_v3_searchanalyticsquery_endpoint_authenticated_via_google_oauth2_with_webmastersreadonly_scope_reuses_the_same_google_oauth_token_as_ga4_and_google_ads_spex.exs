@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleSearchConsoleApiSpex do
                  html =~ "Search Console",
                "Expected the sync history to show a Google Search Console entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry shows the sync was successful using the Google OAuth token", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleSearchConsoleApiSpex do
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the Google Search Console sync entry to show Success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleSearchConsoleApiSpex do
         assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                  live(context.anon_conn, "/app/integrations/sync-history")
 
-        :ok
+        {:ok, context}
       end
     end
   end

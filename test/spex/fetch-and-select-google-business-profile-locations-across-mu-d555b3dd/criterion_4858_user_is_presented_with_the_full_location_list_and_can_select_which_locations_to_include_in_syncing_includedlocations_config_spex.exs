@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
                  has_element?(context.view, "[data-role='location-toggle']") or
                  has_element?(context.view, "[data-role='location-list']") or
                  has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
                  has_element?(context.view, "button", "Save Selection") or
                  has_element?(context.view, "button", "Save Locations") or
                  has_element?(context.view, "button", "Start Syncing")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -237,7 +237,7 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
           end
 
         assert success or redirected
-        :ok
+        {:ok, context}
       end
     end
   end

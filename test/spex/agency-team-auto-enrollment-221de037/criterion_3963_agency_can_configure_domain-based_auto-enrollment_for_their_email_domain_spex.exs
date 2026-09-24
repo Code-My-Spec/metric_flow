@@ -16,12 +16,12 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
       then_ "the owner sees an Auto-Enrollment section on the page", context do
         assert render(context.view) =~ "Auto-Enrollment"
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner sees a domain input field for auto-enrollment", context do
         assert has_element?(context.view, "[data-role='auto-enrollment-domain-input']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
       then_ "a success confirmation is shown that auto-enrollment is enabled", context do
         assert render(context.view) =~ "Auto-enrollment enabled"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
       then_ "the configured domain myagency.com is displayed on the settings page", context do
         assert render(context.view) =~ "myagency.com"
-        :ok
+        {:ok, context}
       end
     end
   end

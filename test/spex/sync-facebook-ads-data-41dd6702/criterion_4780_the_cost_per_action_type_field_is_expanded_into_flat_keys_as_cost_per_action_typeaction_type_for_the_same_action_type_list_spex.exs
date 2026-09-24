@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -109,7 +109,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details reference the cost_per_action_type expansion failure", context do
@@ -118,7 +118,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
         assert html =~ "cost_per_action_type" or html =~ "expand" or html =~ "error",
                "Expected the failure reason to mention the cost_per_action_type expansion error, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

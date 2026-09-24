@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
         assert has_cpc,
                "Expected the dashboard to display the derived CPC metric computed from canonical 'spend' and 'clicks' components, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
         assert has_derived_metric or has_platform_source,
                "Expected the dashboard to show a derived metric (e.g., CPC, CTR) that references canonical components from mapped platforms, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
         refute exposes_raw_platform_derived_metric,
                "Expected derived metrics to use canonical names (e.g., 'cpc'), not raw platform-internal metric names. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -128,16 +128,16 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "derived-metric",
                    "Unauthenticated user should not see derived metric data"
 
-            :ok
+            {:ok, context}
         end
       end
     end

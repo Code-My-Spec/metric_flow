@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.CorrelationMinimumDataThresholdSpex do
         assert has_threshold_info,
                "Expected minimum data threshold information (e.g., 30+ days). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.CorrelationMinimumDataThresholdSpex do
         assert has_insufficient_message,
                "Expected a message about insufficient data for correlations. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

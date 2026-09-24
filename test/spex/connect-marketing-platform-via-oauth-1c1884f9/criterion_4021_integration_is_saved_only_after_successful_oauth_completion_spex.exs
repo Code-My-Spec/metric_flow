@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
         html = render(context.view)
         refute html =~ "Active"
         refute html =~ "Connected"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
         html = render(context.view)
         refute html =~ "Integration saved"
         refute html =~ "Integration active"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees a button or link to begin the OAuth process", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
                  has_element?(context.view, "a[href*='oauth']") or
                  render(context.view) =~ "Connect" or
                  render(context.view) =~ "Authorize"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
         assert html =~ "connected" or html =~ "Connected" or html =~ "success" or
                  html =~ "saved" or html =~ "authorized" or html =~ "Authorized"
 
-        :ok
+        {:ok, context}
       end
     end
   end

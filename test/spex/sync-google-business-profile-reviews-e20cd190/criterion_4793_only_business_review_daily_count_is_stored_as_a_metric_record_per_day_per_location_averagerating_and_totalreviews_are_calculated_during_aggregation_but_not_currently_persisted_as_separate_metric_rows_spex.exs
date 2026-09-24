@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         assert html =~ Integer.to_string(context.daily_count_records),
                "Expected sync history to show '#{context.daily_count_records}' records (one BUSINESS_REVIEW_DAILY_COUNT row per day per location), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry is labeled as Google Business Reviews", context do
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         assert html =~ "Google Business Reviews" or html =~ "Google Business",
                "Expected sync history entry to be labeled 'Google Business Reviews', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         assert html =~ "Success" or html =~ "success",
                "Expected the Google Business Reviews sync entry to show 'Success' status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the records synced count is present in the entry", context do
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         assert html =~ "30" or html =~ "records synced",
                "Expected the sync history entry to show the records synced count, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to show 'Failed' status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message is displayed in the sync history entry", context do
@@ -125,7 +125,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
                  html =~ "Failed to store",
                "Expected the failure reason to appear in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

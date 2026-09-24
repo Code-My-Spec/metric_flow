@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.FreeUsersAccessDashboardAndIntegrationsSpex do
                      has_element?(view, "[data-role='paywall']") or
                      has_element?(view, "[data-role='upgrade-modal']"),
                    "Expected no paywall on /dashboard for free user. Got: #{html}"
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.FreeUsersAccessDashboardAndIntegrationsSpex do
             refute has_element?(view, "[data-role='paywall']") or
                      has_element?(view, "[data-role='upgrade-modal']"),
                    "Expected no paywall on /integrations for free user. Got: #{html}"
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /integrations to load but was redirected to #{path}")

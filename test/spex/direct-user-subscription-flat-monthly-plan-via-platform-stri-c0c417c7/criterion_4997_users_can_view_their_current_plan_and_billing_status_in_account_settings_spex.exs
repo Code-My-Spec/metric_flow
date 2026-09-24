@@ -19,7 +19,7 @@ defmodule MetricFlowSpex.UsersCanViewCurrentPlanAndBillingStatusSpex do
         assert html =~ "Plan" or html =~ "Subscription" or html =~ "Choose Your Plan"
         assert html =~ "Free" or html =~ "Upgrade" or html =~ "MetricFlow Pro" or
                  html =~ "No plans" or html =~ "Subscribe"
-        :ok
+        {:ok, context}
       end
     end
   end

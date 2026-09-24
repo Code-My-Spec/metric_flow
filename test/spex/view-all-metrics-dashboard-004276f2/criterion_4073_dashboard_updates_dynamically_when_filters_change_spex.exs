@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         assert is_binary(html),
                "Expected the dashboard LiveView to remain alive after date range filter change, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         assert is_binary(html),
                "Expected the dashboard LiveView to remain alive after platform filter change, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -148,7 +148,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         assert is_binary(html),
                "Expected the LiveView to handle the filter change in-process without a full page reload, got: #{inspect(html)}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -203,7 +203,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         assert filter_acknowledged,
                "Expected the dashboard HTML to reflect the applied date range filter, got: #{html_after}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

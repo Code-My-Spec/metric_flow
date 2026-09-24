@@ -25,14 +25,14 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
         assert html =~ "location" or html =~ "Location" or
                  html =~ "account" or html =~ "Account" or
                  html =~ "select" or html =~ "Select"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user does not see a re-authenticate prompt", context do
         html = render(context.view)
         refute html =~ "Re-authenticate"
         refute html =~ "re-authenticate"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
         html = render(context.view)
         refute html =~ "accounts.google.com"
         refute html =~ "oauth"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page provides a mechanism to update the location selection", context do
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
                  has_element?(context.view, "[data-role='location-checkbox']") or
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='location-selection']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
         html = render(context.view)
         refute html =~ "Re-connect"
         refute html =~ "re-connect"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page shows location or account content for selection", context do
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
         assert html =~ "location" or html =~ "Location" or
                  html =~ "business" or html =~ "Business" or
                  html =~ "account" or html =~ "Account"
-        :ok
+        {:ok, context}
       end
     end
   end

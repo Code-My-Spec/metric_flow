@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       then_ "the dashboard page loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -53,7 +53,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
         assert has_platform_comparison,
                "Expected the dashboard to display a side-by-side comparison of clicks from Google Ads and Facebook Ads, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
         assert has_platform_source,
                "Expected the dashboard to identify at least one platform source when comparing canonical metrics across platforms, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
         refute clicks_under_spend,
                "Expected 'Link Clicks' not to appear under canonical metric 'spend'. HTML: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -116,16 +116,16 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "platform-comparison",
                    "Unauthenticated user should not see cross-platform metric comparison data"
 
-            :ok
+            {:ok, context}
         end
       end
     end

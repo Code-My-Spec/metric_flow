@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
           |> render()
 
         assert spec_attr =~ "data-spec="
-        :ok
+        {:ok, context}
       end
     end
 
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
         # Should contain Vega-Lite spec markers
         assert textarea_html =~ "mark"
         assert textarea_html =~ "encoding"
-        :ok
+        {:ok, context}
       end
     end
   end

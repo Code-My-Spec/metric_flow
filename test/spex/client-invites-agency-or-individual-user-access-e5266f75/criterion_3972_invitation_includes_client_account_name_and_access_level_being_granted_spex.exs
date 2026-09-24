@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
           assert email.subject =~ "Owner Account"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
           assert email.text_body =~ "Owner Account"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -116,12 +116,12 @@ defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingG
 
       then_ "the acceptance page shows the account name", context do
         assert render(context.accept_view) =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "the acceptance page shows the access level being granted", context do
         assert render(context.accept_view) =~ "Admin"
-        :ok
+        {:ok, context}
       end
     end
   end

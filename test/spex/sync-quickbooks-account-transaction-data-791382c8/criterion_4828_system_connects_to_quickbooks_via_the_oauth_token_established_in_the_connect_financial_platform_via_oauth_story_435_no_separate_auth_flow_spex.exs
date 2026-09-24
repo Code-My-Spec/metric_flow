@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the QuickBooks sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
         assert html =~ "QuickBooks" or html =~ "quickbooks",
                "Expected the connect page to list QuickBooks as a platform, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "QuickBooks does not show a separate auth flow distinct from the standard OAuth button", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
         refute html =~ "Separate QuickBooks Auth" or html =~ "secondary_auth",
                "Expected QuickBooks to use the standard OAuth flow, not a separate auth flow, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
         assert html =~ "Failed" or html =~ "failed",
                "Expected the expired-token failure to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the auth error details are surfaced in the failed sync entry", context do
@@ -102,14 +102,14 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
                  html =~ "expired" or html =~ "OAuth",
                "Expected the OAuth token error to be surfaced in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry has a sync-error element with the auth error", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the auth error details"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
       then_ "the removed member is no longer in the members list", context do
         html = render(context.members_view)
         refute html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "the removed member cannot access the shared account data", context do
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
             refute html =~ context.owner_email
         end
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -130,7 +130,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
 
       then_ "the owner sees a confirmation that the member was removed", context do
         assert render(context.members_view) =~ "Member removed"
-        :ok
+        {:ok, context}
       end
 
       then_ "the second user can no longer see the shared account data on their next request", context do
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
 
         case result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             # The user still has their own account, so the page loads.
@@ -147,7 +147,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
             refute html =~ context.owner_email
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

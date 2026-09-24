@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
 
       then_ "the owner email is shown in the members list", context do
         assert render(context.view) =~ context.owner_email
-        :ok
+        {:ok, context}
       end
     end
 
@@ -30,12 +30,12 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
 
       then_ "the role column header is visible", context do
         assert render(context.view) =~ "Role"
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner role badge is displayed for the owner", context do
         assert render(context.view) =~ "owner"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
 
       then_ "the Joined column header is visible", context do
         assert render(context.view) =~ "Joined"
-        :ok
+        {:ok, context}
       end
 
       then_ "the member row contains a date in the joined column", context do
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         # Assert that a month abbreviation followed by digits pattern appears in a member row
         html = render(context.view)
         assert html =~ ~r/[A-Z][a-z]{2} \d{2}, \d{4}/
-        :ok
+        {:ok, context}
       end
     end
 
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
 
       then_ "the owner member row is present in the list", context do
         assert has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner row displays the owner role label indicating account originator status", context do
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         # The members table renders the role as a badge with the text "owner".
         html = render(context.view)
         assert html =~ "owner"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,13 +104,13 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         html = render(context.view)
         assert html =~ context.owner_email
         assert html =~ context.second_user_email
-        :ok
+        {:ok, context}
       end
 
       then_ "the invited member's role is displayed", context do
         # "member" is an alias for read_only role — the badge shows "read_only"
         assert render(context.view) =~ "read_only"
-        :ok
+        {:ok, context}
       end
 
       then_ "the owner is identified with the owner role while the invited member is not", context do
@@ -119,7 +119,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         assert html =~ "owner"
         # Invited member has read_only, not owner
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
 
       then_ "each member row has a date in the joined column", context do
@@ -127,7 +127,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         # At least two date-formatted strings should be present (one per member)
         matches = Regex.scan(~r/[A-Z][a-z]{2} \d{2}, \d{4}/, html)
         assert length(matches) >= 2
-        :ok
+        {:ok, context}
       end
     end
   end

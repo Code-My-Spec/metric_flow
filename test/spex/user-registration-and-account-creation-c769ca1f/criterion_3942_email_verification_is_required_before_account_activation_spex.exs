@@ -23,12 +23,12 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
 
       then_ "the user sees a message instructing them to check their email", context do
         assert render(context.view) =~ "An email was sent to verify_me@example.com"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees a message to confirm their account via the email link", context do
         assert render(context.view) =~ "confirm your account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
             assert path =~ "/users/log-in"
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

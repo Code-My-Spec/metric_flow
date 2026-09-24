@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.ASubscriptionPlanRecordExistsSpex do
         assert html =~ "$"
         # Subscribe button shown when plans exist in DB; otherwise "No plans available" is shown
         assert html =~ "Subscribe" or html =~ "No plans available" or html =~ "Choose Your Plan"
-        :ok
+        {:ok, context}
       end
     end
   end

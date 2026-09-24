@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.CheckoutUsesStripeCheckoutSessionSpex do
         html = render(context.view)
         assert html =~ "MetricFlow Pro"
         assert has_element?(context.view, "[data-role=subscribe-button]")
-        :ok
+        {:ok, context}
       end
     end
   end

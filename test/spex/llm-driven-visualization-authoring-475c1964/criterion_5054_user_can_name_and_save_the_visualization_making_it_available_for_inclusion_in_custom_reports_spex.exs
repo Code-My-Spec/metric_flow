@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.Criterion5054NameAndSaveVisualizationSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.Criterion5054NameAndSaveVisualizationSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

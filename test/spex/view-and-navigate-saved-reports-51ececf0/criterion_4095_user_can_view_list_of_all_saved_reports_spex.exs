@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       then_ "the dashboards page loads successfully", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboards to load but was redirected to #{path}")
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
                  has_element?(context.view, "h1") or
                  has_element?(context.view, "[data-role='dashboards-heading']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
                  html =~ "Your dashboard" or
                  has_element?(context.view, "[data-role='empty-user-dashboards']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
                  html =~ "Pre-built" or
                  html =~ "pre-built"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -112,14 +112,14 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       then_ "the user is redirected away from the dashboards page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             refute render(view) =~ "My Dashboards"
-            :ok
+            {:ok, context}
         end
       end
     end

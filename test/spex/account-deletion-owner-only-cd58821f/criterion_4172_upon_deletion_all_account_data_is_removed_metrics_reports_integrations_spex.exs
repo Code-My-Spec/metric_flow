@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
       then_ "the owner is redirected to the accounts list", context do
         assert_redirect(context.settings_view, "/app/accounts")
-        :ok
+        {:ok, context}
       end
 
       given_ "the owner follows the redirect to the accounts list", context do
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
       then_ "the deleted account does not appear in the accounts list", context do
         refute render(context.accounts_view) =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
       then_ "the owner is redirected away from the deleted account", context do
         assert_redirect(context.settings_view, "/app/accounts")
-        :ok
+        {:ok, context}
       end
 
       then_ "navigating to the deleted account's settings results in an error or redirect", context do
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
             refute html =~ "Owner Account"
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

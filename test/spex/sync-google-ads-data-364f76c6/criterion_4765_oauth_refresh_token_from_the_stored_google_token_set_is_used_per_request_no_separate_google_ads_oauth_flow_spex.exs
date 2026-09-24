@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a sync history entry with data-status='success' without requiring a separate OAuth flow"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
         assert html =~ "Google Ads",
                "Expected 'Google Ads' to be listed on the connect page under the Google integration, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no separate Google Ads OAuth connect button independent of the Google integration", context do
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
         assert html =~ "Google",
                "Expected the Google platform to be present on the connect page, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a sync history entry with data-status='failed' for the expired token error"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message references the OAuth token expiry or authentication failure", context do
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
                  html =~ "reconnect" or html =~ "expired",
                "Expected the error to reference the expired OAuth token, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

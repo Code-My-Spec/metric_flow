@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
         refute html =~ "ad group" or html =~ "Ad Group",
                "Expected the sync entry to NOT show ad group-level segmentation"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
         refute has_element?(context.view, "[data-status='ad-group-filter']"),
                "Expected no ad group filter element on the sync history page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -105,7 +105,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
         assert entry_count == 2,
                "Expected exactly 2 sync history entries (one per date, not per campaign/ad group), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -16,13 +16,13 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
 
       then_ "the user sees an account selection interface", context do
         assert has_element?(context.view, "[data-role='account-selection']")
-        :ok
+        {:ok, context}
       end
 
       then_ "the user does not see a re-authenticate button", context do
         refute render(context.view) =~ "Re-authenticate"
         refute render(context.view) =~ "re-authenticate"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
       then_ "the user sees an option to manage existing integrations", context do
         html = render(context.view)
         assert html =~ "integrations" or html =~ "Integrations" or html =~ "Connect"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -52,13 +52,13 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
       then_ "the page title references account selection or modification", context do
         html = render(context.view)
         assert html =~ "account" or html =~ "Account" or html =~ "Connect" or html =~ "provider"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page does not prompt the user to start OAuth from scratch", context do
         html = render(context.view)
         refute html =~ "Re-connect"
-        :ok
+        {:ok, context}
       end
     end
   end

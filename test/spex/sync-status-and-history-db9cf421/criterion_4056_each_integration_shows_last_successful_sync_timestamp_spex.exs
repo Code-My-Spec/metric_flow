@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert has_element?(context.view, "[data-role='sync-history-entry']"),
                "Expected a [data-role='sync-history-entry'] element to be present after sync completion"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows the provider that was synced", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert html =~ "Google",
                "Expected the sync history entry to display the provider name 'Google', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows the last successful sync timestamp", context do
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert html =~ "Feb 24, 2026" or html =~ "2026-02-24" or html =~ "02:00",
                "Expected the sync history entry to display the completed timestamp (Feb 24, 2026 02:00 UTC), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows it completed successfully", context do
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert html =~ "Success" or html =~ "success",
                "Expected the sync history entry to display a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert html =~ "Feb 24, 2026" or html =~ "2026-02-24",
                "Expected the sync timestamp to be displayed in a human-readable format, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry indicates when the last sync was completed", context do
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert has_completed_label,
                "Expected the sync entry to show a 'Completed at' or similar label with the timestamp, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -139,14 +139,14 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] container element to be present"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the entry is marked with a success status", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected the sync history entry to have data-status='success' attribute"
 
-        :ok
+        {:ok, context}
       end
     end
   end

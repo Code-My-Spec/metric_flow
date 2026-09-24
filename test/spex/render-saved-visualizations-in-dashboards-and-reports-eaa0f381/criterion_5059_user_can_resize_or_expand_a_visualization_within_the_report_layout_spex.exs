@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.Criterion5059ResizeOrExpandVisualizationSpex do
           |> render()
 
         assert chart_html =~ "w-full"
-        :ok
+        {:ok, context}
       end
     end
   end

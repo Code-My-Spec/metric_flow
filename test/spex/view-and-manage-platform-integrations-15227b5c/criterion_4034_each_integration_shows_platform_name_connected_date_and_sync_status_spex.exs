@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
       then_ "the page contains at least one element displaying a platform name", context do
         assert has_element?(context.view, "[data-role='integration-platform-name']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -30,7 +30,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
       then_ "the page contains an element showing when each integration was connected", context do
         assert has_element?(context.view, "[data-role='integration-connected-date']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
       then_ "the page contains an element showing the sync status of each integration", context do
         assert has_element?(context.view, "[data-role='integration-sync-status']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,12 +58,12 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
       then_ "each integration row contains all three pieces of information together", context do
         assert has_element?(context.view, "[data-role='integration-row']")
-        :ok
+        {:ok, context}
       end
 
       then_ "each integration row shows the platform name within the row", context do
         assert has_element?(context.view, "[data-role='integration-row'] [data-role='integration-platform-name']")
-        :ok
+        {:ok, context}
       end
     end
   end

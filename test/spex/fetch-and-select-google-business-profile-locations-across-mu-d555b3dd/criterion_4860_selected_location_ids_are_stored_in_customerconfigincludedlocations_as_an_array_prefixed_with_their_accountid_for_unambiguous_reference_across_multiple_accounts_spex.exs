@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
           end
 
         assert saved_confirmed or redirected
-        :ok
+        {:ok, context}
       end
     end
 
@@ -182,7 +182,7 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
             has_element?(context.view, "[data-role='account-selection']")
 
         assert selections_shown
-        :ok
+        {:ok, context}
       end
     end
 
@@ -256,7 +256,7 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='location-list']")
 
-        :ok
+        {:ok, context}
       end
     end
   end

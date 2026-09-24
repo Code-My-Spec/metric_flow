@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no radio buttons are used on the Google Business account selection page", context do
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
           Application.delete_env(:metric_flow, :req_http_options)
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

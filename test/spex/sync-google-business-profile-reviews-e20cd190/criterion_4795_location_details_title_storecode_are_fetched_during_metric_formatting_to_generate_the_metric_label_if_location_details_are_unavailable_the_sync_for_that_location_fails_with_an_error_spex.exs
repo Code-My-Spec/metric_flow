@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
         assert html =~ "Google Business Reviews",
                "Expected sync history to show 'Google Business Reviews', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows a Success status", context do
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
         assert html =~ "Success",
                "Expected the successful sync entry to be marked as Success, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows the records synced count", context do
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
         assert html =~ "12",
                "Expected the sync entry to show 12 records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as Failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry shows Google Business Reviews as the provider", context do
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
         assert html =~ "Google Business Reviews",
                "Expected the failed sync entry to show 'Google Business Reviews', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -117,14 +117,14 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
                  html =~ "metric label" or html =~ "unavailable",
                "Expected the error to mention location details or metric label, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "a sync-error element is rendered with the error details", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the location details error"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -19,12 +19,12 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
         assert has_element?(context.view, "[data-role='template-chooser']")
         assert has_element?(context.view, "[data-role='template-card-marketing_overview']")
         assert has_element?(context.view, "[data-role='template-card-financial_summary']")
-        :ok
+        {:ok, context}
       end
 
       then_ "a blank canvas option is available", context do
         assert has_element?(context.view, "[data-role='template-card-blank']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
 
       then_ "visualization cards are added to the canvas", context do
         assert has_element?(context.view, "[data-role='visualization-card']")
-        :ok
+        {:ok, context}
       end
     end
   end

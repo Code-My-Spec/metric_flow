@@ -33,19 +33,19 @@ defmodule MetricFlowSpex.RequireSubscriptionReusableSpex do
             assert has_paywall,
                    "Expected the same upgrade/paywall prompt on /insights as on /correlations. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout",
                    "Expected redirect to upgrade/checkout, got redirect to #{path}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, %{to: path}}} ->
             assert path =~ "subscription" or path =~ "upgrade" or path =~ "checkout",
                    "Expected live-redirect to upgrade/checkout, got live-redirect to #{path}"
 
-            :ok
+            {:ok, context}
         end
       end
     end

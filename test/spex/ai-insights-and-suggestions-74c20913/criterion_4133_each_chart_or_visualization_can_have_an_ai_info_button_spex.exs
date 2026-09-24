@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
         assert has_ai_info_button,
                "Expected each visualization to have an AI info button (data-role='ai-info-button'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
         assert has_visualization_with_ai_button,
                "Expected the AI info button to appear within a visualization container. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
         refute has_element?(context.view, "[data-role='ai-info-button']"),
                "Expected no AI info buttons when there are no visualizations to attach them to"
 
-        :ok
+        {:ok, context}
       end
     end
   end

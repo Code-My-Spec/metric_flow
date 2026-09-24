@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert failure_present,
                "Expected a failure entry for the customer whose sync failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "both entries are associated with Google Business Profile", context do
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
                  html =~ "google_business",
                "Expected both sync history entries to reference Google Business Profile, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected the second customer's success entry to appear despite the first customer's failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure entry for the first customer is also visible in the sync history", context do
@@ -107,7 +107,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert html =~ "Failed" or html =~ "failed",
                "Expected the first customer's failure entry to also be visible in the sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history contains at least two entries", context do
@@ -122,7 +122,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert entry_count >= 2,
                "Expected at least 2 sync history entries (one success, one failure), but found #{entry_count}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -167,7 +167,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert html =~ "Failed" or html =~ "failed",
                "Expected failed entries to appear after applying the Failed filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       when_ "the user clicks the Success filter", context do
@@ -184,7 +184,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
         assert html =~ "Success" or html =~ "success" or html =~ "badge-success",
                "Expected successful entries to appear after applying the Success filter, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

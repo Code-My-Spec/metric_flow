@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.InviteeReceivesInvitationInTheirEmailInboxSpex do
 
       then_ "the email is delivered to the invitee's address", context do
         assert_email_sent(to: context.second_user_email)
-        :ok
+        {:ok, context}
       end
     end
 
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.InviteeReceivesInvitationInTheirEmailInboxSpex do
           assert email.subject =~ "invited"
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.InviteeReceivesInvitationInTheirEmailInboxSpex do
           assert email.text_body =~ context.second_user_email
         end)
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.InviteeReceivesInvitationInTheirEmailInboxSpex do
 
       then_ "the pending invitations list shows no invitations", context do
         assert render(context.view) =~ "No pending invitations"
-        :ok
+        {:ok, context}
       end
     end
   end

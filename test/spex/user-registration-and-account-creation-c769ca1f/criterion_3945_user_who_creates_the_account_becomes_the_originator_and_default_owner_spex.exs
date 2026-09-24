@@ -27,12 +27,12 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
 
       then_ "the user sees a confirmation that their account was created", context do
         assert render(context.view) =~ "An email was sent to founder@example.com"
-        :ok
+        {:ok, context}
       end
 
       then_ "the confirmation message references the account name they provided", context do
         assert render(context.view) =~ "Founder Corp"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
       then_ "the user sees their Owner role displayed on the accounts page", context do
         {:ok, view, _html} = context.accounts_result
         assert render(view) =~ "Owner"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
         {:ok, view, _html} = context.accounts_result
         html = render(view)
         assert html =~ "originator@example.com"
-        :ok
+        {:ok, context}
       end
     end
   end

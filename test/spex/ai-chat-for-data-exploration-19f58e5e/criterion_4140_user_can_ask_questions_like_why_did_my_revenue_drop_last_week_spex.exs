@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
         assert has_chat_input,
                "Expected a chat input field (textarea or text input) on the chat page. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
       then_ "the chat page responds without crashing", context do
         html = render(context.view)
         assert is_binary(html)
-        :ok
+        {:ok, context}
       end
     end
 
@@ -132,7 +132,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
         assert question_visible,
                "Expected the user's question to appear in the chat after submitting. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -190,7 +190,7 @@ defmodule MetricFlowSpex.UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex 
         assert ai_response_visible,
                "Expected an AI response to appear in the chat after submitting a question. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

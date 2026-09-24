@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
         assert html =~ "1" and (html =~ "3" or html =~ "attempt" or html =~ "retry"),
                "Expected the sync history page to show attempt count (e.g. '1 of 3' or 'Attempt 1/3'), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees that the system will retry the failed sync", context do
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
                  html =~ "Attempt",
                "Expected the sync history page to communicate that the sync will be retried, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
         assert html =~ "3",
                "Expected the sync history page to display the maximum number of retry attempts (3), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
                  html =~ "Error",
                "Expected the sync history page to show the sync as permanently failed after 3 attempts, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error reason is visible so the user understands why the sync failed", context do
@@ -129,7 +129,7 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
                  html =~ "Error",
                "Expected the sync history page to display the failure reason, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -147,14 +147,14 @@ defmodule MetricFlowSpex.FailedSyncsAreAutomaticallyRetriedUpTo3TimesWithExponen
         refute html == "",
                "Expected the sync history page to render content, but got an empty page"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the page includes a sync history section where retry information can be shown", context do
         assert has_element?(context.view, "[data-role='sync-history']"),
                "Expected a [data-role='sync-history'] element to be present for displaying sync entries with retry details"
 
-        :ok
+        {:ok, context}
       end
     end
   end

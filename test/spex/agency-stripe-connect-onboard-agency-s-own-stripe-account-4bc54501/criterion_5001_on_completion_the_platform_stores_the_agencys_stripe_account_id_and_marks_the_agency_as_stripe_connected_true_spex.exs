@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.PlatformStoresStripeAccountIdSpex do
       then_ "the page shows connection status", context do
         html = render(context.view)
         assert html =~ "Stripe Connect"
-        :ok
+        {:ok, context}
       end
     end
   end

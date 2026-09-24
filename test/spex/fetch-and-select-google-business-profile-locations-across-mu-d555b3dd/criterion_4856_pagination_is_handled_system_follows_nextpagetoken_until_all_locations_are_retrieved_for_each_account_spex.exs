@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
       then_ "the location selection page loads without requiring manual pagination", context do
         case context.location_page_result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
             flunk("Expected the location selection page to be accessible to an authenticated user, but was redirected to login")
@@ -95,10 +95,10 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
                      html =~ "account" or html =~ "Account",
                    "Expected location or account selection content to be visible on the page"
 
-            :ok
+            {:ok, context}
 
           _ ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -165,13 +165,13 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
             flunk("Authenticated user was redirected to login — integration or session may not be set up correctly")
 
           {:error, {:redirect, %{to: _}}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, %{to: _}}} ->
-            :ok
+            {:ok, context}
 
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
         end
       end
     end
@@ -185,10 +185,10 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
       then_ "the user is redirected away from the location selection page", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             html = render(view)
@@ -196,7 +196,7 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
             refute html =~ "Select location" or html =~ "Select Location",
                    "Expected unauthenticated user to not see the location selection page"
 
-            :ok
+            {:ok, context}
         end
       end
     end

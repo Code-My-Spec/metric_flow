@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
         assert has_metric_terms,
                "Expected the AI response to reference metric-related terms such as 'metric', 'revenue', 'spend', 'clicks', or 'impressions'. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -132,7 +132,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
         assert has_correlation_terms,
                "Expected the AI response to reference correlation-related terms such as 'correlation', 'relationship', 'trend', or 'pattern'. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -174,7 +174,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
         assert has_data_access_indicator,
                "Expected the chat interface to show a data access indicator (e.g., data-role='data-sources', or text like 'I have access to your metrics'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -204,7 +204,7 @@ defmodule MetricFlowSpex.AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex d
         assert has_chat_form,
                "Expected the chat page to have a form for submitting questions about metrics and correlation data. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

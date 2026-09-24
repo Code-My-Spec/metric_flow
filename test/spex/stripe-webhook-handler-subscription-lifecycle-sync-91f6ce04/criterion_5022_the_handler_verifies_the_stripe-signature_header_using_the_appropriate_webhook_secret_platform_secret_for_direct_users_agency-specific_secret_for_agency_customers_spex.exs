@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.WebhookVerifiesStripeSignatureSpex do
 
       then_ "the endpoint returns a 400 error", context do
         assert context.response.status == 400
-        :ok
+        {:ok, context}
       end
     end
   end

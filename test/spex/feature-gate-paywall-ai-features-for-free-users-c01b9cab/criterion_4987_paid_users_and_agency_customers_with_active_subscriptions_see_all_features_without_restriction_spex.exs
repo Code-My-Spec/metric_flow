@@ -59,13 +59,13 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
                      not has_element?(view, "[data-role='correlation-results']"),
                    "Expected no blocking paywall for paid user on /correlations. Got: #{html}"
 
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
         end
       end
     end

@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
                  html =~ "Historical data" or
                  html =~ "historical" or
                  has_element?(context.view, "[data-role='disconnect-warning']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
                  html =~ "will not sync" or
                  html =~ "stop syncing" or
                  html =~ "new data will sync"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.DisconnectingShowsWarningThatHistoricalDataWillRemainBu
                  html =~ "cancel" or
                  has_element?(context.view, "[data-role='confirm-disconnect']") or
                  has_element?(context.view, "[data-role='cancel-disconnect']")
-        :ok
+        {:ok, context}
       end
     end
   end

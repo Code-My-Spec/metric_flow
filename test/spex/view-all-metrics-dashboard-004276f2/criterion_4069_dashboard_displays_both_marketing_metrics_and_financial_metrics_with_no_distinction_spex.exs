@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingMetricsAndFinancialMetric
                  has_element?(context.view, "[data-metric-type='marketing']") or
                  has_element?(context.view, "[data-role='metrics-area']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingMetricsAndFinancialMetric
                  has_element?(context.view, "[data-metric-type='financial']") or
                  has_element?(context.view, "[data-role='metrics-area']")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingMetricsAndFinancialMetric
 
         refute (html =~ "Marketing Metrics" and html =~ "Financial Metrics")
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -92,7 +92,7 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingMetricsAndFinancialMetric
         refute has_element?(context.view, "[data-role='marketing-section']") and
                  has_element?(context.view, "[data-role='financial-section']")
 
-        :ok
+        {:ok, context}
       end
     end
   end

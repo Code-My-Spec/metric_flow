@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.BillingContextImmutableAfterSubscriptionSpex do
         html = render(context.view)
         assert html =~ "billing" or html =~ "Billing" or html =~ "subscription" or
                  html =~ "Subscription" or html =~ "checkout" or html =~ "Checkout"
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
                  has_element?(context.view, "[data-role='account-selection']"),
                "Expected the Google Business location page to render location content"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the location rows show a location name or title rather than just raw IDs", context do
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
                  html =~ "location" or html =~ "Location",
                "Expected location name/title fields to be displayed from the GBP API response"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
                  html =~ "location" or html =~ "Location",
                "Expected location address (storefrontAddress) to be displayed on the location selection page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -228,7 +228,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
                  html =~ "location" or html =~ "Location",
                "Expected location category (primaryCategory) to be displayed on the location selection page"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -300,7 +300,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
                  html =~ "location" or html =~ "Location",
                "Expected the location page to support storeCode field display"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
         assert html =~ "Google Business" or html =~ "google_business",
                "Expected the sync history to show 'Google Business' provider name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry shows a success status and records synced count", context do
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
         assert html =~ "25" or html =~ "records",
                "Expected the sync entry to show the number of records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
         assert html =~ "Daily" or html =~ "daily",
                "Expected the sync schedule section to describe daily syncs, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section mentions Google-based marketing providers", context do
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
         assert html =~ "Google Ads" or html =~ "Google Analytics" or html =~ "Google",
                "Expected the schedule section to mention Google provider coverage, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
         assert html =~ "Failed" or html =~ "failed" or html =~ "badge-error",
                "Expected the Google Business Profile sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error details from the API are displayed in the failed entry", context do
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
                  html =~ "Business Profile API error" or html =~ "access denied",
                "Expected the API error details to be surfaced in the sync history entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

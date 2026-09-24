@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
         {:ok, view, _html} = live(context.invitee_conn, "/app/accounts")
         html = render(view)
         assert html =~ "You now have access" or html =~ "Owner Account"
-        :ok
+        {:ok, context}
       end
 
       then_ "the user can access the client account members page showing their role", context do
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "account_manager"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.UponAcceptanceUserAccountIsGrantedSpecifiedAccessLevelT
         html = render(view)
         assert html =~ context.second_user_email
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
   end

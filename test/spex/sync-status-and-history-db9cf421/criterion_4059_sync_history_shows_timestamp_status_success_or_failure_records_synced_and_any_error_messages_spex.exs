@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
                  html =~ "Completed at",
                "Expected the sync history entry to display the completion timestamp, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -70,14 +70,14 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
                  html =~ "success",
                "Expected the sync history entry to display a success status indicator, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the success entry is marked with a success status attribute", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success']"),
                "Expected a sync history entry with data-status='success' to be present"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
         assert html =~ "records synced" or html =~ "342",
                "Expected the sync history entry to indicate records were synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -141,14 +141,14 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
                  html =~ "failed",
                "Expected the sync history entry to display a failure status indicator, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failed entry is marked with a failed status attribute", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']"),
                "Expected a sync history entry with data-status='failed' to be present"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -180,14 +180,14 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
                  html =~ "expired",
                "Expected the sync history entry to display the error message, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the error message is rendered in the designated error area", context do
         assert has_element?(context.view, "[data-role='sync-error']"),
                "Expected a [data-role='sync-error'] element to display the error message"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -232,7 +232,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
         assert html =~ "500",
                "Expected the successful Google sync to show '500' records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the user sees the failure status and error message for the Facebook Ads sync", context do
@@ -246,7 +246,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
                  html =~ "Invalid",
                "Expected the failed Facebook Ads sync to show the error message, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

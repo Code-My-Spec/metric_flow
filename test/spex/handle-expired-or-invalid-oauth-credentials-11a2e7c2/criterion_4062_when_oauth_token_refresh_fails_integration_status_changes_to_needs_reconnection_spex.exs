@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
         assert has_reconnect_message,
                "Expected the integrations page to show a reconnection message after token refresh failure, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
         assert has_reconnect_option,
                "Expected the integrations page to show a reconnect option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
         assert has_reconnect_action,
                "Expected the integration detail page to show a reconnect option, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

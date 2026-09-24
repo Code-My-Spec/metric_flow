@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
         assert html =~ "Correlations",
                "Expected the navigation to contain a 'Correlations' link. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
         assert html =~ "Correlations",
                "Expected the correlations page to be displayed with a heading. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
                    "Expected unauthenticated user to not see the correlations page content"
         end
 
-        :ok
+        {:ok, context}
       end
     end
   end

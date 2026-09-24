@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
                  has_element?(context.view, "[data-role='reconnect-integration']") or
                  has_element?(context.view, "button", "Reconnect") or
                  has_element?(context.view, "a", "Reconnect")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
                  html =~ "Connected" or
                  html =~ "connected" or
                  has_element?(context.view, "[data-status]")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.UserCanReconnectAPreviouslyDisconnectedPlatformSpex do
 
       then_ "the reconnect link navigates to the provider connect page", context do
         assert has_element?(context.view, "[data-role='reconnect-integration']")
-        :ok
+        {:ok, context}
       end
     end
   end

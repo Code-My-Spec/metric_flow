@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
         assert has_context_indicator,
                "Expected the chat page to display a context indicator or reference to the user's data. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -103,7 +103,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
         assert has_dashboard_context,
                "Expected the chat interface to indicate it has context about the user's dashboard or metrics. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -166,7 +166,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
         assert has_relevant_context,
                "Expected the chat interface to show relevant context when opened from correlations. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -205,7 +205,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
         assert has_context_ui_element,
                "Expected the chat page to show a context indicator or breadcrumb (e.g., data-role='chat-context', or text like 'Chatting about your metrics'). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

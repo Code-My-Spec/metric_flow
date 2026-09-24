@@ -16,12 +16,12 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
 
       then_ "the White-Label Branding section is visible", context do
         assert render(context.view) =~ "White-Label Branding"
-        :ok
+        {:ok, context}
       end
 
       then_ "a Logo URL input field is present in the white-label form", context do
         assert has_element?(context.view, "#white-label-form input[name='white_label[logo_url]']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,12 +50,12 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the PNG logo URL is reflected in the rendered page", context do
         assert render(context.view) =~ "https://cdn.example.com/logo.png"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -84,12 +84,12 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the JPG logo URL is reflected in the rendered page", context do
         assert render(context.view) =~ "https://cdn.example.com/brand-logo.jpg"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -118,12 +118,12 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
 
       then_ "a success confirmation message is shown", context do
         assert render(context.view) =~ "White-label settings saved"
-        :ok
+        {:ok, context}
       end
 
       then_ "the SVG logo URL is reflected in the rendered page", context do
         assert render(context.view) =~ "https://cdn.example.com/vector-logo.svg"
-        :ok
+        {:ok, context}
       end
     end
   end

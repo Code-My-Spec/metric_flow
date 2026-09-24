@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
         assert has_ai_option,
                "Expected an 'Enable AI Suggestions' option to be visible in Smart mode. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
         refute has_element?(context.view, "[data-role='enable-ai-suggestions']"),
                "Expected 'Enable AI Suggestions' toggle to be absent in Raw mode. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
         assert has_confirmation,
                "Expected confirmation that AI suggestions are enabled. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

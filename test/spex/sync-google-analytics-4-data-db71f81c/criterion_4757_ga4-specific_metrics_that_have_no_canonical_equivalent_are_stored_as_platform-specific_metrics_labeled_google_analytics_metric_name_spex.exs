@@ -35,7 +35,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
         assert html =~ "Google Analytics",
                "Expected the provider to be identified as 'Google Analytics' in the sync history entry, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
         assert provider_count >= 3,
                "Expected at least 3 occurrences of 'Google Analytics' in sync history (one per entry), got: #{provider_count}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

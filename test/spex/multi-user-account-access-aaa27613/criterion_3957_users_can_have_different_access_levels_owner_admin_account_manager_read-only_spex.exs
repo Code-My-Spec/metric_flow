@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
         assert html =~ "admin"
         assert html =~ "account_manager"
         assert html =~ "read_only"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
         html = render(context.view)
         assert html =~ context.second_user_email
         assert html =~ "admin"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
         html = render(context.view)
         assert html =~ context.owner_email
         assert html =~ "owner"
-        :ok
+        {:ok, context}
       end
     end
   end

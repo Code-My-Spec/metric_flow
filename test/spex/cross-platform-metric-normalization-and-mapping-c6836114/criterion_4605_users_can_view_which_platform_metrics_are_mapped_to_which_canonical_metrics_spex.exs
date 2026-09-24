@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
       then_ "the dashboard loads successfully for the authenticated user", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
         assert has_canonical_metric,
                "Expected the dashboard to show canonical metric names (e.g., 'Clicks', 'Spend', 'Impressions'), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -80,7 +80,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
         assert has_platform_label,
                "Expected the dashboard to identify which platform (e.g., Google, Facebook) each metric originates from, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -95,7 +95,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
       then_ "the integrations page loads for the authenticated user", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /integrations to load but was redirected to #{path}")
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
         assert has_google,
                "Expected the integrations page to show the connected Google platform integration, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -139,17 +139,17 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
       then_ "the user is redirected away from the dashboard", context do
         case context.result do
           {:error, {:redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:error, {:live_redirect, _}} ->
-            :ok
+            {:ok, context}
 
           {:ok, view, _html} ->
             # If the page loads unauthenticated it must not expose metric mapping data
             refute render(view) =~ "canonical-metric",
                    "Unauthenticated user should not see canonical metric mapping data"
 
-            :ok
+            {:ok, context}
         end
       end
     end

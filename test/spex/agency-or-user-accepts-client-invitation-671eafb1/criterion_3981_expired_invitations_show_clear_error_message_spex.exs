@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       then_ "the page displays an expiration error message", context do
         {:error, {:redirect, %{flash: flash}}} = context.live_result
         assert flash["error"] =~ "expired"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       then_ "the user sees an expiration error message", context do
         {:error, {:redirect, %{flash: flash}}} = context.live_result
         assert flash["error"] =~ "expired"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -140,7 +140,7 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
       then_ "the page suggests contacting the account owner for a new invitation", context do
         {:error, {:redirect, %{flash: flash}}} = context.live_result
         assert flash["error"] =~ "expired"
-        :ok
+        {:ok, context}
       end
     end
   end

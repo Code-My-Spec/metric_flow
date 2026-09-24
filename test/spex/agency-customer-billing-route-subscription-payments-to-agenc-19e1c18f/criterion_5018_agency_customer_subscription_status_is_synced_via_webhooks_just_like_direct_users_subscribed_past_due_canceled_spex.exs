@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
 
       then_ "the webhook endpoint returns a successful response", context do
         assert context.response.status in [200, 202]
-        :ok
+        {:ok, context}
       end
     end
   end

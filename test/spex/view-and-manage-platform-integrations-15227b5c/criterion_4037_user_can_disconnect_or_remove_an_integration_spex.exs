@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
                  has_element?(context.view, "[data-role='disconnect-integration']") or
                  has_element?(context.view, "button", "Disconnect") or
                  has_element?(context.view, "button", "Remove")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
                  html =~ "removed" or
                  html =~ "Removed" or
                  html =~ "confirm"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.UserCanDisconnectOrRemoveAnIntegrationSpex do
                  html =~ "Reconnect" or
                  html =~ "reconnect" or
                  has_element?(context.view, "[data-status='disconnected']")
-        :ok
+        {:ok, context}
       end
     end
   end

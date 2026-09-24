@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.DirectUsersCanInitiateCheckoutSpex do
 
       then_ "the user is redirected to the checkout page with an upgrade prompt", context do
         assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} = context.live_result
-        :ok
+        {:ok, context}
       end
     end
 
@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.DirectUsersCanInitiateCheckoutSpex do
       then_ "the checkout page shows subscription plans", context do
         html = render(context.view)
         assert html =~ "checkout" or html =~ "Checkout" or html =~ "Plan" or html =~ "Subscribe"
-        :ok
+        {:ok, context}
       end
     end
   end

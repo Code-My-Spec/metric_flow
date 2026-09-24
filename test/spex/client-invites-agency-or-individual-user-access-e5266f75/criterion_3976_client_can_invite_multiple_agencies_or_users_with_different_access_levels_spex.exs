@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
         html = render(context.view)
         assert html =~ "first@agency.com"
         assert html =~ "second@agency.com"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -72,12 +72,12 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
 
       then_ "the pending invitations list shows read_only for the first invitee", context do
         assert render(context.view) =~ "read_only"
-        :ok
+        {:ok, context}
       end
 
       then_ "the pending invitations list shows account_manager for the second invitee", context do
         assert render(context.view) =~ "account_manager"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
       then_ "the invite form is still present and ready for another invitation", context do
         assert has_element?(context.view, "#invite_member_form")
         assert has_element?(context.view, "input[name='invitation[email]']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -137,12 +137,12 @@ defmodule MetricFlowSpex.ClientCanInviteMultipleAgenciesOrUsersWithDifferentAcce
 
       then_ "an invitation email was sent to the first recipient", context do
         assert_email_sent(to: "alpha@agency.com")
-        :ok
+        {:ok, context}
       end
 
       then_ "an invitation email was sent to the second recipient", context do
         assert_email_sent(to: "beta@agency.com")
-        :ok
+        {:ok, context}
       end
     end
   end

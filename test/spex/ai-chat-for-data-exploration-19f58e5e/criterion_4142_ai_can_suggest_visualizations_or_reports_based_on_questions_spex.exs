@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
         assert has_visualization_suggestion,
                "Expected the AI response to include a visualization suggestion such as a chart, graph, report, or dashboard reference. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -139,7 +139,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
         assert has_actionable_reference,
                "Expected the AI response to contain a link or reference to a dashboard, report, or visualization. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -209,7 +209,7 @@ defmodule MetricFlowSpex.AiCanSuggestVisualizationsOrReportsBasedOnQuestionsSpex
         assert has_visualization_language,
                "Expected the AI response to include visualization-related language (chart, graph, visualization, report, dashboard, or view). Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.MetricsStoredAtLocationLevelMyBusinessOneRowPerMetricKe
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.MetricsStoredAtLocationLevelMyBusinessOneRowPerMetricKe
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.MetricsStoredAtLocationLevelMyBusinessOneRowPerMetricKe
         assert html =~ "Google Business" or html =~ "google_business" or html =~ "Business Profile",
                "Expected the sync entry to be labeled as 'Google Business Profile', got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no other provider label appears in place of Google Business Profile", context do
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.MetricsStoredAtLocationLevelMyBusinessOneRowPerMetricKe
         refute html =~ "Google Analytics" and not (html =~ "Google Business" or html =~ "Business Profile"),
                "Expected only Google Business Profile as the provider, but another provider label was shown without it"
 
-        :ok
+        {:ok, context}
       end
     end
   end

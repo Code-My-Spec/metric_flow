@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
 
         # The spec is embedded as data-spec for vegaEmbed to pick up
         assert chart_html =~ "data-spec="
-        :ok
+        {:ok, context}
       end
     end
   end

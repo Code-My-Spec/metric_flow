@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
         assert has_originator_branding,
                "Expected originator agency branding to always be applied for the client. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -87,7 +87,7 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
         assert has_branding_on_settings,
                "Expected originator agency branding to persist on the account settings page. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
         assert has_goal_link,
                "Expected a link or button to access Goal Metrics configuration. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
         assert html =~ "Goal" or html =~ "goal",
                "Expected the goal metrics page to display goal-related content. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

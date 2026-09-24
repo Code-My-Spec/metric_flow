@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "Facebook Ads",
                "Expected the sync history page to show 'Facebook Ads' provider name, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync entry reflects a completed daily data fetch with records synced", context do
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "30" or html =~ "records",
                "Expected sync history entry to show the number of daily records synced, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "Facebook Ads" or html =~ "Facebook",
                "Expected the sync history page to mention 'Facebook Ads' as a supported provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the schedule section describes daily per-provider data fetching", context do
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "provider" or html =~ "metrics",
                "Expected the schedule section to mention per-provider data fetching, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "Failed" or html =~ "failed",
                "Expected the sync entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the failure reason from the Facebook API is displayed", context do
@@ -113,7 +113,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
         assert html =~ "Facebook Business SDK error" or html =~ "OAuthException" or html =~ "error",
                "Expected the failure reason to be shown in sync history, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

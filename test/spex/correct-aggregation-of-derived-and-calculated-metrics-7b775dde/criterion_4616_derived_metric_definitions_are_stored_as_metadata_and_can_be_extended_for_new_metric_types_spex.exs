@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
       then_ "the dashboard loads without error", context do
         case context.result do
           {:ok, _view, _html} ->
-            :ok
+            {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected /dashboard to load but was redirected to #{path}")
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
         assert has_known_derived_metric,
                "Expected the dashboard to render derived metrics (CPC, CTR, ROAS) that are defined in system metadata, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
         assert derived_metric_count >= 1,
                "Expected the dashboard to display derived metric definitions from extensible metadata (CPC, CTR, ROAS, or similar), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.DerivedMetricDefinitionsStoredAsMetadataSpex do
         assert has_readable_label,
                "Expected derived metrics on the dashboard to display human-readable labels sourced from metric metadata definitions, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

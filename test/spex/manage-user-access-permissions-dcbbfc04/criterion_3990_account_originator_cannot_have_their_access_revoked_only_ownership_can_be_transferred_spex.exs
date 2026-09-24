@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
 
       then_ "the owner's member row is present", context do
         assert has_element?(context.view, "[data-role='member-row']")
-        :ok
+        {:ok, context}
       end
 
       then_ "there is no remove button shown for the sole owner", context do
@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
         assert is_nil(owner_remove_button),
                "Expected no remove button for the sole account owner, but one was found"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
           "[data-role='remove-member'][data-user-email='#{context.second_user_email}']"
         )
 
-        :ok
+        {:ok, context}
       end
 
       then_ "no remove button exists for the sole account owner", context do
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
           "[data-role='remove-member'][data-user-email='#{context.owner_email}']"
         )
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
 
       then_ "the transfer ownership form is visible", context do
         assert has_element?(context.settings_view, "[data-role='transfer-ownership']")
-        :ok
+        {:ok, context}
       end
 
       when_ "the owner submits the transfer ownership form", context do
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
 
       then_ "ownership is transferred successfully", context do
         assert render(context.settings_view) =~ "Ownership transferred successfully"
-        :ok
+        {:ok, context}
       end
     end
   end

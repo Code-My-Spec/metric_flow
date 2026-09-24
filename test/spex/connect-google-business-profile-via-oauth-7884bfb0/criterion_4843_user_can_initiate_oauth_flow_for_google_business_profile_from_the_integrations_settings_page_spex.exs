@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessP
       then_ "the connect page lists Google Business as a provider", context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect")
         assert html =~ "Google Business"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -24,15 +24,15 @@ defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessP
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
         assert has_element?(view, "[data-platform='google_business']")
         assert has_element?(view, "[data-platform='google_business'] [data-role='connect-button']")
-        :ok
+        {:ok, context}
       end
     end
 
     scenario "unauthenticated user is redirected away from the connect page" do
-      then_ "visiting the connect page without a session redirects to login" do
+      then_ "visiting the connect page without a session redirects to login", context do
         result = live(build_conn(), "/app/integrations/connect")
         assert {:error, {:redirect, _}} = result
-        :ok
+        {:ok, context}
       end
     end
 
@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessP
       then_ "the Google Business detail page loads and shows the provider name", context do
         {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
         assert html =~ "Google Business"
-        :ok
+        {:ok, context}
       end
     end
   end

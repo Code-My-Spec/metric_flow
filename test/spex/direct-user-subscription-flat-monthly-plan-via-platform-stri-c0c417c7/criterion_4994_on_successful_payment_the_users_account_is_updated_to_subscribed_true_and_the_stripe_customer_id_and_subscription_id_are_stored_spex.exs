@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.OnSuccessfulPaymentAccountUpdatedSpex do
           assert html =~ "active" or html =~ "Active" or html =~ "Subscription" or
                    html =~ "Choose Your Plan" or html =~ "Cancel Subscription"
         end
-        :ok
+        {:ok, context}
       end
     end
   end

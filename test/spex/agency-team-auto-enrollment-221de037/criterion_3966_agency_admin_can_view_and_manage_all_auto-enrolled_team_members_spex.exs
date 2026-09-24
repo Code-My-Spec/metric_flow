@@ -47,25 +47,25 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       then_ "the auto-enrolled user appears in the members list", context do
         html = render(context.members_view)
         assert html =~ context.employee_email
-        :ok
+        {:ok, context}
       end
 
       then_ "the members list shows the Member column header", context do
         html = render(context.members_view)
         assert html =~ "Member"
-        :ok
+        {:ok, context}
       end
 
       then_ "the members list shows the Role column header", context do
         html = render(context.members_view)
         assert html =~ "Role"
-        :ok
+        {:ok, context}
       end
 
       then_ "the members list shows the Actions column header", context do
         html = render(context.members_view)
         assert html =~ "Actions"
-        :ok
+        {:ok, context}
       end
     end
 
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
       then_ "the auto-enrolled staff member appears in the members list", context do
         html = render(context.members_view)
         assert html =~ context.staff_email
-        :ok
+        {:ok, context}
       end
 
       when_ "the owner changes the auto-enrolled member's role to account_manager", context do
@@ -126,12 +126,12 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
         html = render(context.members_view)
         assert html =~ context.staff_email
         assert html =~ "account_manager"
-        :ok
+        {:ok, context}
       end
 
       then_ "a success message is displayed confirming the role change", context do
         assert render(context.members_view) =~ "Role updated"
-        :ok
+        {:ok, context}
       end
     end
   end

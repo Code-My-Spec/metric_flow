@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.SubscriptionStatusBadgeReflectsStateSpex do
                  has_element?(context.view, "[data-status]") or
                  has_element?(context.view, ".badge") or
                  html =~ "Active Subscribers" or html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
 
       then_ "the Status column header is present indicating status display is supported", context do
@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.SubscriptionStatusBadgeReflectsStateSpex do
         # Status column header shown when subscriptions exist; otherwise shows empty state
         assert html =~ "Status" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
-        :ok
+        {:ok, context}
       end
     end
   end

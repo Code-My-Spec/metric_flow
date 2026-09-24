@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
         assert html =~ "Facebook Ads",
                "Expected sync history to show 'Facebook Ads' as the provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "the sync history entry with expanded actions shows a higher record count", context do
@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
         assert html =~ "23",
                "Expected sync history to show 23 records synced (10 core + 13 action types expanded), got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
         assert html =~ "Success" or html =~ "success",
                "Expected the sync entry to show a success status, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
         assert html =~ "Facebook Ads" or html =~ "Facebook",
                "Expected the sync schedule section to mention 'Facebook Ads' as a marketing provider, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -157,7 +157,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
         assert html =~ "Failed" or html =~ "failed",
                "Expected the Facebook Ads sync failure entry to be marked as failed, got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

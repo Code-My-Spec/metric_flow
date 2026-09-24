@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.SystemFetchesAllLocationsAcrossAllConfiguredGoogleBusin
                  has_element?(context.view, "[data-account-id='accounts/123']") or
                  has_element?(context.view, "[data-role='location-list']") or
                  html =~ "location" or html =~ "Location"
-        :ok
+        {:ok, context}
       end
 
       then_ "the page also displays locations fetched from the second GBP account", context do
@@ -80,14 +80,14 @@ defmodule MetricFlowSpex.SystemFetchesAllLocationsAcrossAllConfiguredGoogleBusin
                  has_element?(context.view, "[data-account-id='accounts/456']") or
                  has_element?(context.view, "[data-role='location-list']") or
                  html =~ "location" or html =~ "Location"
-        :ok
+        {:ok, context}
       end
 
       then_ "locations from both accounts are shown together in a single selection list", context do
         assert has_element?(context.view, "[data-role='location-list']") or
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='location-selection']")
-        :ok
+        {:ok, context}
       end
     end
 
@@ -155,7 +155,7 @@ defmodule MetricFlowSpex.SystemFetchesAllLocationsAcrossAllConfiguredGoogleBusin
                  has_element?(context.view, "[data-role='location-list']") or
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='location-selection']")
-        :ok
+        {:ok, context}
       end
     end
   end

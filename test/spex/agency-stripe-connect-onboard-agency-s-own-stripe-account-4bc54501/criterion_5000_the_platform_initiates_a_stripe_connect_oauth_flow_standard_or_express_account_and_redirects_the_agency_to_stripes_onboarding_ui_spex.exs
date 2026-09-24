@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.PlatformInitiatesStripeConnectOauthSpex do
         html = render(context.view)
         # Verify the page has connect button and Stripe branding
         assert html =~ "Stripe" or has_element?(context.view, "[data-role=connect-stripe]")
-        :ok
+        {:ok, context}
       end
     end
   end

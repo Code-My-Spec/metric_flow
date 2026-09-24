@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
         assert has_element?(context.view, "[data-role='correlation-results']"),
                "Expected correlation results section to be displayed. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
 
       then_ "each correlation shows the metric name and correlation coefficient", context do
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
         assert has_metric_info,
                "Expected correlation entries with metric names and coefficients. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
 
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
         assert has_goal_info,
                "Expected goal metric information to be displayed. Got: #{html}"
 
-        :ok
+        {:ok, context}
       end
     end
   end

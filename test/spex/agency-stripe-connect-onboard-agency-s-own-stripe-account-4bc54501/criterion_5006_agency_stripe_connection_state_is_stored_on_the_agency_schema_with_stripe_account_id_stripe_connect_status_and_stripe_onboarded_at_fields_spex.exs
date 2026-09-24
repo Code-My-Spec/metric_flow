@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.AgencyStripeStateStoredSpex do
       then_ "the page reflects the current Stripe connection state", context do
         html = render(context.view)
         assert html =~ "Stripe Connect"
-        :ok
+        {:ok, context}
       end
     end
   end
