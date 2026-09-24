@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert html =~ "Dashboards"
-        assert has_element?(lv, "[data-role='new-dashboard-btn'][href='/dashboards/new']")
+        assert has_element?(lv, "[data-role='new-dashboard-btn'][href='/app/dashboards/new']")
       end)
     end
   end
@@ -105,7 +105,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         assert has_element?(lv, "[data-role='empty-user-dashboards']")
-        assert has_element?(lv, "[data-role='empty-user-dashboards'] a[href='/dashboards/new']")
+        assert has_element?(lv, "[data-role='empty-user-dashboards'] a[href='/app/dashboards/new']")
       end)
     end
   end

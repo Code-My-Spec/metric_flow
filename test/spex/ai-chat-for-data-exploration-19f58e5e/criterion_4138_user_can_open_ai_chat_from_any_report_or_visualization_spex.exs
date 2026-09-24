@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
             has_element?(context.view, "a[data-role='open-ai-chat']") or
             has_element?(context.view, "button[data-role='open-ai-chat']") or
             has_element?(context.view, "[data-role='ai-chat-button']") or
-            has_element?(context.view, "[href='/chat']") or
+            has_element?(context.view, "[href='/app/chat']") or
             html =~ "open-ai-chat" or
             html =~ "Open AI Chat" or
             html =~ "AI Chat" or
@@ -54,7 +54,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
             has_element?(context.view, "a[data-role='open-ai-chat']") or
             has_element?(context.view, "button[data-role='open-ai-chat']") or
             has_element?(context.view, "[data-role='ai-chat-button']") or
-            has_element?(context.view, "[href='/chat']") or
+            has_element?(context.view, "[href='/app/chat']") or
             html =~ "open-ai-chat" or
             html =~ "Open AI Chat" or
             html =~ "AI Chat" or
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
             has_element?(context.view, "a[data-role='open-ai-chat']") or
             has_element?(context.view, "button[data-role='open-ai-chat']") or
             has_element?(context.view, "[data-role='ai-chat-button']") or
-            has_element?(context.view, "[href='/chat']") or
+            has_element?(context.view, "[href='/app/chat']") or
             html =~ "open-ai-chat" or
             html =~ "Open AI Chat" or
             html =~ "AI Chat" or
@@ -128,9 +128,9 @@ defmodule MetricFlowSpex.UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
               |> element("[data-role='ai-chat-button']")
               |> render_click()
 
-            has_element?(view, "a[href='/chat']") ->
+            has_element?(view, "a[href='/app/chat']") ->
               view
-              |> element("a[href='/chat']")
+              |> element("a[href='/app/chat']")
               |> render_click()
 
             true ->

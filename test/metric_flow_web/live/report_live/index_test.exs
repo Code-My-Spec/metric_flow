@@ -39,7 +39,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/reports")
 
         assert html =~ "Reports"
-        assert has_element?(lv, "[data-role='new-report-btn'][href='/reports/new']")
+        assert has_element?(lv, "[data-role='new-report-btn'][href='/app/reports/new']")
       end)
     end
   end
@@ -99,7 +99,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         {:ok, lv, _html} = live(conn, ~p"/app/reports")
 
         assert has_element?(lv, "[data-role='empty-reports']")
-        assert has_element?(lv, "[data-role='empty-reports'] a[href='/reports/new']")
+        assert has_element?(lv, "[data-role='empty-reports'] a[href='/app/reports/new']")
       end)
     end
   end
@@ -187,8 +187,8 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert html =~ "New Report"
         assert has_element?(lv, "[data-role='report-option-ai']")
         assert has_element?(lv, "[data-role='report-option-manual']")
-        assert has_element?(lv, "[data-role='report-option-ai'] a[href='/reports/generate']")
-        assert has_element?(lv, "[data-role='report-option-manual'] a[href='/visualizations/new']")
+        assert has_element?(lv, "[data-role='report-option-ai'] a[href='/app/reports/generate']")
+        assert has_element?(lv, "[data-role='report-option-manual'] a[href='/app/visualizations/new']")
       end)
     end
   end

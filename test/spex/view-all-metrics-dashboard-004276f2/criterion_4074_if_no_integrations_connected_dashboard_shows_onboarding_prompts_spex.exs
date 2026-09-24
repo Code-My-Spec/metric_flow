@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.IfNoIntegrationsConnectedDashboardShowsOnboardingPrompt
 
       then_ "a link or button pointing to the integrations page is visible", context do
         has_connect_link =
-          has_element?(context.view, "a[href='/integrations']") or
+          has_element?(context.view, "a[href='/app/integrations']") or
             has_element?(context.view, "a[href*='integration']") or
             has_element?(context.view, "[data-role='connect-integration-link']") or
             has_element?(context.view, "[data-role='connect-integration-button']") or

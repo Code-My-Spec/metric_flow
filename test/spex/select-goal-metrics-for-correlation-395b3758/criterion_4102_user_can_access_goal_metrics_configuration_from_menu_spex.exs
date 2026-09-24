@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.GoalMetricsAccessFromMenuSpex do
 
         has_goal_link =
           has_element?(context.view, "[data-role='configure-goals']") or
-            has_element?(context.view, "a[href='/correlations/goals']") or
+            has_element?(context.view, "a[href='/app/correlations/goals']") or
             html =~ "Goal Metrics" or
             html =~ "Configure Goals" or
             html =~ "Set Goals"

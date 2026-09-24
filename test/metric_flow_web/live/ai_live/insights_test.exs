@@ -53,7 +53,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
 
         assert has_element?(lv, "[data-role='no-insights-state']")
         assert html =~ "No Insights Yet"
-        assert has_element?(lv, "a[href='/correlations']")
+        assert has_element?(lv, "a[href='/app/correlations']")
       end)
     end
   end

@@ -134,7 +134,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
         {:ok, lv, html} = live(conn, ~p"/app/correlations/goals")
 
         assert html =~ "No metrics available"
-        assert has_element?(lv, "a[href='/integrations']")
+        assert has_element?(lv, "a[href='/app/integrations']")
       end)
     end
   end

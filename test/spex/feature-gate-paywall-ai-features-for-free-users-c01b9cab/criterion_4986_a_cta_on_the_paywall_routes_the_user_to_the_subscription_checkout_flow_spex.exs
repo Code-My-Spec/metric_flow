@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
             html = render(view)
 
             has_checkout_cta =
-              has_element?(view, "a[href='/subscriptions/checkout']") or
+              has_element?(view, "a[href='/app/subscriptions/checkout']") or
                 has_element?(view, "[data-role='paywall-cta']") or
                 has_element?(view, "[data-role='upgrade-cta']") or
                 html =~ "/app/subscriptions/checkout" or

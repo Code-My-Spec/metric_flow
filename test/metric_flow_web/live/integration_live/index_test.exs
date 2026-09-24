@@ -103,7 +103,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert html =~ "Integrations"
         assert html =~ "Manage your connected marketing platforms"
-        assert has_element?(lv, "a[href='/integrations/connect']", "Connect a Platform")
+        assert has_element?(lv, "a[href='/app/integrations/connect']", "Connect a Platform")
       end)
     end
   end
@@ -117,7 +117,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "No platforms connected yet."
-        assert has_element?(lv, "a[href='/integrations/connect']", "Connect your first platform")
+        assert has_element?(lv, "a[href='/app/integrations/connect']", "Connect your first platform")
         refute html =~ "Connected Platforms"
       end)
     end

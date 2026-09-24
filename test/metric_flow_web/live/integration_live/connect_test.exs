@@ -214,7 +214,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect/stub")
 
-        assert has_element?(lv, "a[href='/integrations']")
+        assert has_element?(lv, "a[href='/app/integrations']")
       end)
     end
   end

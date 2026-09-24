@@ -72,7 +72,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
 
         assert has_element?(lv, "[data-role='onboarding-prompt']")
         assert html =~ "Connect"
-        assert has_element?(lv, "[data-role='onboarding-prompt'] a[href='/integrations']")
+        assert has_element?(lv, "[data-role='onboarding-prompt'] a[href='/app/integrations']")
         refute has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end

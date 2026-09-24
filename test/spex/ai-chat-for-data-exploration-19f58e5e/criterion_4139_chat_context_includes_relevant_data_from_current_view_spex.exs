@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
                 _ -> view
               end
 
-            has_element?(view, "a[href='/chat']") ->
+            has_element?(view, "a[href='/app/chat']") ->
               case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view
@@ -129,7 +129,7 @@ defmodule MetricFlowSpex.ChatContextIncludesRelevantDataFromCurrentViewSpex do
                 _ -> view
               end
 
-            has_element?(view, "a[href='/chat']") ->
+            has_element?(view, "a[href='/app/chat']") ->
               case live(context.owner_conn, "/app/chat") do
                 {:ok, chat_v, _html} -> chat_v
                 _ -> view

@@ -103,7 +103,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
                 class="dropdown-content menu bg-base-200 rounded-box z-10 w-64 p-2 shadow max-h-60 overflow-y-auto"
               >
                 <li :for={metric <- @available_metrics}>
-                  <a phx-click="select_metric" phx-value-metric={metric}>{metric}</a>
+                  <button type="button" phx-click="select_metric" phx-value-metric={metric}>
+                    {metric}
+                  </button>
                 </li>
               </ul>
             </div>
