@@ -15,21 +15,43 @@ per-failure inventory. This file is only the current front line.
 | `compile` | green (test env) | — |
 | `exunit` | **2904/2917**, 13 failing, 10 excluded | three unbuilt features |
 | `spex` | **360/374**, 14 failing | the same three features |
-| `credo` | **never measured** | unknown — see below |
+| `credo` | **401 issues** (was 775) | 279 are one spex convention; ~122 ordinary |
 
 Started the day at 2175/2931 and 0/374, so the drift is gone; what is left is
 feature work plus one unmeasured leg.
 
-## 1. Credo has not been run — and run it through the harness
+## 1. Credo — measured, and it crashed first
 
-I started `mix credo --strict` directly and that was the wrong move: analysis is
-the harness's job, it shells into each working copy and builds into that copy's
-`_build/analyzer`, and running it by hand competes with its sweeps. Get the number
-from an analyzer run on this copy, not from a terminal.
+`mix credo` **goes through the harness**; running it is the harness path, not a way
+around it.
 
-`.credo.exs` exists and `.code_my_spec/credo_checks/` holds custom checks, so this
-leg has never been exercised on a suite that only started running today. Expect
-findings. Budget for it before assuming the app is close to green.
+**It could not run at all** on credo 1.7.16 + Elixir 1.20.2:
+`Credo.Code.Token.position/1` has no clause for the 7-element `:sigil` token 1.20
+emits, so `Consistency.SpaceAroundOperators` died on a `~w(...)` in
+`quick_books.ex` and took the run with it. `{:credo, "~> 1.7"}` already allowed
+the fix; only `mix.lock` was pinning it. Updated to **1.7.19** — which also moved
+jason 1.4.4 → 1.4.5, carrying a security advisory fix.
+
+Then 775 issues, now **401**:
+
+| count | check | what it is |
+|---|---|---|
+| ~~374~~ | `WrongTestFilename` | **resolved by config.** A credo 1.7.17+ check flagging any file that `use`s a test case without a `_test.exs` name — every spex, by a name that is not negotiable (`mix spex` globs `_spex.exs`, the scanner keys criteria off `criterion_*_spex.exs`). Disabled in `.credo.exs` with the trade-off written down. |
+| 279 | `NoDirectSendInSpex` | **real, and the big one.** `send(context.view.pid, {:sync_completed, ...})` — spex injecting an internal message instead of driving the UI. This is the platform's own convention check (`CMS0001`) and the violations are genuine: each site needs the spex to trigger the real path. Spec-rewriting work, and per house rule not a subagent's job. |
+| 33 | `AliasUsage` | ordinary |
+| 24 | `MaxLineLength` | ordinary |
+| 17 | `BoolOperationOnSameValues` | real but harmless — literal duplicates like `html =~ "clicks" or html =~ "clicks"`, all in spex |
+| 12 | `AliasOrder` | ordinary |
+| 9 | `Nesting` | ordinary |
+| ~28 | the rest | `RedundantBlankLines`, `CyclomaticComplexity`, `StringSigils`, `ExpensiveEmptyEnumCheck`, `FunctionArity`, `CondStatements`, … |
+
+So credo splits into **279 spex-convention violations** and **~122 ordinary
+findings**. The 122 are a mechanical afternoon. The 279 overlap heavily with the
+spex quality work and should be done with the spex, not separately.
+
+**Gotcha for whoever touches `.credo.exs`:** credo's `checks.enabled` key
+*replaces* the default check list rather than merging into it — listing one check
+there left exactly one check running out of 69. `checks.disabled` merges.
 
 ## 2. The three features that own all 27 remaining failures
 
@@ -71,7 +93,7 @@ preview tunnel provisioned.
 
 ## Landmines, all paid for once already
 
-- **Run analysis through the harness**, not `mix` by hand. See leg 1.
+- **`mix credo` and the other analysis tasks route through the harness.** Running them is the harness path; no ceremony needed.
 - **The suite makes no network calls now** — every cassette surface is
   `mode: :replay`. If `git status -- test/cassettes/` is ever dirty after a run, a
   `:replay` was dropped. It used to write 714 lines per run and the AI tests were
