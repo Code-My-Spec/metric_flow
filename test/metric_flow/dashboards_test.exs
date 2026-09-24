@@ -6,6 +6,7 @@ defmodule MetricFlow.DashboardsTest do
   alias MetricFlow.Dashboards
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Metrics.Metric
+  alias MetricFlow.Metrics.NormalizedMetric
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -36,6 +37,13 @@ defmodule MetricFlow.DashboardsTest do
     }
 
     attrs = Map.merge(defaults, overrides)
+
+    # See `MetricFlowTest.MetricsFixtures.insert_metric!/2` — the read path
+    # filters on this and every real writer derives it.
+    attrs =
+      Map.put_new_lazy(attrs, :normalized_metric_name, fn ->
+        NormalizedMetric.normalize(attrs.provider, attrs.metric_name)
+      end)
 
     %Metric{}
     |> Metric.changeset(attrs)

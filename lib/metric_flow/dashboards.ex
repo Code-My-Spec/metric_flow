@@ -286,7 +286,8 @@ defmodule MetricFlow.Dashboards do
     connected_platforms =
       integrations
       |> Enum.map(& &1.provider)
-      |> Enum.filter(&(&1 in @data_providers))
+      |> Enum.filter(&data_platform?/1)
+      |> Enum.uniq()
 
     # Normalize compound providers (e.g. :google → [:google_analytics, :google_ads])
     # so the Metrics query uses valid provider enum values.
@@ -489,6 +490,16 @@ defmodule MetricFlow.Dashboards do
   # and google_ads, but Metrics are stored under the specific sub-providers.
   defp normalize_metric_provider(:google), do: [:google_analytics, :google_ads]
   defp normalize_metric_provider(other), do: other
+
+  # A platform is anything the metrics query can be filtered by: a leaf provider,
+  # or a compound one that `normalize_metric_provider/1` expands into leaves.
+  # `:google` is the second kind — one OAuth connection granting Analytics and
+  # Ads — and it is a provider an `Integration` row really holds. Filtering the
+  # platform list to leaves only, while the query filter accepted the compound,
+  # meant the commonest integration on the platform contributed no filter at all.
+  defp data_platform?(provider) do
+    provider in @data_providers or is_list(normalize_metric_provider(provider))
+  end
 
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)

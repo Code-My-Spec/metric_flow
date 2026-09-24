@@ -4,6 +4,7 @@ defmodule MetricFlowTest.MetricsFixtures do
   """
 
   alias MetricFlow.Metrics.Metric
+  alias MetricFlow.Metrics.NormalizedMetric
   alias MetricFlow.Repo
 
   @doc """
@@ -26,8 +27,25 @@ defmodule MetricFlowTest.MetricsFixtures do
     }
 
     %Metric{}
-    |> Metric.changeset(Map.merge(defaults, attrs))
+    |> Metric.changeset(with_normalized_name(Map.merge(defaults, attrs)))
     |> Repo.insert!()
+  end
+
+  # `normalized_metric_name` is derived, not defaulted, because the read path
+  # depends on it and a fixture that omitted it was building a row that cannot
+  # exist in production. All six `DataSync.DataProviders` modules set it through
+  # `NormalizedMetric.normalize/2` on every metric they write, and
+  # `MetricRepository.list_normalized_metric_names/2` filters
+  # `not is_nil(normalized_metric_name)` — so a metric without one is invisible
+  # to every dashboard, every filter list and the LLM context, and the whole
+  # dashboard reads as empty. An explicit override still wins.
+  defp with_normalized_name(attrs) do
+    Map.put_new_lazy(attrs, :normalized_metric_name, fn ->
+      NormalizedMetric.normalize(
+        Map.fetch!(attrs, :provider),
+        Map.fetch!(attrs, :metric_name)
+      )
+    end)
   end
 
   @doc """
