@@ -6,7 +6,28 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
   alias MetricFlow.Ai.ReportGenerator
 
   @cassette_dir "test/cassettes/ai"
-  @filter_headers [filter_request_headers: ["x-api-key", "authorization"]]
+  # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
+  # same two reasons.
+  #
+  # `mode: :replay` because ReqCassette's default is `:record` — "record if the
+  # cassette or the interaction is missing, otherwise replay" — so a miss reaches
+  # api.anthropic.com for real and writes whatever it answers into the cassette.
+  # Measured: these tests failed with "Your credit balance is too low to access
+  # the Anthropic API", which is a unit test reporting a billing problem, and a
+  # `mix test` run appended 714 lines across five cassettes.
+  #
+  # `match_requests_on: [:method, :uri]` because the default includes `:body`,
+  # and the body carries the system prompt. Both prompts have been edited since
+  # these were recorded (report 829 → 1354 characters, insights 909 → 1497), so
+  # every prompt refinement silently invalidated every recording. The prompts are
+  # asserted directly by the `build_system_prompt/0` tests in these same files,
+  # so matching on them here adds no coverage — it only couples an editable
+  # string to a paid re-recording.
+  @filter_headers [
+    mode: :replay,
+    match_requests_on: [:method, :uri],
+    filter_request_headers: ["x-api-key", "authorization"]
+  ]
 
   # ---------------------------------------------------------------------------
   # Fixtures
