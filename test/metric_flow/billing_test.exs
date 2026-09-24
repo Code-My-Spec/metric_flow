@@ -1,11 +1,31 @@
 defmodule MetricFlow.BillingTest do
-  use MetricFlowTest.DataCase, async: true
+  # Not async: the assertions below read `Logger.info` output, `config/test.exs`
+  # sets the level to `:warning` to keep test output quiet, and raising it is a
+  # global change. `data_sync/sync_worker_test.exs` is `async: false` for exactly
+  # this and is the pattern followed here.
+  use MetricFlowTest.DataCase, async: false
 
   import ExUnit.CaptureLog
+
+  require Logger
 
   alias MetricFlow.Billing
 
   describe "process_webhook_event/1" do
+    # `config/test.exs:44` names this convention outright: "Tests that need
+    # capture_log at :info can use @tag capture_log: true with
+    # Logger.configure(level: :info) in their setup block." Without it every
+    # assertion here compared "" against the event type it expected, because
+    # `handle_subscription_event/1` logs at `:info` and the primary level was
+    # `:warning` — `capture_log`'s own `:level` option cannot lower the primary
+    # level, only raise the floor for what it captures.
+    setup do
+      previous_level = Logger.level()
+      Logger.configure(level: :info)
+      on_exit(fn -> Logger.configure(level: previous_level) end)
+      :ok
+    end
+
     test "processes subscription.created and persists subscription" do
       event = %{
         "type" => "customer.subscription.created",
@@ -20,7 +40,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.created"
+      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.created"
     end
 
     test "processes subscription.updated and updates status" do
@@ -37,7 +57,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.updated"
+      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.updated"
     end
 
     test "processes subscription.deleted and marks as cancelled" do
@@ -54,7 +74,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.deleted"
+      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.deleted"
     end
 
     test "processes invoice.payment_failed and marks subscription as past_due" do
@@ -70,7 +90,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end)
+      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end)
     end
 
     test "processes invoice.payment_succeeded successfully" do
@@ -86,7 +106,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "payment_succeeded"
+      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "payment_succeeded"
     end
 
     test "processes account.updated for Connect onboarding" do
@@ -101,7 +121,7 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log(fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "account.updated"
+      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "account.updated"
     end
 
     test "returns ignored for unrecognized event types" do
