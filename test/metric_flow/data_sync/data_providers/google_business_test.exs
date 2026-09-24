@@ -1001,6 +1001,20 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
   describe "fetch_metrics/2 with cassette" do
     @describetag :integration
 
+    # Two things are missing and neither can be produced here: there is no
+    # `gbp_fetch_metrics` or `gbp_unauthorized` cassette in
+    # `test/cassettes/data_sync/`, and `:test_credentials` has no GBP entries
+    # until `GOOGLE_BUSINESS_TEST_ACCOUNT_IDS` and
+    # `GOOGLE_BUSINESS_TEST_LOCATION_IDS` are set in `.env.test`.
+    #
+    # Until this session `google_business_integration/0` hid that by defaulting
+    # its account id to a hardcoded value — the only fixture here that never
+    # answers `nil` — so the setup's skip branch was unreachable and these ran
+    # against no credentials, failing on `:no_locations_configured` before any
+    # request was made. Every sibling `:integration` block passes because its
+    # credentials and recordings exist.
+    @describetag :needs_cassette
+
     import MetricFlowTest.CassetteFixtures
 
     setup do

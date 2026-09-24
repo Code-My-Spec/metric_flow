@@ -188,7 +188,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     # for other callers. This needs a re-record, which needs a funded Anthropic
     # account — and the provider is being replaced with alloy and local Claude
     # Code, so the recording should be made against whatever replaces it.
-    @describetag :stale_cassette
+    @describetag :needs_cassette
 
     test "returns ok tuple with list of insight attribute maps on success" do
       with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->

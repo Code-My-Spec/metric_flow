@@ -1,5 +1,21 @@
 defmodule MetricFlow.Integrations.Providers.GoogleTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+  # Not async. These tests `Application.delete_env(:metric_flow,
+  # :google_client_id)` to assert `config/0` raises when it is unset — which
+  # `<provider>.spec.md` requires, along with reading it through
+  # `Application.fetch_env!/2` — and all five Google providers share that one key.
+  # Within a module ExUnit runs tests sequentially, so the race is between these
+  # modules: one deletes the key while another reads it, and
+  # `Providers.GoogleAdsTest`'s `config/0` cases fail depending on which
+  # directories are in the run.
+  #
+  # Isolation would be better than serialising and is not available here: the
+  # application environment is process-global with no per-test sandbox, and the
+  # alternative is injecting the config source through five modules' public API
+  # against a spec that names `Application.fetch_env!/2` directly. ExUnit runs
+  # sync modules after every async one, so this is isolation in the only form the
+  # environment offers rather than a reordering that happens to work.
+
 
   import ExUnit.CaptureLog
   import ReqCassette

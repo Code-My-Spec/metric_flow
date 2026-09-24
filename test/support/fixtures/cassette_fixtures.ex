@@ -97,6 +97,12 @@ defmodule MetricFlowTest.CassetteFixtures do
   def cassette_opts(_name) do
     [
       cassette_dir: @cassette_dir,
+      # ReqCassette's default is `:record` — "record if cassette/interaction
+      # missing, otherwise replay" — so a missing recording reaches the real
+      # provider and writes down whatever it answers. These are Google, Facebook
+      # and QuickBooks; a suite that silently calls them is not reproducible and
+      # a failing run corrupts the recordings.
+      mode: :replay,
       match_requests_on: [:method, :uri],
       filter_request_headers: ["authorization", "developer-token"],
       filter_query_params: ["access_token"]
@@ -127,17 +133,30 @@ defmodule MetricFlowTest.CassetteFixtures do
   Returns a valid Integration struct for Google Business Profile with test credentials.
   Uses the same Google OAuth tokens as GA4/Ads. Returns `nil` if no account IDs configured.
   """
+  # `nil` without credentials, like every other fixture here — that is what makes
+  # the `:integration` blocks skip. This one defaulted its account id to a
+  # hardcoded value instead, so it never reported "not configured": the setup's
+  # skip branch was unreachable and the tests ran against no credentials at all.
   def google_business_integration do
-    build_integration(:google_business, %{
-      "email" => "test@example.com",
-      "google_business_account_ids" =>
-        (test_cred(:google_business_account_ids) || "")
-        |> String.split(",", trim: true)
-        |> case do
-          [] -> ["accounts/102071280510983396749"]
-          ids -> ids
-        end
-    })
+    case test_cred(:google_business_account_ids) do
+      nil ->
+        nil
+
+      ids ->
+        account_ids = ids |> String.split(",", trim: true)
+
+        build_integration(:google_business, %{
+          "email" => "test@example.com",
+          "google_business_account_ids" => account_ids,
+          # `GoogleBusiness.resolve_locations/1` reads `included_locations`, not
+          # the account ids — locations are chosen separately from the accounts
+          # they live under. Without it every call answers
+          # `{:error, :no_locations_configured}` before any request is made.
+          "included_locations" =>
+            (test_cred(:google_business_location_ids) || "")
+            |> String.split(",", trim: true)
+        })
+    end
   end
 
   defp tokens_for(provider) when provider in [:google_ads, :google_analytics, :google_business] do

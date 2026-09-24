@@ -149,6 +149,22 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
       {"authorization", "Bearer #{access_token}"},
       {"developer-token", developer_token || ""}
     ]
+    |> maybe_put_login_customer_id()
+  end
+
+  # `google_ads_accounts.spec.md:17` says to read `google_ads_login_customer_id`
+  # from application config alongside the developer token, and `runtime.exs` sets
+  # it from `GOOGLE_ADS_LOGIN_CUSTOMER_ID` — nothing read it. Google Ads needs the
+  # header to say which manager account the call is made on behalf of; without it
+  # a manager's own token cannot list the customers under it.
+  #
+  # Only when it is set: sending the header empty is not the same as omitting it,
+  # and an empty value is rejected.
+  defp maybe_put_login_customer_id(headers) do
+    case Application.get_env(:metric_flow, :google_ads_login_customer_id) do
+      id when is_binary(id) and id != "" -> headers ++ [{"login-customer-id", id}]
+      _ -> headers
+    end
   end
 
   defp maybe_put_plug(req_opts, opts) do

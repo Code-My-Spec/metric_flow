@@ -85,7 +85,12 @@ if config_env() == :test do
     google_access_token: env!("GOOGLE_TEST_ACCESS_TOKEN", :string, nil),
     google_refresh_token: env!("GOOGLE_TEST_REFRESH_TOKEN", :string, nil),
     google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil),
-    facebook_access_token: env!("FACEBOOK_TEST_ACCESS_TOKEN", :string, nil)
+    facebook_access_token: env!("FACEBOOK_TEST_ACCESS_TOKEN", :string, nil),
+    # Google Business Profile needs both: accounts are what the credential can
+    # see, locations are what the user picked out of them, and
+    # `GoogleBusiness.resolve_locations/1` reads the second.
+    google_business_account_ids: env!("GOOGLE_BUSINESS_TEST_ACCOUNT_IDS", :string, nil),
+    google_business_location_ids: env!("GOOGLE_BUSINESS_TEST_LOCATION_IDS", :string, nil)
 end
 
 if System.get_env("PHX_SERVER") do
