@@ -174,6 +174,22 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
   # ---------------------------------------------------------------------------
 
   describe "generate/3" do
+    # `insights_generator_success.json` and `insights_generator_single.json` hold
+    # `{"confidence": 0.88, "suggestions": [...]}` — the response schema this
+    # generator asked for before it moved to `{"insights": [{summary, content,
+    # suggestion_type, confidence}]}`. The parser therefore returns `[]`, and four
+    # of the tests below were passing on it: `Enum.all?([], _)` is true, so they
+    # proved nothing while reading green. The non-empty guard is now on every one
+    # of them, which is what makes the staleness visible.
+    #
+    # Not repairable here. Rewriting a recorded response records something the
+    # provider never said, and the two cassettes that do hold the current schema
+    # (`generate_insights.json`, `ai_context_generate_insights.json`) were recorded
+    # for other callers. This needs a re-record, which needs a funded Anthropic
+    # account — and the provider is being replaced with alloy and local Claude
+    # Code, so the recording should be made against whatever replaces it.
+    @describetag :stale_cassette
+
     test "returns ok tuple with list of insight attribute maps on success" do
       with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         result = InsightsGenerator.generate(
@@ -196,6 +212,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
           req_http_options: [plug: plug]
         )
 
+        assert insights != []
         assert Enum.all?(insights, fn insight ->
           Map.has_key?(insight, :content) and is_binary(insight.content) and
             String.length(insight.content) > 0
@@ -211,6 +228,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
           req_http_options: [plug: plug]
         )
 
+        assert insights != []
         assert Enum.all?(insights, &Map.has_key?(&1, :summary))
       end
     end
@@ -223,6 +241,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
           req_http_options: [plug: plug]
         )
 
+        assert insights != []
         assert Enum.all?(insights, &Map.has_key?(&1, :suggestion_type))
       end
     end
@@ -235,6 +254,7 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
           req_http_options: [plug: plug]
         )
 
+        assert insights != []
         assert Enum.all?(insights, fn insight ->
           Map.has_key?(insight, :confidence) and is_float(insight.confidence)
         end)

@@ -111,7 +111,11 @@ defmodule MetricFlow.Ai.LlmClientTest do
       end
     end
 
-    test "returned data contains suggestions field" do
+    # Was "contains suggestions field". `@insight_schema` requires a top-level
+    # `insights` key — a list of {summary, content, suggestion_type, confidence}
+    # — and `InsightsGenerator` reads `"insights"`. `suggestions` was the key the
+    # first schema used; nothing has produced it since.
+    test "returned data contains insights field" do
       with_cassette "generate_insights", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
         {:ok, data} =
           LlmClient.generate_insights(
@@ -120,7 +124,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
             req_http_options: [plug: plug]
           )
 
-        assert Map.has_key?(data, "suggestions") or Map.has_key?(data, :suggestions)
+        assert Map.has_key?(data, "insights") or Map.has_key?(data, :insights)
       end
     end
   end
