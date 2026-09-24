@@ -35,6 +35,51 @@ run *cmd:
 scan:
     varlock scan
 
+# === WORKING COPIES ==========================================================
+
+# Make a new working copy usable. CodeMySpec's harness calls
+# `just init-worktree <name> <target>` when it creates one; without this
+# recipe it falls back to a bare `git worktree add` plus submodules, and the
+# copy arrives with no deps, no _build and no dotenv files.
+#
+# That fallback cost a night on 2026-09-24. A copy staffed with agents
+# reported "This checkout cannot satisfy its own mix.lock", `mix format`
+# died on Phoenix.CodeReloader (a Mix listener in our own mix.exs, absent
+# because nothing had been compiled), and a clean test file read as five
+# broken tests because .env.test was missing so its own guard clauses
+# flunked. None of those look like configuration — they look like a broken
+# platform or a bad edit, and agents filed them as such.
+#
+# `deps` is copied rather than fetched because `mix deps.get` in a fresh
+# worktree dies on our shallow (depth: 1) git deps with
+# `fatal: unable to read tree <sha>` — the pinned commit is not in the
+# shallow clone. mix.lock is committed, so the source checkout's deps
+# already match it exactly; deps.get afterwards verifies that.
+#
+# The dotenv files are untracked by design, so no git operation brings them.
+init-worktree name target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    git worktree add -b "{{name}}" "{{target}}"
+    git -C "{{target}}" submodule update --init --recursive
+
+    cp -R deps "{{target}}/deps"
+
+    # Best-effort: a machine that has never had these cannot invent them, and
+    # a copy without them is still worth having for anything that is not a
+    # provider test.
+    for f in .env .env.dev .env.test .env.prod .env.uat; do
+        [ -f "$f" ] && cp "$f" "{{target}}/$f" || true
+    done
+
+    cd "{{target}}"
+    mix deps.get
+    MIX_ENV=dev mix deps.compile
+    MIX_ENV=test mix deps.compile
+
+    echo "→ {{target}} ready: deps compiled for dev and test, dotenv copied where present"
+
 # === DEPLOY ==================================================================
 
 deploy:
