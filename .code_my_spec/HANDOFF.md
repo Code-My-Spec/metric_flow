@@ -18,14 +18,57 @@ per-failure inventory. This file is only the current front line.
 | `credo` | **401 issues** (was 775) | 279 are one spex convention; ~122 ordinary |
 
 Started the day at 2175/2931 and 0/374, so the drift is gone; what is left is
-feature work plus one unmeasured leg.
+feature work plus the credo list.
 
-## 1. Credo — measured, and it crashed first
+**Read §1 before trusting the credo row.** Until code_my_spec `866ba007b` the leg
+could not write a finding to the server at all, so every number here came from
+credo's own output and nothing downstream ever saw one.
+
+## 1. Credo — it crashed, then it could not record
 
 `mix credo` **goes through the harness**; running it is the harness path, not a way
 around it.
 
-**It could not run at all** on credo 1.7.16 + Elixir 1.20.2:
+### The 401 below were never in the database
+
+Measured 2026-09-23 after the crash was fixed: the leg ran, found its issues, and
+recorded **zero** of them.
+
+    - credo: failed, 0 problem(s)
+        ERROR 22001 (string_data_right_truncation)
+        value too long for type character varying(255)
+
+`problems.file_path` on the server was `varchar(255)`. A generated spex filename
+is as long as the criterion sentence that named it, and **27 of this project's
+374 spex cross 255 — the longest is 304 characters.** The insert is one
+transaction on purpose, so a single over-long path discarded the whole source.
+The harness said the rest:
+
+> That analyzer ran, but nothing was recorded from it. The run is still open on
+> the server, so the next stop will report analysis pending rather than clean.
+
+So this project had **0 problems rows from any leg, ever**. The counts in the
+table below are real — they come from credo's own output — but nothing downstream
+of the analyzer could see them, and grinding them to zero would not have turned
+the leg green. A gate reading problems reads none and concludes clean; a human
+reading the leg sees a failure with nothing in it.
+
+Fixed on the platform side in code_my_spec `866ba007b`, which widens
+`problems.file_path`, `file_edits.file_path` and `issues.source_path` to `text`,
+with a regression test that pushes a 304-char path through `create_problems/2`.
+**metric_flow needed no change for this** — the filenames are correct and
+load-bearing (`mix spex` globs `_spex.exs`, the scanner keys criteria off
+`criterion_*_spex.exs`).
+
+Why it hid: max `file_path` across every other project was 186. This is the first
+project whose criteria are written as full sentences. And `files.path` was
+already `text`, which is why the 2329-file sync of this same checkout succeeded
+while the analyzer on it silently did not — file sync working is **not** evidence
+that path length is fine.
+
+### Before that, it could not run at all
+
+It died outright on credo 1.7.16 + Elixir 1.20.2:
 `Credo.Code.Token.position/1` has no clause for the 7-element `:sigil` token 1.20
 emits, so `Consistency.SpaceAroundOperators` died on a `~w(...)` in
 `quick_books.ex` and took the run with it. `{:credo, "~> 1.7"}` already allowed
@@ -94,6 +137,11 @@ preview tunnel provisioned.
 ## Landmines, all paid for once already
 
 - **`mix credo` and the other analysis tasks route through the harness.** Running them is the harness path; no ceremony needed.
+- **A leg reporting `failed, 0 problem(s)` is not a clean leg.** It usually means
+  the result was rejected on write, and `Analysis.status` does not say why. Grep
+  `~/.codemyspec/web.log` for `22001` or `Reconciler.fail`, and `harness.log` for
+  `REJECTED`. That is how the `varchar(255)` path bug in §1 was found, after it
+  had been invisible for the whole onboarding.
 - **The suite makes no network calls now** — every cassette surface is
   `mode: :replay`. If `git status -- test/cassettes/` is ever dirty after a run, a
   `:replay` was dropped. It used to write 714 lines per run and the AI tests were
