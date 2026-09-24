@@ -169,7 +169,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
   def mount(_params, _session, socket) do
     account_id = socket.assigns.active_account_id
 
-    plans = BillingRepository.list_plans(account_id)
+    plans = BillingRepository.list_all_plans(account_id)
     stripe_account = BillingRepository.get_stripe_account_by_agency(account_id)
     stripe_connected = stripe_account != nil && stripe_account.onboarding_status == :complete
 
@@ -201,7 +201,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
 
     case BillingRepository.create_plan(params) do
       {:ok, _plan} ->
-        plans = BillingRepository.list_plans(account_id)
+        plans = BillingRepository.list_all_plans(account_id)
 
         socket =
           socket
@@ -238,7 +238,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
     case plan |> Plan.changeset(params) |> MetricFlow.Repo.update() do
       {:ok, _plan} ->
         account_id = socket.assigns.active_account_id
-        plans = BillingRepository.list_plans(account_id)
+        plans = BillingRepository.list_all_plans(account_id)
 
         socket =
           socket
@@ -258,7 +258,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
     case plan |> Plan.changeset(%{active: false}) |> MetricFlow.Repo.update() do
       {:ok, _plan} ->
         account_id = socket.assigns.active_account_id
-        plans = BillingRepository.list_plans(account_id)
+        plans = BillingRepository.list_all_plans(account_id)
 
         socket =
           socket

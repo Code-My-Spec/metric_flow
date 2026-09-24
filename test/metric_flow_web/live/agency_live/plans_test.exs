@@ -164,7 +164,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
-      |> element("[data-role=edit-plan][phx-value-id=#{plan.id}]")
+      |> element("[data-role='edit-plan'][phx-value-id='#{plan.id}']")
       |> render_click()
 
       html = render(lv)
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
-      |> element("[data-role=edit-plan][phx-value-id=#{plan.id}]")
+      |> element("[data-role='edit-plan'][phx-value-id='#{plan.id}']")
       |> render_click()
 
       lv
@@ -204,7 +204,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       {:ok, lv, _html} = live(conn, "/app/agency/plans")
 
       lv
-      |> element("[data-role=deactivate-plan][phx-value-id=#{plan.id}]")
+      |> element("[data-role='deactivate-plan'][phx-value-id='#{plan.id}']")
       |> render_click()
 
       html = render(lv)

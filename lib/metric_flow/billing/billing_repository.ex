@@ -38,12 +38,36 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   # --- Plans ---
 
+  @doc """
+  The plans a customer may choose from — active only.
+  """
   def list_plans(agency_account_id \\ nil) do
-    Plan
+    agency_account_id
+    |> plans_query()
     |> where([p], p.active == true)
+    |> Repo.all()
+  end
+
+  @doc """
+  Every plan an agency has ever made, active or not.
+
+  The management screen is the one place a deactivated plan still has to be
+  visible: it renders an Active/Inactive badge per row, and deactivating one is
+  meant to mark it rather than remove it. Served by its own function instead of
+  an option on `list_plans/1`, because the other caller is
+  `SubscriptionLive.Checkout` — a customer choosing what to pay for, which must
+  never be offered a plan that was withdrawn.
+  """
+  def list_all_plans(agency_account_id \\ nil) do
+    agency_account_id
+    |> plans_query()
+    |> Repo.all()
+  end
+
+  defp plans_query(agency_account_id) do
+    Plan
     |> maybe_filter_agency(agency_account_id)
     |> order_by([p], asc: p.price_cents)
-    |> Repo.all()
   end
 
   def get_plan(id), do: Repo.get(Plan, id)
