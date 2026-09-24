@@ -4,6 +4,7 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
+  import MetricFlowTest.BillingFixtures
 
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
@@ -38,6 +39,9 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   defp user_with_personal_account do
     user = user_fixture()
     account = create_personal_account!(user)
+    # Every screen these tests mount sits behind `RequireSubscriptionHook`, which
+    # redirects to checkout without one.
+    active_subscription_fixture(account.id)
     {user, account}
   end
 

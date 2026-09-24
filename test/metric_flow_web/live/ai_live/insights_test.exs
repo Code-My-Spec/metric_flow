@@ -4,6 +4,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import MetricFlowTest.AiFixtures
+  import MetricFlowTest.BillingFixtures
 
   alias MetricFlow.Accounts
 
@@ -14,6 +15,9 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   defp user_with_account do
     {user, scope} = user_with_scope()
     account_id = Accounts.get_personal_account_id(scope)
+    # Every screen these tests mount sits behind `RequireSubscriptionHook`, which
+    # redirects to checkout without one.
+    active_subscription_fixture(account_id)
     {user, account_id}
   end
 
