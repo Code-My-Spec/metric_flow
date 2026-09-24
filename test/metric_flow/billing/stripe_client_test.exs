@@ -6,7 +6,21 @@ defmodule MetricFlow.Billing.StripeClientTest do
   alias MetricFlow.Billing.StripeClient
 
   @cassette_dir "test/cassettes/billing"
-  @filter_headers [filter_request_headers: ["authorization"]]
+  # `mode: :replay` because ReqCassette's default is `:record`, and these tests
+  # were passing by calling Stripe for real on every run — `git status` showed
+  # `create_account_link.json` and `create_account_link_error.json` rewritten after
+  # each `mix test`, with a `request_log_url` in the response naming a live account
+  # and request id. The key is test mode, so it cost nothing, but the suite was not
+  # reproducible and a failing run rewrote its own recordings.
+  #
+  # Matching on method and uri for the same reason as the LLM cassettes: the body
+  # carries values that change per run, and the assertion is about how the client
+  # reads Stripe's answer.
+  @filter_headers [
+    mode: :replay,
+    match_requests_on: [:method, :uri],
+    filter_request_headers: ["authorization"]
+  ]
 
   # ---------------------------------------------------------------------------
   # verify_webhook_signature/3
