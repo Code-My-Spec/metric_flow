@@ -1,6 +1,7 @@
-# Metric Flow — status, 2026-09-23
+# Metric Flow — status, 2026-09-23 (second pass)
 
-First customer project. Onboarded to dev today; not yet workable by the agent team.
+First customer project. Onboarded to dev today; one step from workable by the
+agent team, and that step needs a credential only you can mint (below).
 
 Dev project: `5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c` · repo: `/Volumes/X10 Pro/github/metric_flow` (permanent home)
 
@@ -12,11 +13,12 @@ Dev project: `5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c` · repo: `/Volumes/X10 Pro/g
 |---|---|---|
 | Stories / criteria on dev | **53 / 459**, 374 with `spec_path` | no — done |
 | Components on dev | 152 | no |
-| Working copies | **0** | **yes — hard blocker** |
+| Working copies | **0** | **yes — one command away, needs a deploy key** |
 | Requirement graph | **0 requirements** | **yes — consequence of the above** |
+| Deploy key on the dev project | **none** | **yes — mint it, see below** |
 | `mix compile` (test env) | passes | no |
-| `mix test` | **2175/2931 pass, 756 fail** | yes, for code work |
-| `mix spex` | loads; **0 pass** | yes, for spec work |
+| `mix test` | **2844/2931 pass, 87 fail** | no — the 87 are feature gaps |
+| `mix spex` | **360/374 pass, 14 fail** | no — the 14 are feature gaps |
 | QA | 57 historical dirs (42 complete / 101 failed), **0 qa_attempts on dev** | yes, for QA work |
 | DevOps (secrets/deploy) | on AWS SSM, not sops | yes, for promotion/deploy |
 | Cassette replay | misses fall through to live calls | no — worth closing, not a blocker |
@@ -44,76 +46,100 @@ stop the entire suite:
 Plus every spex called `import_givens`, which no longer exists in the library.
 
 All fixed (`7f41c22`). All 510 `.exs` files under `test/` now parse and both suites
-run. The point stands: a green build here has never meant anything, and that is why
-the numbers below are as bad as they are.
+run. The point stands, and it explains the shape of everything below: a green build
+here has never meant anything, so what the suites found on their first real run was
+not a scatter of bugs but three whole-codebase drifts that nothing had ever been in a
+position to notice — an enum narrowed without its callers, a paywall added without its
+test setup, and a spec library upgraded past two of its own APIs. Four fixes, 756 → 87
+test failures and 374 → 14 spex failures. What is left is feature work.
 
 ---
 
-## Tests: 756 failures, essentially one cause
+## Tests: 2844/2931, and the 756 failures were one decision
 
 ```
-Result: 2175/2931 passed
-Failed: 756 tests
+Result: 2844/2931 passed      (was 2175/2931)
+Failed: 87 tests              (was 756)
 ```
 
-Failure kinds: 369 `Ecto.InvalidChangesetError`, 324 `MatchError`, 63 other.
-**1032 log lines mention the same enum**, and 693 of the 756 trace to it:
+**603 of the 756 were the account-type enum.** `@account_types [:client,
+:agency]` since `7b48ef4`, and the Postgres enum `account_type` agrees — those
+two labels, nothing else — while 43 sites in `test/` still created `personal`,
+`team` or a raw-SQL `standard`, and four more compared the type to a string
+where `Ecto.Enum` reads back an atom.
 
-```elixir
-# lib/metric_flow/accounts/account.ex
-@account_types [:client, :agency]
-```
+The question in the first draft of this doc ("is `:personal` still real?") had
+an answer in the code, so it was not a judgement call:
 
-…while **14 files still create `type: "personal"`**, including the shared fixture
-`MetricFlowTest.AiFixtures.create_personal_account!/1` that most of the suite
-funnels through.
+- the schema's own moduledoc — "account type (client or agency) ... Client
+  accounts are the default; agency accounts manage multiple client accounts"
+- `create_team_account/2`, the only path a real user's account is created
+  through, hard-codes `"type" => :client`
+- `get_personal_account_id/1` is "the user's first account" and never reads the
+  field, so the word *personal* survives in the codebase as naming, not as a
+  type
 
-Commit `7b48ef4` ("Add agency nav, account type enum, and agency clients page")
-narrowed the enum and never updated the callers. Because `test/` isn't compiled and
-the suite was never run, nothing caught it.
+John confirmed it independently: personal is deprecated, only agency and
+client. So the old two collapse to `:client`, except the five fixtures whose
+account really is an agency (`name: "Test Agency"`,
+`agency_with_white_label_fixture/1`) — `layouts.ex` shows the agency nav on
+`:agency` and `RequireSubscriptionHook` skips the paywall on it, so those tested
+as `:client` would have exercised the wrong branch (`2c766e5`).
 
-**This is one decision, not 756 bugs.** Someone has to answer: is `:personal` still
-a real account type (add it back to the enum) or was it deliberately removed (fix
-the 14 call sites)? Answering that likely clears ~690 failures in one pass. The
-remaining ~63 are genuine individual failures worth looking at afterwards.
+**45 more were the paywall.** Four LiveView test files mounted correlations,
+chat and insights and got `{:error, {:redirect, ...}}` with "Upgrade to access
+AI features" — `RequireSubscriptionHook` halts unless the account has a live
+subscription or is an agency, and these tests predate it. None of them asserts
+the paywall, so it is setup missing, not behaviour.
+`MetricFlowTest.BillingFixtures.active_subscription_fixture/2` now supplies one,
+kept out of the account fixtures on purpose so a test that wants to *see* the
+paywall is still writable (`415e46f`). 43 of the 45 pass.
 
-Top failing files: `ai_test.exs` (64), `ai_repository_test.exs` (54),
-`accounts_test.exs` (49), `account_repository_test.exs` (45),
-`correlations_repository_test.exs` (38).
+### The 87 that remain are the work, not the wiring
+
+Spread thin — 2 to 10 per file across 25 files — and mostly plain assertion
+failures and missing UI elements: a `[data-role='metric-list'] button` that
+isn't rendered, a `form#white-label-form` that doesn't exist, PromEx and Sentry
+not configured in `smoke_test.exs`, five Stripe webhook cases. No systemic
+drift left to find. This is requirement-by-requirement work, which is exactly
+what the agent team is for.
 
 ---
 
-## Spex: all 374 load, none pass
-
-Fixed today: `import_givens X` → `import X` in all 374 files (identical line in every
-one, so the substitution was exact).
-
-What remains is a second API drift, and it's the real work:
+## Spex: 360/374 pass
 
 ```
-** (ArgumentError) Step "..." must return {:ok, context}. Got: :ok
+Result: 360/374 passed        (was 0/374)
+Failed: 14 tests
 ```
 
-sexy_spex 0.2.1 requires every step block — `given_`, `when_`, `then_`, `and_`, and
-registered givens — to return `{:ok, context}`. Bare `:ok` is rejected. **All 374
-files contain bare `:ok` step endings: 1478 occurrences.** So every spex fails on its
-first such step.
+Two causes, both API drift from an older sexy_spex, both fixed:
 
-The good news is it's scriptable. Step declarations are overwhelmingly uniform:
+**1478 bare `:ok` step endings** (`57798cc`). 0.2 requires every step block to
+return `{:ok, context}` and refuses `:ok` outright, so every spex failed on its
+first such step. Each site was resolved to its enclosing step by climbing
+outward through `case`/`cond`/`if`/`with` and clause arrows — all 1478 bottomed
+out at a `given_`/`when_`/`then_`/`and_`, none inside a `fn` or any other
+non-tail position, so the value replaced was always the step's own return. One
+step declared no context parameter and now does.
 
-| context variable | count |
-|---|---|
-| `context` | 3022 |
-| `_context` | 3 |
-| none declared | 1 |
+**All twelve shared givens replaced the context instead of merging into it**
+(`c4406a2`). This is the interesting one. `given_ :user_logged_in_as_owner`
+followed by `given_ :owner_has_active_subscription` left the context at `%{}`,
+because the second answered `{:ok, %{}}` — so the step after it failed with
+`key :owner_conn not found in: %{}`. 121 of the 143 spex still failing after the
+first pass. Invisible until now because the old 2-arity `given_` discarded the
+block's value entirely; what a given returned only started mattering when these
+became `register_given/3`. Every one now merges, and the moduledoc says so,
+because that is the invariant the next given has to hold.
 
-So a transform that walks each bare `:ok`, finds its enclosing step declaration, and
-substitutes that step's context variable handles ~99.9% of sites mechanically, with
-4 to do by hand. It needs a real verification run afterwards, not just a compile.
+The 14 left are agency auto-enrollment (6), agency white-label (7) and one
+OAuth provider spex — features, not wiring.
 
-Also worth knowing: **one spex filename is long enough that `sed -i` fails on it**
-("File name too long" — the temp file exceeds `NAME_MAX`) and takes its whole batch
-down silently. Use a tool that rewrites in place. This will bite any future bulk edit.
+**One operational note for any future bulk edit here:** one spex filename is
+long enough that `sed -i` fails on it ("File name too long" — the temp file
+exceeds `NAME_MAX`) and takes its whole batch down silently. Use a tool that
+rewrites in place.
 
 ---
 
@@ -177,13 +203,16 @@ deliberate act and ordinary runs are meant to replay. Two consequences:
 
 - runs are non-deterministic and depend on network reachability
 - a failing run writes new episodes into the cassettes, which is how cassettes get
-  corrupted — I reverted today's
+  corrupted
 
-Worth a look before the agent team runs the suite on a loop, but it is not the blocker
-the first draft made it out to be. Whatever replaces the Anthropic client should replay
-by default and require an explicit flag to record.
+Confirmed repeatable: the same 714 lines across the same 5 cassettes appeared on
+**every** `mix test` run today — four of them — and were reverted each time. A run
+that leaves the cassettes dirty is the normal case here, not an accident, so anything
+that runs the suite unattended will commit recordings unless this is closed. Whatever
+replaces the Anthropic client should replay by default and require an explicit flag to
+record.
 
-## Hard blocker for the agent team
+## Hard blocker: the working copy, and the one credential it needs
 
 ```
 working copies: 0     requirements: 0
@@ -193,15 +222,84 @@ No harness has ever registered for metric_flow, so there is no working copy; wit
 working copy there is no requirement graph; with no graph there is nothing to hand an
 agent. `get_next_requirement` has nothing to answer with.
 
-Fixed today to make this possible: `config.yml` now names the project (`223e4c3`),
-and `local_path` points at the real checkout. Onboarding a harness here is the next
-concrete step and is not blocked on anything.
+Everything about *how* is now known and verified, and it comes down to one thing you
+have to do.
+
+### 1. Mint a deploy key on the dev project — yours
+
+Project `5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c` has no deploy key. It has existed since
+2025-07-26, before projects got one at creation, and the migration import doesn't mint
+one either. The harness cannot serve a copy without it:
+`CmsHarness.Credentials.for_working_copy/1` resolves `CMS_TOKEN` → the copy's own
+`.cms_harness.json` `deploy_key` → `:harness_deploy_key` config. The :4004 harness has
+no `CMS_TOKEN` and nothing sets that config, so path two is the only one, and it is
+filled from the project's key at onboarding. Both existing copies on this box
+(broken_oaths, code_my_spec) carry one.
+
+Two ways:
+
+- **The project form.** `https://dev.codemyspec.com/app/projects/5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c/edit`
+  → **Generate** beside Deploy Key → Save. The form does not touch `local_path`, so
+  saving is safe.
+- **One command**, from the code_my_spec checkout, using
+  `Projects.ensure_deploy_key/2` rather than the form's own generator:
+
+  ```
+  MIX_ENV=dev elixir -S mix run --no-start \
+    scripts/mint_deploy_key.exs 5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c
+  ```
+
+  It prints nothing but a confirmation — onboarding reads the key out of the
+  database, so it never needs to be on a screen. `--no-start` is load-bearing:
+  booting the app would try to bind :4000.
+
+I was refused this one — minting a credential is a secret-store write — so it is
+yours either way. The script is new and committed (`code_my_spec`); the form's
+Generate button now mints the same shape the rest of the system does, which it
+previously did not (it rolled its own 128 hex characters with no `dk_` prefix, so
+`UserSocket.shape/1` logged a refused join as an unknown credential — fixed in
+`3ece495e1`).
+
+### 2. Onboard the copy — mine, one command
+
+```
+mix cms.harness.onboard "/Volumes/X10 Pro/github/metric_flow" \
+  --project 5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c \
+  --server-url http://localhost:4000
+```
+
+`--server-url http://localhost:4000` on purpose, three times over: it is what the
+running :4004 harness has in `CMS_SERVER_URL`, `dev.codemyspec.com` is that same
+:4000 behind a Cloudflare named tunnel (`config/dev.exs:173`), and `localhost` is what
+makes `ensure_local_credential/1` read the key out of the local dev Postgres instead of
+refusing with `:no_credential`.
+
+Run it from the `phx-new-generator` worktree, which has its own `_build/dev` — :4000
+and :4004 both run from the **main** checkout, so this takes no lock either of them
+cares about. The task starts only `:req`, never the app, so it will not try to bind
+:4000. `mix cms.harness.onboard "<root>" --check` is the read-only version and
+currently answers `not onboarded ... missing: CMS_HARNESS_ID, MIX_TEST_PARTITION,
+HARNESS_CONFIG`.
+
+### 3. Make the harness serve it
+
+A harness learns which copies to serve from `Projects.list/0`, "the roots this harness
+has been *asked* to serve, and it is asked by a hook arriving"
+(`CmsHarness.WorkingCopyReporter`) — plus whatever `Device.announce/1` reports back for
+this device. So a Claude Code session running in the checkout, or `start_agent` against
+it, is what starts the first scan. Scan → files → components → requirement graph →
+`get_next_requirement` has an answer.
+
+`projects.local_path` currently points at `/Users/johndavenport/Documents/github/metric_flow`,
+which does not exist — carried over by the import from where the repo used to live.
+Nothing to fix by hand: `Projects.resolve_local_project/1` syncs it from the working
+directory the first time resolution runs there.
 
 ---
 
 ## What landed today
 
-**metric_flow** (5 commits, none pushed)
+**metric_flow** (9 commits, none pushed)
 
 | commit | what |
 |---|---|
@@ -210,13 +308,19 @@ concrete step and is not blocked on anything.
 | `98c1e3e` | path deps → hex; `given/2` → `register_given/3`; generator compat shims |
 | `b3ca4cf` | `MetricFlowSpex.Case` + `Fixtures` bridge; removed a duplicate boundary breaking clean builds |
 | `7f41c22` | three syntax errors, `import_givens` → `import`, `.tool-versions` |
+| `4a478c9` | this document, first pass |
+| `57798cc` | 1478 bare `:ok` step endings → `{:ok, context}`, resolved to their step by AST position |
+| `c4406a2` | all twelve shared givens merge into the context instead of replacing it |
+| `2c766e5` | 47 stale account-type sites → the enum the domain and Postgres actually have; `.cms_harness.json` ignored |
+| `415e46f` | `BillingFixtures.active_subscription_fixture/2`; four paywalled test files get a subscription |
 
-**code_my_spec** (2 commits) — both were hard blockers on onboarding anything locally
+**code_my_spec** (3 commits) — the first two were hard blockers on onboarding anything locally
 
 | commit | what |
 |---|---|
 | `dfe479eb1` | Four CLI migrations carried Postgres-only SQL (`ALTER COLUMN`, `UPDATE…FROM`, `NULLS NOT DISTINCT`). The first raises, so Ecto stopped the set — **every local SQLite DB had been stuck since 2026-08-23**, 16 migrations stranded. Third instance of the shape `cms.guard_cli_migrate` already documents twice. |
 | `489814ce3` | Six columns the shared schemas *select* that no CLI migration created, so `Repo.get(Project, id)` couldn't read a project at all. Scope measured across all 69 schemas, not guessed. |
+| `3ece495e1` | The project form minted deploy keys its own way — 128 hex characters, no `dk_` — so `UserSocket.shape/1` couldn't name the credential in a refused-join log. Now one mint. Plus `scripts/mint_deploy_key.exs` for a project whose only route to a key was that button. |
 
 `~/.codemyspec/cli.db` went 128 → 145 migrations. Backups at
 `~/.codemyspec/cli.db.bak-20260923-184955` (pre) and `-191645-at144`.
@@ -257,15 +361,18 @@ cadence exists to catch.
 
 ### The goal from here
 
-Point the team at Metric Flow and have a main agent run it under supervision. In
-dependency order:
+Point the team at Metric Flow and have a main agent run it under supervision. Of
+the six steps this doc listed this morning, three are done:
 
-1. **Onboard a harness** → working copy → requirement graph. Nothing else can start.
-2. **Answer the `:personal` account-type question** → likely ~690 tests green.
-3. **Close the live-API hole** before any agent runs the suite on a loop.
-4. **Script the spex `{:ok, context}` migration** → 1478 sites, ~4 by hand, then verify.
-5. **DevOps migration off SSM** → needs your AWS call. Gates promotion and deploy.
-6. Then set an active story and let the team run it, same as Broken Oaths.
+| | |
+|---|---|
+| ~~Spex `{:ok, context}` migration~~ | done — 0/374 → 360/374 |
+| ~~The `:personal` account-type question~~ | done — the code answered it; 756 → 87 failures |
+| ~~Sequence the harness onboarding~~ | done and verified up to the credential |
+| **Mint the deploy key** | **yours, one click or one command** |
+| Onboard the copy + first scan | mine, one command, then a session in the checkout |
+| Cassette replay by default | worth closing before anything runs the suite unattended |
+| DevOps migration off SSM | yours — needs the AWS call. Gates promotion and deploy |
+| Set an active story, let the team run it | same as Broken Oaths |
 
-Steps 1–4 are mine and unblocked. Step 5 is yours. Only after 1 does any of the
-agent machinery have anything to bite on.
+The only thing between here and a requirement graph is the deploy key.
