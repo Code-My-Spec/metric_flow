@@ -13,15 +13,16 @@ Dev project: `5217fb4a-e2cd-493d-9e5f-2482fb8c4f2c` · repo: `/Volumes/X10 Pro/g
 |---|---|---|
 | Stories / criteria on dev | **53 / 459**, 374 with `spec_path` | no — done |
 | Components on dev | 152 | no |
-| Working copies | **0** | **yes — one command away, needs a deploy key** |
-| Requirement graph | **0 requirements** | **yes — consequence of the above** |
-| Deploy key on the dev project | **none** | **yes — mint it, see below** |
+| Working copies | **1** — `3d7fe72b`, main, preview tunnel up | no — done |
+| Files synced | **2329**, manifest accepted | no |
+| Requirement graph | **298 invalidations queued, 0 rows** — drains on first read | one read away |
+| Deploy key on the dev project | minted | no — done |
 | `mix compile` (test env) | passes | no |
-| `mix test` | **2844/2931 pass, 87 fail** | no — the 87 are feature gaps |
-| `mix spex` | **360/374 pass, 14 fail** | no — the 14 are feature gaps |
+| `mix test` | **2904/2917 pass, 13 fail**, 10 excluded | no — the 13 are two unbuilt features |
+| `mix spex` | **360/374 pass, 14 fail** | no — same two features |
 | QA | 57 historical dirs (42 complete / 101 failed), **0 qa_attempts on dev** | yes, for QA work |
 | DevOps (secrets/deploy) | on AWS SSM, not sops | yes, for promotion/deploy |
-| Cassette replay | misses fall through to live calls | no — worth closing, not a blocker |
+| Cassette replay | **closed** — every surface is `mode: :replay` | no |
 
 ---
 
@@ -281,7 +282,25 @@ cares about. The task starts only `:req`, never the app, so it will not try to b
 currently answers `not onboarded ... missing: CMS_HARNESS_ID, MIX_TEST_PARTITION,
 HARNESS_CONFIG`.
 
-### 3. Make the harness serve it
+### 3. Done — and what is left after it
+
+The harness picked the copy up on its first contact and is serving it:
+`/health` on :4004 lists it `connected`, `onboarded`, `watching`, and it has
+rescanned on every file change since. 2329 files synced, components 152 → 182,
+manifest accepted each time.
+
+`requirements` is still 0, and that is expected rather than stuck. The rows are
+written by a **publish**, and the compute behind it is triggered by a *read* —
+`Requirements.Projection` reads the rows and a fingerprint miss computes and
+publishes. `graph_invalidations` holds **298 queued** entries for this copy, so
+the work is enqueued and waiting for the first reader. The old project-level
+cache row says the graph is ~894 nodes / 1106 edges.
+
+So the trigger is an agent starting on this project, or the project's page being
+opened on dev. That is the next action and it is deliberately yours: starting an
+agent is outward-facing.
+
+### The original step 3, for reference
 
 A harness learns which copies to serve from `Projects.list/0`, "the roots this harness
 has been *asked* to serve, and it is asked by a hook arriving"
