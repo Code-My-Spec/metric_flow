@@ -16,7 +16,7 @@ defmodule MetricFlow.Accounts.AccountTest do
     %{
       name: "Acme Corp",
       slug: unique_slug(),
-      type: "personal",
+      type: "client",
       originator_user_id: user.id
     }
   end
@@ -113,7 +113,7 @@ defmodule MetricFlow.Accounts.AccountTest do
       original_type = account.type
 
       changeset =
-        Account.changeset(account, %{name: "Valid Name", slug: unique_slug(), type: "team"})
+        Account.changeset(account, %{name: "Valid Name", slug: unique_slug(), type: "agency"})
 
       refute get_change(changeset, :type)
       assert changeset.data.type == original_type
@@ -184,7 +184,7 @@ defmodule MetricFlow.Accounts.AccountTest do
       assert %{type: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "returns an error when type is not personal or team", %{user: user} do
+    test "returns an error when type is not client or agency", %{user: user} do
       attrs = %{valid_creation_attrs(user) | type: "admin"}
       changeset = Account.creation_changeset(%Account{}, attrs)
 
@@ -193,7 +193,7 @@ defmodule MetricFlow.Accounts.AccountTest do
     end
 
     test "returns an error when originator_user_id is absent", %{user: _user} do
-      attrs = %{name: "Acme", slug: unique_slug(), type: "personal", originator_user_id: nil}
+      attrs = %{name: "Acme", slug: unique_slug(), type: "client", originator_user_id: nil}
       changeset = Account.creation_changeset(%Account{}, attrs)
 
       refute changeset.valid?
@@ -212,15 +212,15 @@ defmodule MetricFlow.Accounts.AccountTest do
       assert %{slug: ["has already been taken"]} = errors_on(changeset)
     end
 
-    test "accepts type personal", %{user: user} do
-      attrs = %{valid_creation_attrs(user) | type: "personal"}
+    test "accepts type client", %{user: user} do
+      attrs = %{valid_creation_attrs(user) | type: "client"}
       changeset = Account.creation_changeset(%Account{}, attrs)
 
       assert changeset.valid?
     end
 
-    test "accepts type team", %{user: user} do
-      attrs = %{valid_creation_attrs(user) | type: "team"}
+    test "accepts type agency", %{user: user} do
+      attrs = %{valid_creation_attrs(user) | type: "agency"}
       changeset = Account.creation_changeset(%Account{}, attrs)
 
       assert changeset.valid?

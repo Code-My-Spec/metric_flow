@@ -18,7 +18,7 @@ defmodule MetricFlow.Invitations.InvitationTest do
     |> Account.creation_changeset(%{
       name: "Test Account #{System.unique_integer([:positive])}",
       slug: unique_slug(),
-      type: "team",
+      type: "client",
       originator_user_id: user.id
     })
     |> Repo.insert!()

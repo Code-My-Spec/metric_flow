@@ -57,3 +57,8 @@ client_secret_1022678032295-ck6461teh0olk03iaa2aoqnonta71fbd.apps.googleusercont
 # Kamal runtime state — locks and per-host app state
 /.kamal/locks/
 /.kamal/apps/
+
+# The harness's identity for this checkout — the working copy id the server
+# issued and the project deploy key it authenticates with. Per-machine, and a
+# credential, so it never belongs in the repository.
+.cms_harness.json

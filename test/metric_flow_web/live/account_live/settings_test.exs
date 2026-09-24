@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),
-      type: "team",
+      type: "client",
       originator_user_id: user.id
     }
 
@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       |> Account.creation_changeset(%{
         name: "#{user.email} Personal",
         slug: "personal-#{System.unique_integer([:positive])}",
-        type: "personal",
+        type: "client",
         originator_user_id: user.id
       })
       |> Repo.insert!()
@@ -305,7 +305,7 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings")
 
       refute has_element?(lv, "[data-role='delete-account']")
-      assert account.type == "personal"
+      assert account.type == :client
     end
   end
 

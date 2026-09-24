@@ -24,7 +24,7 @@ defmodule MetricFlow.Accounts.AccountRepositoryTest do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),
-      type: "team",
+      type: "client",
       originator_user_id: user.id
     }
 
@@ -48,7 +48,7 @@ defmodule MetricFlow.Accounts.AccountRepositoryTest do
   # used here for test setup since the repository doesn't exist yet.
   defp account_fixture(scope, attrs \\ %{}) do
     user = scope.user
-    account = insert_account!(user, Map.merge(%{type: "team"}, attrs))
+    account = insert_account!(user, Map.merge(%{type: "client"}, attrs))
     insert_member!(account, user, :owner)
     account
   end
@@ -58,7 +58,7 @@ defmodule MetricFlow.Accounts.AccountRepositoryTest do
     |> Account.creation_changeset(%{
       name: "Personal Account",
       slug: unique_slug(),
-      type: "personal",
+      type: "client",
       originator_user_id: user.id
     })
     |> Repo.insert!()
@@ -147,7 +147,7 @@ defmodule MetricFlow.Accounts.AccountRepositoryTest do
 
       assert {:ok, account} = AccountRepository.create_team_account(scope, attrs)
       assert account.name == "New Team"
-      assert account.type == "team"
+      assert account.type == :client
     end
 
     test "adds the calling user as the owner member" do

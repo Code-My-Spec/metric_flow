@@ -19,7 +19,7 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   defp unique_slug, do: "account-#{System.unique_integer([:positive])}"
 
   defp insert_account!(user, attrs) do
-    defaults = %{name: "Test Account", slug: unique_slug(), type: "team", originator_user_id: user.id}
+    defaults = %{name: "Test Account", slug: unique_slug(), type: "client", originator_user_id: user.id}
 
     %Account{}
     |> Account.creation_changeset(Map.merge(defaults, attrs))

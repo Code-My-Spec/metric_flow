@@ -19,7 +19,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),
-      type: "team",
+      type: "client",
       originator_user_id: user.id
     }
 
@@ -50,7 +50,7 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       |> Account.creation_changeset(%{
         name: "Personal #{System.unique_integer([:positive])}",
         slug: "personal-#{System.unique_integer([:positive])}",
-        type: "personal",
+        type: "client",
         originator_user_id: user.id
       })
       |> Repo.insert!()

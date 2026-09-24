@@ -24,7 +24,7 @@ defmodule MetricFlow.Ai.InsightTest do
       |> Account.creation_changeset(%{
         name: "#{user.email} Personal",
         slug: unique_slug(),
-        type: "personal",
+        type: "client",
         originator_user_id: user.id
       })
       |> Repo.insert()

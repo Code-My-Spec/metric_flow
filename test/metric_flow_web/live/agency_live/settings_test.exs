@@ -21,7 +21,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
     defaults = %{
       name: "Test Agency",
       slug: unique_slug(),
-      type: "team",
+      type: "agency",
       originator_user_id: user.id
     }
 
@@ -52,7 +52,7 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       |> Account.creation_changeset(%{
         name: "#{user.email} Personal",
         slug: "personal-#{System.unique_integer([:positive])}",
-        type: "personal",
+        type: "client",
         originator_user_id: user.id
       })
       |> Repo.insert!()

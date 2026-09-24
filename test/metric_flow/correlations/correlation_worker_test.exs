@@ -27,7 +27,7 @@ defmodule MetricFlow.Correlations.CorrelationWorkerTest do
       |> Account.creation_changeset(%{
         name: "#{user.email} Personal",
         slug: "personal-#{unique}",
-        type: "personal",
+        type: "client",
         originator_user_id: user.id
       })
       |> Repo.insert()

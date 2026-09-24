@@ -24,7 +24,7 @@ defmodule MetricFlow.Ai.SuggestionFeedbackTest do
     |> Account.creation_changeset(%{
       name: "Test Account #{unique}",
       slug: "test-account-#{unique}",
-      type: "personal",
+      type: "client",
       originator_user_id: user.id
     })
     |> Repo.insert!()

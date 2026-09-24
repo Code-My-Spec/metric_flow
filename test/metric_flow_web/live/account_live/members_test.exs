@@ -19,7 +19,7 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
     defaults = %{
       name: "Test Account",
       slug: unique_slug(),
-      type: "team",
+      type: "client",
       originator_user_id: user.id
     }
 

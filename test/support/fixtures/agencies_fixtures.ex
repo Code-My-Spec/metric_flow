@@ -169,7 +169,7 @@ defmodule MetricFlowTest.AgenciesFixtures do
   Returns the agency Account struct.
   """
   def agency_with_white_label_fixture(white_label_attrs \\ %{}) do
-    agency = account_fixture(%{type: "team"})
+    agency = account_fixture(%{type: "agency"})
 
     white_label_config_fixture(agency.id, white_label_attrs)
 

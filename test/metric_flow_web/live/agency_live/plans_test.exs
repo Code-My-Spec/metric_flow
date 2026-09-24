@@ -14,7 +14,7 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
     defaults = %{
       name: "Test Agency",
       slug: unique_slug(),
-      type: "team",
+      type: "agency",
       originator_user_id: user.id
     }
 

@@ -21,7 +21,7 @@ defmodule MetricFlow.Accounts.AccountMemberTest do
         [
           unique_account_name(),
           "slug-#{System.unique_integer([:positive])}",
-          "standard",
+          "client",
           user_id,
           now,
           now
