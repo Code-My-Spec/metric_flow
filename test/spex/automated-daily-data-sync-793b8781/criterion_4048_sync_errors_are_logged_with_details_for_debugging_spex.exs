@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
       end
 
       when_ "an async sync failure arrives with a specific error reason", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Authentication token expired"
         }})
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
       end
 
       when_ "an async sync failure arrives for the Google integration", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Rate limit exceeded: 429 Too Many Requests"
         }})
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
       end
 
       when_ "an async sync failure arrives with a connection error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Connection refused: unable to reach API endpoint"
         }})
@@ -127,7 +127,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
       end
 
       when_ "a first sync failure arrives with a network error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Network timeout after 30 seconds"
         }})
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDetailsForDebuggingSpex do
       end
 
       when_ "a second sync failure arrives with an authentication error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Invalid OAuth credentials"
         }})

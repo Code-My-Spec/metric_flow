@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
       end
 
       when_ "a Facebook Ads sync completion event is broadcast indicating some rows were skipped due to missing date_start", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
       end
 
       when_ "a Facebook Ads sync completion event is broadcast where non-numeric values were silently skipped", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -99,7 +99,7 @@ defmodule MetricFlowSpex.RowsMissingDateStartAreSkippedWithAWarningNonNumericMet
       end
 
       when_ "a Facebook Ads sync completion event arrives reflecting only the valid rows after skipping bad data", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 3,
           completed_at: DateTime.utc_now(),

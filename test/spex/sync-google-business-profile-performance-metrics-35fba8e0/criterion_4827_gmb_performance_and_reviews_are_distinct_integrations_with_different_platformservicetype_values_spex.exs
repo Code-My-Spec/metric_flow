@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
       end
 
       when_ "both a Google Business Profile performance sync and a GMB Reviews sync complete", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 12,
           completed_at: DateTime.utc_now()
@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 5,
           completed_at: DateTime.utc_now()
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
       end
 
       when_ "a Google Business Profile performance sync completes", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 8,
           completed_at: DateTime.utc_now()
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
       end
 
       when_ "a GMB Reviews sync completes", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 3,
           completed_at: DateTime.utc_now()
@@ -165,7 +165,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
       end
 
       when_ "both provider sync events are broadcast in sequence", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.utc_now()
@@ -173,7 +173,7 @@ defmodule MetricFlowSpex.Criterion4827GmbPerformanceAndReviewsAreDistinctIntegra
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 4,
           completed_at: DateTime.utc_now()

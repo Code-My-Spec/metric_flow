@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1RunreportEndpointNotTheUniversalAnalyticsApiSpex do
+defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run4746 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       end
 
       when_ "a GA4 sync completion event is broadcast to the LiveView", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now()
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       end
 
       when_ "a GA4 sync failure event is broadcast with an API error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 Data API error: INVALID_ARGUMENT"
         }})

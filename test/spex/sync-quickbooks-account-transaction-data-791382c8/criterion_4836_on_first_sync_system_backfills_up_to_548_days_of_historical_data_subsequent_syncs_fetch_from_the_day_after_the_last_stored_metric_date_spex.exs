@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.QuickbooksFirstSyncBackfills548DaysSubsequentSyncsFetch
       end
 
       when_ "a QuickBooks initial backfill sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.QuickbooksFirstSyncBackfills548DaysSubsequentSyncsFetch
       end
 
       when_ "a QuickBooks incremental sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 3,
           completed_at: DateTime.utc_now(),
@@ -102,7 +102,7 @@ defmodule MetricFlowSpex.QuickbooksFirstSyncBackfills548DaysSubsequentSyncsFetch
       end
 
       when_ "both a QuickBooks initial backfill and an incremental sync event are broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -111,7 +111,7 @@ defmodule MetricFlowSpex.QuickbooksFirstSyncBackfills548DaysSubsequentSyncsFetch
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 3,
           completed_at: DateTime.utc_now(),

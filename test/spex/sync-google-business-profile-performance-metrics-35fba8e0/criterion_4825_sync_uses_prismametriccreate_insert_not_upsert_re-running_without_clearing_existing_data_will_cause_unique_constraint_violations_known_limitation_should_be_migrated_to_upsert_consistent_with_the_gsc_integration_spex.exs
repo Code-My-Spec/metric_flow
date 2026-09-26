@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
       end
 
       when_ "an initial Google Business Profile sync completes successfully", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 30,
           completed_at: DateTime.utc_now(),
@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
       end
 
       when_ "the same date range is synced again without clearing existing data, causing a unique constraint violation", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "unique constraint violation: metrics_account_id_provider_metric_key_date_index"
         }})
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
       end
 
       when_ "an initial Google Business Profile sync completes successfully", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 30,
           completed_at: DateTime.utc_now(),
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
       end
 
       when_ "a duplicate sync attempt fails with a unique constraint violation", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "unique constraint violation: metrics_account_id_provider_metric_key_date_index"
         }})
@@ -152,7 +152,7 @@ defmodule MetricFlowSpex.SyncUsesInsertNotUpsertDuplicateSyncCausesUniqueConstra
       end
 
       when_ "a Google Business Profile sync fails with a unique constraint violation", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "unique constraint violation: metrics_account_id_provider_metric_key_date_index"
         }})

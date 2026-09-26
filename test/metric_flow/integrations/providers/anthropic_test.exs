@@ -37,8 +37,17 @@ defmodule MetricFlow.Integrations.Providers.AnthropicTest do
       Application.put_env(:metric_flow, :anthropic_client_secret, "test_client_secret")
 
       on_exit(fn ->
-        if prev_id, do: Application.put_env(:metric_flow, :anthropic_client_id, prev_id), else: Application.delete_env(:metric_flow, :anthropic_client_id)
-        if prev_secret, do: Application.put_env(:metric_flow, :anthropic_client_secret, prev_secret), else: Application.delete_env(:metric_flow, :anthropic_client_secret)
+        if prev_id do
+          Application.put_env(:metric_flow, :anthropic_client_id, prev_id)
+        else
+          Application.delete_env(:metric_flow, :anthropic_client_id)
+        end
+
+        if prev_secret do
+          Application.put_env(:metric_flow, :anthropic_client_secret, prev_secret)
+        else
+          Application.delete_env(:metric_flow, :anthropic_client_secret)
+        end
       end)
 
       :ok

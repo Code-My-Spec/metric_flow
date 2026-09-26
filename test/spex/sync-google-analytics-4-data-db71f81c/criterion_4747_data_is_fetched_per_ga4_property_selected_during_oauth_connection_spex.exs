@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
       end
 
       when_ "a GA4 sync completion event for a specific property is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 30,
           completed_at: DateTime.utc_now(),
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         date1 = Date.add(Date.utc_today(), -1)
         date2 = Date.add(Date.utc_today(), -2)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
       when_ "a GA4 sync failure event with a data date is broadcast", context do
         data_date = Date.add(Date.utc_today(), -1)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Property not found",
           data_date: data_date

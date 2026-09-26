@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
       end
 
       when_ "a Google Business Profile reviews sync completion event is broadcast with a large record count", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 347,
           completed_at: DateTime.utc_now()
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
       end
 
       when_ "a Google Business Profile reviews sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 250,
           completed_at: DateTime.utc_now()
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.AllReviewsFetchedViaPaginatedRequestsFullHistorySpex do
       end
 
       when_ "a Google Business Profile reviews sync failure event is broadcast mid-pagination", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Pagination error: API returned 429 RESOURCE_EXHAUSTED while fetching page 3"
         }})

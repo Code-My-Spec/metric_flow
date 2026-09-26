@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemSyncsGoogleAdsCoreDailyMetricsSpex do
       end
 
       when_ "a Google Ads sync completion event is broadcast with 5 records synced", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.SystemSyncsGoogleAdsCoreDailyMetricsSpex do
       end
 
       when_ "a Google Ads sync failure event is broadcast due to a metric fetch error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Failed to fetch metrics: API quota exceeded"
         }})

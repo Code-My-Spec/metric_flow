@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
       end
 
       when_ "a Google Ads sync failure event is broadcast after all retries exhausted", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error after 3 retries: 503 UNAVAILABLE — backend unavailable",
           attempt: 3,
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
       end
 
       when_ "a Google Ads transient failure event with specific error codes is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "INTERNAL_ERROR: Transient error — request_id: abc123, customerId: 1234567890"
         }})
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransie
       end
 
       when_ "a Google Ads sync completion event is broadcast (succeeded after initial failures)", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),

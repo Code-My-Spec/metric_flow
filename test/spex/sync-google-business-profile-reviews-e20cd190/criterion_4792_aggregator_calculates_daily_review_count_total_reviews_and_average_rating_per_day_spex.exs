@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
         # reviews (e.g. 45) + daily aggregated metric rows (e.g. 30 days walked) = total records
         total_records = 75
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: total_records,
           completed_at: ~U[2026-03-17 02:00:00Z]
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
       end
 
       when_ "a successful Google Business Reviews sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 60,
           completed_at: ~U[2026-03-17 02:00:00Z]
@@ -94,7 +94,7 @@ defmodule MetricFlowSpex.AggregatorCalculatesDailyReviewCountTotalReviewsAndAver
       end
 
       when_ "a Google Business Reviews sync failure event is broadcast during aggregation", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Aggregation failed: unable to calculate daily metrics from review data"
         }})

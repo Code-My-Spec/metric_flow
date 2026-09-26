@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
                      :google, :google, :google, :google, :google]
 
         Enum.each(Enum.with_index(providers, 1), fn {provider, i} ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: provider,
             records_synced: i * 10,
             completed_at: DateTime.add(~U[2026-01-26 02:00:00Z], i * 86_400, :second),
@@ -79,7 +79,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
 
       when_ "31 sync completion events are received", context do
         Enum.each(1..31, fn i ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: :google,
             records_synced: i * 5,
             completed_at: DateTime.add(~U[2026-01-01 02:00:00Z], i * 86_400, :second),
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
         )
 
         Enum.each(Enum.with_index(providers, 1), fn {provider, i} ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: provider,
             records_synced: 100,
             completed_at: DateTime.add(~U[2026-01-01 02:00:00Z], i * 3_600, :second),

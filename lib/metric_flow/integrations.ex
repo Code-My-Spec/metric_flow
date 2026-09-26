@@ -211,21 +211,6 @@ defmodule MetricFlow.Integrations do
   defp do_verify_state(_stored, _provided), do: {:error, :state_mismatch}
 
   @doc """
-  Attempts to refresh the OAuth access token for an integration using the
-  stored refresh token.
-
-  Looks up the OAuth provider module based on the integration's provider field
-  and exchanges the refresh token for a new access token. Updates the
-  integration record with the fresh tokens and expiry on success.
-
-  Returns `{:ok, integration}` with updated tokens on success.
-  Returns `{:error, :unsupported_provider}` when the integration's provider has
-  no OAuth provider module registered.
-  Returns `{:error, reason}` when the token refresh request fails or the
-  provider strategy does not support refresh.
-  Returns `{:error, :token_refresh_failed}` if an unexpected exception is raised.
-  """
-  @doc """
   Returns the integration with a fresh token. If the token is not expired,
   returns it as-is. If expired and a refresh token is available, refreshes it.
   Returns `{:error, :token_expired}` if the token is expired and cannot be refreshed.
@@ -248,6 +233,21 @@ defmodule MetricFlow.Integrations do
     end
   end
 
+  @doc """
+  Attempts to refresh the OAuth access token for an integration using the
+  stored refresh token.
+
+  Looks up the OAuth provider module based on the integration's provider field
+  and exchanges the refresh token for a new access token. Updates the
+  integration record with the fresh tokens and expiry on success.
+
+  Returns `{:ok, integration}` with updated tokens on success.
+  Returns `{:error, :unsupported_provider}` when the integration's provider has
+  no OAuth provider module registered.
+  Returns `{:error, reason}` when the token refresh request fails or the
+  provider strategy does not support refresh.
+  Returns `{:error, :token_refresh_failed}` if an unexpected exception is raised.
+  """
   @spec refresh_token(Scope.t(), Integration.t()) ::
           {:ok, Integration.t()} | {:error, term()}
   def refresh_token(%Scope{} = scope, %Integration{} = integration) do

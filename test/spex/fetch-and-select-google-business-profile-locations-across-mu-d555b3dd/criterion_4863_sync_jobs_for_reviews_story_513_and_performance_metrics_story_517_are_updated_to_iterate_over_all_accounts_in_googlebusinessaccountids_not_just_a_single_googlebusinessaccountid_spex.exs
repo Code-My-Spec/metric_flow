@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517AreUpdatedToIterateOverAllAccountsInGooglebusinessaccountidsNotJustASingleGooglebusinessaccountidSpex do
+defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory5174863 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest

@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProcessingOfOtherCustomersASummaryOfSuccessesAndFailuresIsReturnedSpex do
+defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces4826 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
       end
 
       when_ "one customer's Google Business Profile sync succeeds and another customer's sync fails", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.utc_now(),
@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "GBP API error: 403 PERMISSION_DENIED — location access denied for customer-beta",
           customer_id: "customer-beta"
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
       end
 
       when_ "a Google Business Profile sync failure is broadcast for the first customer", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "GBP API error: 500 INTERNAL — fetchMultiDailyMetricsTimeSeries failed for customer-one"
         }})
@@ -81,7 +81,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
       end
 
       when_ "a Google Business Profile sync success is broadcast for the second customer", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 15,
           completed_at: DateTime.utc_now(),
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
       end
 
       when_ "one customer's sync succeeds and another customer's sync fails", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 8,
           completed_at: DateTime.utc_now(),
@@ -144,7 +144,7 @@ defmodule MetricFlowSpex.PerCustomerFailuresAreCaughtAndLoggedButDoNotHaltProces
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "GBP API error: 404 NOT_FOUND — location not found"
         }})

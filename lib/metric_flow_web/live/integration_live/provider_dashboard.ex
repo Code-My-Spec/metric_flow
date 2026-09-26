@@ -463,8 +463,6 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   defp status_badge_class(:failed), do: "badge-error"
   defp status_badge_class(_), do: "badge-ghost"
 
-  defp format_relative_time(nil), do: "Never"
-
   defp format_relative_time(dt) do
     diff = DateTime.diff(DateTime.utc_now(), dt, :second)
 

@@ -163,8 +163,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
     dated_values = get_in(daily_metric, ["timeSeries", "datedValues"])
 
     (dated_values || [])
-    |> Enum.filter(&is_map/1)
-    |> Enum.filter(&Map.has_key?(&1, "date"))
+    |> Enum.filter(&(is_map(&1) and Map.has_key?(&1, "date")))
     |> Enum.map(fn data_point ->
       date_map = data_point["date"]
       recorded_at = parse_date_map(date_map)

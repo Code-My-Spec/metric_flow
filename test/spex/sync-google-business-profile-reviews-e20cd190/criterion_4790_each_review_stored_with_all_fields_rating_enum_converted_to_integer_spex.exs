@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
       end
 
       when_ "a Google Business Reviews sync completes with multiple reviews stored", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 7,
           completed_at: ~U[2026-03-17 02:00:00Z]
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
       end
 
       when_ "a Google Business Reviews sync completes with reviews containing all required fields", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 3,
           completed_at: ~U[2026-03-17 02:15:00Z]
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.EachReviewStoredWithAllFieldsRatingEnumConvertedToInteg
       end
 
       when_ "a Google Business Reviews sync fails due to invalid review data", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Invalid rating enum value in review data",
           attempt: 1,

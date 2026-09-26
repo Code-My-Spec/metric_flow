@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
       end
 
       when_ "a Google Business Profile sync completion event is broadcast to the LiveView", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 25,
           completed_at: DateTime.utc_now()
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleBusinessProfilePerformanceA
       end
 
       when_ "a Google Business Profile sync failure event is broadcast with an API error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "Business Profile API error: 403 PERMISSION_DENIED — locations.fetchMultiDailyMetricsTimeSeries access denied"
         }})

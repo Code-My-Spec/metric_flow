@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
       end
 
       when_ "a GA4 sync completion event arrives with records including platform-specific metrics", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
       end
 
       when_ "a GA4 sync event with both canonical and platform-specific metrics completes", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 15,
           completed_at: DateTime.utc_now(),
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
 
       when_ "multiple GA4 sync completion events arrive", context do
         Enum.each(1..3, fn i ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: :google_analytics,
             records_synced: 11,
             completed_at: DateTime.utc_now(),

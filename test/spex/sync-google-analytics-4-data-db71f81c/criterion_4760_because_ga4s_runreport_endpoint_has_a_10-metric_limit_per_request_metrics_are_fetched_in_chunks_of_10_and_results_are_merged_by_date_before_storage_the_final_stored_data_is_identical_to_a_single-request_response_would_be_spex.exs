@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
       end
 
       when_ "a GA4 sync completion event arrives indicating all 11 core metrics were stored", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksOf10AndMergedByDateIdenticalTo
       end
 
       when_ "a GA4 sync failure event arrives indicating a chunk request failed", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 runReport chunk request failed: INVALID_ARGUMENT on metrics batch 2"
         }})

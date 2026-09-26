@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
       end
 
       when_ "a sync failure arrives for the Google integration", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Authentication token expired"
         }})
@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
       end
 
       when_ "a sync failure arrives with a specific error reason", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Rate limit exceeded: 429 Too Many Requests"
         }})
@@ -77,12 +77,12 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
       end
 
       when_ "a successful sync and a failed sync both arrive", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 150
         }})
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "Connection refused: unable to reach API endpoint"
         }})
@@ -112,7 +112,7 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
       end
 
       when_ "a Facebook Ads sync fails with a permission error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Insufficient permissions to access ad account"
         }})

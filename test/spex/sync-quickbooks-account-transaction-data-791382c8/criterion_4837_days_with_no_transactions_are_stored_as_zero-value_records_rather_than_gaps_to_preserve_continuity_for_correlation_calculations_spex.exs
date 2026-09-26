@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
       end
 
       when_ "a QuickBooks sync completion event arrives including zero-value transaction days", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
       end
 
       when_ "a QuickBooks sync completion event arrives for a day with no transactions", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 0,
           completed_at: DateTime.utc_now(),
@@ -108,7 +108,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
       end
 
       when_ "sync events arrive for a day with transactions and a day without transactions", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 12,
           completed_at: DateTime.utc_now(),
@@ -117,7 +117,7 @@ defmodule MetricFlowSpex.QuickbooksDaysWithNoTransactionsStoredAsZeroValueRecord
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 0,
           completed_at: DateTime.utc_now(),

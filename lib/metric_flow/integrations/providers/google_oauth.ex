@@ -9,8 +9,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleOauth do
         google_oauth_client_secret: System.get_env("GOOGLE_OAUTH_CLIENT_SECRET")
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   @callback_path "/app/integrations/oauth/callback/google_oauth"

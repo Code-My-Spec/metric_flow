@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubsequentSyncsFetchFromDayAfterLastStoredMetricDateForThatLocationSpex do
+defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq4821 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
       end
 
       when_ "a Google Business initial backfill sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
       end
 
       when_ "a subsequent (non-initial) Google Business sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
       end
 
       when_ "an initial backfill sync event is broadcast followed by a subsequent incremental sync event", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -133,7 +133,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysGoogleBusinessSubseq
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),

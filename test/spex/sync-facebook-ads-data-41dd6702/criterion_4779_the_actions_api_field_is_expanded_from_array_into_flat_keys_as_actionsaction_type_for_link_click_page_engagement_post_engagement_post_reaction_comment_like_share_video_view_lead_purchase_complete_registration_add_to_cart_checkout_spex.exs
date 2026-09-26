@@ -31,7 +31,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
       end
 
       when_ "a Facebook Ads sync completion without actions data is broadcast first", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 10,
           completed_at: ~U[2026-03-16 02:00:00Z],
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
 
       when_ "a Facebook Ads sync completion with all 13 expanded action type metrics is broadcast", context do
         # 10 core scalar metrics + 13 action type expansions = 23 records
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 23,
           completed_at: ~U[2026-03-17 02:00:00Z],
@@ -85,7 +85,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
       when_ "a Facebook Ads sync completion event is broadcast with 13 action types expanded", context do
         # The actions array [{action_type: "link_click", value: "42"}, ...] is expanded into
         # flat keys: actions:link_click, actions:page_engagement, etc. — one record per action type
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: length(@action_types),
           completed_at: DateTime.utc_now(),
@@ -139,7 +139,7 @@ defmodule MetricFlowSpex.ActionsApiFieldExpandedIntoFlatKeysForFacebookAdsSpex d
       end
 
       when_ "a Facebook Ads sync failure event is broadcast while expanding action types", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Failed to expand actions field: unexpected actions array format"
         }})

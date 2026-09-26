@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPrefixIsAddedByTheFetcherAtCallTimeNotStoredInConfigSpex do
+defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre4775 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
       end
 
       when_ "a Facebook Ads sync completion event is broadcast for a specific account", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 45,
           completed_at: DateTime.utc_now(),
@@ -147,7 +147,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
         date1 = Date.add(Date.utc_today(), -1)
         date2 = Date.add(Date.utc_today(), -2)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 20,
           completed_at: DateTime.utc_now(),
@@ -156,7 +156,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerFacebookadsaccountidFromConfigTheActPre
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 18,
           completed_at: DateTime.utc_now(),

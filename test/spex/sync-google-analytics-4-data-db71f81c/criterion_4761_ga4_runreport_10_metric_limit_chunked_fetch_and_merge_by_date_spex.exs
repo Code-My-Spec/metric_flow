@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
       end
 
       when_ "a GA4 sync completion arrives with 11 records covering all core metrics for a single date", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
 
       when_ "GA4 sync completion events arrive for three different dates, each with 11 records", context do
         Enum.each(1..3, fn i ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: :google_analytics,
             records_synced: 11,
             completed_at: DateTime.utc_now(),
@@ -105,7 +105,7 @@ defmodule MetricFlowSpex.Ga4MetricsFetchedInChunksAndMergedByDateEquivalentToSin
       end
 
       when_ "a GA4 sync failure event is broadcast for a chunk merge failure", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Failed to merge GA4 metric chunks: date alignment mismatch"
         }})

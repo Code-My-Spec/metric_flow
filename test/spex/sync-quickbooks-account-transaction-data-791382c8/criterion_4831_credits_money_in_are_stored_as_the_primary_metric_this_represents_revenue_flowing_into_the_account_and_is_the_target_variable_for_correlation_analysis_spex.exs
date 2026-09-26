@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
       end
 
       when_ "a QuickBooks sync completes storing credit metrics as the primary revenue data", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 45,
           completed_at: DateTime.utc_now()
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
       end
 
       when_ "a QuickBooks credit data sync completes successfully", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 31,
           completed_at: DateTime.utc_now()
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.CreditsPrimaryMetricRevenueStoredForCorrelationAnalysis
       end
 
       when_ "a QuickBooks sync fails while processing credit transaction data", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: credit transaction data unavailable — account closed"
         }})

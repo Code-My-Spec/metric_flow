@@ -7,7 +7,7 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   import Ecto.Query
 
-  alias MetricFlow.Billing.{Plan, Subscription, StripeAccount}
+  alias MetricFlow.Billing.{Plan, StripeAccount, Subscription}
   alias MetricFlow.Repo
 
   # --- Subscriptions ---

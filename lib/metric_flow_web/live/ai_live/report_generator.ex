@@ -114,10 +114,10 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
           <button
             type="submit"
             data-role="save-visualization-btn"
-            disabled={@saving || is_nil(@vega_spec) || String.trim(@save_name) == ""}
+            disabled={@saving || String.trim(@save_name) == ""}
             class={[
               "btn btn-primary btn-sm mt-3 w-full sm:w-auto",
-              (@saving || is_nil(@vega_spec) || String.trim(@save_name) == "") && "btn-disabled"
+              (@saving || String.trim(@save_name) == "") && "btn-disabled"
             ]}
           >
             <span :if={@saving} class="loading loading-spinner loading-xs"></span>

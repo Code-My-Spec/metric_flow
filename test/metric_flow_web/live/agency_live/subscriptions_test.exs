@@ -5,7 +5,7 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
   import MetricFlowTest.UsersFixtures
 
   alias MetricFlow.Accounts.{Account, AccountMember}
-  alias MetricFlow.Billing.{Plan, Subscription, StripeAccount}
+  alias MetricFlow.Billing.{Plan, StripeAccount, Subscription}
   alias MetricFlow.Repo
 
   defp unique_slug, do: "agency-#{System.unique_integer([:positive])}"

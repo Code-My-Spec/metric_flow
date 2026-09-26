@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
       end
 
       when_ "a Google Ads sync failure event is broadcast with full error context", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: PERMISSION_DENIED — customerId: 9876543210, dateRange: 2024-01-01..2024-01-31, errorCode: CUSTOMER_NOT_ENABLED"
         }})
@@ -63,7 +63,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
       end
 
       when_ "a Google Ads failure event with errorCode details is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "errorCode: QUOTA_ERROR — customerId: 1111111111, dateRange: 2024-03-01..2024-03-15"
         }})
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.GoogleAdsApiErrorsExtractedAndSurfacedWithFullContextSp
       end
 
       when_ "a Google Ads sync failure is broadcast with a specific API errorCode", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "API error: REQUEST_ERROR — errorCode: INVALID_DATE_RANGE, customerId: 5555555555, dateRange: 2023-01-01..2023-12-31"
         }})

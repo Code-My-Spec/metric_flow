@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreArraysOnlyVideoViewActionTypeExtractedAsScalarSpex do
+defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA4781 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
         # Each video_p25/50/75/100_watched_actions field is an array in the API response.
         # Only the entry with action_type == "video_view" is extracted and stored as a scalar.
         # This yields exactly 4 records — one per video completion metric.
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: length(@video_completion_metrics),
           completed_at: DateTime.utc_now(),
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
 
       when_ "a Facebook Ads sync completion event is broadcast with core metrics and video completion metrics combined", context do
         # 10 core scalar metrics + 4 video completion scalars (video_view entry extracted from each array) = 14 records
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 14,
           completed_at: DateTime.utc_now(),
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA
       end
 
       when_ "a Facebook Ads sync failure event is broadcast while processing video completion metrics", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Failed to extract video_view action_type from video_p25_watched_actions array"
         }})

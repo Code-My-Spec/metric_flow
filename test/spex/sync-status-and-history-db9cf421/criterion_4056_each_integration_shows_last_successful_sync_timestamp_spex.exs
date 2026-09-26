@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
       when_ "a successful sync completion message is received with a timestamp", context do
         completed_at = ~U[2026-02-24 02:00:00Z]
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 150,
           completed_at: completed_at,
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
       when_ "a successful sync completion message arrives with a specific timestamp", context do
         completed_at = ~U[2026-02-24 02:00:00Z]
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 75,
           completed_at: completed_at,
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsLastSuccessfulSyncTimestampSpex do
       end
 
       when_ "a successful sync event is received", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 200,
           completed_at: ~U[2026-02-24 02:00:00Z],

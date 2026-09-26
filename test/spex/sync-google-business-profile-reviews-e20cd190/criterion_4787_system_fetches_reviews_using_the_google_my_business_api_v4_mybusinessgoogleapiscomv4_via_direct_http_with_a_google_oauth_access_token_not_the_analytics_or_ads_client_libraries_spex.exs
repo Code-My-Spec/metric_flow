@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
       end
 
       when_ "a Google Business Reviews sync completion event is broadcast to the LiveView", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 42,
           completed_at: DateTime.utc_now()
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.SystemFetchesReviewsUsingGoogleMyBusinessApiV4SpexSpex 
       end
 
       when_ "a Google Business Reviews sync failure event is broadcast with an API error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "My Business API v4 error: PERMISSION_DENIED"
         }})

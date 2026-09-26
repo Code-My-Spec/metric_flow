@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
       end
 
       when_ "a successful Google Business Reviews sync event is broadcast with location details", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 12,
           completed_at: DateTime.utc_now(),
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
       end
 
       when_ "a Google Business Reviews sync failure event is broadcast for a location without details", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Location details unavailable for location — cannot generate metric label"
         }})
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.LocationDetailsFetchedForMetricLabelOrSyncFailsSpex do
       end
 
       when_ "a sync failure event is broadcast indicating location details could not be fetched", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Location details unavailable for location — cannot generate metric label"
         }})

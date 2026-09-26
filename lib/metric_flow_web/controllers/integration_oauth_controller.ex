@@ -89,19 +89,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
     scope = conn.assigns.current_scope
     session_params = fetch_session_params(params)
 
-    provider =
-      case provider_str do
-        "google" -> :google
-        "google_ads" -> :google_ads
-        "google_analytics" -> :google_analytics
-        "facebook_ads" -> :facebook_ads
-        "quickbooks" -> :quickbooks
-        "google_search_console" -> :google_search_console
-        "google_business" -> :google_business
-        "google_business_reviews" -> :google_business_reviews
-        "codemyspec" -> :codemyspec
-        _ -> nil
-      end
+    provider = parse_provider(provider_str)
 
     redirect_to =
       if provider == :codemyspec,
@@ -140,6 +128,20 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   end
 
   # Private Helpers
+
+  @callback_provider_map %{
+    "google" => :google,
+    "google_ads" => :google_ads,
+    "google_analytics" => :google_analytics,
+    "facebook_ads" => :facebook_ads,
+    "quickbooks" => :quickbooks,
+    "google_search_console" => :google_search_console,
+    "google_business" => :google_business,
+    "google_business_reviews" => :google_business_reviews,
+    "codemyspec" => :codemyspec
+  }
+
+  defp parse_provider(provider_str), do: Map.get(@callback_provider_map, provider_str)
 
   defp fetch_session_params(%{"state" => state}) when is_binary(state) do
     case OAuthStateStore.fetch(state) do

@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       end
 
       when_ "a GA4 sync failure event with a quota exceeded error is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 API quota exceeded: RESOURCE_EXHAUSTED"
         }})
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       end
 
       when_ "a GA4 sync failure event with attempt details is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Rate limit hit",
           attempt: 2,

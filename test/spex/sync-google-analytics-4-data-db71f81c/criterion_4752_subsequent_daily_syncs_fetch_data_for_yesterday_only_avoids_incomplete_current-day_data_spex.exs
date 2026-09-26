@@ -45,7 +45,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
       when_ "a GA4 sync completion event arrives with yesterday as the data date", context do
         yesterday = Date.add(Date.utc_today(), -1)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),

@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
       end
 
       when_ "a QuickBooks sync completion event is broadcast with daily aggregate records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 2,
           completed_at: DateTime.utc_now()
@@ -71,7 +71,7 @@ defmodule MetricFlowSpex.EachMetricStoredAsDailyAggregateNotIndividualTransactio
       end
 
       when_ "a QuickBooks sync completes for one account over one day with two aggregate metrics", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 2,
           completed_at: DateTime.utc_now()

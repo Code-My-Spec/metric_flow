@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       when_ "a successful sync completes with a known timestamp", context do
         completed_at = ~U[2026-02-24 02:00:00Z]
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 150,
           completed_at: completed_at,
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a successful sync completion message arrives", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 200,
           completed_at: ~U[2026-02-24 02:00:00Z],
@@ -90,7 +90,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a successful sync arrives reporting 342 records synced", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 342,
           completed_at: ~U[2026-02-24 02:00:00Z],
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a sync failure message arrives", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "API rate limit exceeded"
         }})
@@ -161,7 +161,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a sync failure arrives with a specific error message", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google,
           reason: "OAuth token has expired and could not be refreshed"
         }})
@@ -200,7 +200,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a successful sync arrives for Google with 500 records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 500,
           completed_at: ~U[2026-02-24 02:00:00Z],
@@ -213,7 +213,7 @@ defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndErrorMes
       end
 
       when_ "a failed sync arrives for Facebook Ads with an error message", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Invalid access token"
         }})

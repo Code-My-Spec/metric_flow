@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
       end
 
       when_ "a Google Ads sync completion event with cost metrics is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
       end
 
       when_ "a Google Ads sync completion event referencing cost data is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -98,7 +98,7 @@ defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
       end
 
       when_ "a Google Ads sync failure event related to cost data processing is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: failed to convert cost_micros — value: nil, customerId: 1234567890"
         }})

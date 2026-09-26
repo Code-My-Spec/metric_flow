@@ -22,8 +22,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   use MetricFlowWeb, :live_view
 
-  require Logger
-
   alias MetricFlow.Integrations
 
   # Each platform has its own OAuth connection and integration record.
@@ -469,53 +467,64 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     provider_atom = String.to_existing_atom(provider_str)
 
     if provider_atom == :google_business do
-      # Multi-select: collect checked location IDs
-      location_ids = Map.get(params, "location_ids", [])
-
-      if location_ids == [] do
-        {:noreply, put_flash(socket, :error, "Please select at least one location.")}
-      else
-        case Integrations.update_provider_metadata(scope, provider_atom, %{"included_locations" => location_ids}) do
-          {:ok, _integration} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "#{length(location_ids)} location(s) saved successfully.")
-             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
-
-          {:error, reason} ->
-            {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
-        end
-      end
+      save_google_business_selection(scope, provider_atom, provider_str, params, socket)
     else
-      # Single-select: radio or manual input
-      account_id =
-        case Map.get(params, "property_id") do
-          "manual" -> String.trim(Map.get(params, "manual_property_id", ""))
-          id when is_binary(id) and id != "" -> id
-          _ -> String.trim(Map.get(params, "manual_property_id", ""))
-        end
-
-      if account_id == "" do
-        {:noreply, put_flash(socket, :error, "Please select or enter an account ID.")}
-      else
-        metadata_key = metadata_key_for_provider(provider_atom)
-
-        case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
-          {:ok, _integration} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Account selection saved successfully.")
-             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
-
-          {:error, reason} ->
-            {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
-        end
-      end
+      save_single_account_selection(scope, provider_atom, provider_str, params, socket)
     end
   end
 
   def handle_event("select_property", %{"property_id" => property_id}, socket) do
     {:noreply, assign(socket, :selected_property_id, property_id)}
+  end
+
+  defp save_google_business_selection(scope, provider_atom, provider_str, params, socket) do
+    location_ids = Map.get(params, "location_ids", [])
+
+    if location_ids == [] do
+      {:noreply, put_flash(socket, :error, "Please select at least one location.")}
+    else
+      attrs = %{"included_locations" => location_ids}
+
+      case Integrations.update_provider_metadata(scope, provider_atom, attrs) do
+        {:ok, _integration} ->
+          {:noreply,
+           socket
+           |> put_flash(:info, "#{length(location_ids)} location(s) saved successfully.")
+           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+      end
+    end
+  end
+
+  defp save_single_account_selection(scope, provider_atom, provider_str, params, socket) do
+    account_id = extract_manual_or_selected_id(params)
+
+    if account_id == "" do
+      {:noreply, put_flash(socket, :error, "Please select or enter an account ID.")}
+    else
+      metadata_key = metadata_key_for_provider(provider_atom)
+
+      case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
+        {:ok, _integration} ->
+          {:noreply,
+           socket
+           |> put_flash(:info, "Account selection saved successfully.")
+           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+      end
+    end
+  end
+
+  defp extract_manual_or_selected_id(params) do
+    case Map.get(params, "property_id") do
+      "manual" -> String.trim(Map.get(params, "manual_property_id", ""))
+      id when is_binary(id) and id != "" -> id
+      _ -> String.trim(Map.get(params, "manual_property_id", ""))
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -559,43 +568,49 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
            |> put_flash(:error, "Please connect #{provider_str} first before selecting accounts.")
            |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
         else
-          {accounts, accounts_error} = fetch_provider_accounts(socket, provider_atom, integration)
-
-          meta_key = metadata_key_for_provider(provider_atom)
-
-          raw_selection = get_in(integration.provider_metadata || %{}, [meta_key])
-
-          # Normalize the stored value for display. Google Business stores an
-          # array; other providers store a plain string.
-          {selected_property_id, manual_property_id} =
-            normalize_selection_for_display(provider_atom, raw_selection)
-
-          # For google_business, track selected location IDs as a list
-          selected_location_ids =
-            if provider_atom == :google_business and is_list(raw_selection),
-              do: raw_selection,
-              else: []
-
-          # Detect configured locations that are no longer returned by the API.
-          # When the API errors or returns empty, all configured locations are unverifiable.
-          missing_locations =
-            compute_missing_locations(provider_atom, raw_selection, accounts, accounts_error)
-
-          {:noreply,
-           socket
-           |> assign(:view_mode, :accounts)
-           |> assign(:platform, resolve_platform(provider_atom, provider_str))
-           |> assign(:provider, provider_str)
-           |> assign(:integration, integration)
-           |> assign(:accounts, accounts)
-           |> assign(:accounts_error, accounts_error)
-           |> assign(:selected_property_id, selected_property_id)
-           |> assign(:manual_property_id, manual_property_id)
-           |> assign(:selected_location_ids, selected_location_ids)
-           |> assign(:missing_locations, missing_locations)}
+          assign_accounts_state(socket, provider_atom, provider_str, integration)
         end
     end
   end
+
+  defp assign_accounts_state(socket, provider_atom, provider_str, integration) do
+    {accounts, accounts_error} = fetch_provider_accounts(socket, provider_atom, integration)
+
+    meta_key = metadata_key_for_provider(provider_atom)
+
+    raw_selection = get_in(integration.provider_metadata || %{}, [meta_key])
+
+    # Normalize the stored value for display. Google Business stores an
+    # array; other providers store a plain string.
+    {selected_property_id, manual_property_id} =
+      normalize_selection_for_display(provider_atom, raw_selection)
+
+    # For google_business, track selected location IDs as a list
+    selected_location_ids = selected_location_ids(provider_atom, raw_selection)
+
+    # Detect configured locations that are no longer returned by the API.
+    # When the API errors or returns empty, all configured locations are unverifiable.
+    missing_locations =
+      compute_missing_locations(provider_atom, raw_selection, accounts, accounts_error)
+
+    {:noreply,
+     socket
+     |> assign(:view_mode, :accounts)
+     |> assign(:platform, resolve_platform(provider_atom, provider_str))
+     |> assign(:provider, provider_str)
+     |> assign(:integration, integration)
+     |> assign(:accounts, accounts)
+     |> assign(:accounts_error, accounts_error)
+     |> assign(:selected_property_id, selected_property_id)
+     |> assign(:manual_property_id, manual_property_id)
+     |> assign(:selected_location_ids, selected_location_ids)
+     |> assign(:missing_locations, missing_locations)}
+  end
+
+  defp selected_location_ids(:google_business, raw_selection) when is_list(raw_selection),
+    do: raw_selection
+
+  defp selected_location_ids(_provider_atom, _raw_selection), do: []
 
   defp validate_provider(provider_str) do
     provider_atom = String.to_existing_atom(provider_str)
@@ -815,10 +830,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
   # Private helpers — metadata value builder
   # ---------------------------------------------------------------------------
-
-  defp build_metadata_value(_provider, account_id) do
-    account_id
-  end
 
   # ---------------------------------------------------------------------------
   # Private helpers — utilities

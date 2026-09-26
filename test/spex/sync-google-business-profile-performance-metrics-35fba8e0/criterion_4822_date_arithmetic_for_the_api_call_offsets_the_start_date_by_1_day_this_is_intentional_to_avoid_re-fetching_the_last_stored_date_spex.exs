@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
       when_ "an initial Google Business Profile sync completes covering a range ending on a given date", context do
         first_sync_date = Date.add(Date.utc_today(), -2)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 30,
           completed_at: DateTime.utc_now(),
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
       when_ "a subsequent Google Business Profile sync completes starting from the day after the prior sync's last date", context do
         second_sync_date = Date.add(Date.utc_today(), -1)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.utc_now(),
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
       end
 
       when_ "a follow-up Google Business Profile sync completes with only one day of new data", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.utc_now(),
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
       end
 
       when_ "a Google Business Profile initial sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -128,7 +128,7 @@ defmodule MetricFlowSpex.DateArithmeticOffsetsStartDateBy1DayToAvoidReFetchingLa
       end
 
       when_ "a Google Business Profile incremental sync completion event is broadcast for the following day", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.add(DateTime.utc_now(), 60),

@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccounts
       end
 
       when_ "the LiveView receives a sync completion event for the Google integration", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 25,
           completed_at: DateTime.utc_now()

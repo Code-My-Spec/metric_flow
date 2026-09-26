@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       end
 
       when_ "a GA4 sync completion event is broadcast with the expected records count", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       end
 
       when_ "a GA4 sync failure event is broadcast due to a metric fetch error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Failed to fetch metrics: quota exceeded"
         }})

@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInTheFinallyBlockTestingToolOnlyMustNotAffectProductionSyncSpex do
+defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT4785 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
       end
 
       when_ "a Facebook Ads sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 10,
           completed_at: DateTime.utc_now()
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
       end
 
       when_ "a Facebook Ads sync completion event arrives with record count and timestamp", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 7,
           completed_at: DateTime.utc_now()
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.PollyHttpRecordreplayIsInitializedPerFetchAndStoppedInT
       end
 
       when_ "a Facebook Ads sync failure event is broadcast with a real API error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 190 Invalid OAuth access token"
         }})

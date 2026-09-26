@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingGoogleSearchConsoleApiSpex do
       end
 
       when_ "a Google Search Console sync completion event is broadcast to the LiveView", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_search_console,
           records_synced: 30,
           completed_at: DateTime.utc_now()

@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
       end
 
       when_ "a QuickBooks sync completes with both credit and debit metrics stored", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 4,
           completed_at: DateTime.utc_now()
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
       end
 
       when_ "a QuickBooks sync completes with debit metrics stored for two accounts", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 2,
           completed_at: DateTime.utc_now()
@@ -89,7 +89,7 @@ defmodule MetricFlowSpex.DebitsMoneyOutStoredAsSeparateMetricForSpendPatternCorr
       end
 
       when_ "a QuickBooks sync failure event is broadcast for a debit processing error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: failed to retrieve debit transactions"
         }})

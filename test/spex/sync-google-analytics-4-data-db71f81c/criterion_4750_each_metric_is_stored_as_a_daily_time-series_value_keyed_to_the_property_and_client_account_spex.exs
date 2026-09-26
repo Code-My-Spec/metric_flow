@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
       when_ "a GA4 sync completion event is broadcast with a specific data date", context do
         data_date = ~D[2026-03-15]
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: ~U[2026-03-16 02:00:00Z],
@@ -60,7 +60,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToTheProp
         dates = [~D[2026-03-13], ~D[2026-03-14], ~D[2026-03-15]]
 
         Enum.each(dates, fn date ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: :google_analytics,
             records_synced: 11,
             completed_at: ~U[2026-03-16 02:00:00Z],

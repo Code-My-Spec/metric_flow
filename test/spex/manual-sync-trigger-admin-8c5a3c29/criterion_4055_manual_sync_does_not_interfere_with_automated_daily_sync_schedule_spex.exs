@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
       end
 
       when_ "the manual sync completes successfully", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 10,
           completed_at: DateTime.utc_now()
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
       end
 
       when_ "the manual sync completes successfully", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 10,
           completed_at: DateTime.utc_now()

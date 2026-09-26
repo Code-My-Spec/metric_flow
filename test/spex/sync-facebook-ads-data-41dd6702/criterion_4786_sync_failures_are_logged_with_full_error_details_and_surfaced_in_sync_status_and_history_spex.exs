@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncFailuresAreLoggedWithFullErrorDetailsAndSurfacedInS
       end
 
       when_ "a Facebook Ads sync failure event with an API error response is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 190 Invalid OAuth access token — The session has been invalidated"
         }})
@@ -63,14 +63,14 @@ defmodule MetricFlowSpex.SyncFailuresAreLoggedWithFullErrorDetailsAndSurfacedInS
       end
 
       when_ "two different Facebook Ads sync failure events with distinct API errors are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 17 User request limit reached"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 100 Invalid parameter — act_123456 is not a valid account"
         }})
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.SyncFailuresAreLoggedWithFullErrorDetailsAndSurfacedInS
       end
 
       when_ "a Facebook Ads API failure event with a specific error code is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 200 Permission error — (#200) The user hasn't authorized the application to perform this action"
         }})
@@ -147,7 +147,7 @@ defmodule MetricFlowSpex.SyncFailuresAreLoggedWithFullErrorDetailsAndSurfacedInS
       end
 
       when_ "a Facebook Ads API failure event is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Ads API error: 368 The action attempted has been deemed abusive or is otherwise disallowed"
         }})

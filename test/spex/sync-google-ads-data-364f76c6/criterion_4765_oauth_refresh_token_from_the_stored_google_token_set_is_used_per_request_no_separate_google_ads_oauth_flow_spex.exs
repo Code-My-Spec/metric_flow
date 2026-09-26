@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
       end
 
       when_ "a Google Ads sync completion event is broadcast using the stored Google token", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 55,
           completed_at: DateTime.utc_now()
@@ -77,7 +77,7 @@ defmodule MetricFlowSpex.OAuthRefreshTokenFromTheStoredGoogleTokenSetIsUsedPerRe
       end
 
       when_ "a Google Ads sync failure event is broadcast because the stored OAuth token is expired", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: OAUTH_TOKEN_EXPIRED — stored refresh token has expired, reconnect Google"
         }})

@@ -288,34 +288,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     case Dashboards.get_visualization(scope, id_int) do
       {:ok, visualization} ->
         chart_type = extract_chart_type(visualization.vega_spec)
-        bound = Dashboards.get_visualization_metric_names(visualization)
-
-        # Fall back to extracting from spec title for legacy visualizations
-        bound =
-          if bound == [] do
-            case extract_metric_name(visualization.vega_spec) do
-              nil -> []
-              name -> [name]
-            end
-          else
-            bound
-          end
-
-        # Use saved spec as template, resolve named data for preview
-        template =
-          if bound != [] do
-            # Rebuild template from bound metrics (or use saved spec if it has named data)
-            saved_spec = visualization.vega_spec || %{}
-
-            if has_named_data?(saved_spec) do
-              saved_spec
-            else
-              build_template_spec(bound, chart_type, visualization.name)
-            end
-          else
-            visualization.vega_spec || %{}
-          end
-
+        bound = resolve_bound_metrics(visualization)
+        template = resolve_edit_template(visualization, bound, chart_type)
         preview = resolve_named_data(template, scope)
 
         socket =
@@ -324,7 +298,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:visualization, visualization)
           |> assign(:name, visualization.name || "")
           |> assign(:selected_metric, List.first(bound))
-          |> assign(:selected_chart_type, chart_type || "line")
+          |> assign(:selected_chart_type, chart_type)
           |> assign(:shareable, visualization.shareable)
           |> assign(:bound_metrics, bound)
           |> assign(:chart_preview, preview)
@@ -357,6 +331,36 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       |> assign(:page_title, "New Visualization")
 
     {:noreply, socket}
+  end
+
+  # Falls back to extracting from spec title for legacy visualizations.
+  defp resolve_bound_metrics(visualization) do
+    case Dashboards.get_visualization_metric_names(visualization) do
+      [] ->
+        case extract_metric_name(visualization.vega_spec) do
+          nil -> []
+          name -> [name]
+        end
+
+      bound ->
+        bound
+    end
+  end
+
+  # Uses saved spec as template when it already has named data sources;
+  # otherwise rebuilds one from the bound metrics.
+  defp resolve_edit_template(visualization, [] = _bound, _chart_type) do
+    visualization.vega_spec || %{}
+  end
+
+  defp resolve_edit_template(visualization, bound, chart_type) do
+    saved_spec = visualization.vega_spec || %{}
+
+    if has_named_data?(saved_spec) do
+      saved_spec
+    else
+      build_template_spec(bound, chart_type, visualization.name)
+    end
   end
 
   defp assign_common(socket, scope) do
@@ -504,7 +508,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
   def handle_event("save_visualization", _params, socket) do
     name = socket.assigns.name
-    metric = socket.assigns.selected_metric
 
     cond do
       name == "" || is_nil(name) ->
@@ -662,10 +665,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
-  defp page_title_for(:new), do: "New Visualization"
-  defp page_title_for(:edit), do: "Edit Visualization"
-  defp page_title_for(_), do: "Visualization"
-
   defp name_error_from_changeset(%Ecto.Changeset{} = changeset) do
     case Keyword.get(changeset.errors, :name) do
       nil ->
@@ -693,15 +692,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp format_spec(spec) when is_map(spec), do: Jason.encode!(spec, pretty: true)
   defp format_spec(_), do: ""
 
-  defp fetch_metric_data(scope, metric_name) do
-    {start_date, end_date} = Dashboards.default_date_range()
-    Metrics.query_time_series(scope, metric_name, date_range: {start_date, end_date})
-  end
-
   # Builds a spec template with named data sources (no embedded values).
   # Single metric: {"data": {"name": "activeUsers"}, ...}
   # Multi metric: {"layer": [{"data": {"name": "activeUsers"}, ...}, ...]}
-  defp build_template_spec(metric_names, chart_type, title \\ nil) do
+  defp build_template_spec(metric_names, chart_type, title) do
     mark = chart_type || "line"
     title = title || List.first(metric_names) || "Untitled"
 

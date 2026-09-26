@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
       end
 
       when_ "a QuickBooks sync completes for a single income account with records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 30,
           completed_at: DateTime.utc_now(),
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
       end
 
       when_ "QuickBooks syncs complete for two different income accounts", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 15,
           completed_at: DateTime.utc_now(),
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 22,
           completed_at: DateTime.utc_now(),
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.DataFetchedPerIncomeAccountMultipleAccountsSyncedIndepe
       end
 
       when_ "a QuickBooks sync fails for one income account", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: account not found — income account ID 987 is invalid",
           account_name: "Business Checking"

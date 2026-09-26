@@ -178,7 +178,18 @@ defmodule MetricFlow.Integrations.IntegrationTest do
     test "accepts all valid provider enum values (:github, :gitlab, :bitbucket, :google, :google_ads, :facebook_ads, :google_analytics, :quickbooks)" do
       user = user_fixture()
 
-      for provider <- [:github, :gitlab, :bitbucket, :google, :google_ads, :facebook_ads, :google_analytics, :quickbooks] do
+      providers = [
+        :github,
+        :gitlab,
+        :bitbucket,
+        :google,
+        :google_ads,
+        :facebook_ads,
+        :google_analytics,
+        :quickbooks
+      ]
+
+      for provider <- providers do
         attrs = %{valid_attrs(user.id) | provider: provider}
         changeset = Integration.changeset(new_integration(), attrs)
 

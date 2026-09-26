@@ -9,8 +9,6 @@ defmodule MetricFlow.Integrations.Providers.FacebookAds do
         facebook_ads_client_secret: System.get_env("FACEBOOK_ADS_CLIENT_SECRET")
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   @callback_path "/app/integrations/oauth/callback/facebook_ads"

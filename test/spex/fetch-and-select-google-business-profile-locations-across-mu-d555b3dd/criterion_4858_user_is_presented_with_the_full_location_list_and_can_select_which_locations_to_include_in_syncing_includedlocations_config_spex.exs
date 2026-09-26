@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhichLocationsToIncludeInSyncingIncludedLocationsConfigSpex do
+defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich4858 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest

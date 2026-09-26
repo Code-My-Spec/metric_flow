@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerSiteUrlCustomersWithoutSiteUrlAreSkippe
       end
 
       when_ "a Google Search Console sync completes for a customer with a configured site URL", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_search_console,
           records_synced: 14,
           completed_at: DateTime.utc_now(),

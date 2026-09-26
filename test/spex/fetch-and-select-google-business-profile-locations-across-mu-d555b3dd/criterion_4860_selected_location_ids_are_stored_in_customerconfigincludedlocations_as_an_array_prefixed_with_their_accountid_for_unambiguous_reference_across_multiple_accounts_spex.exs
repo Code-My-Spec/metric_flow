@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLocationsAsAnArrayPrefixedWithTheirAccountidForUnambiguousReferenceAcrossMultipleAccountsSpex do
+defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc4860 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest

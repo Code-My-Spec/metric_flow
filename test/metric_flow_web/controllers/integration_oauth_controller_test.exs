@@ -4,6 +4,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
   import ExUnit.CaptureLog
 
   alias MetricFlow.Integrations.OAuthStateStore
+  alias MetricFlowTest.OAuthStub.CassettePlug
 
   setup :register_and_log_in_user
 
@@ -219,7 +220,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
 
     @impl true
     def config do
-      {plug_mod, plug_opts} = MetricFlowTest.OAuthStub.CassettePlug.load("google_authorize_url")
+      {plug_mod, plug_opts} = CassettePlug.load("google_authorize_url")
 
       [
         client_id: "stub-client-id",

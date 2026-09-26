@@ -6,8 +6,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalytics do
   GA4 property data via the Google Analytics Data API v1.
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   alias MetricFlow.Integrations.Providers.Google

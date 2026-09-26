@@ -91,19 +91,7 @@ defmodule MetricFlowWeb.FeedbackWidget do
       {:noreply, assign(socket, :error, "Title is required")}
     else
       scope = socket.assigns.current_scope
-
-      attachments =
-        case socket.assigns.screenshot_data do
-          nil ->
-            []
-
-          data_url ->
-            case upload_screenshot(scope, data_url) do
-              {:ok, attachment} -> [attachment]
-              {:error, _} -> []
-            end
-        end
-
+      attachments = attachments_for(scope, socket.assigns.screenshot_data)
       attrs = %{"title" => title, "description" => description, "severity" => severity}
 
       case Client.create_issue(scope, attrs, attachments) do
@@ -120,6 +108,15 @@ defmodule MetricFlowWeb.FeedbackWidget do
         {:error, reason} ->
           {:noreply, assign(socket, :error, "Failed to submit: #{inspect(reason)}")}
       end
+    end
+  end
+
+  defp attachments_for(_scope, nil), do: []
+
+  defp attachments_for(scope, data_url) do
+    case upload_screenshot(scope, data_url) do
+      {:ok, attachment} -> [attachment]
+      {:error, _} -> []
     end
   end
 

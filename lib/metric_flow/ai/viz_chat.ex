@@ -101,40 +101,46 @@ defmodule MetricFlow.Ai.VizChat do
     case ReqLLM.generate_text(@chat_model, context, opts) do
       {:ok, response} ->
         classified = ReqLLM.Response.classify(response)
-        text = classified.text || ""
+        text = classified.text
         tool_calls = classified.tool_calls
 
         if tool_calls == [] do
-          # No tool calls — conversation turn complete
-          updated_context =
-            ReqLLM.Context.append(context, ReqLLM.Context.assistant(text))
-
-          {:ok, %{text: text, spec: accumulated_spec, context: updated_context}}
+          finish_conversation_turn(context, text, accumulated_spec)
         else
-          # Build assistant message with tool calls
-          assistant_msg = ReqLLM.Context.assistant(text, tool_calls: tool_calls)
-          context = ReqLLM.Context.append(context, assistant_msg)
-
-          # Execute tools — frame.assigns.validated_spec is set by UpdateSpec
-          # on successful validation, cleared on failure
-          frame = put_in(frame.assigns[:validated_spec], nil)
-          {context, frame} = execute_tools(context, tool_calls, frame)
-
-          validated_spec = frame.assigns[:validated_spec]
-
-          if validated_spec do
-            # Tool validated and accepted a new spec — show it to the user
-            {:ok, %{text: text, spec: validated_spec, context: context}}
-          else
-            # No valid spec yet (other tools, or validation failed and errors
-            # were sent back to the LLM) — continue so the model can fix it
-            run_tool_loop(context, frame, opts, depth + 1, accumulated_spec)
-          end
+          continue_tool_loop(context, frame, opts, depth, accumulated_spec, text, tool_calls)
         end
 
       {:error, reason} ->
         Logger.error("VizChat error at depth #{depth}: #{inspect(reason)}")
         {:error, reason}
+    end
+  end
+
+  # No tool calls — conversation turn complete
+  defp finish_conversation_turn(context, text, accumulated_spec) do
+    updated_context = ReqLLM.Context.append(context, ReqLLM.Context.assistant(text))
+    {:ok, %{text: text, spec: accumulated_spec, context: updated_context}}
+  end
+
+  defp continue_tool_loop(context, frame, opts, depth, accumulated_spec, text, tool_calls) do
+    # Build assistant message with tool calls
+    assistant_msg = ReqLLM.Context.assistant(text, tool_calls: tool_calls)
+    context = ReqLLM.Context.append(context, assistant_msg)
+
+    # Execute tools — frame.assigns.validated_spec is set by UpdateSpec
+    # on successful validation, cleared on failure
+    frame = put_in(frame.assigns[:validated_spec], nil)
+    {context, frame} = execute_tools(context, tool_calls, frame)
+
+    validated_spec = frame.assigns[:validated_spec]
+
+    if validated_spec do
+      # Tool validated and accepted a new spec — show it to the user
+      {:ok, %{text: text, spec: validated_spec, context: context}}
+    else
+      # No valid spec yet (other tools, or validation failed and errors
+      # were sent back to the LLM) — continue so the model can fix it
+      run_tool_loop(context, frame, opts, depth + 1, accumulated_spec)
     end
   end
 

@@ -6,8 +6,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleAds do
   campaign and performance data via the Google Ads API.
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   alias MetricFlow.Integrations.Providers.Google

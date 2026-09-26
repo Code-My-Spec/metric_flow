@@ -137,7 +137,7 @@ defmodule MetricFlow.Billing do
   """
   @spec create_checkout_session(integer(), map(), String.t()) ::
           {:ok, String.t()} | {:error, term()}
-  def create_checkout_session(account_id, plan, return_url) do
+  def create_checkout_session(_account_id, plan, return_url) do
     alias MetricFlow.Billing.StripeClient
 
     # Determine if this is an agency plan (route to agency Stripe account)

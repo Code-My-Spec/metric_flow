@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigIncludedLocationsScopedUnderTheCustomersGoogleBusinessAccountIdSpex do
+defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude4818 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
       end
 
       when_ "a Google Business Profile sync completion event for a specific location ID is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 28,
           completed_at: DateTime.utc_now(),
@@ -64,7 +64,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
       end
 
       when_ "two Google Business Profile sync completion events are broadcast for different location IDs", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 15,
           completed_at: DateTime.utc_now(),
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 22,
           completed_at: DateTime.utc_now(),
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerLocationIdListedInCustomerConfigInclude
       end
 
       when_ "a Google Business Profile sync failure event for a specific location is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "Google Business Profile API error: 403 PERMISSION_DENIED — Location access denied for locations/9999999999",
           location_id: "locations/9999999999",

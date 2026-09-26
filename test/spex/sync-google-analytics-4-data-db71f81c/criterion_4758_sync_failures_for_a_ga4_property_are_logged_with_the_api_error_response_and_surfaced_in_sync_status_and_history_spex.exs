@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResponseAndSurfacedInSyncStatusAndHistorySpex do
+defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp4758 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       when_ "a GA4 sync failure event with an API error response is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 API error: 403 PERMISSION_DENIED — Property access denied"
         }})
@@ -63,14 +63,14 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       when_ "two different GA4 sync failure events with distinct API errors are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 API error: 429 RESOURCE_EXHAUSTED"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 API error: 500 INTERNAL — runReport failed"
         }})
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       when_ "a GA4 API failure event is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "runReport endpoint returned error: INVALID_ARGUMENT"
         }})

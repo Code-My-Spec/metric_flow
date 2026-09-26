@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
       end
 
       when_ "a GA4 sync completion event is broadcast indicating sampled data was returned", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
       end
 
       when_ "a GA4 sync failure event with a sampling-related error is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "GA4 response contains sampled data — sampling threshold exceeded"
         }})
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
       end
 
       when_ "both a successful and a failed GA4 sync event arrive", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -97,7 +97,7 @@ defmodule MetricFlowSpex.SampledDataResponsesAreDetectedAndFlaggedSpex do
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Sampling warning: data accuracy may be reduced"
         }})

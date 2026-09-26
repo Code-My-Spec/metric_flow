@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDelayFacebookApiErrorsAreExtractedFromErrorResponseErrorSpex do
+defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe4784 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
       end
 
       when_ "a Facebook Ads sync failure event is broadcast with a Facebook API error extracted from error.response.error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook API error: (#200) The user hasn't authorized the application to perform this action"
         }})
@@ -56,7 +56,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
       end
 
       when_ "a Facebook Ads sync failure event is broadcast with a rate-limit error from Facebook's API", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook API error: (#17) User request limit reached"
         }})
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
       end
 
       when_ "a Facebook Ads sync failure event is broadcast for a transient error that would be retried", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook API error: (#1) An unknown error occurred"
         }})
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe
       end
 
       when_ "a subsequent Facebook Ads sync completion event is broadcast after a successful retry", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 12,
           completed_at: DateTime.utc_now(),

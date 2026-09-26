@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
       end
 
       when_ "a GA4 sync completion event is broadcast indicating metrics were synced", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
       end
 
       when_ "a GA4 sync failure event with a metric mapping error is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_analytics,
           reason: "Metric mapping failed: unknown canonical name for ga4:customMetric1"
         }})

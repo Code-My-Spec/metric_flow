@@ -13,7 +13,6 @@ defmodule MetricFlow.Ai.VegaSpecValidator do
   vegaEmbed.
   """
 
-  @schema_path "priv/vega_lite_v5_schema.json"
   @pt_key {__MODULE__, :compiled_schema}
 
   @doc """

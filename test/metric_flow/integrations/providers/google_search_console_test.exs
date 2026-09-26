@@ -16,7 +16,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleSearchConsoleTest do
   # sync modules after every async one, so this is isolation in the only form the
   # environment offers rather than a reordering that happens to work.
 
-
   import ExUnit.CaptureLog
 
   alias MetricFlow.Integrations.Providers.GoogleSearchConsole

@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
       when_ "the async sync completion message is received by the LiveView", context do
         completed_at = DateTime.utc_now()
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 42,
           completed_at: completed_at
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.UponCompletionUserSeesSuccessMessageWithTimestampAndRec
       end
 
       when_ "the async sync completion message is received by the LiveView", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 17,
           completed_at: DateTime.utc_now()

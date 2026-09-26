@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
       end
 
       when_ "a Google Ads sync completion event is broadcast for a specific customer account", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 18,
           completed_at: DateTime.utc_now()
@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
       end
 
       when_ "two Google Ads sync completion events are broadcast for different customer accounts", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 10,
           completed_at: DateTime.utc_now()
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 25,
           completed_at: DateTime.utc_now()
@@ -104,7 +104,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGoogleAdsCustomerIdGoogleAdsPropertyIdC
       end
 
       when_ "a Google Ads sync failure event is broadcast for a specific customer account", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: CUSTOMER_NOT_FOUND — customer ID not accessible"
         }})

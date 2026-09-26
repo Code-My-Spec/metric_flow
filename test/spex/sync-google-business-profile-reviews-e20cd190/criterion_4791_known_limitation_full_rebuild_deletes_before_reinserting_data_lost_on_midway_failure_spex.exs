@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
       end
 
       when_ "a Google Business Reviews sync failure event is broadcast after deletion", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Sync failed midway: all existing Review and BUSINESS_REVIEW_ Metric records were deleted before re-insertion; data is lost until next successful sync"
         }})
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
       end
 
       when_ "a previous midway failure event is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Sync failed midway: all existing Review and BUSINESS_REVIEW_ Metric records were deleted before re-insertion; data is lost until next successful sync"
         }})
@@ -75,7 +75,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
       end
 
       when_ "a subsequent successful re-sync event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 47,
           completed_at: DateTime.utc_now()
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
       end
 
       when_ "a midway failure event is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Sync failed midway after deleting BUSINESS_REVIEW_ metrics and Review records"
         }})
@@ -120,7 +120,7 @@ defmodule MetricFlowSpex.KnownLimitationFullRebuildDeletesBeforeReinsertingDataL
       end
 
       when_ "a subsequent successful sync event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 23,
           completed_at: DateTime.utc_now()

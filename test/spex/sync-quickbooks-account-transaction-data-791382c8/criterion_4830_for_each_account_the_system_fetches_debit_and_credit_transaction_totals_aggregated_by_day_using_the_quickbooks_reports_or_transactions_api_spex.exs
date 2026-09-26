@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
       end
 
       when_ "a QuickBooks sync completes with daily aggregated debit and credit totals", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 60,
           completed_at: DateTime.utc_now()
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
       end
 
       when_ "a QuickBooks transaction data sync completes", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 90,
           completed_at: DateTime.utc_now()
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.SystemFetchesDebitCreditTotalsAggregatedByDayViaQuickBo
       end
 
       when_ "a QuickBooks sync fails while fetching transaction totals from the API", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: 500 Internal Server Error — Reports API unavailable"
         }})

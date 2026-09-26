@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
       end
 
       when_ "a Google Ads sync failure event with full error details is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: 403 PERMISSION_DENIED — customerId: 1234567890, errorCode: CUSTOMER_NOT_ENABLED"
         }})
@@ -56,14 +56,14 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
       end
 
       when_ "two distinct Google Ads sync failure events are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: 429 RESOURCE_EXHAUSTED — quota exceeded"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: 500 INTERNAL — backend error, customerId: 9999999999"
         }})
@@ -111,14 +111,14 @@ defmodule MetricFlowSpex.GoogleAdsSyncFailuresLoggedWithFullErrorDetailsAndSurfa
       end
 
       when_ "a Google Ads sync failure and a success event are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_ads,
           reason: "Google Ads API error: 503 UNAVAILABLE — transient failure"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),

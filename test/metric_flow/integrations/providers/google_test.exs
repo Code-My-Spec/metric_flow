@@ -16,7 +16,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
   # sync modules after every async one, so this is isolation in the only form the
   # environment offers rather than a reordering that happens to work.
 
-
   import ExUnit.CaptureLog
   import ReqCassette
 

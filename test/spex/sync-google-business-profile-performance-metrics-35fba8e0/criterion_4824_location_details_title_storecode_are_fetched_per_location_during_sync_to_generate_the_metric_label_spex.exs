@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
       end
 
       when_ "a Google Business Profile sync completes with location title metadata", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
       end
 
       when_ "a Google Business Profile sync completes with only a store code (no title)", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 3,
           completed_at: DateTime.utc_now(),
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.LocationDetailsTitleStoreCodeAreFetchedPerLocationDurin
       end
 
       when_ "a Google Business Profile sync fails with a location details error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "Failed to fetch location details: 403 PERMISSION_DENIED — Location access denied"
         }})

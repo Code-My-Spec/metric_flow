@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
       end
 
       when_ "a QuickBooks sync completes successfully using the stored OAuth token", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 42,
           completed_at: DateTime.utc_now()
@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.QuickBooksConnectsViaOAuthTokenNoSeparateAuthFlowSpex d
       end
 
       when_ "a QuickBooks sync fails because the OAuth token has expired", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks OAuth token expired: 401 Unauthorized — token refresh required"
         }})

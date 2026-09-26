@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingAccountgetinsightsAtAccountLevelWithTimeIncrement1DailyBreakdownSpex do
+defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA4774 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
       end
 
       when_ "a Facebook Ads sync completion event is broadcast to the LiveView with daily records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 30,
           completed_at: DateTime.utc_now()
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.SystemFetchesDataUsingFacebookNodejsBusinessSdkCallingA
       end
 
       when_ "a Facebook Ads sync failure event is broadcast with an API error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Facebook Business SDK error: OAuthException - Invalid access token"
         }})

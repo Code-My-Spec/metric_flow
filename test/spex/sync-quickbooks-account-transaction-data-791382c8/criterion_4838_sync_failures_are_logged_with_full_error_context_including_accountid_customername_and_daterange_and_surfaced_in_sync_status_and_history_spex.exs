@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
       end
 
       when_ "a QuickBooks sync failure event with full error context is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: accountId=9341 customerName=Acme Corp dateRange=2025-01-01..2025-03-17 — 403 Forbidden"
         }})
@@ -73,14 +73,14 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
       end
 
       when_ "two QuickBooks sync failure events with distinct error contexts are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: accountId=1001 customerName=Widget Co dateRange=2025-01-01..2025-01-31 — 429 Too Many Requests"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: accountId=2002 customerName=Globex Corp dateRange=2025-02-01..2025-02-28 — 500 Internal Server Error"
         }})
@@ -114,14 +114,14 @@ defmodule MetricFlowSpex.QuickbooksSyncFailuresLoggedWithFullErrorContextSurface
       end
 
       when_ "both a QuickBooks failure and a QuickBooks success event are broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: accountId=5555 customerName=Test Corp dateRange=2025-03-01..2025-03-17 — 401 Unauthorized"
         }})
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 10,
           completed_at: DateTime.utc_now(),

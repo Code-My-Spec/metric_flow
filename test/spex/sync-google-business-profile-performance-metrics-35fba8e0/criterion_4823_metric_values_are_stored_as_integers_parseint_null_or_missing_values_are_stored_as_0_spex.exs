@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
       end
 
       when_ "a Google Business Profile sync completes with all metrics present", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -59,7 +59,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
       when_ "a Google Business Profile sync completes where null metrics were zero-filled", context do
         # Null/missing values are stored as 0 (parseInt), so the record count includes them
         # The sync still reports the same total number of records as when all values are present
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -101,7 +101,7 @@ defmodule MetricFlowSpex.MetricValuesAreStoredAsIntegersParseIntNullOrMissingVal
       end
 
       when_ "a Google Business Profile sync completes despite some metrics being null or missing", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 7,
           completed_at: DateTime.utc_now(),

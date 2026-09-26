@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
       end
 
       when_ "a Facebook Ads initial backfill sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 180,
           completed_at: DateTime.utc_now(),
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
       end
 
       when_ "a subsequent (non-initial) Facebook Ads sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 1,
           completed_at: DateTime.utc_now(),
@@ -123,7 +123,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
       end
 
       when_ "an initial Facebook Ads backfill sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 180,
           completed_at: DateTime.utc_now() |> DateTime.add(-3600, :second),
@@ -135,7 +135,7 @@ defmodule MetricFlowSpex.OnFirstSyncFacebookAdsBackfills180DaysSubsequentSyncsIn
       end
 
       when_ "a subsequent Facebook Ads sync completion event is also broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: 1,
           completed_at: DateTime.utc_now(),

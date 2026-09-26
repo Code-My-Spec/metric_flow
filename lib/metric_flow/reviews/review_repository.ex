@@ -31,26 +31,7 @@ defmodule MetricFlow.Reviews.ReviewRepository do
   def create_reviews(%Scope{user: user}, attrs_list) do
     now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
-    entries =
-      Enum.map(attrs_list, fn attrs ->
-        provider = normalize_provider(Map.get(attrs, :provider) || Map.get(attrs, "provider"))
-
-        %{
-          user_id: user.id,
-          integration_id: Map.get(attrs, :integration_id) || Map.get(attrs, "integration_id"),
-          provider: provider,
-          external_review_id:
-            Map.get(attrs, :external_review_id) || Map.get(attrs, "external_review_id"),
-          reviewer_name: Map.get(attrs, :reviewer_name) || Map.get(attrs, "reviewer_name"),
-          star_rating: Map.get(attrs, :star_rating) || Map.get(attrs, "star_rating"),
-          comment: Map.get(attrs, :comment) || Map.get(attrs, "comment"),
-          review_date: Map.get(attrs, :review_date) || Map.get(attrs, "review_date"),
-          location_id: Map.get(attrs, :location_id) || Map.get(attrs, "location_id"),
-          metadata: Map.get(attrs, :metadata) || Map.get(attrs, "metadata") || %{},
-          inserted_at: now,
-          updated_at: now
-        }
-      end)
+    entries = Enum.map(attrs_list, &build_review_entry(&1, user, now))
 
     {count, _} =
       Repo.insert_all(
@@ -62,6 +43,25 @@ defmodule MetricFlow.Reviews.ReviewRepository do
 
     {:ok, count}
   end
+
+  defp build_review_entry(attrs, user, now) do
+    %{
+      user_id: user.id,
+      integration_id: field(attrs, :integration_id),
+      provider: normalize_provider(field(attrs, :provider)),
+      external_review_id: field(attrs, :external_review_id),
+      reviewer_name: field(attrs, :reviewer_name),
+      star_rating: field(attrs, :star_rating),
+      comment: field(attrs, :comment),
+      review_date: field(attrs, :review_date),
+      location_id: field(attrs, :location_id),
+      metadata: field(attrs, :metadata) || %{},
+      inserted_at: now,
+      updated_at: now
+    }
+  end
+
+  defp field(attrs, key), do: Map.get(attrs, key) || Map.get(attrs, Atom.to_string(key))
 
   # ---------------------------------------------------------------------------
   # list_reviews/2
@@ -175,6 +175,4 @@ defmodule MetricFlow.Reviews.ReviewRepository do
 
   defp normalize_provider(provider) when is_binary(provider),
     do: String.to_existing_atom(provider)
-
-  defp normalize_provider(nil), do: nil
 end

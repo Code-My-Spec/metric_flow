@@ -36,8 +36,17 @@ defmodule MetricFlow.Integrations.Providers.GoogleOauthTest do
       Application.put_env(:metric_flow, :google_oauth_client_secret, "test_secret")
 
       on_exit(fn ->
-        if prev_id, do: Application.put_env(:metric_flow, :google_oauth_client_id, prev_id), else: Application.delete_env(:metric_flow, :google_oauth_client_id)
-        if prev_secret, do: Application.put_env(:metric_flow, :google_oauth_client_secret, prev_secret), else: Application.delete_env(:metric_flow, :google_oauth_client_secret)
+        if prev_id do
+          Application.put_env(:metric_flow, :google_oauth_client_id, prev_id)
+        else
+          Application.delete_env(:metric_flow, :google_oauth_client_id)
+        end
+
+        if prev_secret do
+          Application.put_env(:metric_flow, :google_oauth_client_secret, prev_secret)
+        else
+          Application.delete_env(:metric_flow, :google_oauth_client_secret)
+        end
       end)
 
       :ok

@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
       end
 
       when_ "a Google Business Reviews sync completion for a specific location is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 12,
           completed_at: DateTime.utc_now(),
@@ -57,7 +57,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
       end
 
       when_ "sync completion events for two different locations are broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 7,
           completed_at: DateTime.utc_now(),
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -114,7 +114,7 @@ defmodule MetricFlowSpex.ReviewsFetchedPerLocationIdGoogleBusinessAccountIdSpex 
       end
 
       when_ "a Google Business Reviews sync failure is broadcast with a location-specific error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Location 9876543210 not found under account 1234567890"
         }})

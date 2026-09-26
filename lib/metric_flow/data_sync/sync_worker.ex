@@ -216,9 +216,6 @@ defmodule MetricFlow.DataSync.SyncWorker do
         })
 
         {:error, :token_expired}
-
-      {:error, reason} ->
-        {:error, reason}
     end
   end
 

@@ -9,8 +9,6 @@ defmodule MetricFlow.Integrations.Providers.Anthropic do
         anthropic_client_secret: System.get_env("ANTHROPIC_CLIENT_SECRET")
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   @callback_path "/app/integrations/oauth/callback/anthropic"

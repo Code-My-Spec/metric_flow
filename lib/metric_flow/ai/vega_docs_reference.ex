@@ -35,17 +35,7 @@ defmodule MetricFlow.Ai.VegaDocsReference do
         {:ok, entries} ->
           entries
           |> Enum.sort()
-          |> Enum.map(fn entry ->
-            entry_path = Path.join(full_path, entry)
-
-            if File.dir?(entry_path) do
-              count = count_files(entry_path)
-              "dir: #{entry}/ (#{count} files)"
-            else
-              "file: #{entry}"
-            end
-          end)
-          |> Enum.join("\n")
+          |> Enum.map_join("\n", &describe_entry(&1, full_path))
 
         {:error, _} ->
           "Error: cannot read directory '#{path}'"
@@ -101,38 +91,49 @@ defmodule MetricFlow.Ai.VegaDocsReference do
 
     docs_root()
     |> find_all_md_files()
-    |> Enum.flat_map(fn path ->
-      relative = Path.relative_to(path, docs_root())
-
-      case File.read(path) do
-        {:ok, content} ->
-          lines =
-            content
-            |> String.split("\n")
-            |> Enum.with_index(1)
-            |> Enum.filter(fn {line, _} -> String.contains?(String.downcase(line), query_lower) end)
-            |> Enum.take(2)
-
-          if lines != [] do
-            matches =
-              Enum.map(lines, fn {line, num} ->
-                "  L#{num}: #{String.trim(line) |> String.slice(0, 120)}"
-              end)
-              |> Enum.join("\n")
-
-            ["#{relative}\n#{matches}"]
-          else
-            []
-          end
-
-        _ ->
-          []
-      end
-    end)
+    |> Enum.flat_map(&search_file(&1, query_lower))
     |> case do
       [] -> "No results for '#{query}'."
       results -> Enum.take(results, 10) |> Enum.join("\n\n")
     end
+  end
+
+  defp search_file(path, query_lower) do
+    case File.read(path) do
+      {:ok, content} -> matching_lines(content, query_lower) |> format_file_matches(path)
+      _ -> []
+    end
+  end
+
+  defp matching_lines(content, query_lower) do
+    content
+    |> String.split("\n")
+    |> Enum.with_index(1)
+    |> Enum.filter(fn {line, _} -> String.contains?(String.downcase(line), query_lower) end)
+    |> Enum.take(2)
+  end
+
+  defp format_file_matches([], _path), do: []
+
+  defp format_file_matches(lines, path) do
+    relative = Path.relative_to(path, docs_root())
+    matches = Enum.map_join(lines, "\n", &format_match/1)
+    ["#{relative}\n#{matches}"]
+  end
+
+  defp describe_entry(entry, full_path) do
+    entry_path = Path.join(full_path, entry)
+
+    if File.dir?(entry_path) do
+      count = count_files(entry_path)
+      "dir: #{entry}/ (#{count} files)"
+    else
+      "file: #{entry}"
+    end
+  end
+
+  defp format_match({line, num}) do
+    "  L#{num}: #{String.trim(line) |> String.slice(0, 120)}"
   end
 
   # ---------------------------------------------------------------------------

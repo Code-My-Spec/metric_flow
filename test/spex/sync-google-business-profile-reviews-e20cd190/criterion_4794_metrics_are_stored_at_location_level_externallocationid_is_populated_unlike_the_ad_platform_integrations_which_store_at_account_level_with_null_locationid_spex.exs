@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
       when_ "a Google Business Reviews sync completion event is broadcast for a specific location", context do
         location_id = "locations/123456789"
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 48,
           completed_at: ~U[2026-03-17 02:00:00Z],
@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
         ]
 
         Enum.each(locations, fn loc ->
-          send(context.view.pid, {:sync_completed, %{
+          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
             provider: :google_business_reviews,
             records_synced: loc.records_synced,
             completed_at: ~U[2026-03-17 02:00:00Z],
@@ -115,7 +115,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
       end
 
       when_ "both a Google Business Reviews sync and a Google Ads sync completion event are broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 55,
           completed_at: ~U[2026-03-17 02:05:00Z],
@@ -124,7 +124,7 @@ defmodule MetricFlowSpex.MetricsAreStoredAtLocationLevelExternalLocationIdIsPopu
 
         :timer.sleep(30)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 200,
           completed_at: ~U[2026-03-17 02:00:00Z]

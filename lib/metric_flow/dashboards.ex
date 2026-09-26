@@ -189,11 +189,11 @@ defmodule MetricFlow.Dashboards do
     if length(metric_names) > 1 do
       encoding = Map.get(spec, "encoding", %{})
 
-      unless Map.has_key?(encoding, "color") do
+      if Map.has_key?(encoding, "color") do
+        spec
+      else
         encoding = Map.put(encoding, "color", %{"field" => "metric", "type" => "nominal"})
         Map.put(spec, "encoding", encoding)
-      else
-        spec
       end
     else
       spec

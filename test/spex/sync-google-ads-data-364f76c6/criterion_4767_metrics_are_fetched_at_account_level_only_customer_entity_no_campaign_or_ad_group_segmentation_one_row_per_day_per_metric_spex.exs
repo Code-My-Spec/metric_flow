@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
       end
 
       when_ "a Google Ads sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -73,7 +73,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
         date1 = Date.add(Date.utc_today(), -1)
         date2 = Date.add(Date.utc_today(), -2)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.GoogleAdsMetricsFetchedAtAccountLevelOnlySpex do
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),

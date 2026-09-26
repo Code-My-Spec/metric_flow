@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
       end
 
       when_ "a QuickBooks sync completion event is broadcast with credits and debits metric keys", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 2,
           completed_at: DateTime.utc_now()
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
       end
 
       when_ "a QuickBooks sync completion event arrives for both daily_credits and daily_debits", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :quickbooks,
           records_synced: 2,
           completed_at: DateTime.utc_now()
@@ -86,7 +86,7 @@ defmodule MetricFlowSpex.MetricKeysAreQuickbooksAccountDailyCreditsAndDebitsSpex
       end
 
       when_ "a QuickBooks sync failure event is broadcast while writing metric keys", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :quickbooks,
           reason: "QuickBooks API error: failed to store quickbooks_account_daily_credits"
         }})

@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.TheFollowingMetricsAreFetchedAsDailyTimeSeriesGoogleBus
       end
 
       when_ "a Google Business Profile sync completion event is broadcast with 10 records synced", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business,
           records_synced: 10,
           completed_at: DateTime.utc_now(),
@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.TheFollowingMetricsAreFetchedAsDailyTimeSeriesGoogleBus
       end
 
       when_ "a Google Business Profile sync failure event is broadcast due to a metric fetch error", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business,
           reason: "Failed to fetch metrics: quota exceeded"
         }})

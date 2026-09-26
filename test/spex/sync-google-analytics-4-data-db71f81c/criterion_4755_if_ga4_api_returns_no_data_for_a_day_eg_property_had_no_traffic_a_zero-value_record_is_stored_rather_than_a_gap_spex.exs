@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
       end
 
       when_ "a GA4 sync completion event arrives for a day with zero records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 0,
           completed_at: DateTime.utc_now(),
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
 
       when_ "sync events arrive for a day with traffic and a day without traffic", context do
         # Day with traffic
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 11,
           completed_at: DateTime.utc_now(),
@@ -68,7 +68,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
         :timer.sleep(50)
 
         # Day with zero traffic
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 0,
           completed_at: DateTime.utc_now(),
@@ -106,7 +106,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
       when_ "a GA4 sync completion event arrives with zero records for a specific date", context do
         specific_date = ~D[2026-03-10]
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_analytics,
           records_synced: 0,
           completed_at: ~U[2026-03-11 02:00:00Z],

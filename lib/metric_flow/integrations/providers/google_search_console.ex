@@ -6,8 +6,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleSearchConsole do
   search performance data via the Search Console API.
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   alias MetricFlow.Integrations.Providers.Google

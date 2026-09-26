@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
         # sync over 30 days yields 90 records, not 270.
         daily_count_records = 90
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: daily_count_records,
           completed_at: ~U[2026-03-17 02:00:00Z]
@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
       end
 
       when_ "a successful Google Business Reviews sync event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 30,
           completed_at: ~U[2026-03-17 02:00:00Z]
@@ -96,7 +96,7 @@ defmodule MetricFlowSpex.OnlyBusinessReviewDailyCountStoredAsMetricRecordPerDayP
       end
 
       when_ "a Google Business Reviews sync failure event is broadcast", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Failed to store BUSINESS_REVIEW_DAILY_COUNT metrics: database constraint violation"
         }})

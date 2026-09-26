@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
       end
 
       when_ "a Facebook Ads sync completion event is broadcast including cost_per_action_type expanded metrics", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: @cost_per_action_type_count,
           completed_at: DateTime.utc_now(),
@@ -55,7 +55,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
       when_ "a Facebook Ads sync completion event is broadcast reflecting both actions and cost_per_action_type metrics", context do
         total_records = @cost_per_action_type_count * 2
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :facebook_ads,
           records_synced: total_records,
           completed_at: DateTime.utc_now(),
@@ -91,7 +91,7 @@ defmodule MetricFlowSpex.CostPerActionTypeFieldExpandedIntoFlatKeysSpex do
       end
 
       when_ "a Facebook Ads sync failure event is broadcast due to an error during cost_per_action_type expansion", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Failed to expand cost_per_action_type field: unexpected nested structure"
         }})

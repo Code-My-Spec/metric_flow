@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
       end
 
       when_ "a Google Ads initial backfill sync completion event is broadcast with 548 records", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -100,7 +100,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
       end
 
       when_ "a regular incremental Google Ads sync completion event is broadcast", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),
@@ -136,7 +136,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
       end
 
       when_ "an initial backfill sync event is broadcast followed by an incremental sync event", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 548,
           completed_at: DateTime.utc_now(),
@@ -145,7 +145,7 @@ defmodule MetricFlowSpex.GoogleAdsFirstSyncBackfills548DaysSubsequentSyncIncreme
 
         :timer.sleep(50)
 
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_ads,
           records_synced: 5,
           completed_at: DateTime.utc_now(),

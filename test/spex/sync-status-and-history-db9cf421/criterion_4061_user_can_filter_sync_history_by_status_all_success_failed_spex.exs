@@ -70,7 +70,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
       end
 
       when_ "a successful sync event arrives", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 150,
           completed_at: DateTime.utc_now()
@@ -82,7 +82,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
       end
 
       when_ "a failed sync event arrives", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "API rate limit exceeded"
         }})
@@ -128,7 +128,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
       end
 
       when_ "a successful sync event arrives", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 200,
           completed_at: DateTime.utc_now()
@@ -140,7 +140,7 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
       end
 
       when_ "a failed sync event arrives", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Connection timeout"
         }})
@@ -186,13 +186,13 @@ defmodule MetricFlowSpex.UserCanFilterSyncHistoryByStatusAllSuccessFailedSpex do
       end
 
       when_ "both a successful and a failed sync event arrive", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google,
           records_synced: 75,
           completed_at: DateTime.utc_now()
         }})
 
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :facebook_ads,
           reason: "Unexpected server error"
         }})

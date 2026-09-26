@@ -57,7 +57,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
                       <th>Member</th>
                       <th>Role</th>
                       <th>Joined</th>
-                      <th :if={@can_manage}>Actions</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -88,7 +88,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
                       <td class="text-sm text-base-content/70">
                         {format_date(member.inserted_at)}
                       </td>
-                      <td :if={@can_manage}>
+                      <td>
                         <div class="flex items-center gap-2">
                           <%!-- Role change form: uses phx-submit (not phx-change) to require
                              an explicit "Change" button click, preventing accidental role

@@ -19,9 +19,7 @@ defmodule MetricFlow.Integrations.QuickBooksAccounts do
   def list_income_accounts(%Integration{} = integration, opts \\ []) do
     realm_id = get_in(integration.provider_metadata || %{}, ["realm_id"])
 
-    unless realm_id do
-      {:error, :missing_realm_id}
-    else
+    if realm_id do
       query = "SELECT * FROM Account WHERE AccountType = 'Income' MAXRESULTS 100"
       url = "#{base_url()}/#{realm_id}/query"
 
@@ -53,6 +51,8 @@ defmodule MetricFlow.Integrations.QuickBooksAccounts do
           Logger.error("QuickBooks accounts query failed: #{Exception.message(e)}")
           {:error, {:network_error, Exception.message(e)}}
       end
+    else
+      {:error, :missing_realm_id}
     end
   end
 

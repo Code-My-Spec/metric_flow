@@ -15,7 +15,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       end
 
       when_ "a sync success event is broadcast for one customer", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 15,
           completed_at: DateTime.utc_now()
@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       end
 
       when_ "a sync failure event is broadcast for a different customer", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Location details unavailable for customer B — sync failed"
         }})
@@ -78,7 +78,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       end
 
       when_ "a sync failure is broadcast for the first customer", context do
-        send(context.view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Google Business API error: 403 PERMISSION_DENIED for customer A"
         }})
@@ -88,7 +88,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       end
 
       when_ "a sync success is broadcast for the second customer", context do
-        send(context.view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 8,
           completed_at: DateTime.utc_now()
@@ -126,7 +126,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
       given_ "the user is on the sync history page with both a success and a failure broadcast", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
 
-        send(view.pid, {:sync_completed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
           provider: :google_business_reviews,
           records_synced: 22,
           completed_at: DateTime.utc_now()
@@ -134,7 +134,7 @@ defmodule MetricFlowSpex.SyncFailuresForIndividualCustomersAreCaughtAndDoNotHalt
 
         :timer.sleep(50)
 
-        send(view.pid, {:sync_failed, %{
+        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
           provider: :google_business_reviews,
           reason: "Sync failed for customer C: location not found"
         }})

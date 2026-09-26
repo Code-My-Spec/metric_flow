@@ -12,8 +12,6 @@ defmodule MetricFlow.Integrations.Providers.Codemyspec do
         codemyspec_client_secret: System.get_env("CODEMYSPEC_CLIENT_SECRET")
   """
 
-  require Logger
-
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
   @callback_path "/app/integrations/oauth/callback/codemyspec"

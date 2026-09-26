@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocationNameTitleStoreCodeIfPresentAndAddressSpex do
+defmodule MetricFlowSpex.EachLocationRowShowsAccountNameForDisambiguationLocatio4859 do
   use SexySpex
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
