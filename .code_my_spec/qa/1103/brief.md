@@ -1,4 +1,10 @@
-# QA Story Brief — 1103: Stripe Webhook Handler: Subscription Lifecycle Sync
+# QA Story Brief — 1103: Stripe Webhook Handler: Subscription Lifecycle Sync (retest)
+
+This is a retest after commit c15d5e6 fixed all 7 previously-filed issues
+(missing account_id on persist, no route, no free-plan downgrade, single
+webhook secret, thin audit log, connected-account attribution, no
+persistence at all). Verify each fix against the running app rather than
+trusting the resolution notes.
 
 ## Tool
 
@@ -6,9 +12,11 @@ curl
 
 ## Auth
 
-No user/session auth. The endpoint is `POST https://dev.metric-flow.app/billing/webhooks` (Cloudflare tunnel → the running dev server), secured only by the `Stripe-Signature` header.
-
-Sign every payload yourself with the webhook secret from `.env.dev` (`STRIPE_WEBHOOK_SECRET`) — do not use `stripe trigger`, since scenarios need specific `id`/`account`/subscription fields that `stripe trigger` cannot set.
+No user/session auth. The endpoint is `POST https://dev.metric-flow.app/billing/webhooks`
+(Cloudflare tunnel → the running dev server), secured only by the
+`Stripe-Signature` header. Confirmed reachable: an unsigned POST already
+returns `400 {"error":"Missing Stripe-Signature header"}` (route exists,
+issue 2766738a's fix holds).
 
 ```bash
 SECRET=$(grep STRIPE_WEBHOOK_SECRET .env.dev | cut -d= -f2)
@@ -22,42 +30,40 @@ curl -s -o /tmp/resp.json -w '%{http_code}\n' -X POST https://dev.metric-flow.ap
 cat /tmp/resp.json
 ```
 
-For an invalid signature, send `Stripe-Signature: t=$TS,v1=$(printf '0%.0s' {1..64})` instead of the computed value.
+For an invalid signature, send `Stripe-Signature: t=$TS,v1=$(printf '0%.0s' {1..64})` instead.
 
 ## Seeds
 
-No LiveView/user seeds needed. To observe real persisted state (not just HTTP status), query Postgres directly without booting the full app (booting the full app starts the Cloudflare tunnel GenServer and can collide with the running server):
+Query/mutate Postgres directly without booting the full app:
 
 ```bash
-mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([]); <query here>"
+MIX_ENV=dev mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([]); <query here>"
 ```
 
-For scenarios that need a pre-existing subscription row (payment-failed, cancellation, duplicate-delivery follow-up), insert one directly via that pattern, e.g.:
-
-```elixir
-alias MetricFlow.Billing.BillingRepository
-BillingRepository.upsert_subscription(%{stripe_subscription_id: "sub_qa_1103", stripe_customer_id: "cus_qa_1103", status: :active, account_id: <a real account id — look one up via MetricFlow.Repo.one(MetricFlow.Accounts.Account) or similar>})
-```
-
-Note: `Subscription.changeset/2` requires `account_id`. Look up an existing account id first (e.g. the QA seed account) rather than guessing one, or the insert itself will fail with the same defect scenario 3 below is testing.
-
-Use fresh, never-before-used `evt_...` IDs for every scenario except the deliberate duplicate-delivery scenario (11), which reuses one within the same run. `mark_event_processed/1` records event IDs permanently, so a previously-used event ID is spent — pick a new one each pass.
+Known state as of this pass:
+- Account 1 (`johns10@gmail.com`, user id 1) already has subscription `sub_qa1103_seed` (status `active`, `plan_id: nil`).
+- Accounts 3, 4, 5, 6 exist with no subscription row — free of the `Subscription` unique constraint on `account_id`.
+- `billing_stripe_accounts` already has `acct_qa1103_connected -> agency_account_id: 1` — **do not reuse for the attribution scenario**: account 1 already owns a subscription, and `Subscription.changeset/2` has `unique_constraint([:account_id])`, so a second insert for account_id 1 will fail the DB constraint, not the attribution logic. Register a **new** `StripeAccount` pointed at an account with no existing subscription (e.g. account 3) instead.
+- No `billing_plans` rows exist. Create one directly (bypassing Stripe provisioning, since this is only to observe the downgrade write) to test the cancellation-clears-plan behavior meaningfully:
+  ```elixir
+  {:ok, plan} = %MetricFlow.Billing.Plan{} |> MetricFlow.Billing.Plan.changeset(%{name: "QA Plan", price_cents: 1000, currency: "usd", billing_interval: :monthly}) |> MetricFlow.Repo.insert()
+  MetricFlow.Repo.get_by(MetricFlow.Billing.Subscription, stripe_subscription_id: "sub_qa1103_seed") |> Ecto.Changeset.change(plan_id: plan.id) |> MetricFlow.Repo.update()
+  ```
+- All `evt_qa1103_*` IDs from the previous pass are permanently spent (`mark_event_processed/2` records them forever, and they're stuck in the DB from before the fix). Use a fresh prefix for every event this pass, e.g. `evt_qa1103c_<scenario>_$(date +%s)`, except the deliberate duplicate scenario, which reuses one within this run only.
 
 ## What To Test
 
-- **Valid signature accepted** (AC: valid signature verified) — POST a `customer.subscription.created` event with a correctly computed signature. Expect `200 {"received": true}`.
-- **Missing signature rejected** (AC: invalid/missing signature rejected) — POST the same shape with no `Stripe-Signature` header. Expect `400`.
-- **Invalid signature rejected** — POST with a garbage `v1=` value. Expect `400`.
-- **Recognized event updates local state** (AC: recognized event updates local subscription state) — Pre-insert a subscription row (see Seeds) with `status: :active`, then POST `customer.subscription.updated` for that `stripe_subscription_id` with `"status": "past_due"`. Expect `200`, **and** query the DB afterward to confirm `status` actually changed to `past_due`. This is the critical check: the controller test suite only asserts the HTTP status, never the persisted row, and `Billing.handle_subscription_event/1` ignores the return value of `BillingRepository.upsert_subscription/1` — if the insert/update fails validation (e.g. missing required `account_id`), the handler still returns `:ok` and the controller still returns 200. Test a **fresh subscription.created event with no pre-existing row** too, since that path never supplies `account_id` in the attrs — check whether a row is created at all.
-- **Unrecognized event acknowledged and ignored** — POST `{"type": "some.unknown.event"}`. Expect `200 {"received": true, "ignored": true}`.
-- **Payment failure marks past_due and notifies user** — Pre-insert a subscription linked to a real account/user (an account with `originator_user_id` set to a user with a known email), then POST `invoice.payment_failed` referencing that subscription's `stripe_subscription_id`. Expect `200`, subscription status `past_due` in the DB, and an email in the dev mailbox (`https://dev.metric-flow.app/dev/mailbox` or the app's `/dev/mailbox`) addressed to that user.
-- **Cancellation at period end** — POST `customer.subscription.deleted` for an existing subscription. Expect `200`, DB status `cancelled`. Then check whether anything actually downgrades the account to a free plan — search for a "free" plan assignment triggered by cancellation. Current handler code only sets `status: :cancelled`; no plan reassignment is visible. Confirm whether the account's effective plan actually changes, or only the subscription row's status does.
-- **Duplicate delivery is a no-op** — POST the same event (same `id`) twice. First: `200 {"received": true}`. Second: expect `200 {"received": true, "duplicate": true}` and confirm the underlying state was not changed/reprocessed a second time (e.g. no double email sent for a payment_failed duplicate).
-- **Received event logged with required fields** — After any successful POST, query `processed_stripe_events` for that event's row. The AC requires event ID, type, processed status, and timestamp to be recorded. Check what's actually in the row — the schema (`ProcessedStripeEvent`) only has `stripe_event_id` and `inserted_at`; there is no `type` or `status` column. Confirm what's actually persisted vs. what the AC asks for.
-- **Processing failure logged, retry succeeds cleanly** — POST with a bad signature first (expect 400), then retry the identical payload with a correctly computed signature (expect 200). Also check whether anything is written to the application/error log for the bad-signature attempt (the controller's signature-failure branches don't call `Logger.error`; only post-verification processing errors do) — note whether that matches the AC's intent of "webhook processing failures are captured... in an internal error log."
-- **Connected-account event attributed to correct agency** — Insert a `StripeAccount` row (`stripe_account_id`, `agency_account_id`) via the DB pattern above, then POST a `customer.subscription.updated` event with a top-level `"account": "<that stripe_account_id>"`. Expect `200`. Then check whether the resulting subscription row is actually associated with that agency's account anywhere (`account_id` / agency linkage) — `handle_subscription_event/1` never reads `event["account"]`, so confirm whether attribution is real or the event is just accepted without being linked to the agency.
-- **Event with unrecognized account context is rejected** — POST an event with `"account": "acct_never_registered_..."` (never inserted into `billing_stripe_accounts`). Expect `400`.
-- **Agency-specific vs platform webhook secret** — Confirm (by reading `verify_event/2` in the controller and `StripeClient.verify_webhook_signature/3`) whether a different secret is actually used for connected-account events vs. direct/platform events, or whether one single `:stripe_webhook_secret` config value is used regardless of the event's `account` field. Report what you find — this doesn't need a separate HTTP scenario since it's answered directly from the single config lookup already exercised by every other scenario above.
+- **Fresh `customer.subscription.created`, no prior row, WITH checkout metadata** (critical-fix retest) — POST for account 4 (no existing subscription) with `data.object.metadata.account_id: "4"` and a fresh `stripe_subscription_id`. Expect `200`, and a `billing_subscriptions` row created with `account_id: 4`. This is the realistic path: `create_checkout_session/3` now embeds `account_id` in Stripe subscription metadata, so a real checkout-originated event carries it.
+- **Fresh `customer.subscription.created`, no prior row, WITHOUT any account context** (edge case) — same shape but no metadata and no top-level `account` field, fresh sub id. Expect the previously-critical silent-200 bug to be gone: confirm the response is **not** a bare `200` with no row — it should surface the missing-account_id failure (likely `500`) rather than silently succeeding. Verify no row was created either way.
+- **Recognized event updates existing row** — POST `customer.subscription.updated` for `sub_qa1103_seed` changing status to `past_due`. Expect `200`, and DB status actually `past_due` afterward.
+- **Payment failure marks past_due and notifies user** — POST `invoice.payment_failed` referencing `sub_qa1103_seed`. Expect `200`, DB status `past_due`, and a payment-failed email in the dev mailbox addressed to `johns10@gmail.com`.
+- **Cancellation downgrades to free (plan cleared)** — First attach the QA plan to `sub_qa1103_seed` per Seeds. POST `customer.subscription.deleted` for `sub_qa1103_seed`. Expect `200`, DB `status: cancelled`, `cancelled_at` set, **and `plan_id` cleared back to `nil`** — confirming the account no longer has a paid plan attached.
+- **Duplicate delivery is a no-op** — POST one fresh event twice (same `id`). First: `200 {"received":true}`. Second: `200 {"received":true,"duplicate":true}`, and confirm state wasn't reprocessed (e.g., no second email for a payment_failed duplicate).
+- **Received event logged with required fields** — After a successful POST, query `processed_stripe_events` for that event. Confirm the row now has `event_type` and `status` populated (not just `stripe_event_id`/`inserted_at`), and that `status` becomes `processed` (not stuck at `processing`).
+- **Processing failure logged, retry succeeds cleanly** — POST with a bad signature (expect `400`), then retry the identical payload with a correct signature (expect `200`).
+- **Connected-account event attributed to the correct agency** — Register a fresh `StripeAccount` (`stripe_account_id: "acct_qa1103c_connected"`, `agency_account_id: 3` — account 3 has no existing subscription). POST `customer.subscription.updated` with top-level `"account": "acct_qa1103c_connected"` and a fresh sub id, no metadata. Expect `200`, and a `billing_subscriptions` row created with `account_id: 3` (the agency's account) — confirming attribution actually happens now, not just that the event is accepted.
+- **Event with unrecognized account context is rejected** — POST with `"account": "acct_never_registered_..."`. Expect `400`.
+- **Agency-specific vs platform secret** — Read-only check: `.env.dev` only defines `STRIPE_WEBHOOK_SECRET`, not `STRIPE_CONNECT_WEBHOOK_SECRET`, so the fallback branch in `verify_event/2` is unexercised in this environment (`Application.get_env(:metric_flow, :stripe_connect_webhook_secret)` resolves to `nil`, short-circuiting to the original failure). Confirm the platform secret still verifies every scenario above and note that a genuine second-secret test is blocked by missing dev config, not by the code.
 
 ## Result Path
 
@@ -65,8 +71,4 @@ Use fresh, never-before-used `evt_...` IDs for every scenario except the deliber
 
 ## Setup Notes
 
-This story's acceptance criteria describe a much larger surface (agency-specific secrets, connected-account attribution, free-plan downgrade, rich audit logging) than `MetricFlowWeb.BillingWebhookController` + `MetricFlow.Billing` currently implement. There is also a second, apparently dead module, `MetricFlow.Billing.WebhookProcessor`, with overlapping-but-different logic (it does try to extract `account_id` from event metadata) that the controller never calls — `Billing.process_webhook_event/1` is the only path actually wired to `/billing/webhooks`. Don't test `WebhookProcessor` directly; it's unreachable from the HTTP endpoint.
-
-The existing BDD spex files under `test/spex/.../50_stripe_webhook_handler_.../` and the `stripe-webhook-handler-subscription-lifecycle-sync-91f6ce04/` directory assert HTTP status codes only — none of them query the database to confirm state actually changed. A 200 response does not mean the write succeeded; verify persisted rows directly per the scenarios above.
-
-Avoid running plain `mix run -e` from this worktree more than necessary — it boots the full application (including the Cloudflare tunnel GenServer) and can collide with the actually-running dev server. Use `mix run --no-start -e "...Repo.start_link([])..."` for all DB inspection.
+`Subscription.changeset/2` has `unique_constraint([:account_id])` — one subscription per account. Any scenario that inserts a *new* subscription must target an account with no existing row (3, 4, 5, or 6), not account 1 (already has `sub_qa1103_seed`) or 15 (already has `sub_dev_client_beta`).
