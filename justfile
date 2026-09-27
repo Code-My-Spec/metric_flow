@@ -63,25 +63,30 @@ restart:
     exit 1
 
 # Story 1108 (CodeMySpec): run *this* checkout's own app in the foreground,
-# on the port and database it's given.
+# on whatever it's given.
+#
+# No parameters — the caller (CodeMySpec's harness) sets PORT and
+# DATABASE_NAME as environment before invoking this, rather than positional
+# args, so every app's `serve` recipe can take exactly what it needs without
+# agreeing on one shared signature.
 #
 # Not a rework of `restart` above: that one is for the one server everyone
 # shares, self-daemonizes because nothing is left holding it, and always
 # rebuilds/migrates first because a pull might have moved either. This one is
-# a working copy's own instance, called by something (CodeMySpec's harness)
-# that already knows how to background a process and track its pid — so it
-# stays in the foreground and lets the caller decide when it dies. Deps and
-# migrations are assumed current; the harness runs `deps.get`/`compile`
-# itself before a working copy's first use.
-serve port database_name:
+# a working copy's own instance, called by something that already knows how
+# to background a process and track its pid — so it stays in the foreground
+# and lets the caller decide when it dies. Deps are assumed current; the
+# harness runs `deps.get`/`compile` itself before a working copy's first use.
+serve:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    export PORT="{{port}}"
-    export DATABASE_NAME="{{database_name}}"
+    : "${PORT:?PORT must be set}"
+    : "${DATABASE_NAME:?DATABASE_NAME must be set}"
+
     MIX_ENV=dev mix ecto.create
     MIX_ENV=dev mix ecto.migrate
-    exec env MIX_ENV=dev PORT="$PORT" DATABASE_NAME="$DATABASE_NAME" elixir -S mix phx.server
+    exec env MIX_ENV=dev elixir -S mix phx.server
 
 # Scan the repo for accidental plaintext occurrences of `@sensitive` env
 # values (e.g. an API key copy-pasted into a test file).
