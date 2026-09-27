@@ -5,7 +5,10 @@ defmodule MetricFlowSpex.WebhookEventsAreLoggedSpex do
 
   spex "All webhook events are logged for auditability" do
     scenario "processed event returns response with event ID acknowledgment" do
+      given_(:user_logged_in_as_owner)
+
       when_ "a webhook event is sent", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         event_id = "evt_log_#{System.unique_integer([:positive])}"
 
         payload =
@@ -19,7 +22,8 @@ defmodule MetricFlowSpex.WebhookEventsAreLoggedSpex do
                 "status" => "active",
                 "items" => %{"data" => [%{"price" => %{"id" => "price_test"}}]},
                 "current_period_start" => 1_700_000_000,
-                "current_period_end" => 1_702_592_000
+                "current_period_end" => 1_702_592_000,
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })

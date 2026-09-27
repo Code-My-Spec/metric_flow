@@ -5,7 +5,11 @@ defmodule MetricFlowSpex.SubscriptionDeletedDowngradesToFreeSpex do
 
   spex "On subscription.deleted, user is downgraded to free" do
     scenario "subscription.deleted webhook is processed" do
+      given_(:user_logged_in_as_owner)
+
       when_ "a subscription.deleted event is sent", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
+
         payload =
           Jason.encode!(%{
             "id" => "evt_del_#{System.unique_integer([:positive])}",
@@ -17,7 +21,8 @@ defmodule MetricFlowSpex.SubscriptionDeletedDowngradesToFreeSpex do
                 "status" => "canceled",
                 "canceled_at" => 1_700_100_000,
                 "current_period_end" => 1_702_592_000,
-                "items" => %{"data" => [%{"price" => %{"id" => "price_test"}}]}
+                "items" => %{"data" => [%{"price" => %{"id" => "price_test"}}]},
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })
