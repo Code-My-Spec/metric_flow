@@ -340,24 +340,28 @@ defmodule MetricFlow.Billing do
   """
   @spec update_plan(Plan.t(), map()) :: {:ok, Plan.t()} | {:error, term()}
   def update_plan(plan, attrs) do
-    alias MetricFlow.Billing.{Plan, StripeClient}
+    alias MetricFlow.Billing.Plan
 
     changeset = Plan.changeset(plan, attrs)
 
     if changeset.valid? do
-      new_price_cents = Ecto.Changeset.get_field(changeset, :price_cents)
-
-      if plan.stripe_price_id && new_price_cents != plan.price_cents do
-        with {:ok, new_stripe_price_id} <- rotate_stripe_price(plan, changeset) do
-          changeset
-          |> Ecto.Changeset.put_change(:stripe_price_id, new_stripe_price_id)
-          |> MetricFlow.Repo.update()
-        end
-      else
-        MetricFlow.Repo.update(changeset)
-      end
+      apply_plan_update(plan, changeset)
     else
       {:error, %{changeset | action: :update}}
+    end
+  end
+
+  defp apply_plan_update(plan, changeset) do
+    new_price_cents = Ecto.Changeset.get_field(changeset, :price_cents)
+
+    if plan.stripe_price_id && new_price_cents != plan.price_cents do
+      with {:ok, new_stripe_price_id} <- rotate_stripe_price(plan, changeset) do
+        changeset
+        |> Ecto.Changeset.put_change(:stripe_price_id, new_stripe_price_id)
+        |> MetricFlow.Repo.update()
+      end
+    else
+      MetricFlow.Repo.update(changeset)
     end
   end
 
