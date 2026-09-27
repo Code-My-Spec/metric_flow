@@ -378,18 +378,30 @@ defmodule MetricFlowSpex.SharedGivens do
         capabilities: %{charges_enabled: true, payouts_enabled: true}
       })
 
-    # The `create_price` cassette holds one `/v1/products` interaction
-    # followed by one `/v1/prices` interaction, matched on method+uri only
-    # (bodies vary by plan) — enough to answer a full product+price
-    # provisioning call made from a LiveView process that never receives an
+    # A stub, not a recorded cassette: creating more than one plan in the same
+    # scenario means more than one Stripe product+price call, and a cassette
+    # replaying a fixed price ID would give every plan the same
+    # `stripe_price_id`, tripping Plan's `unique_constraint` on the second
+    # insert. This answers a LiveView process that never receives an
     # explicit `:plug` opt the way a direct StripeClient test would.
-    ReqCassette.with_cassette(
-      "create_price",
-      [cassette_dir: "test/cassettes/billing", mode: :replay, match_requests_on: [:method, :uri]],
-      fn plug -> Application.put_env(:metric_flow, :stripe_test_plug, plug) end
-    )
+    Application.put_env(:metric_flow, :stripe_test_plug, &stripe_stub_plug/1)
 
     {:ok, context}
+  end
+
+  defp stripe_stub_plug(conn) do
+    {status, body} =
+      case {conn.method, conn.request_path} do
+        {"POST", "/v1/products"} ->
+          {200, %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
+
+        {"POST", "/v1/prices"} ->
+          {200, %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
+      end
+
+    conn
+    |> Plug.Conn.put_resp_content_type("application/json")
+    |> Plug.Conn.send_resp(status, Jason.encode!(body))
   end
 
   register_given :owner_has_metrics, context do

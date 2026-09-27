@@ -7,7 +7,6 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
 
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
-  import ReqCassette
 
   alias MetricFlow.Accounts.{Account, AccountMember}
   alias MetricFlow.Billing.{Plan, StripeAccount}
@@ -54,20 +53,25 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       })
       |> Repo.insert!()
 
-    with_cassette(
-      "create_price",
-      [
-        cassette_dir: "test/cassettes/billing",
-        mode: :replay,
-        match_requests_on: [:method, :uri]
-      ],
-      fn plug ->
-        Application.put_env(:metric_flow, :stripe_test_plug, plug)
-        ExUnit.Callbacks.on_exit(fn -> Application.delete_env(:metric_flow, :stripe_test_plug) end)
-      end
-    )
+    Application.put_env(:metric_flow, :stripe_test_plug, &stripe_stub_plug/1)
+    ExUnit.Callbacks.on_exit(fn -> Application.delete_env(:metric_flow, :stripe_test_plug) end)
 
     stripe_account
+  end
+
+  defp stripe_stub_plug(conn) do
+    {status, body} =
+      case {conn.method, conn.request_path} do
+        {"POST", "/v1/products"} ->
+          {200, %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
+
+        {"POST", "/v1/prices"} ->
+          {200, %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
+      end
+
+    conn
+    |> Plug.Conn.put_resp_content_type("application/json")
+    |> Plug.Conn.send_resp(status, Jason.encode!(body))
   end
 
   defp plan_fixture(account, attrs \\ %{}) do
