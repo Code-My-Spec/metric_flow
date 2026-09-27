@@ -51,18 +51,24 @@ if tunnel_config[:mode] == :named do
     Keyword.put(tunnel_config, :tunnel_secret, env!("CLOUDFLARE_TUNNEL_SECRET", :string, ""))
 end
 
+# Cassette-replay tests validate request parameters (e.g. ReqLLM rejects a nil
+# api_key) before a plug ever gets to replay the recording, so :test needs a
+# non-nil value even with no .env files present. Real values from .env.test
+# still win — this is only the fallback when the key is entirely absent.
+test_placeholder = fn value -> if config_env() == :test, do: value end
+
 # OAuth provider credentials — available in all environments
 config :metric_flow,
-  github_client_id: env!("GITHUB_CLIENT_ID", :string, nil),
-  github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, nil),
-  google_client_id: env!("GOOGLE_CLIENT_ID", :string, nil),
-  google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, nil),
-  google_ads_developer_token: env!("GOOGLE_ADS_DEVELOPER_TOKEN", :string, nil),
-  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil),
-  quickbooks_client_id: env!("QUICKBOOKS_CLIENT_ID", :string, nil),
-  quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, nil),
-  facebook_app_id: env!("FACEBOOK_APP_ID", :string, nil),
-  facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, nil),
+  github_client_id: env!("GITHUB_CLIENT_ID", :string, test_placeholder.("test-github-client-id")),
+  github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, test_placeholder.("test-github-client-secret")),
+  google_client_id: env!("GOOGLE_CLIENT_ID", :string, test_placeholder.("test-google-client-id.apps.googleusercontent.com")),
+  google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, test_placeholder.("test-google-client-secret")),
+  google_ads_developer_token: env!("GOOGLE_ADS_DEVELOPER_TOKEN", :string, test_placeholder.("test-google-ads-developer-token")),
+  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, test_placeholder.("1234567890")),
+  quickbooks_client_id: env!("QUICKBOOKS_CLIENT_ID", :string, test_placeholder.("test-quickbooks-client-id")),
+  quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, test_placeholder.("test-quickbooks-client-secret")),
+  facebook_app_id: env!("FACEBOOK_APP_ID", :string, test_placeholder.("test-facebook-app-id")),
+  facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, test_placeholder.("test-facebook-app-secret")),
   quickbooks_api_url: env!("QUICKBOOKS_API_URL", :string, "https://sandbox-quickbooks.api.intuit.com/v3/company"),
   codemyspec_url: env!("CODEMYSPEC_URL", :string, "https://app.codemyspec.com"),
   codemyspec_client_id: env!("CODEMYSPEC_CLIENT_ID", :string, nil),
@@ -191,6 +197,6 @@ if config_env() == :prod do
 end
 
 # LLM API key — available in all environments (ADR: llm_provider)
-if anthropic_key = env!("ANTHROPIC_API_KEY", :string, nil) do
+if anthropic_key = env!("ANTHROPIC_API_KEY", :string, test_placeholder.("test-anthropic-api-key")) do
   config :req_llm, :anthropic_api_key, anthropic_key
 end
