@@ -93,7 +93,11 @@ config :metric_flow,
   codemyspec_project_id: env!("CODEMYSPEC_PROJECT_ID", :string, nil),
   stripe_secret_key: env!("STRIPE_SECRET_KEY", :string, nil),
   stripe_publishable_key: env!("STRIPE_PUBLISHABLE_KEY", :string, nil),
-  stripe_webhook_secret: env!("STRIPE_WEBHOOK_SECRET", :string, nil)
+  stripe_webhook_secret: env!("STRIPE_WEBHOOK_SECRET", :string, nil),
+  # Connect events (from agencies' connected accounts) arrive through a
+  # separate Stripe Connect endpoint with its own shared secret — Stripe
+  # does not support a secret per connected account.
+  stripe_connect_webhook_secret: env!("STRIPE_CONNECT_WEBHOOK_SECRET", :string, nil)
 
 # Test-only: expose cassette recording credentials via Application config
 # so test fixtures can read them without relying on System.get_env.

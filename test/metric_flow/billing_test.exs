@@ -6,10 +6,10 @@ defmodule MetricFlow.BillingTest do
   use MetricFlowTest.DataCase, async: false
 
   import ExUnit.CaptureLog
-
-  require Logger
+  import MetricFlowTest.AgenciesFixtures
 
   alias MetricFlow.Billing
+  alias MetricFlow.Billing.BillingRepository
 
   describe "process_webhook_event/1" do
     # `config/test.exs:44` names this convention outright: "Tests that need
@@ -27,57 +27,80 @@ defmodule MetricFlow.BillingTest do
     end
 
     test "processes subscription.created and persists subscription" do
+      account = account_fixture()
+      sub_id = "sub_test_#{System.unique_integer([:positive])}"
+
       event = %{
         "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.created",
         "data" => %{
           "object" => %{
-            "id" => "sub_test_#{System.unique_integer([:positive])}",
+            "id" => sub_id,
             "customer" => "cus_test",
             "status" => "active",
             "current_period_start" => 1_700_000_000,
-            "current_period_end" => 1_702_592_000
+            "current_period_end" => 1_702_592_000,
+            "metadata" => %{"account_id" => to_string(account.id)}
           }
         }
       }
 
       assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.created"
+
+      subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
+      assert subscription.account_id == account.id
+      assert subscription.status == :active
     end
 
     test "processes subscription.updated and updates status" do
+      account = account_fixture()
+      sub_id = "sub_updated_#{System.unique_integer([:positive])}"
+
       event = %{
         "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.updated",
         "data" => %{
           "object" => %{
-            "id" => "sub_updated_#{System.unique_integer([:positive])}",
+            "id" => sub_id,
             "customer" => "cus_test",
             "status" => "past_due",
             "current_period_start" => 1_700_000_000,
-            "current_period_end" => 1_702_592_000
+            "current_period_end" => 1_702_592_000,
+            "metadata" => %{"account_id" => to_string(account.id)}
           }
         }
       }
 
       assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.updated"
+
+      subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
+      assert subscription.status == :past_due
     end
 
-    test "processes subscription.deleted and marks as cancelled" do
+    test "processes subscription.deleted, marks as cancelled and clears plan" do
+      account = account_fixture()
+      sub_id = "sub_deleted_#{System.unique_integer([:positive])}"
+
       event = %{
         "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.deleted",
         "data" => %{
           "object" => %{
-            "id" => "sub_deleted_#{System.unique_integer([:positive])}",
+            "id" => sub_id,
             "customer" => "cus_test",
             "status" => "canceled",
             "canceled_at" => 1_700_100_000,
-            "current_period_end" => 1_702_592_000
+            "current_period_end" => 1_702_592_000,
+            "metadata" => %{"account_id" => to_string(account.id)}
           }
         }
       }
 
       assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.deleted"
+
+      subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
+      assert subscription.status == :cancelled
+      assert subscription.plan_id == nil
     end
 
     test "processes invoice.payment_failed and marks subscription as past_due" do

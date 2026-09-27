@@ -111,16 +111,25 @@ defmodule MetricFlow.Billing.StripeClient do
   """
   @spec create_checkout_session(map(), String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def create_checkout_session(plan, return_url, opts \\ []) do
-    body =
-      URI.encode_query(%{
-        "mode" => "subscription",
-        "line_items[0][price]" => plan.stripe_price_id || "price_placeholder",
-        "line_items[0][quantity]" => "1",
-        "success_url" => return_url <> "?success=true&session_id={CHECKOUT_SESSION_ID}",
-        "cancel_url" => return_url <> "?cancelled=true"
-      })
+    params = %{
+      "mode" => "subscription",
+      "line_items[0][price]" => plan.stripe_price_id || "price_placeholder",
+      "line_items[0][quantity]" => "1",
+      "success_url" => return_url <> "?success=true&session_id={CHECKOUT_SESSION_ID}",
+      "cancel_url" => return_url <> "?cancelled=true"
+    }
 
-    post("#{@stripe_api_base}/checkout/sessions", body, opts)
+    # Checkout session metadata does not carry over to the Subscription it
+    # creates — only subscription_data[metadata] does, and that is what the
+    # webhook handler reads to attribute the resulting subscription back to
+    # an account.
+    params =
+      case Keyword.get(opts, :account_id) do
+        nil -> params
+        account_id -> Map.put(params, "subscription_data[metadata][account_id]", to_string(account_id))
+      end
+
+    post("#{@stripe_api_base}/checkout/sessions", URI.encode_query(params), opts)
   end
 
   @doc """

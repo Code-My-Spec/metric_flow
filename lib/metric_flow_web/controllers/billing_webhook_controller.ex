@@ -77,8 +77,24 @@ defmodule MetricFlowWeb.BillingWebhookController do
   end
 
   defp verify_event(raw_body, signature) do
-    webhook_secret = Application.get_env(:metric_flow, :stripe_webhook_secret, "")
-    StripeClient.verify_webhook_signature(raw_body, signature, webhook_secret)
+    platform_secret = Application.get_env(:metric_flow, :stripe_webhook_secret, "")
+
+    case StripeClient.verify_webhook_signature(raw_body, signature, platform_secret) do
+      {:ok, event} ->
+        {:ok, event}
+
+      {:error, :signature_mismatch} ->
+        # Connect events (from agencies' connected accounts) arrive through
+        # a separate endpoint secret from the platform's own — try it before
+        # giving up, rather than assuming every event is a direct/platform one.
+        case Application.get_env(:metric_flow, :stripe_connect_webhook_secret) do
+          nil -> {:error, :signature_mismatch}
+          connect_secret -> StripeClient.verify_webhook_signature(raw_body, signature, connect_secret)
+        end
+
+      other ->
+        other
+    end
   end
 
   defp process_event(conn, event) do
@@ -103,8 +119,11 @@ defmodule MetricFlowWeb.BillingWebhookController do
         |> json(%{error: "Event references an unrecognized connected account"})
 
       {:error, reason} ->
+        # A non-2xx here is what makes Stripe retry: silently returning 200
+        # on a persistence failure means the event is never seen again and
+        # local state permanently disagrees with Stripe's.
         Logger.error("Webhook processing failed: #{inspect(reason)} for event #{event_id}")
-        conn |> put_status(200) |> json(%{received: true})
+        conn |> put_status(500) |> json(%{error: "Failed to process event"})
     end
   end
 end

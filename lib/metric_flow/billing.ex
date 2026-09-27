@@ -28,9 +28,11 @@ defmodule MetricFlow.Billing do
   @spec process_webhook_event(map()) ::
           :ok | {:ok, :ignored} | {:ok, :duplicate} | {:error, term()}
   def process_webhook_event(%{"type" => type, "id" => event_id} = event) do
-    with {:ok, _} <- BillingRepository.mark_event_processed(event_id),
-         :ok <- verify_account_context(event) do
-      dispatch_event(type, event)
+    with {:ok, processed_event} <- BillingRepository.mark_event_processed(event_id, type),
+         {:ok, account_id} <- resolve_account(event) do
+      result = dispatch_event(type, event, account_id)
+      BillingRepository.record_event_outcome(processed_event, outcome_status(result))
+      result
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         if Keyword.has_key?(changeset.errors, :stripe_event_id) do
@@ -46,10 +48,14 @@ defmodule MetricFlow.Billing do
 
   def process_webhook_event(_invalid), do: {:error, :invalid_event}
 
-  defp dispatch_event(type, event) do
+  defp outcome_status(:ok), do: :processed
+  defp outcome_status({:ok, _}), do: :processed
+  defp outcome_status({:error, _}), do: :failed
+
+  defp dispatch_event(type, event, account_id) do
     case type do
       "customer.subscription." <> _ ->
-        handle_subscription_event(event)
+        handle_subscription_event(event, account_id)
 
       "invoice.payment_failed" ->
         handle_payment_failed(event)
@@ -66,64 +72,90 @@ defmodule MetricFlow.Billing do
     end
   end
 
-  defp verify_account_context(%{"account" => connected_account_id})
+  # A connected-account event is attributed to the specific account named in
+  # the subscription's own metadata (set at checkout) when present, and
+  # otherwise falls back to the agency that owns the connected Stripe
+  # account, since that is the only account context Stripe gives us.
+  defp resolve_account(%{"account" => connected_account_id} = event)
        when is_binary(connected_account_id) do
     case BillingRepository.get_stripe_account_by_stripe_id(connected_account_id) do
-      nil -> {:error, :unrecognized_account}
-      %StripeAccount{} -> :ok
+      nil ->
+        {:error, :unrecognized_account}
+
+      %StripeAccount{agency_account_id: agency_account_id} ->
+        {:ok, metadata_account_id(event) || agency_account_id}
     end
   end
 
-  defp verify_account_context(_event), do: :ok
+  defp resolve_account(event), do: {:ok, metadata_account_id(event)}
 
-  defp handle_subscription_event(%{"type" => "customer.subscription.created"} = event) do
+  defp metadata_account_id(%{"data" => %{"object" => %{"metadata" => %{"account_id" => id}}}})
+       when is_binary(id) do
+    case Integer.parse(id) do
+      {int, ""} -> int
+      _ -> nil
+    end
+  end
+
+  defp metadata_account_id(_), do: nil
+
+  defp handle_subscription_event(%{"type" => "customer.subscription.created"} = event, account_id) do
     sub = event["data"]["object"]
     Logger.info("Processing subscription.created: #{sub["id"]}")
 
-    BillingRepository.upsert_subscription(%{
+    persist_subscription(%{
       stripe_subscription_id: sub["id"],
       stripe_customer_id: sub["customer"],
       status: map_status(sub["status"]),
       current_period_start: from_unix(sub["current_period_start"]),
-      current_period_end: from_unix(sub["current_period_end"])
+      current_period_end: from_unix(sub["current_period_end"]),
+      account_id: account_id
     })
-
-    :ok
   end
 
-  defp handle_subscription_event(%{"type" => "customer.subscription.updated"} = event) do
+  defp handle_subscription_event(%{"type" => "customer.subscription.updated"} = event, account_id) do
     sub = event["data"]["object"]
     Logger.info("Processing subscription.updated: #{sub["id"]}")
 
-    BillingRepository.upsert_subscription(%{
+    persist_subscription(%{
       stripe_subscription_id: sub["id"],
       stripe_customer_id: sub["customer"],
       status: map_status(sub["status"]),
       current_period_start: from_unix(sub["current_period_start"]),
-      current_period_end: from_unix(sub["current_period_end"])
+      current_period_end: from_unix(sub["current_period_end"]),
+      account_id: account_id
     })
-
-    :ok
   end
 
-  defp handle_subscription_event(%{"type" => "customer.subscription.deleted"} = event) do
+  defp handle_subscription_event(%{"type" => "customer.subscription.deleted"} = event, account_id) do
     sub = event["data"]["object"]
     Logger.info("Processing subscription.deleted: #{sub["id"]}")
 
-    BillingRepository.upsert_subscription(%{
+    # Downgrade to free: clear the plan association. Stripe only sends
+    # `deleted` once the subscription has actually ended (immediately, or
+    # at the configured period end for cancel_at_period_end cancellations),
+    # so no separate period-end scheduling is needed here.
+    persist_subscription(%{
       stripe_subscription_id: sub["id"],
       stripe_customer_id: sub["customer"],
       status: :cancelled,
       cancelled_at: from_unix(sub["canceled_at"]),
-      current_period_end: from_unix(sub["current_period_end"])
+      current_period_end: from_unix(sub["current_period_end"]),
+      account_id: account_id,
+      plan_id: nil
     })
-
-    :ok
   end
 
-  defp handle_subscription_event(%{"type" => type}) do
+  defp handle_subscription_event(%{"type" => type}, _account_id) do
     Logger.debug("Ignoring subscription event subtype: #{type}")
     {:ok, :ignored}
+  end
+
+  defp persist_subscription(attrs) do
+    case BillingRepository.upsert_subscription(attrs) do
+      {:ok, _subscription} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp handle_payment_failed(event) do
@@ -139,10 +171,14 @@ defmodule MetricFlow.Billing do
         subscription
         |> Subscription.changeset(%{status: :past_due})
         |> MetricFlow.Repo.update()
+        |> case do
+          {:ok, updated} ->
+            notify_payment_failed(updated.account_id)
+            :ok
 
-        notify_payment_failed(subscription.account_id)
-
-        :ok
+          {:error, reason} ->
+            {:error, reason}
+        end
     end
   end
 
@@ -178,7 +214,7 @@ defmodule MetricFlow.Billing do
   """
   @spec create_checkout_session(integer(), map(), String.t()) ::
           {:ok, String.t()} | {:error, term()}
-  def create_checkout_session(_account_id, plan, return_url) do
+  def create_checkout_session(account_id, plan, return_url) do
     alias MetricFlow.Billing.StripeClient
 
     # Determine if this is an agency plan (route to agency Stripe account)
@@ -190,7 +226,10 @@ defmodule MetricFlow.Billing do
         end
       end
 
-    case StripeClient.create_checkout_session(plan, return_url, stripe_account: stripe_account) do
+    case StripeClient.create_checkout_session(plan, return_url,
+           stripe_account: stripe_account,
+           account_id: account_id
+         ) do
       {:ok, session} -> {:ok, session["url"]}
       {:error, reason} -> {:error, reason}
     end

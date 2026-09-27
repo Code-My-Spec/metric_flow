@@ -29,13 +29,24 @@ defmodule MetricFlow.Billing.BillingRepository do
   end
 
   @doc """
-  Records a Stripe event ID as processed. Returns `{:error, changeset}` with a
-  unique constraint error if the event was already recorded (a redelivery).
+  Records a Stripe event ID and type as processed. Returns `{:error, changeset}`
+  with a unique constraint error if the event was already recorded (a redelivery).
   """
-  def mark_event_processed(stripe_event_id) do
+  def mark_event_processed(stripe_event_id, event_type) do
     %ProcessedStripeEvent{}
-    |> ProcessedStripeEvent.changeset(%{stripe_event_id: stripe_event_id})
+    |> ProcessedStripeEvent.changeset(%{stripe_event_id: stripe_event_id, event_type: event_type})
     |> Repo.insert()
+  end
+
+  @doc """
+  Records the outcome (:processed or :failed) once dispatch has run, so the
+  audit row reflects what actually happened rather than just that an event
+  arrived.
+  """
+  def record_event_outcome(%ProcessedStripeEvent{} = event, status) do
+    event
+    |> ProcessedStripeEvent.status_changeset(status)
+    |> Repo.update()
   end
 
   def upsert_subscription(attrs) do

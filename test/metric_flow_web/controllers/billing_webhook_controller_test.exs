@@ -2,6 +2,7 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
   use MetricFlowTest.ConnCase
 
   import ExUnit.CaptureLog
+  import MetricFlowTest.AgenciesFixtures
 
   @webhook_secret "whsec_test_secret"
 
@@ -23,13 +24,16 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
   end
 
   defp subscription_event(type, overrides \\ %{}) do
+    account = account_fixture()
+
     base = %{
       "id" => "sub_test_#{System.unique_integer([:positive])}",
       "customer" => "cus_test",
       "status" => "active",
       "items" => %{"data" => [%{"price" => %{"id" => "price_test"}}]},
       "current_period_start" => 1_700_000_000,
-      "current_period_end" => 1_702_592_000
+      "current_period_end" => 1_702_592_000,
+      "metadata" => %{"account_id" => to_string(account.id)}
     }
 
     %{
@@ -203,7 +207,7 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
                end)
     end
 
-    test "handles duplicate event delivery idempotently (same event ID processed twice returns 200 both times)", %{conn: conn} do
+    test "handles duplicate event delivery idempotently (same event ID processed twice returns 200 both times)", %{conn: _conn} do
       event = subscription_event("customer.subscription.created")
 
       capture_log(fn ->
