@@ -30,6 +30,38 @@ default:
 run *cmd:
     varlock run -- {{cmd}}
 
+# Bring the application back up on the code that is now checked out.
+#
+# CodeMySpec's promote runs this in the checkout it merged into and reads the
+# exit status: non-zero means nothing is served. The app starts its own
+# Cloudflare tunnel (config :metric_flow, :cloudflare_tunnel), so the preview
+# URL answers only while this server is up.
+restart:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    port="${PORT:-4070}"
+
+    elixir -S mix deps.get
+    MIX_ENV=dev elixir -S mix compile
+    MIX_ENV=dev elixir -S mix ecto.migrate
+
+    pids="$(lsof -ti tcp:"$port" -sTCP:LISTEN || true)"
+    if [ -n "$pids" ]; then kill $pids; fi
+    for _ in $(seq 1 30); do lsof -ti tcp:"$port" -sTCP:LISTEN >/dev/null || break; sleep 1; done
+
+    mkdir -p tmp
+    MIX_ENV=dev PORT="$port" nohup elixir -S mix phx.server > tmp/phx_server.log 2>&1 &
+
+    for _ in $(seq 1 120); do
+        if curl -s -o /dev/null "http://127.0.0.1:$port/health"; then
+            echo "✓ metric_flow answering on $port"
+            exit 0
+        fi
+        sleep 2
+    done
+    echo "✗ metric_flow did not answer on $port within 4 minutes — see tmp/phx_server.log" >&2
+    exit 1
+
 # Scan the repo for accidental plaintext occurrences of `@sensitive` env
 # values (e.g. an API key copy-pasted into a test file).
 scan:
