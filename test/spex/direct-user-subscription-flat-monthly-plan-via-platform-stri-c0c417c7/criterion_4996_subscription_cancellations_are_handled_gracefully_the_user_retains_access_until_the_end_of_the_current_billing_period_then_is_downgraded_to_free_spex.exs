@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.SubscriptionCancellationsHandledGracefullySpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
 
   import MetricFlowSpex.SharedGivens
 
