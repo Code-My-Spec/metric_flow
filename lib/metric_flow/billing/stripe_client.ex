@@ -188,7 +188,7 @@ defmodule MetricFlow.Billing.StripeClient do
   end
 
   defp req_http_options(opts) do
-    case Keyword.get(opts, :plug) do
+    case Keyword.get(opts, :plug) || Application.get_env(:metric_flow, :stripe_test_plug) do
       nil -> []
       plug -> [plug: plug]
     end

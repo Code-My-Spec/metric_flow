@@ -285,6 +285,55 @@ defmodule MetricFlow.Billing do
   end
 
   @doc """
+  Create an agency subscription plan, provisioning a Stripe Product and
+  Price on the agency's connected Stripe account first so a plan is never
+  persisted without a usable `stripe_price_id`.
+  """
+  @spec create_plan(map()) :: {:ok, MetricFlow.Billing.Plan.t()} | {:error, term()}
+  def create_plan(attrs) do
+    alias MetricFlow.Billing.{Plan, StripeClient}
+
+    changeset = Plan.changeset(%Plan{}, attrs)
+
+    if changeset.valid? do
+      with {:ok, stripe_price_id} <- provision_stripe_price(changeset) do
+        changeset
+        |> Ecto.Changeset.put_change(:stripe_price_id, stripe_price_id)
+        |> MetricFlow.Repo.insert()
+      end
+    else
+      {:error, %{changeset | action: :insert}}
+    end
+  end
+
+  defp provision_stripe_price(changeset) do
+    alias MetricFlow.Billing.StripeClient
+
+    name = Ecto.Changeset.get_field(changeset, :name)
+    price_cents = Ecto.Changeset.get_field(changeset, :price_cents)
+    currency = Ecto.Changeset.get_field(changeset, :currency)
+    billing_interval = Ecto.Changeset.get_field(changeset, :billing_interval)
+    agency_account_id = Ecto.Changeset.get_field(changeset, :agency_account_id)
+
+    case agency_account_id && BillingRepository.get_stripe_account_by_agency(agency_account_id) do
+      %{stripe_account_id: stripe_account_id} ->
+        with {:ok, product} <-
+               StripeClient.create_product(name, stripe_account: stripe_account_id),
+             {:ok, price} <-
+               StripeClient.create_price(product["id"], price_cents,
+                 currency: currency,
+                 interval: to_string(billing_interval),
+                 stripe_account: stripe_account_id
+               ) do
+          {:ok, price["id"]}
+        end
+
+      _ ->
+        {:error, :stripe_account_not_connected}
+    end
+  end
+
+  @doc """
   Disconnect an agency's Stripe account.
   """
   @spec disconnect_stripe_account(integer()) :: :ok | {:error, term()}

@@ -53,7 +53,6 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
                   value={@form_params["name"]}
                   class={["input w-full", @form_errors[:name] && "input-error"]}
                   required
-                  disabled={!@stripe_connected}
                 />
                 <p :if={@form_errors[:name]} class="text-sm text-error mt-1">
                   {@form_errors[:name]}
@@ -69,7 +68,6 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
                   class={["input w-full", @form_errors[:price_cents] && "input-error"]}
                   required
                   min="1"
-                  disabled={!@stripe_connected}
                 />
                 <p :if={@form_errors[:price_cents]} class="text-sm text-error mt-1">
                   {@form_errors[:price_cents]}
@@ -78,7 +76,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
 
               <div class="form-control">
                 <label class="label"><span class="label-text">Billing Interval</span></label>
-                <select name="plan[billing_interval]" class="select w-full" disabled={!@stripe_connected}>
+                <select name="plan[billing_interval]" class="select w-full">
                   <option value="monthly" selected={@form_params["billing_interval"] == "monthly"}>Monthly</option>
                   <option value="yearly" selected={@form_params["billing_interval"] == "yearly"}>Yearly</option>
                 </select>
@@ -89,7 +87,6 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
                 <textarea
                   name="plan[description]"
                   class="textarea w-full"
-                  disabled={!@stripe_connected}
                 >{@form_params["description"]}</textarea>
               </div>
 
@@ -195,11 +192,15 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
     {:noreply, assign(socket, form_params: params, form_errors: errors)}
   end
 
+  def handle_event("create_plan", _params, socket) when not socket.assigns.stripe_connected do
+    {:noreply, socket}
+  end
+
   def handle_event("create_plan", %{"plan" => params}, socket) do
     account_id = socket.assigns.active_account_id
     params = Map.put(params, "agency_account_id", account_id)
 
-    case BillingRepository.create_plan(params) do
+    case MetricFlow.Billing.create_plan(params) do
       {:ok, _plan} ->
         plans = BillingRepository.list_all_plans(account_id)
 
@@ -277,7 +278,19 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
   end
 
   defp extract_errors(%Ecto.Changeset{errors: errors}) do
-    Map.new(errors, fn {field, {msg, _opts}} -> {field, msg} end)
+    Map.new(errors, fn {field, {msg, opts}} -> {field, translate_error_msg({msg, opts})} end)
+  end
+
+  defp extract_errors(reason) when is_binary(reason) or is_atom(reason) do
+    %{base: "could not create the plan: #{reason}"}
+  end
+
+  defp translate_error_msg({msg, opts}) do
+    if count = opts[:count] do
+      Gettext.dngettext(MetricFlowWeb.Gettext, "errors", msg, msg, count, opts)
+    else
+      Gettext.dgettext(MetricFlowWeb.Gettext, "errors", msg, opts)
+    end
   end
 
   defp format_price(cents, currency) do

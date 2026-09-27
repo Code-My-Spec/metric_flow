@@ -1,8 +1,13 @@
 defmodule MetricFlowWeb.AgencyLive.PlansTest do
-  use MetricFlowTest.ConnCase, async: true
+  # async: false because stripe_account_fixture/1 wires a cassette plug through
+  # Application env (StripeClient.post/3's test fallback) for calls made from
+  # the LiveView's own process, which a concurrently running async test could
+  # otherwise overwrite.
+  use MetricFlowTest.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
+  import ReqCassette
 
   alias MetricFlow.Accounts.{Account, AccountMember}
   alias MetricFlow.Billing.{Plan, StripeAccount}
@@ -40,13 +45,29 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
   end
 
   defp stripe_account_fixture(account) do
-    %StripeAccount{}
-    |> StripeAccount.changeset(%{
-      stripe_account_id: "acct_test_#{System.unique_integer([:positive])}",
-      agency_account_id: account.id,
-      onboarding_status: :complete
-    })
-    |> Repo.insert!()
+    stripe_account =
+      %StripeAccount{}
+      |> StripeAccount.changeset(%{
+        stripe_account_id: "acct_test_#{System.unique_integer([:positive])}",
+        agency_account_id: account.id,
+        onboarding_status: :complete
+      })
+      |> Repo.insert!()
+
+    with_cassette(
+      "create_price",
+      [
+        cassette_dir: "test/cassettes/billing",
+        mode: :replay,
+        match_requests_on: [:method, :uri]
+      ],
+      fn plug ->
+        Application.put_env(:metric_flow, :stripe_test_plug, plug)
+        ExUnit.Callbacks.on_exit(fn -> Application.delete_env(:metric_flow, :stripe_test_plug) end)
+      end
+    )
+
+    stripe_account
   end
 
   defp plan_fixture(account, attrs \\ %{}) do
