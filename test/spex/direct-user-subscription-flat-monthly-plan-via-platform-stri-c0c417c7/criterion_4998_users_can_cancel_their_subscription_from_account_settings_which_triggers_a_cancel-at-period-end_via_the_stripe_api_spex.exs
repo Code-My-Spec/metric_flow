@@ -4,7 +4,6 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Users can cancel their subscription from account settings" do
     scenario "subscribed user sees cancel option in account settings" do
@@ -12,9 +11,7 @@ defmodule MetricFlowSpex.UsersCanCancelSubscriptionFromAccountSettingsSpex do
 
       given_ "the user has an active subscription and navigates to the checkout page", context do
         # Set up active subscription so cancel option is visible
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         {:ok, _} =
           BillingRepository.upsert_subscription(%{

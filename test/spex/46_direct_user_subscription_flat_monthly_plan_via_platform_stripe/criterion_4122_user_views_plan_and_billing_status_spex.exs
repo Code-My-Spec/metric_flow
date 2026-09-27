@@ -4,16 +4,12 @@ defmodule MetricFlowSpex.UserViewsPlanAndBillingStatusSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
-
   spex "User views plan and billing status" do
     scenario "a subscribed direct user visits account settings and sees plan and billing status" do
       given_(:user_logged_in_as_owner)
 
       given_ "the user has an active subscription", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         {:ok, _subscription} =
           BillingRepository.upsert_subscription(%{

@@ -4,16 +4,12 @@ defmodule MetricFlowSpex.WebhookEventUpdatesLocalSubscriptionStateSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
-
   spex "Webhook event updates local subscription state" do
     scenario "a subscription.updated event changes the account's stored status" do
       given_(:user_logged_in_as_owner)
 
       given_ "the account has an active subscription in Stripe", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         subscription_id = "sub_update_#{System.unique_integer([:positive])}"
         customer_id = "cus_update_#{System.unique_integer([:positive])}"
 

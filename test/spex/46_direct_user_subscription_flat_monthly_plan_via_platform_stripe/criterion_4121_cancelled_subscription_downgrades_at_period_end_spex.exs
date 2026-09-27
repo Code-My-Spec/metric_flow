@@ -4,16 +4,12 @@ defmodule MetricFlowSpex.CancelledSubscriptionDowngradesAtPeriodEndSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
-
   spex "Cancelled subscription downgrades at period end" do
     scenario "the user is downgraded to free once the billing period Stripe reported has ended" do
       given_(:user_logged_in_as_owner)
 
       given_ "the user's subscription was cancelled and its billing period has now ended", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         subscription_id = "sub_period_end_#{System.unique_integer([:positive])}"
 
         {:ok, _subscription} =

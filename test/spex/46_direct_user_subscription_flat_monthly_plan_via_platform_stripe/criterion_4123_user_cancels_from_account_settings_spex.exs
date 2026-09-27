@@ -4,16 +4,12 @@ defmodule MetricFlowSpex.UserCancelsFromAccountSettingsSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
-
   spex "User cancels from account settings" do
     scenario "a subscribed direct user cancels from account settings" do
       given_(:user_logged_in_as_owner)
 
       given_ "the user has an active subscription and is viewing account settings", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         {:ok, _subscription} =
           BillingRepository.upsert_subscription(%{

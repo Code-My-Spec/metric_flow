@@ -3,16 +3,12 @@ defmodule MetricFlowSpex.AccountIsMarkedSubscribedAfterPaymentSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Users.Scope
-
   spex "Account is marked subscribed after payment" do
     scenario "a completed checkout session marks the paying account subscribed" do
       given_(:user_logged_in_as_owner)
 
       given_ "the account that completed Stripe Checkout", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         {:ok,
          Map.merge(context, %{
