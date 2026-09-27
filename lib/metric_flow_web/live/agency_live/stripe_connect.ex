@@ -8,6 +8,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Accounts
   alias MetricFlow.Billing
   alias MetricFlow.Billing.BillingRepository
 
@@ -43,6 +44,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
                 Connect your Stripe account to receive subscription payments from your customers.
               </p>
               <button
+                :if={@is_admin}
                 phx-click="connect_stripe"
                 data-role="connect-stripe"
                 class="btn btn-primary"
@@ -76,6 +78,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
                   Existing subscriptions will be flagged for review.
                 </p>
                 <button
+                  :if={@is_admin}
                   phx-click="disconnect_stripe"
                   data-role="disconnect-stripe"
                   data-confirm="Are you sure? This will affect billing for your customers."
@@ -96,6 +99,7 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
                 <span class="font-mono text-sm">{@stripe_account_id}</span>
               </div>
               <button
+                :if={@is_admin}
                 phx-click="connect_stripe"
                 data-role="connect-stripe"
                 class="btn btn-primary btn-sm"
@@ -114,6 +118,8 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
   @impl true
   def mount(_params, _session, socket) do
     account_id = socket.assigns.active_account_id
+    scope = socket.assigns.current_scope
+    is_admin = Accounts.get_user_role(scope, scope.user.id, account_id) in [:owner, :admin]
     stripe_account = BillingRepository.get_stripe_account_by_agency(account_id)
 
     {status, stripe_account_id, capabilities} =
@@ -133,11 +139,16 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
       |> assign(:status, status)
       |> assign(:stripe_account_id, stripe_account_id)
       |> assign(:capabilities, capabilities)
+      |> assign(:is_admin, is_admin)
 
     {:ok, socket}
   end
 
   @impl true
+  def handle_event("connect_stripe", _params, %{assigns: %{is_admin: false}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("connect_stripe", _params, socket) do
     account_id = socket.assigns.active_account_id
 
@@ -148,6 +159,10 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Failed to start Stripe onboarding: #{reason}")}
     end
+  end
+
+  def handle_event("disconnect_stripe", _params, %{assigns: %{is_admin: false}} = socket) do
+    {:noreply, socket}
   end
 
   def handle_event("disconnect_stripe", _params, socket) do

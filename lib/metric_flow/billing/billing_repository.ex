@@ -189,6 +189,18 @@ defmodule MetricFlow.Billing.BillingRepository do
     |> Repo.aggregate(:count)
   end
 
+  @doc """
+  Flags an agency's active customer subscriptions for review by marking them
+  `:past_due`. Called when the agency disconnects its Stripe account, since
+  billing through that account can no longer proceed as normal.
+  """
+  def flag_agency_subscriptions_for_review(agency_account_id) do
+    Subscription
+    |> join(:inner, [s], p in Plan, on: s.plan_id == p.id)
+    |> where([s, p], p.agency_account_id == ^agency_account_id and s.status == :active)
+    |> Repo.update_all(set: [status: :past_due])
+  end
+
   def calculate_mrr(agency_account_id) do
     Subscription
     |> join(:inner, [s], p in Plan, on: s.plan_id == p.id)

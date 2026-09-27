@@ -433,8 +433,12 @@ defmodule MetricFlow.Billing do
 
       stripe_account ->
         case MetricFlow.Repo.delete(stripe_account) do
-          {:ok, _} -> :ok
-          {:error, changeset} -> {:error, changeset}
+          {:ok, _} ->
+            BillingRepository.flag_agency_subscriptions_for_review(account_id)
+            :ok
+
+          {:error, changeset} ->
+            {:error, changeset}
         end
     end
   end
