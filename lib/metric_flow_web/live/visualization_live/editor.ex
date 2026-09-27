@@ -137,6 +137,17 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               Shareable
             </button>
 
+            <%!-- Preview --%>
+            <button
+              type="button"
+              phx-click="preview_chart"
+              data-role="preview-chart-btn"
+              disabled={@bound_metrics == []}
+              class="btn btn-xs btn-secondary"
+            >
+              Preview
+            </button>
+
             <%!-- Save --%>
             <button
               phx-click="save_visualization"
@@ -506,12 +517,26 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
+  def handle_event("preview_chart", _params, socket) do
+    case socket.assigns.bound_metrics do
+      [] ->
+        {:noreply, socket}
+
+      bound ->
+        scope = socket.assigns.current_scope
+        template = build_template_spec(bound, socket.assigns.selected_chart_type, socket.assigns.name)
+        preview = resolve_named_data(template, scope)
+        {:noreply, assign(socket, chart_preview: preview, raw_vega_spec: format_spec(template))}
+    end
+  end
+
   def handle_event("save_visualization", _params, socket) do
     name = socket.assigns.name
 
     cond do
       name == "" || is_nil(name) ->
-        {:noreply, assign(socket, :name_error, "Name is required")}
+        error = name |> Dashboards.visualization_name_changeset() |> name_error_from_changeset()
+        {:noreply, assign(socket, :name_error, error || "can't be blank")}
 
       is_nil(socket.assigns.chart_preview) ->
         {:noreply, put_flash(socket, :error, "Generate or select a chart before saving.")}
@@ -642,8 +667,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> assign(:visualization, visualization)
-         |> put_flash(:info, "Visualization saved.")}
+         |> put_flash(:info, "Visualization saved.")
+         |> redirect(to: "/app/dashboards")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
@@ -657,8 +682,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> assign(:visualization, updated)
-         |> put_flash(:info, "Visualization saved.")}
+         |> put_flash(:info, "Visualization saved.")
+         |> redirect(to: "/app/dashboards")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}

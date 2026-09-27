@@ -190,6 +190,20 @@ defmodule MetricFlowWeb.AccountLive.Settings do
           can_manage_agencies={@current_user_role in [:owner, :admin]}
         />
 
+        <%!-- Agency configuration: auto-enrollment and white-label branding
+             (agency-type team accounts, owners/admins only) --%>
+        <AgencyLive.Settings.auto_enrollment_section
+          :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
+          auto_enrollment_rule={@auto_enrollment_rule}
+          auto_enrollment_form={@auto_enrollment_form}
+        />
+
+        <AgencyLive.Settings.white_label_section
+          :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
+          white_label_config={@white_label_config}
+          white_label_form={@white_label_form}
+        />
+
         <%!-- Section 2: Transfer Ownership --%>
         <div :if={@is_owner and @account.type in [:client, :agency]} class="card bg-base-100 shadow mf-card">
           <div class="card-body">
@@ -462,6 +476,115 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     end
   end
 
+  def handle_event("save_auto_enrollment", %{"auto_enrollment" => params}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    attrs = %{
+      email_domain: params["domain"] || "",
+      default_access_level: parse_access_level(params["default_access_level"]),
+      enabled: true
+    }
+
+    case Agencies.configure_auto_enrollment(scope, account.id, attrs) do
+      {:ok, rule} ->
+        {:noreply,
+         socket
+         |> assign(:auto_enrollment_rule, rule)
+         |> assign(:auto_enrollment_form, empty_form())
+         |> put_flash(:info, "Auto-enrollment enabled")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        errors = changeset_to_errors(changeset)
+        {:noreply, assign(socket, :auto_enrollment_form, %{params: params, errors: errors})}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+    end
+  end
+
+  def handle_event("disable_auto_enrollment", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    case Agencies.configure_auto_enrollment(scope, account.id, %{enabled: false}) do
+      {:ok, rule} ->
+        {:noreply,
+         socket
+         |> assign(:auto_enrollment_rule, rule)
+         |> put_flash(:info, "Auto-enrollment disabled")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to disable auto-enrollment")}
+    end
+  end
+
+  def handle_event("save_white_label", %{"white_label" => params}, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    attrs = %{
+      subdomain: params["subdomain"] || "",
+      custom_domain: params["custom_domain"],
+      logo_url: params["logo_url"],
+      primary_color: params["primary_color"],
+      secondary_color: params["secondary_color"]
+    }
+
+    case Agencies.update_white_label_config(scope, account.id, attrs) do
+      {:ok, config} ->
+        {:noreply,
+         socket
+         |> assign(:white_label_config, config)
+         |> assign(:white_label_form, empty_form())
+         |> put_flash(:info, "White-label settings saved")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        errors = changeset_to_errors(changeset)
+        {:noreply, assign(socket, :white_label_form, %{params: params, errors: errors})}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to configure white-label branding")}
+    end
+  end
+
+  def handle_event("validate_white_label", %{"white_label" => params}, socket) do
+    {:noreply, assign(socket, :white_label_form, %{params: params, errors: []})}
+  end
+
+  def handle_event("reset_white_label", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    case Agencies.reset_white_label_config(scope, account.id) do
+      :ok ->
+        {:noreply, assign(socket, :white_label_config, nil)}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to reset white-label branding")}
+    end
+  end
+
+  def handle_event("verify_dns", _params, socket) do
+    scope = socket.assigns.current_scope
+    account = socket.assigns.account
+
+    case Agencies.verify_dns(scope, account.id) do
+      {:ok, _results} ->
+        config = unwrap(Agencies.get_white_label_config(scope, account.id))
+        {:noreply, socket |> assign(:white_label_config, config) |> put_flash(:info, "DNS verification complete")}
+
+      {:error, :no_config} ->
+        {:noreply, put_flash(socket, :error, "No white-label configuration to verify")}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to verify DNS")}
+    end
+  end
+
   def handle_event("revoke_agency_access", %{"agency-account-id" => agency_account_id_str}, socket) do
     scope = socket.assigns.current_scope
     account = socket.assigns.account
@@ -532,17 +655,33 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp assign_agency_data(socket, scope, account, _user_role) do
+  defp assign_agency_data(socket, scope, account, user_role) do
     agency_grants =
       case Agencies.list_grants_for_client_account(scope, account.id) do
         {:error, _} -> []
         grants -> grants
       end
 
+    {auto_enrollment_rule, white_label_config} = agency_config(scope, account, user_role)
+
     socket
     |> assign(:agency_grants, agency_grants)
     |> assign(:grant_agency_form, empty_form())
+    |> assign(:auto_enrollment_rule, auto_enrollment_rule)
+    |> assign(:auto_enrollment_form, empty_form())
+    |> assign(:white_label_config, white_label_config)
+    |> assign(:white_label_form, empty_form())
   end
+
+  defp agency_config(scope, %{type: :agency, id: agency_id}, role) when role in [:owner, :admin] do
+    {unwrap(Agencies.get_auto_enrollment_rule(scope, agency_id)),
+     unwrap(Agencies.get_white_label_config(scope, agency_id))}
+  end
+
+  defp agency_config(_scope, _account, _role), do: {nil, nil}
+
+  defp unwrap({:error, _}), do: nil
+  defp unwrap(value), do: value
 
   defp empty_form, do: %{params: %{}, errors: []}
 
