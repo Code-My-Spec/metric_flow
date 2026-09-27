@@ -20,7 +20,15 @@ defmodule MetricFlowWeb.Application do
         {Cachex, name: :metric_cache},
         MetricFlow.Integrations.OAuthStateStore,
         # Start to serve requests, typically the last entry
-        MetricFlowWeb.Endpoint
+        MetricFlowWeb.Endpoint,
+        # CodeMySpec preview tunnel. Distinct :id and :name from the legacy
+        # dev.metric-flow.app tunnel below — both can be enabled at once in
+        # dev, and a shared default name would crash the second GenServer to
+        # register. Safe to always include: ClientUtils.CloudflareTunnel
+        # ignores itself (via :enabled) when this checkout has no preview.
+        Supervisor.child_spec({ClientUtils.CloudflareTunnel, preview_tunnel(:metric_flow)},
+          id: :preview_tunnel
+        )
       ]
       |> dev_children()
 
@@ -61,5 +69,25 @@ defmodule MetricFlowWeb.Application do
   def config_change(changed, _new, removed) do
     MetricFlowWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp preview_tunnel(otp_app) do
+    config = Application.get_env(otp_app, :preview, [])
+
+    [
+      enabled: config[:tunnel_id] not in [nil, ""],
+      mode: :named,
+      hostname: config[:hostname],
+      tunnel_id: config[:tunnel_id],
+      account_tag: config[:account_tag],
+      tunnel_secret: config[:tunnel_secret],
+      origin_url: config[:origin_url],
+      endpoint: MetricFlowWeb.Endpoint,
+      otp_app: otp_app,
+      # Distinct from the legacy tunnel's default (module) name — both can be
+      # registered at once, and GenServer.start_link/3 refuses a second
+      # process under a name already taken.
+      name: MetricFlowWeb.PreviewTunnel
+    ]
   end
 end

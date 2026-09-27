@@ -51,6 +51,15 @@ if tunnel_config[:mode] == :named do
     Keyword.put(tunnel_config, :tunnel_secret, env!("CLOUDFLARE_TUNNEL_SECRET", :string, ""))
 end
 
+# CodeMySpec preview tunnel — reads this checkout's .cms_harness.json (main
+# working copy only; every other worktree gets an empty config, which leaves
+# the tunnel disabled) so the CodeMySpec preview pane can reach this app.
+config :metric_flow,
+  :preview,
+  ClientUtils.Harness.Preview.config(File.cwd!(),
+    origin_url: "http://127.0.0.1:#{System.get_env("PORT", "4070")}"
+  )
+
 # Cassette-replay tests validate request parameters (e.g. ReqLLM rejects a nil
 # api_key) before a plug ever gets to replay the recording, so :test needs a
 # non-nil value even with no .env files present. Real values from .env.test

@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.Router do
       "content-security-policy" =>
         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     }
+    plug ClientUtils.PreviewFraming, otp_app: :metric_flow
     plug :fetch_current_scope_for_user
     plug MetricFlowWeb.Plugs.WhiteLabel
   end
