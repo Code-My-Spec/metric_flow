@@ -5,7 +5,11 @@ config :metric_flow, MetricFlow.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "metric_flow_dev",
+  # Story 1108 (CodeMySpec): a working copy's own app runs on its own
+  # database, named by the harness and passed in rather than assumed. The
+  # default keeps every existing checkout — nothing sets this variable —
+  # unchanged.
+  database: System.get_env("DATABASE_NAME") || "metric_flow_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
