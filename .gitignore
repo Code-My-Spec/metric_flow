@@ -62,3 +62,6 @@ client_secret_1022678032295-ck6461teh0olk03iaa2aoqnonta71fbd.apps.googleusercont
 # issued and the project deploy key it authenticates with. Per-machine, and a
 # credential, so it never belongs in the repository.
 .cms_harness.json
+
+# sops-encrypted env files are committed
+!envs/*.enc.env
