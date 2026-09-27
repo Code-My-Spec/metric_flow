@@ -15,6 +15,7 @@ defmodule MetricFlow.Billing do
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Billing.BillingNotifier
   alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Billing.StripeAccount
   alias MetricFlow.Billing.Subscription
   alias MetricFlow.Users
 
@@ -24,8 +25,28 @@ defmodule MetricFlow.Billing do
   Dispatches to the appropriate handler based on event type.
   Returns :ok for recognized events and {:ok, :ignored} for unrecognized types.
   """
-  @spec process_webhook_event(map()) :: :ok | {:ok, :ignored} | {:error, term()}
-  def process_webhook_event(%{"type" => type} = event) do
+  @spec process_webhook_event(map()) ::
+          :ok | {:ok, :ignored} | {:ok, :duplicate} | {:error, term()}
+  def process_webhook_event(%{"type" => type, "id" => event_id} = event) do
+    with {:ok, _} <- BillingRepository.mark_event_processed(event_id),
+         :ok <- verify_account_context(event) do
+      dispatch_event(type, event)
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        if Keyword.has_key?(changeset.errors, :stripe_event_id) do
+          {:ok, :duplicate}
+        else
+          {:error, changeset}
+        end
+
+      {:error, :unrecognized_account} = error ->
+        error
+    end
+  end
+
+  def process_webhook_event(_invalid), do: {:error, :invalid_event}
+
+  defp dispatch_event(type, event) do
     case type do
       "customer.subscription." <> _ ->
         handle_subscription_event(event)
@@ -45,7 +66,15 @@ defmodule MetricFlow.Billing do
     end
   end
 
-  def process_webhook_event(_invalid), do: {:error, :invalid_event}
+  defp verify_account_context(%{"account" => connected_account_id})
+       when is_binary(connected_account_id) do
+    case BillingRepository.get_stripe_account_by_stripe_id(connected_account_id) do
+      nil -> {:error, :unrecognized_account}
+      %StripeAccount{} -> :ok
+    end
+  end
+
+  defp verify_account_context(_event), do: :ok
 
   defp handle_subscription_event(%{"type" => "customer.subscription.created"} = event) do
     sub = event["data"]["object"]

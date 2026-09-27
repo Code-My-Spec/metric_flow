@@ -28,6 +28,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes subscription.created and persists subscription" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.created",
         "data" => %{
           "object" => %{
@@ -45,6 +46,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes subscription.updated and updates status" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.updated",
         "data" => %{
           "object" => %{
@@ -62,6 +64,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes subscription.deleted and marks as cancelled" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "customer.subscription.deleted",
         "data" => %{
           "object" => %{
@@ -79,6 +82,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes invoice.payment_failed and marks subscription as past_due" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "invoice.payment_failed",
         "data" => %{
           "object" => %{
@@ -95,6 +99,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes invoice.payment_succeeded successfully" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "invoice.payment_succeeded",
         "data" => %{
           "object" => %{
@@ -111,6 +116,7 @@ defmodule MetricFlow.BillingTest do
 
     test "processes account.updated for Connect onboarding" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "account.updated",
         "data" => %{
           "object" => %{
@@ -126,6 +132,7 @@ defmodule MetricFlow.BillingTest do
 
     test "returns ignored for unrecognized event types" do
       event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
         "type" => "unknown.event",
         "data" => %{"object" => %{}}
       }

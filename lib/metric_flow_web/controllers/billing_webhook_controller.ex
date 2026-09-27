@@ -94,6 +94,14 @@ defmodule MetricFlowWeb.BillingWebhookController do
       {:ok, :ignored} ->
         conn |> put_status(200) |> json(%{received: true, ignored: true})
 
+      {:ok, :duplicate} ->
+        conn |> put_status(200) |> json(%{received: true, duplicate: true})
+
+      {:error, :unrecognized_account} ->
+        conn
+        |> put_status(400)
+        |> json(%{error: "Event references an unrecognized connected account"})
+
       {:error, reason} ->
         Logger.error("Webhook processing failed: #{inspect(reason)} for event #{event_id}")
         conn |> put_status(200) |> json(%{received: true})

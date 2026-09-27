@@ -7,7 +7,7 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   import Ecto.Query
 
-  alias MetricFlow.Billing.{Plan, StripeAccount, Subscription}
+  alias MetricFlow.Billing.{Plan, ProcessedStripeEvent, StripeAccount, Subscription}
   alias MetricFlow.Repo
 
   # --- Subscriptions ---
@@ -26,6 +26,16 @@ defmodule MetricFlow.Billing.BillingRepository do
       s.status != :cancelled or is_nil(s.current_period_end) or s.current_period_end > ^now
     )
     |> Repo.one()
+  end
+
+  @doc """
+  Records a Stripe event ID as processed. Returns `{:error, changeset}` with a
+  unique constraint error if the event was already recorded (a redelivery).
+  """
+  def mark_event_processed(stripe_event_id) do
+    %ProcessedStripeEvent{}
+    |> ProcessedStripeEvent.changeset(%{stripe_event_id: stripe_event_id})
+    |> Repo.insert()
   end
 
   def upsert_subscription(attrs) do
