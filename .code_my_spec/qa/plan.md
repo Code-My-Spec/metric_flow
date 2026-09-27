@@ -21,7 +21,7 @@ Auth workflow — log in via the password form:
 ```
 mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")
 mcp__vibium__browser_scroll_into_view(selector: "#login_form_password")
-mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa@example.com")
+mcp__vibium__browser_fill(selector: "#password_email", text: "qa@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
 mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)
@@ -251,7 +251,7 @@ mcp__vibium__browser_delete_cookies()
 # Navigate to login and authenticate as a different user
 mcp__vibium__browser_navigate(url: "http://localhost:4070/users/log-in")
 mcp__vibium__browser_scroll_into_view(selector: "#login_form_password")
-mcp__vibium__browser_fill(selector: "#login_form_password_email", text: "qa-member@example.com")
+mcp__vibium__browser_fill(selector: "#password_email", text: "qa-member@example.com")
 mcp__vibium__browser_fill(selector: "#user_password", text: "hello world!")
 mcp__vibium__browser_click(selector: "#login_form_password button[name='user[remember_me]']")
 mcp__vibium__browser_wait_for_url(pattern: "/", timeout: 5000)
