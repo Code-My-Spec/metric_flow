@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
 
   import MetricFlowSpex.SharedGivens
 

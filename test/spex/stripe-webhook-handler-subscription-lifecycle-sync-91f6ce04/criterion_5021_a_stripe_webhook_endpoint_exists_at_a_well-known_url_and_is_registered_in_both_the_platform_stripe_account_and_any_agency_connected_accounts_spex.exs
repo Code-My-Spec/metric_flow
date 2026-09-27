@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.StripeWebhookEndpointExistsSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
 
   import MetricFlowSpex.SharedGivens
 
