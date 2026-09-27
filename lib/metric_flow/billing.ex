@@ -12,8 +12,11 @@ defmodule MetricFlow.Billing do
 
   require Logger
 
+  alias MetricFlow.Accounts.Account
+  alias MetricFlow.Billing.BillingNotifier
   alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Billing.Subscription
+  alias MetricFlow.Users
 
   @doc """
   Process a verified Stripe webhook event.
@@ -108,7 +111,16 @@ defmodule MetricFlow.Billing do
         |> Subscription.changeset(%{status: :past_due})
         |> MetricFlow.Repo.update()
 
+        notify_payment_failed(subscription.account_id)
+
         :ok
+    end
+  end
+
+  defp notify_payment_failed(account_id) do
+    with %Account{originator_user_id: user_id} <- MetricFlow.Repo.get(Account, account_id),
+         %{email: email} <- user_id && Users.get_user!(user_id) do
+      BillingNotifier.deliver_payment_failed(email)
     end
   end
 

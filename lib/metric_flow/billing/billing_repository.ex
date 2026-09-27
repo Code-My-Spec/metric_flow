@@ -17,7 +17,15 @@ defmodule MetricFlow.Billing.BillingRepository do
   end
 
   def get_subscription_by_account_id(account_id) do
-    Repo.get_by(Subscription, account_id: account_id)
+    now = DateTime.utc_now()
+
+    Subscription
+    |> where([s], s.account_id == ^account_id)
+    |> where(
+      [s],
+      s.status != :cancelled or is_nil(s.current_period_end) or s.current_period_end > ^now
+    )
+    |> Repo.one()
   end
 
   def upsert_subscription(attrs) do
