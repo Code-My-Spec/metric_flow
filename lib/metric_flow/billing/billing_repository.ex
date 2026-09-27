@@ -29,13 +29,43 @@ defmodule MetricFlow.Billing.BillingRepository do
   end
 
   @doc """
-  Records a Stripe event ID and type as processed. Returns `{:error, changeset}`
-  with a unique constraint error if the event was already recorded (a redelivery).
+  Records a Stripe event ID and type as being processed. An event already
+  recorded with status `:processed` is a true redelivery and short-circuits
+  as `{:duplicate, event}`; one recorded `:processing` or `:failed` (a prior
+  attempt that never completed, or completed unsuccessfully) is reset to
+  `:processing` and returned for reprocessing, so a Stripe retry of a failed
+  event can actually succeed instead of being locked out forever.
   """
   def mark_event_processed(stripe_event_id, event_type) do
+    case Repo.get_by(ProcessedStripeEvent, stripe_event_id: stripe_event_id) do
+      nil ->
+        insert_processed_event(stripe_event_id, event_type)
+
+      %ProcessedStripeEvent{status: :processed} = event ->
+        {:duplicate, event}
+
+      %ProcessedStripeEvent{} = event ->
+        event
+        |> ProcessedStripeEvent.status_changeset(:processing)
+        |> Repo.update()
+    end
+  end
+
+  defp insert_processed_event(stripe_event_id, event_type) do
     %ProcessedStripeEvent{}
     |> ProcessedStripeEvent.changeset(%{stripe_event_id: stripe_event_id, event_type: event_type})
     |> Repo.insert()
+    |> case do
+      {:error, %Ecto.Changeset{errors: errors} = changeset} ->
+        if Keyword.has_key?(errors, :stripe_event_id) do
+          {:duplicate, Repo.get_by(ProcessedStripeEvent, stripe_event_id: stripe_event_id)}
+        else
+          {:error, changeset}
+        end
+
+      ok ->
+        ok
+    end
   end
 
   @doc """

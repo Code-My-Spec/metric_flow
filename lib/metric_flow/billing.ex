@@ -29,12 +29,11 @@ defmodule MetricFlow.Billing do
           :ok | {:ok, :ignored} | {:ok, :duplicate} | {:error, term()}
   def process_webhook_event(%{"type" => type, "id" => event_id} = event) do
     case BillingRepository.mark_event_processed(event_id, type) do
+      {:duplicate, _event} ->
+        {:ok, :duplicate}
+
       {:error, %Ecto.Changeset{} = changeset} ->
-        if Keyword.has_key?(changeset.errors, :stripe_event_id) do
-          {:ok, :duplicate}
-        else
-          {:error, changeset}
-        end
+        {:error, changeset}
 
       {:ok, processed_event} ->
         case resolve_account(event) do
