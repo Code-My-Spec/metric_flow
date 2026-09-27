@@ -69,7 +69,15 @@ config :metric_flow,
   quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, test_placeholder.("test-quickbooks-client-secret")),
   facebook_app_id: env!("FACEBOOK_APP_ID", :string, test_placeholder.("test-facebook-app-id")),
   facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, test_placeholder.("test-facebook-app-secret")),
-  quickbooks_api_url: env!("QUICKBOOKS_API_URL", :string, "https://sandbox-quickbooks.api.intuit.com/v3/company"),
+  # The recorded cassette used the production host, not sandbox, so :test
+  # must default to match — ReqCassette matches full URI including host.
+  quickbooks_api_url:
+    env!(
+      "QUICKBOOKS_API_URL",
+      :string,
+      test_placeholder.("https://quickbooks.api.intuit.com/v3/company") ||
+        "https://sandbox-quickbooks.api.intuit.com/v3/company"
+    ),
   codemyspec_url: env!("CODEMYSPEC_URL", :string, "https://app.codemyspec.com"),
   codemyspec_client_id: env!("CODEMYSPEC_CLIENT_ID", :string, nil),
   codemyspec_client_secret: env!("CODEMYSPEC_CLIENT_SECRET", :string, nil),
@@ -81,11 +89,16 @@ config :metric_flow,
 # Test-only: expose cassette recording credentials via Application config
 # so test fixtures can read them without relying on System.get_env.
 if config_env() == :test do
+  # These four IDs are baked into the recorded cassette request URIs
+  # (test/cassettes/data_sync/*.json) — ReqCassette matches on
+  # [:method, :uri], so a value that isn't one of these fails to replay
+  # even though no real network call is made. A real .env.test value
+  # still wins when re-recording against a different test account.
   config :metric_flow, :test_credentials,
-    google_ads_customer_id: env!("GOOGLE_ADS_TEST_CUSTOMER_ID", :string, nil),
-    ga4_property_id: env!("GA4_TEST_PROPERTY_ID", :string, nil),
-    facebook_ad_account_id: env!("FACEBOOK_TEST_AD_ACCOUNT_ID", :string, nil),
-    quickbooks_realm_id: env!("QUICKBOOKS_TEST_REALM_ID", :string, nil),
+    google_ads_customer_id: env!("GOOGLE_ADS_TEST_CUSTOMER_ID", :string, "8952788948"),
+    ga4_property_id: env!("GA4_TEST_PROPERTY_ID", :string, "properties/508773792"),
+    facebook_ad_account_id: env!("FACEBOOK_TEST_AD_ACCOUNT_ID", :string, "act_135910517"),
+    quickbooks_realm_id: env!("QUICKBOOKS_TEST_REALM_ID", :string, "9130355098863166"),
     quickbooks_income_account_id: env!("QUICKBOOKS_TEST_INCOME_ACCOUNT_ID", :string, nil),
     quickbooks_access_token: env!("QUICKBOOKS_TEST_ACCESS_TOKEN", :string, nil),
     google_access_token: env!("GOOGLE_TEST_ACCESS_TOKEN", :string, nil),
