@@ -94,7 +94,11 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
                 <button :if={@editing_plan_id} type="button" phx-click="cancel_edit" class="btn btn-ghost">
                   Cancel
                 </button>
-                <button type="submit" class="btn btn-primary" disabled={!@stripe_connected}>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  disabled={!@editing_plan_id && !@stripe_connected}
+                >
                   {if @editing_plan_id, do: "Update Plan", else: "Create Plan"}
                 </button>
               </div>
@@ -236,7 +240,7 @@ defmodule MetricFlowWeb.AgencyLive.Plans do
   def handle_event("update_plan", %{"plan" => params}, socket) do
     plan = BillingRepository.get_plan(socket.assigns.editing_plan_id)
 
-    case plan |> Plan.changeset(params) |> MetricFlow.Repo.update() do
+    case MetricFlow.Billing.update_plan(plan, params) do
       {:ok, _plan} ->
         account_id = socket.assigns.active_account_id
         plans = BillingRepository.list_all_plans(account_id)

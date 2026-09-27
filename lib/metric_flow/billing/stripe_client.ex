@@ -107,6 +107,15 @@ defmodule MetricFlow.Billing.StripeClient do
   end
 
   @doc """
+  Retrieve a Stripe Price, to read its parent Product id when rotating a
+  plan's price without a locally-stored product id.
+  """
+  @spec get_price(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
+  def get_price(price_id, opts \\ []) do
+    get("#{@stripe_api_base}/prices/#{price_id}", opts)
+  end
+
+  @doc """
   Create a Stripe Checkout session for a plan.
   """
   @spec create_checkout_session(map(), String.t(), keyword()) :: {:ok, map()} | {:error, term()}
@@ -176,6 +185,23 @@ defmodule MetricFlow.Billing.StripeClient do
     req_opts = [body: body, headers: headers] ++ req_http_options(opts)
 
     case Req.post(url, req_opts) do
+      {:ok, %{status: status, body: body}} when status in 200..299 ->
+        {:ok, body}
+
+      {:ok, %{body: body}} ->
+        {:error, body["error"]["message"] || "Stripe API error"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp get(url, opts) do
+    stripe_account = Keyword.get(opts, :stripe_account)
+    headers = api_headers(stripe_account)
+    req_opts = [headers: headers] ++ req_http_options(opts)
+
+    case Req.get(url, req_opts) do
       {:ok, %{status: status, body: body}} when status in 200..299 ->
         {:ok, body}
 

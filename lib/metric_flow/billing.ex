@@ -327,6 +327,71 @@ defmodule MetricFlow.Billing do
     end
   end
 
+  @doc """
+  Update an agency subscription plan.
+
+  When the price is changing, rotates the Stripe Price: creates a new
+  Price under the plan's existing Stripe Product (read from the current
+  Price, since Product id isn't stored locally), marks the previous
+  Price inactive, and stores the new `stripe_price_id`. The Product
+  itself, and non-price edits, are left untouched. A plan with no
+  `stripe_price_id` yet (never provisioned) or no price change at all
+  updates the local record only, with no Stripe calls.
+  """
+  @spec update_plan(Plan.t(), map()) :: {:ok, Plan.t()} | {:error, term()}
+  def update_plan(plan, attrs) do
+    alias MetricFlow.Billing.{Plan, StripeClient}
+
+    changeset = Plan.changeset(plan, attrs)
+
+    if changeset.valid? do
+      new_price_cents = Ecto.Changeset.get_field(changeset, :price_cents)
+
+      if plan.stripe_price_id && new_price_cents != plan.price_cents do
+        with {:ok, new_stripe_price_id} <- rotate_stripe_price(plan, changeset) do
+          changeset
+          |> Ecto.Changeset.put_change(:stripe_price_id, new_stripe_price_id)
+          |> MetricFlow.Repo.update()
+        end
+      else
+        MetricFlow.Repo.update(changeset)
+      end
+    else
+      {:error, %{changeset | action: :update}}
+    end
+  end
+
+  defp rotate_stripe_price(plan, changeset) do
+    alias MetricFlow.Billing.StripeClient
+
+    currency = Ecto.Changeset.get_field(changeset, :currency)
+    billing_interval = Ecto.Changeset.get_field(changeset, :billing_interval)
+    price_cents = Ecto.Changeset.get_field(changeset, :price_cents)
+
+    case plan.agency_account_id &&
+           BillingRepository.get_stripe_account_by_agency(plan.agency_account_id) do
+      %{stripe_account_id: stripe_account_id} ->
+        with {:ok, existing_price} <-
+               StripeClient.get_price(plan.stripe_price_id, stripe_account: stripe_account_id),
+             product_id <- existing_price["product"],
+             {:ok, new_price} <-
+               StripeClient.create_price(product_id, price_cents,
+                 currency: currency,
+                 interval: to_string(billing_interval),
+                 stripe_account: stripe_account_id
+               ),
+             {:ok, _} <-
+               StripeClient.deactivate_price(plan.stripe_price_id,
+                 stripe_account: stripe_account_id
+               ) do
+          {:ok, new_price["id"]}
+        end
+
+      _ ->
+        {:error, :stripe_account_not_connected}
+    end
+  end
+
   defp provision_stripe_price(changeset) do
     alias MetricFlow.Billing.StripeClient
 

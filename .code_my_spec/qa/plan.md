@@ -116,6 +116,27 @@ curl -X POST https://dev.metric-flow.app/billing/webhooks \
 
 Note: Manual curl with a fake signature will be rejected (400) unless you compute a valid HMAC. Use `stripe trigger` for real event delivery.
 
+### Known limitation: platform Stripe test account has Connect disabled
+
+`MetricFlow.Billing.create_connect_account/1`, `create_plan/1`, and `update_plan/2` make real, unstubbed calls to `api.stripe.com` when a QA session drives the running dev server through the browser. The platform's Stripe test account does not have Connect enabled, so any call that needs a *connected* account fails with:
+
+```
+You can only create new accounts if you've signed up for Connect, which you can do at https://dashboard.stripe.com/connect. ...
+```
+
+Seeding a `StripeAccount` row directly in the DB with a synthetic `stripe_account_id` does not work around this — the app still calls the real API with that fake account id, and Stripe rejects it. There is no application-level toggle for this in the running dev server process; `Application.put_env(:metric_flow, :stripe_test_plug, ...)` only reaches the exunit sandbox's own process, not the separately-running `mix phx.server` node.
+
+Until Connect is enabled on the platform's Stripe test account (or a genuinely separate connected test account is provisioned), verify Stripe-API-calling behavior — Product/Price provisioned on plan creation (criteria 4082/4139), price rotation on update (criteria 4083/4141) — against the exunit suite instead of live QA:
+
+```bash
+mix test test/metric_flow_web/live/agency_live/plans_test.exs
+mix test test/metric_flow/billing_test.exs
+```
+
+Those tests exercise the same `MetricFlow.Billing.create_plan/1` / `update_plan/2` code paths the live server runs, against a stubbed Stripe API (`Application.put_env(:metric_flow, :stripe_test_plug, &stub/1)`), so a pass there is a real verification of the Stripe-facing behavior.
+
+Live QA sessions can still verify everything else around a plan directly: form validation, the submit button's disabled state, and DB row changes reflected in the plans table — by seeding a `Plan` row with a synthetic `stripe_price_id` (no `StripeAccount` needed for this) and confirming the LiveView renders and updates it correctly. What live QA cannot confirm is whether Stripe itself received the right calls.
+
 ### curl (unauthenticated HTTP checks)
 
 Use for checking HTTP status codes and verifying redirects on unauthenticated access. For authenticated testing, use vibium MCP tools.

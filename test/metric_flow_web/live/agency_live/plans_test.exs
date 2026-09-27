@@ -74,6 +74,24 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
     |> Plug.Conn.send_resp(status, Jason.encode!(body))
   end
 
+  defp price_rotation_stub_plug(conn) do
+    {status, body} =
+      case {conn.method, conn.request_path} do
+        {"GET", "/v1/prices/price_original"} ->
+          {200, %{"id" => "price_original", "object" => "price", "product" => "prod_original"}}
+
+        {"POST", "/v1/prices"} ->
+          {200, %{"id" => "price_new", "object" => "price"}}
+
+        {"POST", "/v1/prices/price_original"} ->
+          {200, %{"id" => "price_original", "object" => "price", "active" => false}}
+      end
+
+    conn
+    |> Plug.Conn.put_resp_content_type("application/json")
+    |> Plug.Conn.send_resp(status, Jason.encode!(body))
+  end
+
   defp plan_fixture(account, attrs \\ %{}) do
     defaults = %{
       name: "Test Plan",
@@ -142,6 +160,30 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
 
       assert html =~ "disabled"
       assert html =~ "Connect your Stripe account"
+    end
+
+    test "editing an existing plan is not blocked by a disconnected Stripe account", %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      plan = plan_fixture(account, %{name: "Pre-existing"})
+      conn = log_in_user(conn, user)
+
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
+
+      lv
+      |> element("[data-role='edit-plan'][phx-value-id='#{plan.id}']")
+      |> render_click()
+
+      html = render(lv)
+      refute html =~ ~s(disabled="disabled")
+
+      lv
+      |> form("#plan-form", plan: %{name: "Renamed", price_cents: to_string(plan.price_cents)})
+      |> render_submit()
+
+      html = render(lv)
+      assert html =~ "Plan updated"
+      assert html =~ "Renamed"
     end
   end
 
@@ -217,6 +259,34 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       html = render(lv)
       assert html =~ "New Name"
       assert html =~ "Plan updated"
+    end
+
+    test "updating price rotates the Stripe Price and leaves the Product unchanged", %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      plan = plan_fixture(account, %{name: "Rotates", price_cents: 4900, stripe_price_id: "price_original"})
+      conn = log_in_user(conn, user)
+
+      Application.put_env(:metric_flow, :stripe_test_plug, &price_rotation_stub_plug/1)
+
+      {:ok, lv, _html} = live(conn, "/app/agency/plans")
+
+      lv
+      |> element("[data-role='edit-plan'][phx-value-id='#{plan.id}']")
+      |> render_click()
+
+      lv
+      |> form("#plan-form", plan: %{name: "Rotates", price_cents: 5900})
+      |> render_submit()
+
+      html = render(lv)
+      assert html =~ "Plan updated"
+      assert html =~ "$59.00"
+
+      updated_plan = Repo.get!(Plan, plan.id)
+      assert updated_plan.stripe_price_id == "price_new"
+      refute updated_plan.stripe_price_id == "price_original"
     end
 
     test "deactivates plan when deactivate button is clicked", %{conn: conn} do
