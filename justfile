@@ -56,7 +56,7 @@ scan:
 # shallow clone. mix.lock is committed, so the source checkout's deps
 # already match it exactly; deps.get afterwards verifies that.
 #
-# The dotenv files are untracked by design, so no git operation brings them.
+# Dev/test secrets are committed sops-encrypted in envs/ and decrypted here.
 init-worktree name target:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -66,12 +66,17 @@ init-worktree name target:
 
     cp -R deps "{{target}}/deps"
 
-    # Best-effort: a machine that has never had these cannot invent them, and
-    # a copy without them is still worth having for anything that is not a
-    # provider test.
-    for f in .env .env.dev .env.test .env.prod .env.uat; do
-        [ -f "$f" ] && cp "$f" "{{target}}/$f" || true
+    # Dev/test secrets are committed sops-encrypted; sops reads the age key
+    # from ~/.config/sops/age/keys.txt. Plain copy only where there is no
+    # encrypted file to decrypt.
+    for e in dev test; do
+        if [ -f "envs/$e.enc.env" ]; then
+            sops -d --input-type dotenv --output-type dotenv "envs/$e.enc.env" > "{{target}}/.env.$e"
+        elif [ -f ".env.$e" ]; then
+            cp ".env.$e" "{{target}}/.env.$e"
+        fi
     done
+    if [ ! -f envs/dev.enc.env ] && [ -f .env ]; then cp .env "{{target}}/.env"; fi
 
     cd "{{target}}"
     mix deps.get

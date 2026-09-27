@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: envs/(dev|test)\.
+    age: age1x03s486cx3tw94am06lasevlc6ltcslkfx70wz4xq0vw05rqedusncxttm
