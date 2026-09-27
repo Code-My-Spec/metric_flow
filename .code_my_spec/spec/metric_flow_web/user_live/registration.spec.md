@@ -24,6 +24,7 @@ None
 - MetricFlow.Users
 - MetricFlow.Accounts
 - MetricFlow.Agencies
+- MetricFlowWeb.OnboardingLive
 
 ## Components
 
