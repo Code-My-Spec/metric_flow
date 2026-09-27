@@ -67,7 +67,7 @@ init-worktree name target:
     cp -R deps "{{target}}/deps"
 
     # Dev/test secrets are committed sops-encrypted; sops reads the age key
-    # from ~/.config/sops/age/keys.txt. Plain copy only where there is no
+    # from the machine keyring. Plain copy only where there is no
     # encrypted file to decrypt.
     for e in dev test; do
         if [ -f "envs/$e.enc.env" ]; then
