@@ -87,7 +87,12 @@ defmodule MetricFlowWeb.Application do
       # Distinct from the legacy tunnel's default (module) name — both can be
       # registered at once, and GenServer.start_link/3 refuses a second
       # process under a name already taken.
-      name: MetricFlowWeb.PreviewTunnel
+      name: MetricFlowWeb.PreviewTunnel,
+      # Distinct from the legacy tunnel's default tmp/cloudflared/ — both
+      # tunnels writing config.yml/credentials.json to the same directory
+      # meant whichever wrote last silently won, so both cloudflared
+      # processes ran the same (legacy) tunnel.
+      base_dir: Path.join(File.cwd!(), "tmp/cloudflared/preview")
     ]
   end
 end
