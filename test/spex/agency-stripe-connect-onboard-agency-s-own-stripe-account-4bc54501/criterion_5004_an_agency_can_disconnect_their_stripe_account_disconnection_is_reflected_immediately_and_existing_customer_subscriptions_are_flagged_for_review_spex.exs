@@ -1,7 +1,5 @@
 defmodule MetricFlowSpex.AgencyCanDisconnectStripeSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
-  import Phoenix.LiveViewTest
+  use MetricFlowSpex.Case
 
   import MetricFlowSpex.SharedGivens
 

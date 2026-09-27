@@ -135,6 +135,52 @@ defmodule MetricFlowSpex.Fixtures do
     token
   end
 
+  @doc """
+  Creates an active subscription for a fresh client account against
+  `plan`, originated by the user registered with `owner_email`. For
+  specs asserting on agency-side effects of an existing customer
+  subscription (e.g. disconnecting the agency's Stripe account flagging
+  it for review). No UI path creates a subscription tied to a specific
+  plan_id — the webhook handler that creates Subscription rows from
+  Stripe events never threads plan_id through at all.
+  """
+  @spec agency_customer_subscription!(String.t(), MetricFlow.Billing.Plan.t()) ::
+          MetricFlow.Billing.Subscription.t()
+  def agency_customer_subscription!(owner_email, plan) do
+    user = Users.get_user_by_email(owner_email)
+
+    customer_account =
+      %Account{}
+      |> Account.creation_changeset(%{
+        name: "Customer #{System.unique_integer([:positive])}",
+        slug: "customer-#{System.unique_integer([:positive])}",
+        type: "client",
+        originator_user_id: user.id
+      })
+      |> Repo.insert!()
+
+    Repo.insert!(%MetricFlow.Billing.Subscription{
+      stripe_subscription_id: "sub_test_#{System.unique_integer([:positive])}",
+      stripe_customer_id: "cus_test_#{System.unique_integer([:positive])}",
+      status: :active,
+      account_id: customer_account.id,
+      plan_id: plan.id,
+      current_period_start: DateTime.utc_now() |> DateTime.truncate(:second),
+      current_period_end: DateTime.utc_now() |> DateTime.add(30, :day) |> DateTime.truncate(:second)
+    })
+  end
+
+  @doc """
+  The current `status` of `subscription`, for specs asserting on
+  agency-side effects (e.g. disconnecting Stripe) that should change a
+  customer subscription's state. No UI surfaces subscription status
+  directly.
+  """
+  @spec subscription_status!(integer()) :: atom()
+  def subscription_status!(subscription_id) do
+    Repo.get!(MetricFlow.Billing.Subscription, subscription_id).status
+  end
+
   defp scope_for(email) do
     email |> Users.get_user_by_email() |> Scope.for_user()
   end

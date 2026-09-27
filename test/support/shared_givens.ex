@@ -214,6 +214,75 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, Map.merge(context, %{second_user_email: email, second_user_password: password})}
   end
 
+  register_given :agency_member_registered, context do
+    email = "member#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    # Register through UI, then join them to the owner's agency account
+    # directly: no UI path adds an existing user to another account with a
+    # chosen role, so specs asserting on non-admin restrictions need this.
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Member Personal Account"
+      }
+    )
+    |> render_submit()
+
+    Process.sleep(50)
+
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+
+    drain.(drain)
+
+    owner = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    member = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+    owner_scope = Scope.for_user(owner)
+    agency_account_id = MetricFlow.Accounts.get_personal_account_id(owner_scope)
+
+    {:ok, _account_member} =
+      %MetricFlow.Accounts.AccountMember{}
+      |> MetricFlow.Accounts.AccountMember.changeset(%{
+        account_id: agency_account_id,
+        user_id: member.id,
+        role: :member
+      })
+      |> MetricFlow.Repo.insert()
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok,
+     Map.merge(context, %{
+       member_conn: authed_conn,
+       member_email: email,
+       member_password: password
+     })}
+  end
+
   register_given :owner_with_google_ads_integration, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
@@ -402,6 +471,22 @@ defmodule MetricFlowSpex.SharedGivens do
     conn
     |> Plug.Conn.put_resp_content_type("application/json")
     |> Plug.Conn.send_resp(status, Jason.encode!(body))
+  end
+
+  register_given :owner_has_incomplete_stripe_connect, context do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    scope = Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, _stripe_account} =
+      BillingRepository.upsert_stripe_account(%{
+        stripe_account_id: "acct_test_#{System.unique_integer([:positive])}",
+        agency_account_id: account_id,
+        onboarding_status: :restricted,
+        capabilities: %{}
+      })
+
+    {:ok, context}
   end
 
   register_given :owner_has_metrics, context do
