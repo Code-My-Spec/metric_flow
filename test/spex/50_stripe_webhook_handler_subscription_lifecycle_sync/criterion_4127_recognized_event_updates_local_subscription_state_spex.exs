@@ -5,7 +5,11 @@ defmodule MetricFlowSpex.RecognizedEventUpdatesLocalSubscriptionStateSpex do
 
   spex "Recognized event updates local subscription state" do
     scenario "a customer.subscription.updated event is accepted for processing" do
+      given_(:user_logged_in_as_owner)
+
       given_ "a customer.subscription.updated event", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
+
         payload =
           Jason.encode!(%{
             "id" => "evt_test_#{System.unique_integer([:positive])}",
@@ -16,7 +20,8 @@ defmodule MetricFlowSpex.RecognizedEventUpdatesLocalSubscriptionStateSpex do
                 "customer" => "cus_recognized",
                 "status" => "past_due",
                 "current_period_start" => 1_700_000_000,
-                "current_period_end" => 1_702_592_000
+                "current_period_end" => 1_702_592_000,
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })

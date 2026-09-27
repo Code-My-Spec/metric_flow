@@ -5,7 +5,11 @@ defmodule MetricFlowSpex.ReceivedEventIsLoggedWithRequiredFieldsSpex do
 
   spex "Received event is logged with required fields" do
     scenario "processing a webhook event acknowledges it for audit logging" do
+      given_(:user_logged_in_as_owner)
+
       given_ "any webhook event is received", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
+
         payload =
           Jason.encode!(%{
             "id" => "evt_log_fields_#{System.unique_integer([:positive])}",
@@ -16,7 +20,8 @@ defmodule MetricFlowSpex.ReceivedEventIsLoggedWithRequiredFieldsSpex do
                 "customer" => "cus_log_fields",
                 "status" => "active",
                 "current_period_start" => 1_700_000_000,
-                "current_period_end" => 1_702_592_000
+                "current_period_end" => 1_702_592_000,
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })

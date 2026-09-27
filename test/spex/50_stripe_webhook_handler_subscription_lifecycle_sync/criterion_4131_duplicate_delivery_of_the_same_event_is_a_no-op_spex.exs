@@ -5,7 +5,11 @@ defmodule MetricFlowSpex.DuplicateDeliveryOfTheSameEventIsANoOpSpex do
 
   spex "Duplicate delivery of the same event is a no-op" do
     scenario "redelivering an already-processed event applies no additional state change" do
+      given_(:user_logged_in_as_owner)
+
       given_ "a webhook event that has already been processed", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
+
         payload =
           Jason.encode!(%{
             "id" => "evt_dup_#{System.unique_integer([:positive])}",
@@ -16,7 +20,8 @@ defmodule MetricFlowSpex.DuplicateDeliveryOfTheSameEventIsANoOpSpex do
                 "customer" => "cus_dup",
                 "status" => "active",
                 "current_period_start" => 1_700_000_000,
-                "current_period_end" => 1_702_592_000
+                "current_period_end" => 1_702_592_000,
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })

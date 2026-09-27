@@ -5,7 +5,10 @@ defmodule MetricFlowSpex.ProcessingFailureIsLoggedAndAStripeRetrySucceedsCleanly
 
   spex "Processing failure is logged and a Stripe retry succeeds cleanly" do
     scenario "a rejected delivery is captured, and Stripe's retry with a valid signature succeeds" do
+      given_(:user_logged_in_as_owner)
+
       given_ "processing of a webhook event raises an error", context do
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         event_id = "evt_retry_#{System.unique_integer([:positive])}"
 
         payload =
@@ -18,7 +21,8 @@ defmodule MetricFlowSpex.ProcessingFailureIsLoggedAndAStripeRetrySucceedsCleanly
                 "customer" => "cus_retry",
                 "status" => "active",
                 "current_period_start" => 1_700_000_000,
-                "current_period_end" => 1_702_592_000
+                "current_period_end" => 1_702_592_000,
+                "metadata" => %{"account_id" => "#{account_id}"}
               }
             }
           })

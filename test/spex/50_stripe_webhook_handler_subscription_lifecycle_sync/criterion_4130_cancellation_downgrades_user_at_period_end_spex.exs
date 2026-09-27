@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.CancellationDowngradesUserAtPeriodEndSpex do
             current_period_end: DateTime.utc_now()
           })
 
-        {:ok, Map.put(context, :subscription_id, subscription_id)}
+        {:ok, context |> Map.put(:subscription_id, subscription_id) |> Map.put(:account_id, account_id)}
       end
 
       when_ "a subscription cancelled via customer.subscription.deleted is delivered", context do
@@ -37,7 +37,8 @@ defmodule MetricFlowSpex.CancellationDowngradesUserAtPeriodEndSpex do
                 "customer" => "cus_cancel_period",
                 "status" => "canceled",
                 "canceled_at" => System.system_time(:second),
-                "current_period_end" => System.system_time(:second)
+                "current_period_end" => System.system_time(:second),
+                "metadata" => %{"account_id" => "#{context.account_id}"}
               }
             }
           })
