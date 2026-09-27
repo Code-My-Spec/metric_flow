@@ -5,38 +5,46 @@ defmodule MetricFlow.Check.Warning.MetricFlowSpexDenies do
     category: :warning,
     explanations: [
       check: """
-      BDD spec files (`_spex.exs`) may not reference internal MetricFlow
-      contexts, `MetricFlow.Repo`, or real-disk/port I/O directly.
+      Whole-module bypasses are not allowed in BDD spec files (`_spex.exs`).
 
-      Specs drive the application the way a user does — through LiveView or
-      HTTP — and reach application state only through
-      `MetricFlowSpex.Fixtures`, the one sanctioned bridge into app internals.
-      Reaching a context or the repo directly bypasses the public surface the
-      spec is supposed to prove; reaching the real filesystem or a port
-      bypasses the in-memory environment the spec suite runs against.
+      Specs drive the application the way a user does — over HTTP or through
+      LiveView — and may reach application state only through
+      `MetricFlowSpex.Fixtures`. Calling a domain context directly, reading
+      the real filesystem, or shelling out to an external program all prove
+      the wrong thing: that the code works when driven from inside, not that
+      the user sees the intended outcome.
 
-      Add a narrow function to `MetricFlowSpex.Fixtures` instead, or drive the
-      state through the UI.
+      Denied whole modules:
+
+      - `File`, `:file` — specs run against the in-memory environment; a
+        real-disk read silently bypasses it.
+      - `Port` — talks to external programs; use a cassette instead.
+      - `MetricFlow.Repo` — direct DB reads bypass the public surface.
+      - Every `MetricFlow.<Context>` — domain contexts specs must reach only
+        through the web layer, never by calling the context function that
+        would produce the same effect.
       """
     ]
 
-  @denied_modules ~w(
-    File
-    Port
-    MetricFlow.Repo
-    MetricFlow.Accounts
-    MetricFlow.Agencies
-    MetricFlow.Ai
-    MetricFlow.Billing
-    MetricFlow.Correlations
-    MetricFlow.Dashboards
-    MetricFlow.DataSync
-    MetricFlow.Integrations
-    MetricFlow.Invitations
-    MetricFlow.Metrics
-    MetricFlow.Reviews
-    MetricFlow.Users
-  )
+  @denied_modules [
+    [:File],
+    [:Port],
+    [:MetricFlow, :Repo],
+    [:MetricFlow, :Accounts],
+    [:MetricFlow, :Agencies],
+    [:MetricFlow, :Ai],
+    [:MetricFlow, :Billing],
+    [:MetricFlow, :Correlations],
+    [:MetricFlow, :Dashboards],
+    [:MetricFlow, :DataSync],
+    [:MetricFlow, :Integrations],
+    [:MetricFlow, :Invitations],
+    [:MetricFlow, :Metrics],
+    [:MetricFlow, :Reviews],
+    [:MetricFlow, :Stories]
+  ]
+
+  @denied_atom_modules [:file]
 
   @doc false
   @impl true
@@ -50,20 +58,22 @@ defmodule MetricFlow.Check.Warning.MetricFlowSpexDenies do
     end
   end
 
-  # MetricFlow.Accounts.foo(), alias MetricFlow.Accounts, File.read!(...), Port.open(...)
-  defp walk({:__aliases__, meta, parts} = ast, ctx) do
-    name = Enum.map_join(parts, ".", &to_string/1)
-
-    if name in @denied_modules do
-      {ast, put_issue(ctx, issue_for(ctx, meta, name))}
+  # Module.function(...) — e.g. MetricFlow.Repo.get!(...), File.read!(...)
+  defp walk({{:., meta, [{:__aliases__, _, mod_parts}, fun]}, _, _args} = ast, ctx) do
+    if mod_parts in @denied_modules do
+      {ast, put_issue(ctx, issue_for(ctx, meta, Enum.join(mod_parts, ".") <> "." <> to_string(fun)))}
     else
       {ast, ctx}
     end
   end
 
-  # :file.read_file(...) — the stdlib bypass that has no Elixir alias to catch above
-  defp walk({{:., meta, [:file, fun]}, _, _} = ast, ctx) do
-    {ast, put_issue(ctx, issue_for(ctx, meta, ":file.#{fun}"))}
+  # :atom_module.function(...) — e.g. :file.read(...)
+  defp walk({{:., meta, [atom_mod, fun]}, _, _args} = ast, ctx) when is_atom(atom_mod) do
+    if atom_mod in @denied_atom_modules do
+      {ast, put_issue(ctx, issue_for(ctx, meta, "#{inspect(atom_mod)}.#{fun}"))}
+    else
+      {ast, ctx}
+    end
   end
 
   defp walk(ast, ctx) do
@@ -74,7 +84,7 @@ defmodule MetricFlow.Check.Warning.MetricFlowSpexDenies do
     format_issue(
       issue_meta,
       message:
-        "`#{trigger}` is not allowed in _spex.exs files. Use MetricFlowSpex.Fixtures or drive state through the UI instead.",
+        "`#{trigger}` is a whole-module bypass not allowed in _spex.exs files. Reach state through MetricFlowSpex.Fixtures or the web layer instead.",
       trigger: trigger,
       line_no: meta[:line],
       column: meta[:column]
