@@ -28,6 +28,7 @@ defmodule MetricFlowSpex.SharedGivens do
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
 
+  alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Metrics.NormalizedMetric
   alias MetricFlow.Users.Scope
@@ -252,8 +253,8 @@ defmodule MetricFlowSpex.SharedGivens do
     agency_account_id = MetricFlow.Accounts.get_personal_account_id(owner_scope)
 
     {:ok, _account_member} =
-      %MetricFlow.Accounts.AccountMember{}
-      |> MetricFlow.Accounts.AccountMember.changeset(%{
+      %AccountMember{}
+      |> AccountMember.changeset(%{
         account_id: agency_account_id,
         user_id: member.id,
         role: :member
