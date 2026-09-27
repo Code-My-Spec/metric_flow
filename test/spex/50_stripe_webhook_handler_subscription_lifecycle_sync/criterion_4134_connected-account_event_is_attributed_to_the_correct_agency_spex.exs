@@ -4,16 +4,13 @@ defmodule MetricFlowSpex.ConnectedAccountEventIsAttributedToTheCorrectAgencySpex
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Connected-account event is attributed to the correct agency" do
     scenario "an event delivered via an agency's connected Stripe account is accepted for that agency" do
       given_(:user_logged_in_as_owner)
 
       given_ "an agency's connected Stripe account", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        agency_account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        agency_account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         stripe_account_id = "acct_connected_#{System.unique_integer([:positive])}"
 
         {:ok, _stripe_account} =

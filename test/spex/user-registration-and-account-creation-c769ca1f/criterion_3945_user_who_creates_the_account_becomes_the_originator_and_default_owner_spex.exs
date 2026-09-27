@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
         |> render_submit()
 
         # Authenticate the registered user for subsequent requests
-        user = MetricFlow.Users.get_user_by_email("owner_check@example.com")
+        user = MetricFlowTest.UsersFixtures.get_user_by_email("owner_check@example.com")
         auth_conn = log_in_user(build_conn(), user)
 
         {:ok, context |> Map.put(:registered_email, "owner_check@example.com") |> Map.put(:conn, auth_conn)}
@@ -83,7 +83,7 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
         |> render_submit()
 
         # Authenticate the registered user for subsequent requests
-        user = MetricFlow.Users.get_user_by_email("originator@example.com")
+        user = MetricFlowTest.UsersFixtures.get_user_by_email("originator@example.com")
         auth_conn = log_in_user(build_conn(), user)
 
         {:ok, context |> Map.put(:registered_email, "originator@example.com") |> Map.put(:conn, auth_conn)}

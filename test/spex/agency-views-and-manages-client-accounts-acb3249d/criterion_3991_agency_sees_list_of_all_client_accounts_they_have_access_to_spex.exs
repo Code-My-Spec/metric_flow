@@ -5,33 +5,20 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Accounts
-  alias MetricFlow.Agencies
-  alias MetricFlow.Users.Scope
   alias MetricFlowTest.AgenciesFixtures
-  alias MetricFlowTest.UsersFixtures
 
   spex "Agency sees list of all client accounts they have access to" do
     scenario "agency owner with multiple client accounts sees all of them listed on the accounts page" do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has been granted access to multiple client accounts", context do
-        # Get the owner user and their scope via domain layer (no UI exists for client account management)
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         # Create client accounts via fixture (no UI for creating client accounts exists yet)
         client1 = AgenciesFixtures.account_fixture(%{name: "Client Alpha"})
         client2 = AgenciesFixtures.account_fixture(%{name: "Client Beta"})
 
-        # Grant the agency owner access to the client accounts
-        {:ok, _grant1} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client1.id, :admin, true
-        )
-        {:ok, _grant2} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client2.id, :admin, true
-        )
+        # Grant the agency owner access to the client accounts (no UI exists yet)
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client1.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client2.id, :admin, true)
 
         {:ok, Map.merge(context, %{
           client_account_1: "Client Alpha",

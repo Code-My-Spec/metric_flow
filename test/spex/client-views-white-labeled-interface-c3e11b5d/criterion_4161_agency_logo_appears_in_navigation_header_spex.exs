@@ -10,8 +10,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the client's account is originated by an agency with a logo configured", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        account = MetricFlow.Repo.get_by!(MetricFlow.Accounts.Account, originator_user_id: user.id)
+        account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
         agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
           subdomain: "logotest",
@@ -52,8 +51,7 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
       given_ :user_logged_in_as_owner
 
       given_ "the client's account has an originating agency with branding", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        account = MetricFlow.Repo.get_by!(MetricFlow.Accounts.Account, originator_user_id: user.id)
+        account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
         agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
           subdomain: "logotest2",

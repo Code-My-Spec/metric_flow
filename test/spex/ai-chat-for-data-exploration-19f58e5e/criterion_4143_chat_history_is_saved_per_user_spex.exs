@@ -6,7 +6,6 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Chat history is saved per user" do
     scenario "user's messages persist after navigating away and returning to chat" do
@@ -198,9 +197,7 @@ defmodule MetricFlowSpex.ChatHistoryIsSavedPerUserSpex do
         second_conn = recycle(logged_in_conn)
 
         # Create a subscription for the second user so /chat is accessible
-        second_user = MetricFlowTest.UsersFixtures.get_user_by_email(second_email)
-        second_scope = Scope.for_user(second_user)
-        second_account_id = MetricFlow.Accounts.get_personal_account_id(second_scope)
+        second_account_id = MetricFlowSpex.Fixtures.personal_account_id(second_email)
 
         {:ok, _} =
           BillingRepository.upsert_subscription(%{

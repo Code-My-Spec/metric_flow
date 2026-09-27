@@ -5,34 +5,22 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Accounts
-  alias MetricFlow.Agencies
-  alias MetricFlow.Users.Scope
   alias MetricFlowTest.AgenciesFixtures
-  alias MetricFlowTest.UsersFixtures
 
   spex "Each client listing shows access level and origination status" do
     scenario "agency owner sees access level and origination status for each client account on the accounts page" do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has been granted access to two client accounts with different access levels and origination statuses", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         # Create two client accounts via fixture (no UI exists for creating client accounts)
         client_originated = AgenciesFixtures.account_fixture(%{name: "Originated Client Co"})
         client_invited = AgenciesFixtures.account_fixture(%{name: "Invited Client Inc"})
 
         # Grant originator access (admin level, is_originator: true) to first client
-        {:ok, _grant1} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_originated.id, :admin, true
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_originated.id, :admin, true)
 
         # Grant invited access (read_only level, is_originator: false) to second client
-        {:ok, _grant2} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_invited.id, :read_only, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_invited.id, :read_only, false)
 
         {:ok, Map.merge(context, %{
           originated_client_name: "Originated Client Co",
@@ -71,20 +59,11 @@ defmodule MetricFlowSpex.EachClientListingShowsAccessLevelAndOriginationStatusSp
       given_ :user_logged_in_as_owner
 
       given_ "the owner has access to an account manager level client and an admin level client", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client_manager = AgenciesFixtures.account_fixture(%{name: "Manager Client LLC"})
         client_admin = AgenciesFixtures.account_fixture(%{name: "Admin Client Corp"})
 
-        {:ok, _grant1} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_manager.id, :account_manager, false
-        )
-
-        {:ok, _grant2} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_admin.id, :admin, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_manager.id, :account_manager, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_admin.id, :admin, false)
 
         {:ok, Map.merge(context, %{
           manager_client_name: "Manager Client LLC",

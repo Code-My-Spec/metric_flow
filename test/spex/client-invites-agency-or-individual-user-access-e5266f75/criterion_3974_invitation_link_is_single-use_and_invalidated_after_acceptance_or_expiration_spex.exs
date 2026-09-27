@@ -3,12 +3,8 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
-  import Ecto.Query
 
   import MetricFlowSpex.SharedGivens
-
-  alias MetricFlow.Invitations.Invitation
-  alias MetricFlow.Repo
 
   spex "Invitation link is single-use and invalidated after acceptance or expiration" do
     scenario "invitation link cannot be used a second time after it has been accepted" do
@@ -101,12 +97,7 @@ defmodule MetricFlowSpex.InvitationLinkIsSingleUseAndInvalidatedAfterAcceptanceO
             token
           end)
 
-        token_hash = Invitation.token_hash(token)
-
-        Repo.update_all(
-          from(i in Invitation, where: i.token_hash == ^token_hash),
-          set: [inserted_at: ~N[2000-01-01 00:00:00]]
-        )
+        MetricFlowSpex.Fixtures.expire_invitation!(token)
 
         {:ok, Map.put(context, :invitation_token, token)}
       end

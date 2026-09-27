@@ -6,7 +6,6 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Paid users and agency customers with active subscriptions see all features without restriction" do
     scenario "paid user navigates to the correlations page and sees the feature content without a paywall" do
@@ -34,9 +33,7 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
                "Expected checkout page to be accessible for upgrading. Got: #{html}"
 
         # Create subscription directly so /correlations is accessible without paywall
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         {:ok, _} =
           BillingRepository.upsert_subscription(%{

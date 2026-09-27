@@ -32,15 +32,8 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "canned dashboards exist in the database", context do
-        user = MetricFlow.Users.get_user_by_email(context.owner_email)
-
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
-          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
-            name: name,
-            description: "System-provided #{name} dashboard",
-            built_in: true,
-            user_id: user.id
-          })
+          MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, name)
         end
 
         {:ok, context}
@@ -67,15 +60,8 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "canned dashboards exist in the database", context do
-        user = MetricFlow.Users.get_user_by_email(context.owner_email)
-
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
-          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
-            name: name,
-            description: "System-provided #{name} dashboard",
-            built_in: true,
-            user_id: user.id
-          })
+          MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, name)
         end
 
         {:ok, context}
@@ -102,15 +88,8 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "canned dashboards exist in the database", context do
-        user = MetricFlow.Users.get_user_by_email(context.owner_email)
-
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
-          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
-            name: name,
-            description: "System-provided #{name} dashboard",
-            built_in: true,
-            user_id: user.id
-          })
+          MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, name)
         end
 
         {:ok, context}
@@ -137,15 +116,8 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
       given_ :user_logged_in_as_owner
 
       given_ "canned dashboards exist in the database", context do
-        user = MetricFlow.Users.get_user_by_email(context.owner_email)
-
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
-          MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
-            name: name,
-            description: "System-provided #{name} dashboard",
-            built_in: true,
-            user_id: user.id
-          })
+          MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, name)
         end
 
         {:ok, context}

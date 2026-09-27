@@ -5,26 +5,16 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Accounts
-  alias MetricFlow.Agencies
-  alias MetricFlow.Users.Scope
   alias MetricFlowTest.AgenciesFixtures
-  alias MetricFlowTest.UsersFixtures
 
   spex "If agency originated the client account, they see Originator badge" do
     scenario "agency that originated a client account sees Originator badge on the accounts page" do
       given_ :user_logged_in_as_owner
 
       given_ "the owner has originated a client account", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client = AgenciesFixtures.account_fixture(%{name: "Originated Client Co"})
 
-        {:ok, _grant} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client.id, :admin, true
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
 
         {:ok, Map.put(context, :client_name, "Originated Client Co")}
       end
@@ -49,15 +39,9 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
       given_ :user_logged_in_as_owner
 
       given_ "the owner has been invited to access a client account (not originated)", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client = AgenciesFixtures.account_fixture(%{name: "Invited Client Inc"})
 
-        {:ok, _grant} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client.id, :admin, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, false)
 
         {:ok, Map.put(context, :client_name, "Invited Client Inc")}
       end
@@ -87,20 +71,11 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
       given_ :user_logged_in_as_owner
 
       given_ "the owner has originated one client and been invited to another", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         originated_client = AgenciesFixtures.account_fixture(%{name: "Founded Client LLC"})
         invited_client = AgenciesFixtures.account_fixture(%{name: "Partner Client Ltd"})
 
-        {:ok, _grant_originated} = Agencies.grant_client_account_access(
-          scope, owner_account.id, originated_client.id, :admin, true
-        )
-
-        {:ok, _grant_invited} = Agencies.grant_client_account_access(
-          scope, owner_account.id, invited_client.id, :read_only, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, originated_client.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, invited_client.id, :read_only, false)
 
         {:ok, Map.merge(context, %{
           originated_client_name: "Founded Client LLC",

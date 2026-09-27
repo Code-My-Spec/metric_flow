@@ -4,16 +4,13 @@ defmodule MetricFlowSpex.CancellationDowngradesUserAtPeriodEndSpex do
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Cancellation downgrades user at period end" do
     scenario "a subscription cancelled via customer.subscription.deleted downgrades the user once the period ends" do
       given_(:user_logged_in_as_owner)
 
       given_ "an active subscription whose billing period has now ended", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         subscription_id = "sub_cancel_period_#{System.unique_integer([:positive])}"
 
         {:ok, _subscription} =

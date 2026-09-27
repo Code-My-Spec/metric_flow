@@ -5,29 +5,19 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Accounts
-  alias MetricFlow.Agencies
-  alias MetricFlow.Users.Scope
   alias MetricFlowTest.AgenciesFixtures
-  alias MetricFlowTest.UsersFixtures
 
   spex "Current client context is clearly displayed in navigation" do
     scenario "agency user viewing a client account sees the client account name in navigation" do
       given_ :user_logged_in_as_owner
 
       given_ "the agency owner has been granted access to a client account", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client_account = AgenciesFixtures.account_fixture(%{name: "Acme Corp"})
 
-        {:ok, _grant} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_account.id, :admin, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_account.id, :admin, false)
 
         {:ok, Map.merge(context, %{
-          owner_account_name: owner_account.name,
+          owner_account_name: MetricFlowSpex.Fixtures.personal_account_name(context.owner_email),
           client_account_id: client_account.id,
           client_account_name: "Acme Corp"
         })}
@@ -48,18 +38,12 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       given_ :user_logged_in_as_owner
 
       given_ "the agency owner has been granted access to a client account named Bright Ideas", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client_account = AgenciesFixtures.account_fixture(%{name: "Bright Ideas"})
 
-        {:ok, _grant} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_account.id, :admin, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_account.id, :admin, false)
 
         {:ok, Map.merge(context, %{
-          owner_account_name: owner_account.name,
+          owner_account_name: MetricFlowSpex.Fixtures.personal_account_name(context.owner_email),
           client_account_name: "Bright Ideas"
         })}
       end
@@ -107,18 +91,12 @@ defmodule MetricFlowSpex.CurrentClientContextIsClearlyDisplayedInNavigationSpex 
       given_ :user_logged_in_as_owner
 
       given_ "the agency owner has access to a client account", context do
-        owner_user = UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = Accounts.list_accounts(scope)
-
         client_account = AgenciesFixtures.account_fixture(%{name: "Delta Analytics"})
 
-        {:ok, _grant} = Agencies.grant_client_account_access(
-          scope, owner_account.id, client_account.id, :admin, false
-        )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_account.id, :admin, false)
 
         {:ok, Map.merge(context, %{
-          owner_account_name: owner_account.name,
+          owner_account_name: MetricFlowSpex.Fixtures.personal_account_name(context.owner_email),
           client_account_name: "Delta Analytics"
         })}
       end

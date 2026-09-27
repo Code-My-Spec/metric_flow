@@ -72,14 +72,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
       given_ :user_logged_in_as_owner
 
       given_ "a canned dashboard exists in the database", context do
-        user = MetricFlow.Users.get_user_by_email(context.owner_email)
-
-        MetricFlow.Repo.insert!(%MetricFlow.Dashboards.Dashboard{
-          name: "Marketing Overview",
-          description: "System-provided Marketing Overview dashboard",
-          built_in: true,
-          user_id: user.id
-        })
+        MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, "Marketing Overview")
 
         {:ok, context}
       end

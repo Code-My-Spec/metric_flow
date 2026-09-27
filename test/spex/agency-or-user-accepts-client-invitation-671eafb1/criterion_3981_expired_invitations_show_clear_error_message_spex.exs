@@ -3,10 +3,6 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
   use MetricFlowTest.ConnCase
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
-  import Ecto.Query
-
-  alias MetricFlow.Invitations
-  alias MetricFlow.Repo
 
   import MetricFlowSpex.SharedGivens
 
@@ -31,13 +27,8 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
             t
           end)
 
-        # Backdate the invitation to make it expired
-        Repo.update_all(
-          from(i in Invitations.Invitation,
-            where: i.token_hash == ^Invitations.Invitation.token_hash(token)
-          ),
-          set: [inserted_at: ~N[2000-01-01 00:00:00]]
-        )
+        # Backdate the invitation to make it expired (no UI path to do this)
+        MetricFlowSpex.Fixtures.expire_invitation!(token)
 
         {:ok, Map.put(context, :invitation_token, token)}
       end
@@ -75,13 +66,8 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
             t
           end)
 
-        # Backdate the invitation to make it expired
-        Repo.update_all(
-          from(i in Invitations.Invitation,
-            where: i.token_hash == ^Invitations.Invitation.token_hash(token)
-          ),
-          set: [inserted_at: ~N[2000-01-01 00:00:00]]
-        )
+        # Backdate the invitation to make it expired (no UI path to do this)
+        MetricFlowSpex.Fixtures.expire_invitation!(token)
 
         {:ok, Map.put(context, :invitation_token, token)}
       end
@@ -120,13 +106,8 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
             t
           end)
 
-        # Backdate the invitation to make it expired
-        Repo.update_all(
-          from(i in Invitations.Invitation,
-            where: i.token_hash == ^Invitations.Invitation.token_hash(token)
-          ),
-          set: [inserted_at: ~N[2000-01-01 00:00:00]]
-        )
+        # Backdate the invitation to make it expired (no UI path to do this)
+        MetricFlowSpex.Fixtures.expire_invitation!(token)
 
         {:ok, Map.put(context, :invitation_token, token)}
       end

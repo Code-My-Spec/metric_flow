@@ -24,12 +24,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
 
       when_ "the user visits the email confirmation link to verify their account", context do
         # Generate a real login token for the registered user
-        user = MetricFlow.Users.get_user_by_email("onboarding_user@example.com")
-
-        {:ok, captured_email} =
-          MetricFlow.Users.deliver_login_instructions(user, &"[TOKEN]#{&1}[TOKEN]")
-
-        [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
+        token = MetricFlowSpex.Fixtures.login_token_for("onboarding_user@example.com")
 
         result = live(context.conn, "/users/log-in/#{token}")
         {:ok, Map.put(context, :confirmation_result, result)}

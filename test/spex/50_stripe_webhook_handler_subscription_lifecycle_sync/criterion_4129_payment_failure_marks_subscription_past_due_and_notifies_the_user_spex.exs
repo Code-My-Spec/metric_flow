@@ -4,16 +4,13 @@ defmodule MetricFlowSpex.PaymentFailureMarksSubscriptionPastDueAndNotifiesTheUse
   import MetricFlowSpex.SharedGivens
 
   alias MetricFlow.Billing.BillingRepository
-  alias MetricFlow.Users.Scope
 
   spex "Payment failure marks subscription past_due and notifies the user" do
     scenario "invoice.payment_failed marks the subscription past_due and emails the user" do
       given_(:user_logged_in_as_owner)
 
       given_ "an active subscription", context do
-        user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(user)
-        account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+        account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
         subscription_id = "sub_pay_fail_#{System.unique_integer([:positive])}"
 
         {:ok, _subscription} =

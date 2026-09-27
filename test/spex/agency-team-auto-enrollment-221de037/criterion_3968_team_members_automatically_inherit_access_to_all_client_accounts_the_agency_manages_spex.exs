@@ -6,18 +6,11 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
 
   import MetricFlowSpex.SharedGivens
 
-  alias MetricFlow.Users.Scope
-
   spex "Team members automatically inherit access to all client accounts the agency manages" do
     scenario "auto-enrolled team member can see all client accounts the agency manages on the accounts page" do
       given_(:user_logged_in_as_owner)
 
       given_ "the owner has configured auto-enrollment and added client accounts", context do
-        # Get owner user and account
-        owner_user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = MetricFlow.Accounts.list_accounts(scope)
-
         # Configure auto-enrollment via the UI
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         agency_domain = "agencydomain#{System.unique_integer([:positive])}.com"
@@ -35,23 +28,8 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         client1 = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Client Alpha"})
         client2 = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Client Beta"})
 
-        {:ok, _grant1} =
-          MetricFlow.Agencies.grant_client_account_access(
-            scope,
-            owner_account.id,
-            client1.id,
-            :admin,
-            true
-          )
-
-        {:ok, _grant2} =
-          MetricFlow.Agencies.grant_client_account_access(
-            scope,
-            owner_account.id,
-            client2.id,
-            :admin,
-            true
-          )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client1.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client2.id, :admin, true)
 
         {:ok,
          Map.merge(context, %{
@@ -119,11 +97,6 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
       given_(:user_logged_in_as_owner)
 
       given_ "the owner has configured auto-enrollment and added a client account", context do
-        # Get owner user and account
-        owner_user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        scope = Scope.for_user(owner_user)
-        [owner_account | _] = MetricFlow.Accounts.list_accounts(scope)
-
         # Configure auto-enrollment via the UI
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         agency_domain = "agencyroles#{System.unique_integer([:positive])}.com"
@@ -140,14 +113,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         # Set up client account via domain layer (client account management UI is a separate story)
         client = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Managed Client Corp"})
 
-        {:ok, _grant} =
-          MetricFlow.Agencies.grant_client_account_access(
-            scope,
-            owner_account.id,
-            client.id,
-            :admin,
-            true
-          )
+        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
 
         {:ok,
          Map.merge(context, %{
