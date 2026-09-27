@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.Story48.Criterion4144Spex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      given_ "Acme Agency has the active plans \"Pro\" and \"Basic\"", context do
+      given_ ~s(Acme Agency has the active plans "Pro" and "Basic"), context do
         context.view
         |> form("#plan-form",
           plan: %{name: "Pro", price_cents: "4900", billing_interval: "monthly"}
