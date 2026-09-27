@@ -178,9 +178,11 @@ defmodule MetricFlowTest.OAuthStub do
     @moduledoc false
     @behaviour MetricFlow.Integrations.Providers.Behaviour
 
+    alias MetricFlowTest.OAuthStub.CassettePlug
+
     @impl true
     def config do
-      {plug_mod, plug_opts} = MetricFlowTest.OAuthStub.CassettePlug.load("google_ads_callback")
+      {plug_mod, plug_opts} = CassettePlug.load("google_ads_callback")
 
       [
         client_id: "stub-client-id",
@@ -224,9 +226,11 @@ defmodule MetricFlowTest.OAuthStub do
     @moduledoc false
     @behaviour MetricFlow.Integrations.Providers.Behaviour
 
+    alias MetricFlowTest.OAuthStub.CassettePlug
+
     @impl true
     def config do
-      {plug_mod, plug_opts} = MetricFlowTest.OAuthStub.CassettePlug.load("facebook_ads_callback")
+      {plug_mod, plug_opts} = CassettePlug.load("facebook_ads_callback")
 
       [
         client_id: "stub-client-id",
@@ -270,9 +274,11 @@ defmodule MetricFlowTest.OAuthStub do
     @moduledoc false
     @behaviour MetricFlow.Integrations.Providers.Behaviour
 
+    alias MetricFlowTest.OAuthStub.CassettePlug
+
     @impl true
     def config do
-      {plug_mod, plug_opts} = MetricFlowTest.OAuthStub.CassettePlug.load("quickbooks_callback")
+      {plug_mod, plug_opts} = CassettePlug.load("quickbooks_callback")
 
       [
         client_id: "stub-client-id",
