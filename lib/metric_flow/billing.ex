@@ -28,12 +28,7 @@ defmodule MetricFlow.Billing do
   @spec process_webhook_event(map()) ::
           :ok | {:ok, :ignored} | {:ok, :duplicate} | {:error, term()}
   def process_webhook_event(%{"type" => type, "id" => event_id} = event) do
-    with {:ok, processed_event} <- BillingRepository.mark_event_processed(event_id, type),
-         {:ok, account_id} <- resolve_account(event) do
-      result = dispatch_event(type, event, account_id)
-      BillingRepository.record_event_outcome(processed_event, outcome_status(result))
-      result
-    else
+    case BillingRepository.mark_event_processed(event_id, type) do
       {:error, %Ecto.Changeset{} = changeset} ->
         if Keyword.has_key?(changeset.errors, :stripe_event_id) do
           {:ok, :duplicate}
@@ -41,8 +36,17 @@ defmodule MetricFlow.Billing do
           {:error, changeset}
         end
 
-      {:error, :unrecognized_account} = error ->
-        error
+      {:ok, processed_event} ->
+        case resolve_account(event) do
+          {:ok, account_id} ->
+            result = dispatch_event(type, event, account_id)
+            BillingRepository.record_event_outcome(processed_event, outcome_status(result))
+            result
+
+          {:error, :unrecognized_account} = error ->
+            BillingRepository.record_event_outcome(processed_event, :failed)
+            error
+        end
     end
   end
 
@@ -123,7 +127,7 @@ defmodule MetricFlow.Billing do
       status: map_status(sub["status"]),
       current_period_start: from_unix(sub["current_period_start"]),
       current_period_end: from_unix(sub["current_period_end"]),
-      account_id: account_id
+      account_id: resolve_update_account_id(sub["id"], account_id)
     })
   end
 
@@ -141,7 +145,7 @@ defmodule MetricFlow.Billing do
       status: :cancelled,
       cancelled_at: from_unix(sub["canceled_at"]),
       current_period_end: from_unix(sub["current_period_end"]),
-      account_id: account_id,
+      account_id: resolve_update_account_id(sub["id"], account_id),
       plan_id: nil
     })
   end
@@ -149,6 +153,23 @@ defmodule MetricFlow.Billing do
   defp handle_subscription_event(%{"type" => type}, _account_id) do
     Logger.debug("Ignoring subscription event subtype: #{type}")
     {:ok, :ignored}
+  end
+
+  # An update/delete event with no resolvable account_id (metadata stripped
+  # or predates the metadata convention) must not overwrite an
+  # already-attributed subscription's account_id with nil — that is the
+  # only field distinguishing "unattributed" from "just needs a status
+  # refresh". A truly new subscription with no resolvable account still
+  # fails the changeset's `validate_required(:account_id)`, which is
+  # correct: there is nothing to fall back to.
+  defp resolve_update_account_id(_stripe_subscription_id, account_id) when not is_nil(account_id),
+    do: account_id
+
+  defp resolve_update_account_id(stripe_subscription_id, nil) do
+    case BillingRepository.get_subscription_by_stripe_id(stripe_subscription_id) do
+      nil -> nil
+      %Subscription{account_id: existing_account_id} -> existing_account_id
+    end
   end
 
   defp persist_subscription(attrs) do
