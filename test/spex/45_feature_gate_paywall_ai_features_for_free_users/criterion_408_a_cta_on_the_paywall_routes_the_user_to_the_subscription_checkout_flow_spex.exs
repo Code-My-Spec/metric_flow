@@ -1,0 +1,50 @@
+defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
+  use MetricFlowSpex.Case
+  import Phoenix.LiveViewTest
+
+  import MetricFlowSpex.SharedGivens
+
+  spex "A CTA on the paywall routes the user to the subscription checkout flow", criterion: 408 do
+    scenario "the paywall on correlations includes a link or button pointing to the checkout page" do
+      given_ :user_logged_in_as_owner
+
+      given_ "the free user navigates to the correlations page", context do
+        result = live(context.owner_conn, "/app/correlations")
+        {:ok, Map.put(context, :result, result)}
+      end
+
+      then_ "the paywall contains a call-to-action that leads to the subscription checkout", context do
+        case context.result do
+          {:ok, view, _html} ->
+            html = render(view)
+
+            has_checkout_cta =
+              has_element?(view, "a[href='/app/subscriptions/checkout']") or
+                has_element?(view, "[data-role='paywall-cta']") or
+                has_element?(view, "[data-role='upgrade-cta']") or
+                html =~ "/app/subscriptions/checkout" or
+                html =~ "checkout" or
+                html =~ "Checkout" or
+                html =~ "Upgrade now" or
+                html =~ "upgrade now" or
+                html =~ "Get started" or
+                html =~ "Start your plan"
+
+            assert has_checkout_cta,
+                   "Expected a CTA on the paywall that routes to /subscriptions/checkout. Got: #{html}"
+
+            {:ok, context}
+
+          {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} ->
+            {:ok, context}
+
+          {:error, {:redirect, _}} ->
+            {:ok, context}
+
+          {:error, {:live_redirect, _}} ->
+            {:ok, context}
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,48 @@
+defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessProfileSpex do
+  use MetricFlowSpex.Case, async: false
+  import Phoenix.LiveViewTest
+
+  import MetricFlowSpex.SharedGivens
+
+  spex "User can initiate OAuth flow for Google Business Profile from the integrations settings page", criterion: 383 do
+    scenario "authenticated user sees Google Business listed as a provider on the connect page" do
+      given_ :user_logged_in_as_owner
+
+      then_ "the connect page lists Google Business as a provider", context do
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect")
+        assert html =~ "Google Business"
+        {:ok, context}
+      end
+    end
+
+    scenario "Google Business provider card has a connect button" do
+      given_ :user_logged_in_as_owner
+
+      then_ "the Google Business card shows a connect button with the correct data attributes",
+            context do
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
+        assert has_element?(view, "[data-platform='google_business']")
+        assert has_element?(view, "[data-platform='google_business'] [data-role='connect-button']")
+        {:ok, context}
+      end
+    end
+
+    scenario "unauthenticated user is redirected away from the connect page" do
+      then_ "visiting the connect page without a session redirects to login", context do
+        result = live(build_conn(), "/app/integrations/connect")
+        assert {:error, {:redirect, _}} = result
+        {:ok, context}
+      end
+    end
+
+    scenario "Google Business connect detail page is accessible to authenticated user" do
+      given_ :user_logged_in_as_owner
+
+      then_ "the Google Business detail page loads and shows the provider name", context do
+        {:ok, _view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")
+        assert html =~ "Google Business"
+        {:ok, context}
+      end
+    end
+  end
+end
