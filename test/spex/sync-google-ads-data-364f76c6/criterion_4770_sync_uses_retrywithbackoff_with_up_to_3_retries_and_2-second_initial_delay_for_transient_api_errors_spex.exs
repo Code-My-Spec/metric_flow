@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.SyncUsesRetryWithBackoffUpTo3RetriesForGoogleAdsTransientApiErrorsSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

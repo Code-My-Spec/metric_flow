@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.InvitationIncludesClientAccountNameAndAccessLevelBeingGrantedSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
   import Swoosh.TestAssertions
 

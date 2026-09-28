@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

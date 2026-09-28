@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
 

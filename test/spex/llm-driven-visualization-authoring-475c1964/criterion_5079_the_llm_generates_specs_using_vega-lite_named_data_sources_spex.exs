@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion5079LlmGeneratesNamedDataSourceSpecsSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase, async: false
+  use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
   import ReqCassette

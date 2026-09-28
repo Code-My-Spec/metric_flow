@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion4843UserCanInitiateOAuthFlowForGoogleBusinessProfileSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase, async: false
+  use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

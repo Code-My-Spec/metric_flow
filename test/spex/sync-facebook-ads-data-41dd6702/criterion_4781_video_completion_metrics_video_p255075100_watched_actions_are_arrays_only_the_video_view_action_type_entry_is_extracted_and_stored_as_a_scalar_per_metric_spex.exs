@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.VideoCompletionMetricsVideoP255075100WatchedActionsAreA4781 do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

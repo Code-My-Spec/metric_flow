@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory5174863 do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

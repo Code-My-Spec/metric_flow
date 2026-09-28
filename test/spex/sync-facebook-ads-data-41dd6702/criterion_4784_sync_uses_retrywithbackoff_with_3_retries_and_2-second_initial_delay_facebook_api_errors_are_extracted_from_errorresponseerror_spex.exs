@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.SyncUsesRetryWithBackoffWith3RetriesAnd2SecondInitialDe4784 do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

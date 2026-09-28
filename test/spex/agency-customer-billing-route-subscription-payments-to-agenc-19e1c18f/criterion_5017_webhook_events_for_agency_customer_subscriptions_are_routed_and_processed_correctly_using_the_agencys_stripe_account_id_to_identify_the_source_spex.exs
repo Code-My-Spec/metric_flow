@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.AgencyWebhookEventsRoutedCorrectlySpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
 
   import MetricFlowSpex.SharedGivens
 

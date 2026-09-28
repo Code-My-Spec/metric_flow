@@ -1,7 +1,7 @@
 defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
+  import MetricFlowTest.ConnCase, only: [log_in_user: 2, log_in_user: 3]
 
   import MetricFlowSpex.SharedGivens
 

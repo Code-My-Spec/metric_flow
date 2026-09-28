@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.OauthFlowAuthenticatesUserAndGrantsAccessToFinancialDataSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
 

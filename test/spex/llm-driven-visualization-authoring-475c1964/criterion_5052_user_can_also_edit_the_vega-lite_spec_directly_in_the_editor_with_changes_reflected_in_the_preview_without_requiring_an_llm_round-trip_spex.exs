@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

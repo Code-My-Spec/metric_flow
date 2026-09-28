@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.CostMicrosAlwaysDividedBy1000000BeforeStorageSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

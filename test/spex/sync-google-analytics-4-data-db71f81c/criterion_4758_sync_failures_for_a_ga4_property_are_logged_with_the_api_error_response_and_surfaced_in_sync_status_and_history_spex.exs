@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp4758 do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

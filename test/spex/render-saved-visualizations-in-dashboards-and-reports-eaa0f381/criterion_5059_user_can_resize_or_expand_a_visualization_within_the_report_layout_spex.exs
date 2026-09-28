@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion5059ResizeOrExpandVisualizationSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

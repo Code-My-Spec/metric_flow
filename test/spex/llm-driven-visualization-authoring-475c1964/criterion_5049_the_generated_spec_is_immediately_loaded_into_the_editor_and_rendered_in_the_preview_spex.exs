@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion5049SpecLoadedIntoEditorAndPreviewSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase, async: false
+  use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
   import ReqCassette

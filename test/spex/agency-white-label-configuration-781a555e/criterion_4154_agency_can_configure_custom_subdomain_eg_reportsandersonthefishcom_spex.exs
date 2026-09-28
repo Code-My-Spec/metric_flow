@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefishcomSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

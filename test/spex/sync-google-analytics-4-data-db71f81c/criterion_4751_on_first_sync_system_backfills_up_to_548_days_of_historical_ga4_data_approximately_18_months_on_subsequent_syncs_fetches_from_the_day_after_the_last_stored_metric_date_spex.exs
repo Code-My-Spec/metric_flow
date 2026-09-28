@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens

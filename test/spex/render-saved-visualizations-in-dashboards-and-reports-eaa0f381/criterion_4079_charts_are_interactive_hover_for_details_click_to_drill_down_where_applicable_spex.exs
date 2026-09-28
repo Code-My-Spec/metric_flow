@@ -1,6 +1,5 @@
 defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
-  use SexySpex
-  use MetricFlowTest.ConnCase
+  use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
