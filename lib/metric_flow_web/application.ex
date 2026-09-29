@@ -25,7 +25,8 @@ defmodule MetricFlowWeb.Application do
         # dev.metric-flow.app tunnel below — both can be enabled at once in
         # dev, and a shared default name would crash the second GenServer to
         # register. Safe to always include: ClientUtils.CloudflareTunnel
-        # ignores itself (via :enabled) when this checkout has no preview.
+        # ignores itself (via :enabled) when this checkout has no preview, or
+        # when this boot is a non-main copy — see `main_copy?/0`.
         Supervisor.child_spec({ClientUtils.CloudflareTunnel, preview_tunnel(:metric_flow)},
           id: :preview_tunnel
         )
@@ -45,7 +46,7 @@ defmodule MetricFlowWeb.Application do
     defp dev_children(children) do
       tunnel_config = Application.get_env(:metric_flow, :cloudflare_tunnel, [])
 
-      if tunnel_config[:enabled] do
+      if tunnel_config[:enabled] and main_copy?() do
         tunnel_opts =
           Keyword.merge(tunnel_config,
             endpoint: MetricFlowWeb.Endpoint,
@@ -75,7 +76,7 @@ defmodule MetricFlowWeb.Application do
     config = Application.get_env(otp_app, :preview, [])
 
     [
-      enabled: config[:tunnel_id] not in [nil, ""],
+      enabled: config[:tunnel_id] not in [nil, ""] and main_copy?(),
       mode: :named,
       hostname: config[:hostname],
       tunnel_id: config[:tunnel_id],
@@ -95,4 +96,17 @@ defmodule MetricFlowWeb.Application do
       base_dir: Path.join(File.cwd!(), "tmp/cloudflared/preview")
     ]
   end
+
+  # Both tunnels above read a hardcoded hostname/tunnel id/account tag from
+  # config, unconditionally, on every :dev boot — main's own. A non-main
+  # working copy booting the same way (`CmsHarness.AppInstance`, CodeMySpec
+  # story 1108) started them too, running a second `cloudflared` per tunnel
+  # answering for main's tunnel from a different port. Harmless only because
+  # every copy's config named the same origin main's did; a live risk the
+  # moment one didn't (Cloudflare splitting main's public traffic between the
+  # two apps). `CMS_MAIN_COPY` is set by the harness's own
+  # `AppInstance.Runner.Local.launch/6` for exactly this reason; unset (a
+  # developer's own `mix phx.server`, not going through the harness at all)
+  # reads as main, matching every boot before this existed.
+  defp main_copy?, do: System.get_env("CMS_MAIN_COPY") != "false"
 end
