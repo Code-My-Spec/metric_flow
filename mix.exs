@@ -136,7 +136,11 @@ defmodule MetricFlow.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       spex: ["ecto.create --quiet", "ecto.migrate --quiet", "spex"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.setup": [
+        "cmd --cd assets npm install",
+        "tailwind.install --if-missing",
+        "esbuild.install --if-missing"
+      ],
       "assets.build": ["compile", "tailwind metric_flow", "esbuild metric_flow"],
       "assets.deploy": [
         "tailwind metric_flow --minify",

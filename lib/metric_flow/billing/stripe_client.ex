@@ -160,6 +160,16 @@ defmodule MetricFlow.Billing.StripeClient do
   end
 
   @doc """
+  Delete a Stripe Connect Express account, detaching it from the platform
+  on Stripe's side. Called before removing the local record so a
+  disconnect actually revokes access rather than only forgetting it locally.
+  """
+  @spec delete_account(String.t(), keyword()) :: {:ok, map()} | {:error, term()}
+  def delete_account(stripe_account_id, opts \\ []) do
+    delete("#{@stripe_api_base}/accounts/#{stripe_account_id}", opts)
+  end
+
+  @doc """
   Create an account link for Stripe Connect onboarding.
 
   Returns the onboarding URL the agency admin should be redirected to.
@@ -202,6 +212,23 @@ defmodule MetricFlow.Billing.StripeClient do
     req_opts = [headers: headers] ++ req_http_options(opts)
 
     case Req.get(url, req_opts) do
+      {:ok, %{status: status, body: body}} when status in 200..299 ->
+        {:ok, body}
+
+      {:ok, %{body: body}} ->
+        {:error, body["error"]["message"] || "Stripe API error"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp delete(url, opts) do
+    stripe_account = Keyword.get(opts, :stripe_account)
+    headers = api_headers(stripe_account)
+    req_opts = [headers: headers] ++ req_http_options(opts)
+
+    case Req.delete(url, req_opts) do
       {:ok, %{status: status, body: body}} when status in 200..299 ->
         {:ok, body}
 

@@ -427,18 +427,21 @@ defmodule MetricFlow.Billing do
   """
   @spec disconnect_stripe_account(integer()) :: :ok | {:error, term()}
   def disconnect_stripe_account(account_id) do
+    alias MetricFlow.Billing.StripeClient
+
     case BillingRepository.get_stripe_account_by_agency(account_id) do
       nil ->
         {:error, :not_connected}
 
       stripe_account ->
-        case MetricFlow.Repo.delete(stripe_account) do
-          {:ok, _} ->
-            BillingRepository.flag_agency_subscriptions_for_review(account_id)
-            :ok
-
-          {:error, changeset} ->
-            {:error, changeset}
+        # Detach on Stripe's side first: if that fails, the local record
+        # stays intact rather than disagreeing with what Stripe still has.
+        with {:ok, _} <- StripeClient.delete_account(stripe_account.stripe_account_id),
+             {:ok, _} <- MetricFlow.Repo.delete(stripe_account) do
+          BillingRepository.flag_agency_subscriptions_for_review(account_id)
+          :ok
+        else
+          {:error, reason} -> {:error, reason}
         end
     end
   end
