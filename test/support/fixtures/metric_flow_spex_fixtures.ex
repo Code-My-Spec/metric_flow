@@ -28,6 +28,7 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Accounts
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Agencies
+  alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Repo
   alias MetricFlow.Users
@@ -179,6 +180,18 @@ defmodule MetricFlowSpex.Fixtures do
   @spec subscription_status!(integer()) :: atom()
   def subscription_status!(subscription_id) do
     Repo.get!(MetricFlow.Billing.Subscription, subscription_id).status
+  end
+
+  @doc """
+  The Stripe Connect account id for the agency owned by `email`, for specs
+  that need to tag a webhook payload with the agency's own connected
+  account id. No UI surfaces the raw Stripe account id.
+  """
+  @spec agency_stripe_account_id(String.t()) :: String.t()
+  def agency_stripe_account_id(email) do
+    account_id = personal_account_id(email)
+    %{stripe_account_id: id} = BillingRepository.get_stripe_account_by_agency(account_id)
+    id
   end
 
   defp scope_for(email) do
