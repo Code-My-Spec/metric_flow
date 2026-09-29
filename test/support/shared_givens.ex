@@ -493,6 +493,62 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, context}
   end
 
+  register_given :owner_subscription_past_due, context do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+    scope = Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, _subscription} =
+      BillingRepository.upsert_subscription(%{
+        stripe_subscription_id: "sub_test_#{System.unique_integer([:positive])}",
+        stripe_customer_id: "cus_test_#{System.unique_integer([:positive])}",
+        status: :past_due,
+        account_id: account_id,
+        current_period_start: DateTime.utc_now(),
+        current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+      })
+
+    {:ok, context}
+  end
+
+  register_given :second_user_has_agency_plan_subscription, context do
+    user = MetricFlowTest.UsersFixtures.get_user_by_email(context.second_user_email)
+    scope = Scope.for_user(user)
+    account_id = MetricFlow.Accounts.get_personal_account_id(scope)
+
+    {:ok, subscription} =
+      BillingRepository.upsert_subscription(%{
+        stripe_subscription_id: "sub_test_#{System.unique_integer([:positive])}",
+        stripe_customer_id: "cus_test_#{System.unique_integer([:positive])}",
+        status: :active,
+        account_id: account_id,
+        plan_id: context.agency_plan.id,
+        current_period_start: DateTime.utc_now(),
+        current_period_end: DateTime.add(DateTime.utc_now(), 30, :day)
+      })
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password",
+        user: %{
+          email: context.second_user_email,
+          password: context.second_user_password,
+          remember_me: true
+        }
+      )
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    second_user_conn = recycle(logged_in_conn)
+
+    {:ok,
+     Map.merge(context, %{
+       second_user_conn: second_user_conn,
+       second_user_subscription_id: subscription.id
+     })}
+  end
+
   register_given :owner_has_metrics, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
     now = DateTime.utc_now()
