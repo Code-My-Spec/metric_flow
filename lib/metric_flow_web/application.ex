@@ -76,7 +76,7 @@ defmodule MetricFlowWeb.Application do
     config = Application.get_env(otp_app, :preview, [])
 
     [
-      enabled: config[:tunnel_id] not in [nil, ""] and main_copy?(),
+      enabled: config[:tunnel_id] not in [nil, ""] and main_copy?() and not tunnel_held_by_harness?(),
       mode: :named,
       hostname: config[:hostname],
       tunnel_id: config[:tunnel_id],
@@ -105,8 +105,22 @@ defmodule MetricFlowWeb.Application do
   # every copy's config named the same origin main's did; a live risk the
   # moment one didn't (Cloudflare splitting main's public traffic between the
   # two apps). `CMS_MAIN_COPY` is set by the harness's own
-  # `AppInstance.Runner.Local.launch/6` for exactly this reason; unset (a
+  # `AppInstance.Runner.Local.launch/7` for exactly this reason; unset (a
   # developer's own `mix phx.server`, not going through the harness at all)
   # reads as main, matching every boot before this existed.
   defp main_copy?, do: System.get_env("CMS_MAIN_COPY") != "false"
+
+  # 2026-09-29: the harness now holds the tunnel for any copy whose preview
+  # is DB-backed (`CodeMySpec.Workspaces.PreviewTunnel.stored_credentials/1`
+  # finds one) — this project's own preview tunnel above is exactly that
+  # case (real credentials, provisioned through `PreviewTunnel.ensure/1`),
+  # unlike the legacy `dev.metric-flow.app` tunnel below it, which is still
+  # a config-only bootstrap with no DB row and keeps running from here
+  # exactly as before. `true` means the harness is already running — or
+  # about to run — this project's own connector itself; starting a second
+  # one here would be the same stray-connector shape `CMS_MAIN_COPY` above
+  # already exists to prevent, from a new source. Set by
+  # `AppInstance.Runner.Local.launch/7`; unset (not going through the
+  # harness at all) reads as `false`, the same default `main_copy?/0` uses.
+  defp tunnel_held_by_harness?, do: System.get_env("CMS_TUNNEL_HELD_BY_HARNESS") == "true"
 end
