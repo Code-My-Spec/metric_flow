@@ -7,6 +7,7 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.Accounts.Account
   alias MetricFlow.Billing.{Plan, ProcessedStripeEvent, StripeAccount, Subscription}
   alias MetricFlow.Repo
 
@@ -14,6 +15,18 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   def get_subscription_by_stripe_id(stripe_subscription_id) do
     Repo.get_by(Subscription, stripe_subscription_id: stripe_subscription_id)
+  end
+
+  @doc """
+  Fetch a single subscription by its own id, scoped to `agency_account_id`
+  via its plan. Used by the cancel action so a forged `phx-value-id` can't
+  target another agency's subscription.
+  """
+  def get_agency_subscription(agency_account_id, subscription_id) do
+    Subscription
+    |> join(:inner, [s], p in Plan, on: s.plan_id == p.id)
+    |> where([s, p], p.agency_account_id == ^agency_account_id and s.id == ^subscription_id)
+    |> Repo.one()
   end
 
   def get_subscription_by_account_id(account_id) do
@@ -216,7 +229,13 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   defp maybe_search(query, search) do
     search_term = "%#{search}%"
-    where(query, [s], ilike(s.stripe_customer_id, ^search_term))
+
+    query
+    |> join(:inner, [s, p], a in Account, on: s.account_id == a.id)
+    |> where(
+      [s, p, a],
+      ilike(s.stripe_customer_id, ^search_term) or ilike(a.name, ^search_term)
+    )
   end
 
   # --- Private ---

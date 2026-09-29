@@ -185,7 +185,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
 
   def handle_event("cancel_customer_subscription", %{"id" => id}, socket) do
     account_id = socket.assigns.active_account_id
-    subscription = BillingRepository.get_subscription_by_account_id(String.to_integer(id))
+    subscription = BillingRepository.get_agency_subscription(account_id, String.to_integer(id))
 
     case subscription do
       nil ->

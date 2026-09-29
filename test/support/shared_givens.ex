@@ -470,6 +470,10 @@ defmodule MetricFlowSpex.SharedGivens do
 
         {"DELETE", "/v1/accounts/" <> account_id} ->
           {200, %{"id" => account_id, "object" => "account", "deleted" => true}}
+
+        {"POST", "/v1/subscriptions/" <> subscription_id} ->
+          {200,
+           %{"id" => subscription_id, "object" => "subscription", "cancel_at_period_end" => true}}
       end
 
     conn
