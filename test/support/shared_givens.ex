@@ -549,6 +549,56 @@ defmodule MetricFlowSpex.SharedGivens do
      })}
   end
 
+  register_given :globex_agency_plan_and_customer, context do
+    globex_email = "globex#{System.unique_integer([:positive])}@example.com"
+    globex_password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form",
+      user: %{email: globex_email, password: globex_password, account_name: "Globex Agency"}
+    )
+    |> render_submit()
+
+    Process.sleep(50)
+
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+
+    drain.(drain)
+
+    globex_user = MetricFlowTest.UsersFixtures.get_user_by_email(globex_email)
+    globex_scope = Scope.for_user(globex_user)
+    globex_account_id = MetricFlow.Accounts.get_personal_account_id(globex_scope)
+
+    {:ok, globex_plan} =
+      BillingRepository.create_plan(%{
+        name: "Globex Plan",
+        price_cents: 3999,
+        currency: "usd",
+        billing_interval: :monthly,
+        agency_account_id: globex_account_id,
+        stripe_price_id: "price_test_#{System.unique_integer([:positive])}"
+      })
+
+    globex_subscription =
+      MetricFlowSpex.Fixtures.agency_customer_subscription!(globex_email, globex_plan)
+
+    {:ok,
+     Map.merge(context, %{
+       globex_account_id: globex_account_id,
+       globex_subscription_id: globex_subscription.id,
+       globex_customer_identifier: globex_subscription.stripe_customer_id
+     })}
+  end
+
   register_given :owner_has_metrics, context do
     user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
     now = DateTime.utc_now()

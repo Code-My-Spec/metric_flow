@@ -183,6 +183,16 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  The `name` of the customer account that owns `subscription`, for specs
+  asserting on search-by-name behavior. No UI surfaces this name today —
+  the dashboard's customer list and search both key on `stripe_customer_id`.
+  """
+  @spec agency_customer_account_name!(MetricFlow.Billing.Subscription.t()) :: String.t()
+  def agency_customer_account_name!(subscription) do
+    Repo.get!(Account, subscription.account_id).name
+  end
+
+  @doc """
   The Stripe Connect account id for the agency owned by `email`, for specs
   that need to tag a webhook payload with the agency's own connected
   account id. No UI surfaces the raw Stripe account id.
