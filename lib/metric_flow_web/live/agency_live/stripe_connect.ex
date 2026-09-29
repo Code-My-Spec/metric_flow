@@ -81,7 +81,6 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
                   :if={@is_admin}
                   phx-click="disconnect_stripe"
                   data-role="disconnect-stripe"
-                  data-confirm="Are you sure? This will affect billing for your customers."
                   class="btn btn-error btn-outline btn-sm"
                 >
                   Disconnect Stripe Account
