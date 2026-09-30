@@ -40,6 +40,7 @@ defmodule MetricFlow.Ai do
   # ---------------------------------------------------------------------------
 
   defdelegate list_insights(scope, opts \\ []), to: AiRepository
+  defdelegate list_insights_for_metric(scope, metric_name, opts \\ []), to: AiRepository
   defdelegate get_insight(scope, id), to: AiRepository
   defdelegate delete_insight(scope, id), to: AiRepository
   defdelegate delete_all_insights(scope), to: AiRepository

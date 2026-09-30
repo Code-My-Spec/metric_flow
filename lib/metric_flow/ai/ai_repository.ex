@@ -14,6 +14,7 @@ defmodule MetricFlow.Ai.AiRepository do
   alias MetricFlow.Ai.ChatSession
   alias MetricFlow.Ai.Insight
   alias MetricFlow.Ai.SuggestionFeedback
+  alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
@@ -53,7 +54,37 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
-  Retrieves a specific insight by ID, scoped to the account.
+  Lists AI insights for the scoped account whose underlying correlation result
+  references the given metric name, as either the analyzed metric or the goal
+  metric it was compared against.
+
+  Returns an empty list when the user has no personal account.
+
+  Options:
+  - limit: integer — maximum number of results
+
+  Results are ordered by generated_at descending (most recent first).
+  """
+  @spec list_insights_for_metric(Scope.t(), String.t(), keyword()) :: list(Insight.t())
+  def list_insights_for_metric(%Scope{} = scope, metric_name, opts \\ []) do
+    case get_account_id(scope) do
+      nil ->
+        []
+
+      account_id ->
+        Insight
+        |> join(:inner, [i], cr in CorrelationResult, on: i.correlation_result_id == cr.id)
+        |> where([i], i.account_id == ^account_id)
+        |> where([_i, cr], cr.metric_name == ^metric_name or cr.goal_metric_name == ^metric_name)
+        |> order_by([i], desc: i.generated_at)
+        |> maybe_limit(Keyword.get(opts, :limit))
+        |> select([i], i)
+        |> Repo.all()
+    end
+  end
+
+  @doc """
+  Retrieves a specific insight by ID, scoped to the account."""
 
   Returns {:ok, insight} when found or {:error, :not_found} when the insight
   does not exist, belongs to a different account, or the user has no personal account.

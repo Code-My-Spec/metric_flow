@@ -11,6 +11,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Ai
   alias MetricFlow.Dashboards
   alias MetricFlow.Metrics.NormalizedMetric
 
@@ -347,8 +348,26 @@ defmodule MetricFlowWeb.DashboardLive.Show do
                 ✕
               </button>
             </div>
-            <p class="text-sm text-base-content/60">
-              Metric-specific insights for {@ai_panel_metric} based on correlation analysis.
+            <div :if={@ai_panel_insights != []} data-role="ai-panel-insights-list" class="space-y-3">
+              <div
+                :for={insight <- @ai_panel_insights}
+                data-role="ai-panel-insight"
+                data-insight-id={insight.id}
+                class="text-sm border-l-2 border-primary/40 pl-3"
+              >
+                <p data-role="ai-panel-insight-summary" class="font-medium text-base-content">
+                  {insight.summary}
+                </p>
+                <p data-role="ai-panel-insight-content" class="text-base-content/70 mt-1">
+                  {insight.content}
+                </p>
+                <p class="text-xs text-base-content/40 mt-1">
+                  {format_confidence(insight.confidence)} confidence
+                </p>
+              </div>
+            </div>
+            <p :if={@ai_panel_insights == []} class="text-sm text-base-content/60">
+              No AI insights yet for {@ai_panel_metric}.
               Visit <.link navigate={~p"/app/insights"} class="link link-primary">AI Insights</.link>
               for detailed recommendations.
             </p>
@@ -392,6 +411,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:has_integrations, false)
           |> assign(:ai_panel_open, false)
           |> assign(:ai_panel_metric, nil)
+          |> assign(:ai_panel_insights, [])
           |> assign(:chat_panel_open, false)
           |> assign(:page_title, "All Metrics")
 
@@ -427,6 +447,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:visible_metrics, visible_metrics)
           |> assign(:ai_panel_open, false)
           |> assign(:ai_panel_metric, nil)
+          |> assign(:ai_panel_insights, [])
           |> assign(:chat_panel_open, false)
           |> assign(:mappings_panel_open, false)
           |> assign(:page_title, "All Metrics")
@@ -526,7 +547,16 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   end
 
   def handle_event("show_ai_insights", %{"metric" => metric_name}, socket) do
-    {:noreply, socket |> assign(:ai_panel_open, true) |> assign(:ai_panel_metric, metric_name)}
+    scope = socket.assigns.current_scope
+    insights = insights_for_ai_panel(scope, metric_name)
+
+    socket =
+      socket
+      |> assign(:ai_panel_open, true)
+      |> assign(:ai_panel_metric, metric_name)
+      |> assign(:ai_panel_insights, insights)
+
+    {:noreply, socket}
   end
 
   def handle_event("hide_ai_insights", _params, socket) do
@@ -890,4 +920,18 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   end
 
   defp safe_divide(_numerator, _denominator), do: 0.0
+
+  defp insights_for_ai_panel(scope, "All Metrics") do
+    Ai.list_insights(scope, limit: 3)
+  end
+
+  defp insights_for_ai_panel(scope, metric_name) do
+    Ai.list_insights_for_metric(scope, metric_name, limit: 3)
+  end
+
+  defp format_confidence(confidence) when is_float(confidence) do
+    "#{round(confidence * 100)}%"
+  end
+
+  defp format_confidence(_), do: "–"
 end
