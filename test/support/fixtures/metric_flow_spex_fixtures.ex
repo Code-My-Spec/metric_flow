@@ -55,6 +55,20 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  The slug of the personal account for the user registered with `email`.
+
+  For specs that grant agency access by slug, the only identifier the
+  "Agency Access" grant form accepts.
+  """
+  @spec personal_account_slug(String.t()) :: String.t()
+  def personal_account_slug(email) do
+    scope = scope_for(email)
+    account_id = Accounts.get_personal_account_id(scope)
+    account = Accounts.get_account!(scope, account_id)
+    account.slug
+  end
+
+  @doc """
   Grants a client account access to the agency owned by `email`, as the
   agency's own scope would. No UI exists yet for creating and granting
   client account access, so specs need this to set up an agency's client
