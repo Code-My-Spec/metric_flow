@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.EachPlatformIntegrationDefinesMappingsToCanonicalMetric
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Each platform integration defines mappings from its native metric names to canonical metrics", criterion: 275 do
+  spex "Each platform integration defines mappings from its native metric names to canonical metrics",
+    criterion: 275 do
     scenario "dashboard loads successfully for user with integrations from multiple platforms" do
       given_(:owner_with_integrations)
 

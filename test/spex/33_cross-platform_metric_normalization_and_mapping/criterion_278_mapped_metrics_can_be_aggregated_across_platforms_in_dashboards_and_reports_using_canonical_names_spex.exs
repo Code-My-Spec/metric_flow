@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.MappedMetricsCanBeAggregatedAcrossPlatformsInDashboards
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Mapped metrics can be aggregated across platforms in dashboards and reports using canonical names", criterion: 278 do
+  spex "Mapped metrics can be aggregated across platforms in dashboards and reports using canonical names",
+    criterion: 278 do
     scenario "dashboard loads for a user with integrations" do
       given_(:owner_with_integrations)
 

@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "When a platform metric has no canonical equivalent it is stored and labeled as platform-specific", criterion: 276 do
+  spex "When a platform metric has no canonical equivalent it is stored and labeled as platform-specific",
+    criterion: 276 do
     scenario "dashboard loads for user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -28,14 +29,15 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
     end
 
     scenario "dashboard clearly labels any platform-specific metrics that have no canonical equivalent" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard uses a visual label or marker to distinguish platform-specific metrics", context do
+      then_ "the dashboard uses a visual label or marker to distinguish platform-specific metrics",
+            context do
         html = render(context.view)
 
         # Platform-specific metrics with no canonical equivalent should be labeled clearly.
@@ -59,14 +61,15 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
     end
 
     scenario "platform-specific metrics are visually distinct from canonical metrics on the dashboard" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard renders a section or grouping that separates platform-specific metrics from canonical metrics", context do
+      then_ "the dashboard renders a section or grouping that separates platform-specific metrics from canonical metrics",
+            context do
         html = render(context.view)
 
         # The page must visually separate platform-specific metrics from canonical ones.
@@ -93,14 +96,15 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
     end
 
     scenario "platform-specific metrics display their originating platform alongside their label" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard references the originating platform when showing a platform-specific metric", context do
+      then_ "the dashboard references the originating platform when showing a platform-specific metric",
+            context do
         html = render(context.view)
 
         # Platform-specific metrics should always surface the platform they came from

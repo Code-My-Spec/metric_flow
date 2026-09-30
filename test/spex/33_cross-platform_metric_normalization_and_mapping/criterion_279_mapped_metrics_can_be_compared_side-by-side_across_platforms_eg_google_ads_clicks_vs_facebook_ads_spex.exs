@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Mapped metrics can be compared side-by-side across platforms (e.g., Google Ads clicks vs Facebook Ads clicks on the same chart)", criterion: 279 do
+  spex "Mapped metrics can be compared side-by-side across platforms (e.g., Google Ads clicks vs Facebook Ads clicks on the same chart)",
+    criterion: 279 do
     scenario "dashboard loads for a user with integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -28,14 +29,15 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
     end
 
     scenario "dashboard renders a comparison of clicks from Google Ads and Facebook Ads" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows a per-platform breakdown for the canonical clicks metric", context do
+      then_ "the dashboard shows a per-platform breakdown for the canonical clicks metric",
+            context do
         html = render(context.view)
 
         has_platform_comparison =
@@ -57,14 +59,15 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
     end
 
     scenario "dashboard shows multiple platform sources for the same canonical metric" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard identifies at least one platform contributing to a canonical metric", context do
+      then_ "the dashboard identifies at least one platform contributing to a canonical metric",
+            context do
         html = render(context.view)
 
         has_platform_source =
@@ -85,19 +88,23 @@ defmodule MetricFlowSpex.MappedMetricsCanBeComparedSideBySideAcrossPlatformsSpex
     end
 
     scenario "dashboard does not mix up platform-specific values under a different canonical metric" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "platform-specific metric data is not attributed to the wrong canonical metric", context do
+      then_ "platform-specific metric data is not attributed to the wrong canonical metric",
+            context do
         html = render(context.view)
 
         # Facebook 'Link Clicks' should be grouped under canonical 'clicks', not 'spend'
         clicks_under_spend =
-          has_element?(context.view, "[data-canonical-metric='spend'][data-platform-metric='link_clicks']")
+          has_element?(
+            context.view,
+            "[data-canonical-metric='spend'][data-platform-metric='link_clicks']"
+          )
 
         refute clicks_under_spend,
                "Expected 'Link Clicks' not to appear under canonical metric 'spend'. HTML: #{html}"

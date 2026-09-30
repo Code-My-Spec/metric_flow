@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.DerivedMetricsAutomaticallyWorkAcrossPlatformsOnceCompo
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Derived metrics that reference canonical component metrics automatically work across platforms once their components are mapped", criterion: 282 do
+  spex "Derived metrics that reference canonical component metrics automatically work across platforms once their components are mapped",
+    criterion: 282 do
     scenario "dashboard loads for a user with integrations" do
       given_(:owner_with_integrations)
 

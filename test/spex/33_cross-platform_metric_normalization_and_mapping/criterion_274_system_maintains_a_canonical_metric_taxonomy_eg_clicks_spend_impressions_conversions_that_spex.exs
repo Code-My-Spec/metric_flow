@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.SystemMaintainsACanonicalMetricTaxonomySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System maintains a canonical metric taxonomy that platform-specific metrics map to", criterion: 274 do
+  spex "System maintains a canonical metric taxonomy that platform-specific metrics map to",
+    criterion: 274 do
     scenario "dashboard page loads for an authenticated user" do
       given_(:owner_with_integrations)
 

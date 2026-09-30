@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.UsersCanViewPlatformMetricMappingsToCanonicalMetricsSpe
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Users can view which platform metrics are mapped to which canonical metrics", criterion: 277 do
+  spex "Users can view which platform metrics are mapped to which canonical metrics",
+    criterion: 277 do
     scenario "authenticated user can access the dashboard to see metric mappings" do
       given_(:owner_with_integrations)
 

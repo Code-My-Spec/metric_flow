@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.NewPlatformIntegrationsCanDefineMetricMappingsWithoutCh
 
   import MetricFlowSpex.SharedGivens
 
-  spex "New platform integrations can define their metric mappings without requiring changes to existing canonical definitions", criterion: 281 do
+  spex "New platform integrations can define their metric mappings without requiring changes to existing canonical definitions",
+    criterion: 281 do
     scenario "authenticated user can access the integrations page after a new integration is connected" do
       given_(:owner_with_integrations)
 

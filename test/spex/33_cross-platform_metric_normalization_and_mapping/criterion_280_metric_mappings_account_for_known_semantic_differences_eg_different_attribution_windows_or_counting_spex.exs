@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Metric mappings account for known semantic differences and surface warnings or footnotes when comparing", criterion: 280 do
+  spex "Metric mappings account for known semantic differences and surface warnings or footnotes when comparing",
+    criterion: 280 do
     scenario "authenticated user can access the dashboard to see semantic difference warnings" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -28,14 +29,15 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
     end
 
     scenario "dashboard surfaces semantic difference warnings when comparing cross-platform metrics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard shows a warning or footnote about semantic differences in metric comparisons", context do
+      then_ "the dashboard shows a warning or footnote about semantic differences in metric comparisons",
+            context do
         html = render(context.view)
 
         has_semantic_warning =
@@ -67,14 +69,15 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
     end
 
     scenario "dashboard indicates attribution window differences when displaying click metrics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard communicates that platform metrics may use different attribution windows", context do
+      then_ "the dashboard communicates that platform metrics may use different attribution windows",
+            context do
         html = render(context.view)
 
         # The dashboard should either show the canonical metric with an inline warning,
@@ -102,7 +105,7 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
     end
 
     scenario "semantic difference warnings are visible when comparing metrics across platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
