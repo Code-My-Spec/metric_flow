@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.Criterion237GeneratedSpecsUseNamedDataSourcesSpex do
     match_requests_on: [:method, :uri]
   ]
 
-  spex "Generated specs reference account metrics by name using Vega-Lite named data sources (\"data\": {\"name\": \"metricName\"}) rather than embedding raw data values, making specs portable reusable templates",
+  spex "Generated specs reference account metrics by name using Vega-Lite named data sources (data: {name: metricName}) rather than embedding raw data values, making specs portable reusable templates",
     criterion: 237 do
     scenario "a chat-generated spec uses a named data source instead of embedded values" do
       given_ :user_logged_in_as_owner
