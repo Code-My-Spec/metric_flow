@@ -515,6 +515,18 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
     scope = socket.assigns.current_scope
     goal_metric_name = socket.assigns.summary.goal_metric_name
 
+    do_run_correlations(socket, scope, goal_metric_name)
+  end
+
+  def handle_event("enable_ai_suggestions", _params, socket) do
+    {:noreply, assign(socket, :ai_suggestions_enabled, true)}
+  end
+
+  def handle_event("submit_smart_feedback", _params, socket) do
+    {:noreply, assign(socket, :ai_feedback_submitted, true)}
+  end
+
+  defp do_run_correlations(socket, scope, goal_metric_name) do
     case Correlations.run_correlations(scope, %{goal_metric_name: goal_metric_name}) do
       {:ok, _job} ->
         socket =
@@ -538,15 +550,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           )
 
         {:noreply, socket}
+
+      {:error, %Ecto.Changeset{}} ->
+        {:noreply, put_flash(socket, :error, "Please select a goal metric before running correlations.")}
     end
-  end
-
-  def handle_event("enable_ai_suggestions", _params, socket) do
-    {:noreply, assign(socket, :ai_suggestions_enabled, true)}
-  end
-
-  def handle_event("submit_smart_feedback", _params, socket) do
-    {:noreply, assign(socket, :ai_feedback_submitted, true)}
   end
 
   # ---------------------------------------------------------------------------
