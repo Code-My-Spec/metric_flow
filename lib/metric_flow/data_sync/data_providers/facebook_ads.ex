@@ -98,7 +98,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
   defp default_date_range do
     today = Date.utc_today()
     start_date = Date.add(today, -@default_date_range_days)
-    {start_date, today}
+    {start_date, Date.add(today, -1)}
   end
 
   defp do_fetch(access_token, ad_account_id, date_range, breakdown, http_plug, after_cursor) do

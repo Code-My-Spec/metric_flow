@@ -77,7 +77,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
     case Keyword.get(opts, :date_range) do
       nil ->
         today = Date.utc_today()
-        {:ok, {Date.add(today, -@default_date_range_days), today}}
+        {:ok, {Date.add(today, -@default_date_range_days), Date.add(today, -1)}}
 
       {start_date, end_date} ->
         if Date.compare(start_date, end_date) == :gt do

@@ -487,7 +487,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       end)
 
       assert_receive {:request, conn}
-      assert String.contains?(conn.query_string, "end_date=#{Date.to_iso8601(today)}")
+      assert String.contains?(conn.query_string, "end_date=#{Date.to_iso8601(Date.add(today, -1))}")
       assert String.contains?(conn.query_string, "start_date=#{Date.to_iso8601(expected_start)}")
     end
 

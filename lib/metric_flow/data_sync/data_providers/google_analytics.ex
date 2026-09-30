@@ -215,7 +215,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
 
       nil ->
         today = Date.utc_today()
-        {Date.add(today, -548), today}
+        {Date.add(today, -548), Date.add(today, -1)}
     end
   end
 

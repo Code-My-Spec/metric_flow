@@ -231,7 +231,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp determine_date_range(scope, integration, :incremental) do
     case Metrics.get_latest_metric_date(scope, integration.provider) do
       nil -> nil
-      last_date -> {Date.add(last_date, 1), Date.utc_today()}
+      last_date -> {Date.add(last_date, 1), Date.add(Date.utc_today(), -1)}
     end
   end
 
@@ -283,6 +283,25 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp run_provider_sync(scope, integration, sync_job_id, sync_type, date_range, http_plug, started_at) do
     case providers_for(integration.provider) do
       {:error, :unsupported_provider} ->
+        error_message = "#{integration.provider} is not yet supported for automated sync"
+
+        record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+          status: :failed,
+          records_synced: 0,
+          error_message: error_message
+        })
+
+        broadcast_sync_event(
+          scope.user.id,
+          {:sync_failed,
+           %{
+             provider: integration.provider,
+             reason: error_message,
+             completed_at: DateTime.utc_now(),
+             sync_type: sync_type
+           }}
+        )
+
         {:error, :unsupported_provider}
 
       {:ok, provider_mods} ->

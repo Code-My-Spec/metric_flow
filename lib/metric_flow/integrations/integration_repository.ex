@@ -194,11 +194,6 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   """
   @spec list_all_active_integrations() :: list(Integration.t())
   def list_all_active_integrations do
-    now = DateTime.utc_now()
-
-    from(i in Integration,
-      where: i.expires_at > ^now or not is_nil(i.refresh_token)
-    )
-    |> Repo.all()
+    Repo.all(Integration)
   end
 end

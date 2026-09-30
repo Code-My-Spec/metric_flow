@@ -147,31 +147,37 @@ defmodule MetricFlow.DataSync.SchedulerTest do
       )
     end
 
-    test "does not schedule jobs for expired integrations without refresh tokens" do
+    test "schedules a sync job for an expired integration without a refresh token (SyncWorker records the failure instead of a silent skip)" do
+      user = user_fixture()
+      integration = insert_expired_integration_without_refresh_token!(user.id)
+
+      assert {:ok, 1} = Scheduler.schedule_daily_syncs()
+
+      assert_enqueued(
+        worker: SyncWorker,
+        args: %{integration_id: integration.id, user_id: user.id}
+      )
+    end
+
+    test "schedules a sync job for a non-expired integration without a refresh token" do
+      user = user_fixture()
+      integration = insert_active_integration_without_refresh_token!(user.id)
+
+      assert {:ok, 1} = Scheduler.schedule_daily_syncs()
+
+      assert_enqueued(
+        worker: SyncWorker,
+        args: %{integration_id: integration.id, user_id: user.id}
+      )
+    end
+
+    test "no longer filters out integrations where expired?/1 returns true and has_refresh_token?/1 returns false" do
       user = user_fixture()
       insert_expired_integration_without_refresh_token!(user.id)
 
-      assert {:ok, 0} = Scheduler.schedule_daily_syncs()
+      assert {:ok, 1} = Scheduler.schedule_daily_syncs()
 
-      refute_enqueued(worker: SyncWorker)
-    end
-
-    test "does not schedule jobs for integrations without refresh tokens" do
-      user = user_fixture()
-      insert_active_integration_without_refresh_token!(user.id)
-
-      assert {:ok, 0} = Scheduler.schedule_daily_syncs()
-
-      refute_enqueued(worker: SyncWorker)
-    end
-
-    test "filters out integrations where expired?/1 returns true and has_refresh_token?/1 returns false" do
-      user = user_fixture()
-      insert_expired_integration_without_refresh_token!(user.id)
-
-      assert {:ok, 0} = Scheduler.schedule_daily_syncs()
-
-      assert Repo.all(SyncJob) == []
+      assert [%SyncJob{}] = Repo.all(SyncJob)
     end
 
     test "includes integrations where expired?/1 returns true but has_refresh_token?/1 returns true" do

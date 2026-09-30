@@ -412,7 +412,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
       today = Date.utc_today()
       expected_start = Date.add(today, -548)
 
-      assert String.contains?(query, Date.to_iso8601(today))
+      assert String.contains?(query, Date.to_iso8601(Date.add(today, -1)))
       assert String.contains?(query, Date.to_iso8601(expected_start))
     end
 

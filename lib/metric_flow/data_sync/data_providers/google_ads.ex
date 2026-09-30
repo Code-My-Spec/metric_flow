@@ -77,7 +77,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
   defp default_date_range do
     today = Date.utc_today()
     start_date = Date.add(today, -@default_date_range_days)
-    {start_date, today}
+    {start_date, Date.add(today, -1)}
   end
 
   defp do_fetch(

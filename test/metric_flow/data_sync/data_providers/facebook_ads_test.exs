@@ -562,7 +562,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
       today = Date.utc_today()
       expected_start = Date.add(today, -548)
 
-      assert String.contains?(conn.query_string, Date.to_iso8601(today))
+      assert String.contains?(conn.query_string, Date.to_iso8601(Date.add(today, -1)))
       assert String.contains?(conn.query_string, Date.to_iso8601(expected_start))
     end
 

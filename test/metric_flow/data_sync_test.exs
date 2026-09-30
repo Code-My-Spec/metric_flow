@@ -48,8 +48,8 @@ defmodule MetricFlow.DataSyncTest do
     |> Repo.insert!()
   end
 
-  # An integration whose token is expired and has no refresh token — treated as
-  # disconnected by sync_integration/2.
+  # An integration whose token is expired and has no refresh token. Still
+  # scheduled by sync_integration/2 -- SyncWorker records the failure.
   defp insert_disconnected_integration!(user_id, provider) do
     insert_integration!(user_id, provider, %{
       expires_at: past_expires_at(),
@@ -147,11 +147,17 @@ defmodule MetricFlow.DataSyncTest do
       assert {:error, :not_found} = DataSync.sync_integration(scope, :google_analytics)
     end
 
-    test "returns error tuple with :not_connected when integration exists but is disconnected" do
+    test "still creates and enqueues a sync job for a disconnected integration (SyncWorker records the failure)" do
       {user, scope} = user_with_scope()
-      _integration = insert_disconnected_integration!(user.id, :google_analytics)
+      integration = insert_disconnected_integration!(user.id, :google_analytics)
 
-      assert {:error, :not_connected} = DataSync.sync_integration(scope, :google_analytics)
+      assert {:ok, sync_job} = DataSync.sync_integration(scope, :google_analytics)
+      assert sync_job.integration_id == integration.id
+
+      assert_enqueued(
+        worker: MetricFlow.DataSync.SyncWorker,
+        args: %{integration_id: integration.id, user_id: user.id}
+      )
     end
   end
 
@@ -171,26 +177,39 @@ defmodule MetricFlow.DataSyncTest do
       assert count >= 2
     end
 
-    test "does not schedule jobs for expired integrations" do
+    test "still schedules a job for an expired integration without a refresh token (SyncWorker records the failure)" do
       {user, _scope} = user_with_scope()
 
-      # Expired token with no refresh token — cannot be renewed, must be skipped
-      insert_integration!(user.id, :google_analytics, %{
-        expires_at: past_expires_at(),
-        refresh_token: nil
-      })
+      # Expired with no refresh token — cannot be renewed, but is still
+      # scheduled; SyncWorker's own token-refresh step fails it visibly.
+      integration =
+        insert_integration!(user.id, :google_analytics, %{
+          expires_at: past_expires_at(),
+          refresh_token: nil
+        })
 
-      assert {:ok, 0} = DataSync.schedule_daily_syncs()
+      assert {:ok, 1} = DataSync.schedule_daily_syncs()
+
+      assert_enqueued(
+        worker: SyncWorker,
+        args: %{integration_id: integration.id, user_id: user.id}
+      )
     end
 
-    test "does not schedule jobs for integrations without refresh tokens" do
+    test "schedules a job for a non-expired integration without a refresh token" do
       {user, _scope} = user_with_scope()
 
-      insert_integration!(user.id, :google_analytics, %{
-        refresh_token: nil
-      })
+      integration =
+        insert_integration!(user.id, :google_analytics, %{
+          refresh_token: nil
+        })
 
-      assert {:ok, 0} = DataSync.schedule_daily_syncs()
+      assert {:ok, 1} = DataSync.schedule_daily_syncs()
+
+      assert_enqueued(
+        worker: SyncWorker,
+        args: %{integration_id: integration.id, user_id: user.id}
+      )
     end
 
     test "returns count of scheduled jobs" do

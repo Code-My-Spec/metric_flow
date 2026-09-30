@@ -20,7 +20,6 @@ defmodule MetricFlow.DataSync do
   alias MetricFlow.DataSync.SyncJobRepository
   alias MetricFlow.DataSync.SyncWorker
   alias MetricFlow.Integrations
-  alias MetricFlow.Integrations.Integration
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -74,21 +73,24 @@ defmodule MetricFlow.DataSync do
   @doc """
   Triggers a manual sync for a specific integration.
 
-  Verifies the integration exists and is connected (not expired without a
-  refresh token), creates a SyncJob record with status `:pending`, and enqueues
-  a `SyncWorker` Oban job with the integration_id, user_id, and sync_job_id.
+  Creates a SyncJob record with status `:pending` and enqueues a `SyncWorker`
+  Oban job with the integration_id, user_id, and sync_job_id.
+
+  Connectivity (expired token, no refresh token available) is not checked
+  here. SyncWorker's own token-refresh step already fails the job with a
+  clear, persisted error in that case -- checking here too meant a
+  disconnected integration got no SyncJob, no SyncHistory row, and no
+  visible indication it was skipped at all, for the manual trigger and the
+  daily cron alike.
 
   Returns `{:ok, sync_job}` on success.
   Returns `{:error, :not_found}` when the integration does not exist for the
   scoped user and provider.
-  Returns `{:error, :not_connected}` when the integration exists but its token
-  is expired and no refresh token is available.
   """
   @spec sync_integration(Scope.t(), atom()) ::
-          {:ok, SyncJob.t()} | {:error, :not_found} | {:error, :not_connected}
+          {:ok, SyncJob.t()} | {:error, :not_found}
   def sync_integration(%Scope{user: user} = scope, provider) do
     with {:ok, integration} <- Integrations.get_integration(scope, provider),
-         :ok <- check_connected(integration),
          {:ok, sync_job} <-
            SyncJobRepository.create_sync_job(scope, integration.id, %{provider: provider}),
          {:ok, _oban_job} <-
@@ -151,14 +153,6 @@ defmodule MetricFlow.DataSync do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
-
-  defp check_connected(%Integration{} = integration) do
-    if Integration.expired?(integration) and not Integration.has_refresh_token?(integration) do
-      {:error, :not_connected}
-    else
-      :ok
-    end
-  end
 
   defp validate_cancellable(%{status: status}) when status in [:pending, :running], do: :ok
   defp validate_cancellable(_sync_job), do: {:error, :invalid_status}
