@@ -9,9 +9,33 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
       given_ :owner_has_agency_plan
       given_ :owner_has_stripe_connect
 
-      when_ "a subscription updated event is sent for an agency customer", context do
-        event_id = "evt_agency_update_#{System.unique_integer([:positive])}"
+      when_ "a subscription updated event is sent for an agency customer's existing subscription", context do
         stripe_account_id = MetricFlowSpex.Fixtures.agency_stripe_account_id(context.owner_email)
+        sub_id = "sub_agency_abc"
+
+        created_payload =
+          Jason.encode!(%{
+            "id" => "evt_agency_create_#{System.unique_integer([:positive])}",
+            "type" => "customer.subscription.created",
+            "account" => stripe_account_id,
+            "data" => %{
+              "object" => %{
+                "id" => sub_id,
+                "customer" => "cus_agency_abc",
+                "status" => "active",
+                "items" => %{"data" => [%{"price" => %{"id" => "price_agency_plan"}}]},
+                "current_period_start" => 1_700_000_000,
+                "current_period_end" => 1_702_592_000
+              }
+            }
+          })
+
+        build_conn()
+        |> put_req_header("content-type", "application/json")
+        |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(created_payload))
+        |> post("/billing/webhooks", created_payload)
+
+        event_id = "evt_agency_update_#{System.unique_integer([:positive])}"
 
         payload =
           Jason.encode!(%{
@@ -20,7 +44,7 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
             "account" => stripe_account_id,
             "data" => %{
               "object" => %{
-                "id" => "sub_agency_abc",
+                "id" => sub_id,
                 "customer" => "cus_agency_abc",
                 "status" => "past_due",
                 "items" => %{"data" => [%{"price" => %{"id" => "price_agency_plan"}}]},

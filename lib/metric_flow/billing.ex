@@ -76,10 +76,15 @@ defmodule MetricFlow.Billing do
   end
 
   # A connected-account event is attributed to the specific account named in
-  # the subscription's own metadata (set at checkout) when present, and
-  # otherwise falls back to the agency that owns the connected Stripe
-  # account, since that is the only account context Stripe gives us.
-  defp resolve_account(%{"account" => connected_account_id} = event)
+  # the subscription's own metadata (set at checkout) when present. A
+  # `created` event with no metadata has no existing subscription row to
+  # preserve, so it falls back to the agency that owns the connected Stripe
+  # account. Any other connected-account event (update/delete) with no
+  # metadata resolves to nil instead — never the agency's own account_id —
+  # so `resolve_update_account_id/2` preserves whichever real account the
+  # subscription is already attributed to rather than reassigning it to the
+  # agency.
+  defp resolve_account(%{"account" => connected_account_id, "type" => "customer.subscription.created"} = event)
        when is_binary(connected_account_id) do
     case BillingRepository.get_stripe_account_by_stripe_id(connected_account_id) do
       nil ->
@@ -87,6 +92,14 @@ defmodule MetricFlow.Billing do
 
       %StripeAccount{agency_account_id: agency_account_id} ->
         {:ok, metadata_account_id(event) || agency_account_id}
+    end
+  end
+
+  defp resolve_account(%{"account" => connected_account_id} = event)
+       when is_binary(connected_account_id) do
+    case BillingRepository.get_stripe_account_by_stripe_id(connected_account_id) do
+      nil -> {:error, :unrecognized_account}
+      %StripeAccount{} -> {:ok, metadata_account_id(event)}
     end
   end
 

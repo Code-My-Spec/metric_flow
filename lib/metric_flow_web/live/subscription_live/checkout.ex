@@ -158,16 +158,19 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
   end
 
   defp load_plans(account_id) do
-    # A client account of an agency sees that agency's plans; an agency's own
-    # account sees the plans it lists for itself. Either way, an account with
-    # no agency plan falls back to the platform's.
-    agency_account_id = Agencies.find_client_agency_account_id(account_id) || account_id
-    agency_plans = BillingRepository.list_plans(agency_account_id)
+    case Agencies.find_client_agency_account_id(account_id) do
+      nil ->
+        # Not a client of any agency: either this account is itself an
+        # agency with plans of its own, or a plain account with none —
+        # either way, nothing found here falls back to the platform's.
+        self_plans = BillingRepository.list_plans(account_id)
+        if self_plans != [], do: self_plans, else: BillingRepository.list_plans(nil)
 
-    if agency_plans != [] do
-      agency_plans
-    else
-      BillingRepository.list_plans(nil)
+      agency_account_id ->
+        # A client of an agency sees only that agency's plans. An empty
+        # list means the agency hasn't configured one yet — never fall
+        # back to the platform catalog or another agency's plans.
+        BillingRepository.list_plans(agency_account_id)
     end
   end
 

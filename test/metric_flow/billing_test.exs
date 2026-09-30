@@ -103,6 +103,62 @@ defmodule MetricFlow.BillingTest do
       assert subscription.plan_id == nil
     end
 
+    test "connected-account subscription.updated with no metadata preserves the existing account_id instead of reassigning to the agency" do
+      agency = account_fixture()
+      client = account_fixture()
+      stripe_account_id = "acct_connected_#{System.unique_integer([:positive])}"
+
+      {:ok, _stripe_account} =
+        BillingRepository.upsert_stripe_account(%{
+          stripe_account_id: stripe_account_id,
+          agency_account_id: agency.id,
+          onboarding_status: :complete,
+          capabilities: %{}
+        })
+
+      sub_id = "sub_connected_#{System.unique_integer([:positive])}"
+
+      created_event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
+        "type" => "customer.subscription.created",
+        "account" => stripe_account_id,
+        "data" => %{
+          "object" => %{
+            "id" => sub_id,
+            "customer" => "cus_test",
+            "status" => "active",
+            "current_period_start" => 1_700_000_000,
+            "current_period_end" => 1_702_592_000,
+            "metadata" => %{"account_id" => to_string(client.id)}
+          }
+        }
+      }
+
+      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(created_event) end)
+      assert BillingRepository.get_subscription_by_stripe_id(sub_id).account_id == client.id
+
+      updated_event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
+        "type" => "customer.subscription.updated",
+        "account" => stripe_account_id,
+        "data" => %{
+          "object" => %{
+            "id" => sub_id,
+            "customer" => "cus_test",
+            "status" => "past_due",
+            "current_period_start" => 1_700_000_000,
+            "current_period_end" => 1_702_592_000
+          }
+        }
+      }
+
+      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(updated_event) end)
+
+      subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
+      assert subscription.status == :past_due
+      assert subscription.account_id == client.id
+    end
+
     test "processes invoice.payment_failed and marks subscription as past_due" do
       event = %{
         "id" => "evt_test_#{System.unique_integer([:positive])}",
