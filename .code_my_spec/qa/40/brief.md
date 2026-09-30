@@ -36,6 +36,10 @@ Base seeds already in place (qa@example.com / hello world!). This account has a 
 
 .code_my_spec/qa/40/result.md
 
+## Retest 2026-09-30
+
+Issue d1bff983 (Search Console sync failure messages missing site/date-range context) verified fixed live. Reproduced the :missing_site_url path by temporarily clearing integration 36's site_url, clicking "Trigger Sync Now (Dev)" on /app/integrations/sync-history, and confirming sync_history row 297 now reads "No Search Console site URL configured (date range: 2026-09-29 to 2026-09-29). Go to the integration's account selection to choose a site." instead of the bare atom `missing_site_url` seen in the prior attempt's rows 273/278. Also confirmed the message renders on the Sync History page. Restored the original site_url afterward.
+
 ## Setup Notes
 
 The expected primary finding is criterion 1001: sync failure messages never include which site or date range was being synced, contradicting the criterion's own explicit text, even though its BDD spex passes (it only checks for the presence of an error element). This is analogous to gaps found in several other Sync-* stories this session (GA4, Correlation) where a criterion's specific wording isn't matched by a generic, loosely-asserting spex.
