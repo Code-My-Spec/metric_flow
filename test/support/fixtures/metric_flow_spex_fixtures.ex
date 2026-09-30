@@ -175,6 +175,36 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  Inserts a Visualization row directly, optionally bound to metric names via
+  the join table.
+
+  Bypasses `Visualization.changeset/2`'s required `vega_spec` and the
+  Editor's save flow (which requires a rendered `chart_preview` before
+  `save_visualization` is reachable at all) so specs can reach the
+  missing-spec and bound-to-nonexistent-metric render states neither the
+  changeset nor the UI can produce.
+  """
+  @spec create_visualization_for(String.t(), map()) :: Visualization.t()
+  def create_visualization_for(email, attrs \\ %{}) do
+    user = Users.get_user_by_email(email)
+    metric_names = Map.get(attrs, :metric_names, [])
+
+    visualization =
+      Repo.insert!(%Visualization{
+        name: Map.get(attrs, :name, "Spex Visualization #{System.unique_integer([:positive])}"),
+        user_id: user.id,
+        vega_spec: Map.get(attrs, :vega_spec),
+        shareable: Map.get(attrs, :shareable, false)
+      })
+
+    if metric_names != [] do
+      MetricFlow.Dashboards.set_visualization_metrics(visualization, metric_names)
+    end
+
+    visualization
+  end
+
+  @doc """
   Creates a completed sync history record for the user registered with `email`.
 
   For specs that need past sync outcomes to exercise the sync history/status
