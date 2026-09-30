@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.DataSync
+  alias MetricFlow.DataSync.SyncJob
   alias MetricFlow.Integrations
 
   # Provider display names for both marketing and financial platforms.
@@ -381,8 +382,11 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   def handle_event("trigger_daily_sync", _params, socket) do
     scope = socket.assigns.current_scope
 
+    data_sync_providers = SyncJob.data_sync_providers()
+
     scope
     |> Integrations.list_integrations()
+    |> Enum.filter(&(&1.provider in data_sync_providers))
     |> Enum.each(&DataSync.sync_integration(scope, &1.provider))
 
     {:noreply, put_flash(socket, :info, "Sync triggered for all connected integrations.")}

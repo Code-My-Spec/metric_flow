@@ -22,6 +22,7 @@ defmodule MetricFlow.DataSync.Scheduler do
     queue: :sync,
     max_attempts: 1
 
+  alias MetricFlow.DataSync.SyncJob
   alias MetricFlow.DataSync.SyncJobRepository
   alias MetricFlow.DataSync.SyncWorker
   alias MetricFlow.Integrations
@@ -48,7 +49,11 @@ defmodule MetricFlow.DataSync.Scheduler do
   """
   @spec schedule_daily_syncs() :: {:ok, integer()}
   def schedule_daily_syncs do
-    integrations = Integrations.list_all_active_integrations()
+    data_sync_providers = SyncJob.data_sync_providers()
+
+    integrations =
+      Integrations.list_all_active_integrations()
+      |> Enum.filter(&(&1.provider in data_sync_providers))
 
     count =
       Enum.reduce(integrations, 0, fn integration, acc ->

@@ -48,6 +48,16 @@ defmodule MetricFlow.DataSync.SyncJob do
   ]
   @statuses [:pending, :running, :completed, :failed, :cancelled]
 
+  @doc """
+  The providers a sync job can be created for. Integrations for any other
+  provider (e.g. `:codemyspec`, an account-linking feature unrelated to
+  marketing/financial data) are not data-sync platforms and must be
+  filtered out before entering the sync scheduling path, since a SyncJob
+  changeset rejects any provider outside this list.
+  """
+  @spec data_sync_providers() :: [atom()]
+  def data_sync_providers, do: @providers
+
   schema "sync_jobs" do
     field :provider, Ecto.Enum, values: @providers
     field :status, Ecto.Enum, values: @statuses
