@@ -39,6 +39,8 @@ env:
     # URL the app generates (redirects, emails, OAuth callbacks) was built
     # against a host that was never this app's own.
     PHX_HOST: uat.metric-flow.app
+    CODEMYSPEC_URL: https://dev.codemyspec.com
+    CODEMYSPEC_WIDGET_URL: wss://dev.codemyspec.com/widget
   secret:
     - SOPS_AGE_KEY
 
