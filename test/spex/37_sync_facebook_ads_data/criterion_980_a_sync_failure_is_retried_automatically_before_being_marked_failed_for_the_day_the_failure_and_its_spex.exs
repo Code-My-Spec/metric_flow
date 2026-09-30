@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion980SyncFailureRetriedBeforeMarkedFailedAndLogg
   import MetricFlowSpex.SharedGivens
 
   spex "A sync failure is retried automatically before being marked failed for the day; the failure and its cause are logged with enough detail to diagnose and are visible in Sync History",
-       criterion: 980 do
+       fail_on_error_logs: false, criterion: 980 do
     scenario "a Facebook Ads sync that keeps failing is retried before ultimately being marked failed" do
       given_ :user_logged_in_as_owner
 

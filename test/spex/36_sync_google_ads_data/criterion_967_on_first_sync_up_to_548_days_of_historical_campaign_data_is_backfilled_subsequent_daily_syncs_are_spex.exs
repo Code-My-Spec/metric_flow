@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion967FirstSyncBackfills548DaysSubsequentSyncsAre
   import MetricFlowSpex.SharedGivens
 
   spex "On first sync, up to 548 days of historical campaign data is backfilled; subsequent daily syncs are intended to fetch only data since the last successful sync rather than re-fetching the full history",
-       criterion: 967 do
+       fail_on_error_logs: false, criterion: 967 do
     scenario "a newly connected Google Ads account backfills on its first sync, then syncs incrementally" do
       given_ :user_logged_in_as_owner
 

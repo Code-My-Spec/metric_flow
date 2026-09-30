@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.SubsequentSyncFetchesOnlyYesterdaysDataSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Subsequent sync fetches only yesterday's data", criterion: 636 do
+  spex "Subsequent sync fetches only yesterday's data", fail_on_error_logs: false, criterion: 636 do
     scenario "a second sync for an already-synced property only fetches yesterday" do
       given_ :user_logged_in_as_owner
 

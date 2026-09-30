@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.ExpiredTokenOrApiRejectionFailsTheSyncClearlySpex do
   import MetricFlowSpex.SharedGivens
 
   spex "If the token has expired and can't be refreshed, or the Search Console API rejects the request, the sync for that integration fails clearly with the error surfaced",
-       criterion: 1000 do
+       fail_on_error_logs: false, criterion: 1000 do
     scenario "a property's token has expired and the refresh attempt fails" do
       given_ :user_logged_in_as_owner
 

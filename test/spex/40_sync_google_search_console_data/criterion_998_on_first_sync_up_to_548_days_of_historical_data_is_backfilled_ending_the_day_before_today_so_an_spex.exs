@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.FirstSyncBackfills548DaysEndingYesterdaySubsequentSyncs
   import MetricFlowSpex.SharedGivens
 
   spex "On first sync, up to 548 days of historical data is backfilled, ending the day before today; subsequent daily syncs fetch only data since the last successful sync",
-       criterion: 998 do
+       fail_on_error_logs: false, criterion: 998 do
     scenario "a property was just connected" do
       given_ :user_logged_in_as_owner
 

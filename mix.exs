@@ -112,7 +112,8 @@ defmodule MetricFlow.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:client_utils, "~> 0.1"},
       {:code_my_spec_generators, "~> 0.2", only: :dev},
-      {:sexy_spex, "~> 0.2", only: [:dev, :test]},
+      {:sexy_spex,
+       git: "https://github.com/Code-My-Spec/spex.git", branch: "feature/reusable-givens", only: [:dev, :test]},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
   end

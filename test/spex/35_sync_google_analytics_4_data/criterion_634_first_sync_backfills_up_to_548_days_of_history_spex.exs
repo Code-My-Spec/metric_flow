@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.FirstSyncBackfillsUpTo548DaysOfHistorySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "First sync backfills up to 548 days of history", criterion: 634 do
+  spex "First sync backfills up to 548 days of history", fail_on_error_logs: false, criterion: 634 do
     scenario "the first sync for a newly connected property is marked as an initial backfill" do
       given_ :user_logged_in_as_owner
 

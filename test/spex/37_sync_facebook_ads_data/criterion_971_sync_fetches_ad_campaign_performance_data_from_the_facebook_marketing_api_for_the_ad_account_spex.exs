@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion971SyncFetchesAdCampaignDataFromFacebookMarket
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches ad campaign performance data from the Facebook Marketing API for the configured ad account, via Facebook's own OAuth, separate from Google integrations",
-       criterion: 971 do
+       fail_on_error_logs: false, criterion: 971 do
     scenario "a client with both a Facebook Ads and a Google Ads integration syncs each independently" do
       given_ :user_logged_in_as_owner
 

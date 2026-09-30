@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion969GoogleAdsApiRejectionFailsSyncWithErrorSurf
   import MetricFlowSpex.SharedGivens
 
   spex "If the Google Ads API rejects the request (expired authorization, insufficient permissions, an unrecognized customer, or a rate limit) the sync for that integration fails with the API's error surfaced",
-       criterion: 969 do
+       fail_on_error_logs: false, criterion: 969 do
     scenario "the Google Ads API rejects a sync request because the customer account is unrecognized" do
       given_ :user_logged_in_as_owner
 

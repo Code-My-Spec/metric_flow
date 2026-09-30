@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.SystemSyncsAllCoreGa4MetricsAsDailyValuesSpex do
   """
 
   spex "System syncs the following GA4 metrics as core daily values: activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers",
-       criterion: 293 do
+       fail_on_error_logs: false, criterion: 293 do
     scenario "a daily sync records a value for every core metric" do
       given_ :user_logged_in_as_owner
 

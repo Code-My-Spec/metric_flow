@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion1009SyncFailuresLoggedAndVisibleInSyncHistoryS
   import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with enough detail to diagnose them and are visible in Sync History",
-       criterion: 1009 do
+       fail_on_error_logs: false, criterion: 1009 do
     scenario "a Google Business Profile sync fails because no location is configured" do
       given_ :user_logged_in_as_owner
 

@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.Ga4SyncFailureIsLoggedAndSurfacedInSyncStatusAndHistory
 
   import MetricFlowSpex.SharedGivens
 
-  spex "GA4 sync failure is logged and surfaced in Sync Status and History", criterion: 642 do
+  spex "GA4 sync failure is logged and surfaced in Sync Status and History", fail_on_error_logs: false, criterion: 642 do
     scenario "a GA4 property's sync failure is recorded with the API error" do
       given_ :user_logged_in_as_owner
 

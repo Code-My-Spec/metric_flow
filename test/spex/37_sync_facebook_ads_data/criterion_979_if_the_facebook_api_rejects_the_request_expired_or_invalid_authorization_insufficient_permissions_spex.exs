@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion979FacebookApiRejectionFailsSyncWithErrorSurfa
   import MetricFlowSpex.SharedGivens
 
   spex "If the Facebook API rejects the request (expired or invalid authorization, insufficient permissions, an unrecognized ad account, or a rate limit) the sync for that integration fails with the API's error surfaced",
-       criterion: 979 do
+       fail_on_error_logs: false, criterion: 979 do
     scenario "the Facebook API rejects a sync request because the integration's authorization is invalid" do
       given_ :user_logged_in_as_owner
 

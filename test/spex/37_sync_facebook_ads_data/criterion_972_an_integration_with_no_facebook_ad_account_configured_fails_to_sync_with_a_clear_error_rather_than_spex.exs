@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion972NoAdAccountConfiguredFailsRatherThanSilentl
   import MetricFlowSpex.SharedGivens
 
   spex "An integration with no Facebook ad account configured fails to sync with a clear error rather than being silently skipped",
-       criterion: 972 do
+       fail_on_error_logs: false, criterion: 972 do
     scenario "a Facebook Ads integration has no ad account configured" do
       given_ :user_logged_in_as_owner
 
