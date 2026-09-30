@@ -213,7 +213,8 @@ defmodule MetricFlow.Accounts.AccountRepository do
     with true <-
            Authorization.can?(scope, :update_user_role, %{
              account_id: account_id,
-             target_role: role
+             target_role: role,
+             target_current_role: fetch_role(target_user_id, account_id)
            }),
          %AccountMember{} = member <- fetch_member!(target_user_id, account_id),
          :ok <- check_last_owner(member, account_id),
@@ -306,6 +307,14 @@ defmodule MetricFlow.Accounts.AccountRepository do
 
   defp fetch_member!(user_id, account_id) do
     Repo.get_by!(AccountMember, user_id: user_id, account_id: account_id)
+  end
+
+  defp fetch_role(user_id, account_id) do
+    from(m in AccountMember,
+      where: m.user_id == ^user_id and m.account_id == ^account_id,
+      select: m.role
+    )
+    |> Repo.one()
   end
 
   defp member_exists?(user_id, account_id) do

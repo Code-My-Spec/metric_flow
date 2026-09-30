@@ -82,6 +82,11 @@ defmodule MetricFlow.Accounts.Authorization do
   # Role hierarchy helpers
   # ---------------------------------------------------------------------------
 
+  # Admins cannot modify a member who is themselves an owner or admin, regardless
+  # of the role being assigned to them.
+  defp target_role_allowed?(:admin, %{target_current_role: role}) when role in [:owner, :admin],
+    do: false
+
   # Admins may only assign roles strictly below their own level: :account_manager or :read_only.
   # They cannot assign :owner or :admin.
   defp target_role_allowed?(:admin, %{target_role: :owner}), do: false
