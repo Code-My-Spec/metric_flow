@@ -145,6 +145,10 @@ defmodule MetricFlow.Billing.BillingRepository do
 
   def get_plan(id), do: Repo.get(Plan, id)
 
+  def get_plan_by_stripe_price_id(stripe_price_id) do
+    Repo.get_by(Plan, stripe_price_id: stripe_price_id)
+  end
+
   def create_plan(attrs) do
     %Plan{}
     |> Plan.changeset(attrs)

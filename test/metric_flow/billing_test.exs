@@ -52,6 +52,41 @@ defmodule MetricFlow.BillingTest do
       assert subscription.status == :active
     end
 
+    test "processes subscription.created and resolves plan_id from the Stripe price id on the subscription's line items" do
+      account = account_fixture()
+      sub_id = "sub_priced_#{System.unique_integer([:positive])}"
+
+      {:ok, plan} =
+        BillingRepository.create_plan(%{
+          name: "Pro",
+          price_cents: 2999,
+          currency: "usd",
+          billing_interval: :monthly,
+          stripe_price_id: "price_resolved_#{System.unique_integer([:positive])}"
+        })
+
+      event = %{
+        "id" => "evt_test_#{System.unique_integer([:positive])}",
+        "type" => "customer.subscription.created",
+        "data" => %{
+          "object" => %{
+            "id" => sub_id,
+            "customer" => "cus_test",
+            "status" => "active",
+            "items" => %{"data" => [%{"price" => %{"id" => plan.stripe_price_id}}]},
+            "current_period_start" => 1_700_000_000,
+            "current_period_end" => 1_702_592_000,
+            "metadata" => %{"account_id" => to_string(account.id)}
+          }
+        }
+      }
+
+      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end)
+
+      subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
+      assert subscription.plan_id == plan.id
+    end
+
     test "processes subscription.updated and updates status" do
       account = account_fixture()
       sub_id = "sub_updated_#{System.unique_integer([:positive])}"

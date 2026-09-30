@@ -15,6 +15,7 @@ defmodule MetricFlow.Billing do
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Billing.BillingNotifier
   alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Billing.Plan
   alias MetricFlow.Billing.StripeAccount
   alias MetricFlow.Billing.Subscription
   alias MetricFlow.Users
@@ -125,7 +126,8 @@ defmodule MetricFlow.Billing do
       status: map_status(sub["status"]),
       current_period_start: from_unix(sub["current_period_start"]),
       current_period_end: from_unix(sub["current_period_end"]),
-      account_id: account_id
+      account_id: account_id,
+      plan_id: resolve_plan_id(sub)
     })
   end
 
@@ -139,7 +141,8 @@ defmodule MetricFlow.Billing do
       status: map_status(sub["status"]),
       current_period_start: from_unix(sub["current_period_start"]),
       current_period_end: from_unix(sub["current_period_end"]),
-      account_id: resolve_update_account_id(sub["id"], account_id)
+      account_id: resolve_update_account_id(sub["id"], account_id),
+      plan_id: resolve_plan_id(sub)
     })
   end
 
@@ -183,6 +186,25 @@ defmodule MetricFlow.Billing do
       %Subscription{account_id: existing_account_id} -> existing_account_id
     end
   end
+
+  # Resolves the local Plan from the Stripe price id on the subscription's
+  # first line item, mirroring how checkout links a Plan at session-creation
+  # time. Falls back to nil (no line items, price not provisioned as a local
+  # Plan) rather than raising, since persisting a subscription must never
+  # hinge on plan resolution succeeding.
+  defp resolve_plan_id(sub) do
+    with price_id when is_binary(price_id) <- extract_price_id(sub),
+         %Plan{id: plan_id} <- BillingRepository.get_plan_by_stripe_price_id(price_id) do
+      plan_id
+    else
+      _ -> nil
+    end
+  end
+
+  defp extract_price_id(%{"items" => %{"data" => [%{"price" => %{"id" => price_id}} | _]}}),
+    do: price_id
+
+  defp extract_price_id(_), do: nil
 
   defp persist_subscription(attrs) do
     case BillingRepository.upsert_subscription(attrs) do
