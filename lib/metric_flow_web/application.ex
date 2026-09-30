@@ -14,6 +14,8 @@ defmodule MetricFlowWeb.Application do
         MetricFlowWeb.Telemetry,
         MetricFlow.Repo,
         {DNSCluster, query: Application.get_env(:metric_flow, :dns_cluster_query) || :ignore},
+        {Registry, keys: :unique, name: MetricFlow.CodeMySpec.WidgetRegistry},
+        {DynamicSupervisor, strategy: :one_for_one, name: MetricFlow.CodeMySpec.WidgetSupervisor},
         {Phoenix.PubSub, name: MetricFlow.PubSub},
         MetricFlow.Vault,
         {Oban, Application.fetch_env!(:metric_flow, Oban)},
