@@ -201,6 +201,22 @@ defmodule MetricFlowSpex.Fixtures do
     |> Repo.insert!()
   end
 
+  @doc """
+  Broadcasts the same :sync_completed PubSub message a real completed sync
+  would send, so specs can exercise an already-open LiveView's reaction to
+  it without driving a full (HTTP-stubbed) provider sync.
+  """
+  @spec broadcast_sync_completed(String.t(), atom()) :: :ok
+  def broadcast_sync_completed(email, provider) do
+    user = Users.get_user_by_email(email)
+
+    message =
+      {:sync_completed,
+       %{provider: provider, records_synced: 1, completed_at: DateTime.utc_now()}}
+
+    Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user.id}:sync", message)
+  end
+
   def grant_client_account_access(email, client_account_id, access_level, is_originator) do
     scope = scope_for(email)
     agency_account_id = Accounts.get_personal_account_id(scope)

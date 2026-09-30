@@ -398,6 +398,10 @@ defmodule MetricFlowWeb.DashboardLive.Show do
         {:ok, socket}
 
       true ->
+        if Phoenix.LiveView.connected?(socket) do
+          Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
+        end
+
         available_date_ranges = Dashboards.available_date_ranges()
         default_range = Dashboards.default_date_range()
 
@@ -543,6 +547,15 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   def handle_event("close_ai_chat", _params, socket) do
     {:noreply, assign(socket, :chat_panel_open, false)}
+  end
+
+  @impl true
+  def handle_info({:sync_completed, _payload}, socket) do
+    {:noreply, reload_dashboard_data(socket, [])}
+  end
+
+  def handle_info({:sync_failed, _payload}, socket) do
+    {:noreply, socket}
   end
 
   # ---------------------------------------------------------------------------

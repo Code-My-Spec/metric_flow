@@ -46,6 +46,9 @@ defmodule MetricFlowSpex.Criterion164CannedDashboardsUpdateAutomaticallyAsNewDat
           value: 77.0
         })
 
+        MetricFlowSpex.Fixtures.broadcast_sync_completed(context.owner_email, :google_ads)
+        render(context.template_view)
+
         {:ok, context}
       end
 
