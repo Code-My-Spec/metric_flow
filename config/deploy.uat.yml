@@ -35,6 +35,10 @@ env:
   clear:
     APP_ENV: uat
     PORT: "4000"
+    # config/runtime.exs falls back to "example.com" without this — every
+    # URL the app generates (redirects, emails, OAuth callbacks) was built
+    # against a host that was never this app's own.
+    PHX_HOST: uat.metric-flow.app
   secret:
     - SOPS_AGE_KEY
 
