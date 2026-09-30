@@ -84,6 +84,15 @@ serve:
     : "${PORT:?PORT must be set}"
     : "${DATABASE_NAME:?DATABASE_NAME must be set}"
 
+    if ! MIX_ENV=dev mix loadpaths >/dev/null 2>&1; then
+        MIX_ENV=dev mix deps.get
+        MIX_ENV=dev mix deps.compile
+    fi
+
+    if [ -f assets/package.json ] && [ ! -d assets/node_modules ]; then
+        MIX_ENV=dev mix assets.setup
+    fi
+
     MIX_ENV=dev mix ecto.create
     MIX_ENV=dev mix ecto.migrate
     exec env MIX_ENV=dev elixir -S mix phx.server
