@@ -59,6 +59,15 @@ This mutation is consumable exactly like a repro input: once expired and observe
 
 .code_my_spec/qa/13/screenshots/
 
+## Retest Notes (post-fix)
+
+App restarted, now serving commit e1ede35d on http://127.0.0.1:59302 (port reassigned by the harness; same DB `metric_flow_dev_wc_bd0baac8`, and qa@example.com's original 7 expired integrations were still present, contrary to the fix's own resolution note claiming a DB reset). Retested both previously-filed issues directly:
+
+- 7e8fc599 (criterion 571): `/app/integrations` now correctly shows `data-status="error"` and "Connection error — reconnect required" for the still-expired google_search_console integration. Fixed.
+- 6e9be9e2 (criterion 574): `/app/integrations/connect/google_search_console/accounts` now redirects to the provider detail page with flash "Your google_search_console connection has expired. Please reconnect to modify account selection." — no save-selection form reachable. Fixed.
+
+Both confirmed live, not just from the exunit suite. `qa_complete` evaluated as pass.
+
 ## Setup Notes
 
 Results are recorded via `submit_qa_result` (a DB-backed attempt) plus `create_issue` for findings — there is no `result.md` file; the path above is where screenshot evidence is saved. Criterion 578 (OAuth denial) cannot be driven end-to-end live without a real third-party provider denying access; back it with the exunit spex and controller source instead of a live repro, and say so explicitly in that scenario's observation rather than skipping it silently.
