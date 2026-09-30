@@ -484,15 +484,22 @@ defmodule MetricFlow.DataSync.SyncWorker do
         end
       end)
 
-    # Record a history entry per provider module
+    # Record a history entry per provider module. A module may combine
+    # more than one logical provider's data in a single fetch_metrics call
+    # (GoogleBusiness fetches both :google_business and
+    # :google_business_reviews at once) -- each distinct :provider tag on
+    # the returned metrics gets its own history entry.
     Enum.each(results, fn
       {:ok, mod, mod_metrics} ->
-        record_history(scope, integration, sync_job_id, sync_type, started_at, %{
-          provider: provider_name(mod, integration),
-          status: :success,
-          records_synced: length(mod_metrics),
-          error_message: nil
-        })
+        record_success_history(
+          scope,
+          integration,
+          sync_job_id,
+          sync_type,
+          started_at,
+          mod,
+          mod_metrics
+        )
 
       {:error, mod, reason} ->
         record_history(scope, integration, sync_job_id, sync_type, started_at, %{
@@ -517,6 +524,70 @@ defmodule MetricFlow.DataSync.SyncWorker do
     case update_job_status(scope, sync_job_id, :completed) do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp record_success_history(scope, integration, sync_job_id, sync_type, started_at, mod, mod_metrics) do
+    default_provider = provider_name(mod, integration)
+    groups = Enum.group_by(mod_metrics, &Map.get(&1, :provider, default_provider))
+
+    if map_size(groups) == 0 do
+      record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+        provider: default_provider,
+        status: :success,
+        records_synced: 0,
+        error_message: nil
+      })
+    else
+      Enum.each(groups, fn {provider, provider_metrics} ->
+        record_grouped_success(
+          scope,
+          integration,
+          sync_job_id,
+          sync_type,
+          started_at,
+          default_provider,
+          provider,
+          provider_metrics
+        )
+      end)
+    end
+  end
+
+  # The blanket :sync_completed broadcast after this function's caller
+  # already covers default_provider (it fires once per sync, keyed to
+  # integration.provider, for the LiveView's real-time list). A module
+  # whose metrics span more than one distinct provider tag needs its own
+  # extra broadcast per additional tag, or the real-time list never
+  # reflects the DB-level split recorded above.
+  defp record_grouped_success(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         started_at,
+         default_provider,
+         provider,
+         provider_metrics
+       ) do
+    record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+      provider: provider,
+      status: :success,
+      records_synced: length(provider_metrics),
+      error_message: nil
+    })
+
+    unless provider == default_provider do
+      broadcast_sync_event(
+        scope.user.id,
+        {:sync_completed,
+         %{
+           provider: provider,
+           records_synced: length(provider_metrics),
+           completed_at: DateTime.utc_now(),
+           sync_type: sync_type
+         }}
+      )
     end
   end
 

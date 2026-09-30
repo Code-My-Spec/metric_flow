@@ -96,6 +96,77 @@ defmodule MetricFlowTest.SyncStub do
   end
 
   @doc """
+  Registers a plug for `:google_business` that answers both the Performance
+  API and the Reviews API in one location fetch (see the provider's
+  moduledoc) -- differentiated by host, since both are fetched per location
+  under the same registered provider plug.
+  """
+  @spec stub_google_business_success() :: :ok
+  def stub_google_business_success do
+    plug = fn conn ->
+      conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+
+      case conn.host do
+        "businessprofileperformance.googleapis.com" ->
+          Plug.Conn.send_resp(conn, 200, google_business_performance_success_body())
+
+        _ ->
+          Plug.Conn.send_resp(conn, 200, google_business_reviews_success_body())
+      end
+    end
+
+    PlugStore.put_provider_plug(:google_business, plug)
+  end
+
+  @doc """
+  A minimal valid Business Profile Performance API
+  `fetchMultiDailyMetricsTimeSeries` response body: one metric, one day.
+  """
+  @spec google_business_performance_success_body() :: String.t()
+  def google_business_performance_success_body do
+    today = Date.utc_today()
+
+    Jason.encode!(%{
+      "multiDailyMetricTimeSeries" => [
+        %{
+          "dailyMetricTimeSeries" => [
+            %{
+              "dailyMetric" => "CALL_CLICKS",
+              "timeSeries" => %{
+                "datedValues" => [
+                  %{
+                    "date" => %{"year" => today.year, "month" => today.month, "day" => today.day},
+                    "value" => "7"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    })
+  end
+
+  @doc """
+  A minimal valid My Business v4 `reviews` response body: one review, no
+  further pages.
+  """
+  @spec google_business_reviews_success_body() :: String.t()
+  def google_business_reviews_success_body do
+    Jason.encode!(%{
+      "reviews" => [
+        %{
+          "reviewId" => "review-1",
+          "starRating" => "FIVE",
+          "comment" => "Great service!",
+          "reviewer" => %{"displayName" => "Jane Doe"},
+          "createTime" => DateTime.to_iso8601(DateTime.utc_now())
+        }
+      ]
+    })
+  end
+
+  @doc """
   A minimal valid GA4 `runReport` response body: one day, all core metrics.
   """
   @spec google_analytics_success_body() :: String.t()

@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.Criterion1003PerformanceAndReviewsSyncedSeparatelySpex 
        criterion: 1003 do
     scenario "a location's performance metrics and reviews appear as separate sync history entries" do
       given_ :user_logged_in_as_owner
+      given_ :with_google_business_sync_stub
 
       given_ "a client has a connected Google Business Profile location", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
