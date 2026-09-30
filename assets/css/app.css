@@ -106,7 +106,13 @@
 
 /* Expand toggled client-side (see report_live/show.ex) -- #report-chart has
    phx-update="ignore", so the height must change via a JS-toggled class
-   rather than a server-patched style attribute. */
+   rather than a server-patched style attribute. Height is driven entirely
+   by these classes (no inline height) so the class always wins -- an
+   inline style attribute can never be out-ranked by a class selector. */
+.report-chart-box {
+  height: 320px;
+}
+
 #report-chart.report-chart-expanded {
   height: 600px;
 }

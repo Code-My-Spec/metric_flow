@@ -95,7 +95,8 @@ defmodule MetricFlowWeb.ReportLive.Show do
             data-spec={Jason.encode!(@render_spec)}
             id="report-chart"
             data-role="vega-lite-chart"
-            style="width: 100%; height: 320px;"
+            class="report-chart-box"
+            style="width: 100%;"
           >
           </div>
 
