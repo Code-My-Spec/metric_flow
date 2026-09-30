@@ -348,37 +348,42 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     scope = socket.assigns.current_scope
     platform_name = find_platform_name(platform_key)
 
-    case DataSync.sync_integration(scope, provider) do
-      {:ok, _sync_job} ->
-        socket =
-          socket
-          |> assign(:syncing, MapSet.put(socket.assigns.syncing, platform_key))
-          |> put_flash(:info, "Sync started for #{platform_name}")
+    if MapSet.member?(socket.assigns.syncing, platform_key) do
+      {:noreply,
+       put_flash(socket, :error, "A sync for #{platform_name} is already in progress.")}
+    else
+      case DataSync.sync_integration(scope, provider) do
+        {:ok, _sync_job} ->
+          socket =
+            socket
+            |> assign(:syncing, MapSet.put(socket.assigns.syncing, platform_key))
+            |> put_flash(:info, "Sync started for #{platform_name}")
 
-        {:noreply, socket}
+          {:noreply, socket}
 
-      {:error, :not_found} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           "#{platform_name} integration not found. Please connect it first."
-         )}
+        {:error, :not_found} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "#{platform_name} integration not found. Please connect it first."
+           )}
 
-      {:error, :not_connected} ->
-        {:noreply,
-         put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
+        {:error, :not_connected} ->
+          {:noreply,
+           put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
 
-      {:error, reason} ->
-        require Logger
-        Logger.error("Sync failed for #{platform_name}: #{inspect(reason)}")
+        {:error, reason} ->
+          require Logger
+          Logger.error("Sync failed for #{platform_name}: #{inspect(reason)}")
 
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           "Failed to start sync for #{platform_name}: #{inspect(reason)}"
-         )}
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Failed to start sync for #{platform_name}: #{inspect(reason)}"
+           )}
+      end
     end
   end
 
@@ -388,17 +393,22 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     scope = socket.assigns.current_scope
     platform_name = find_platform_name(provider)
 
-    case DataSync.sync_integration(scope, provider) do
-      {:ok, _sync_job} ->
-        socket =
-          socket
-          |> assign(:syncing, MapSet.put(socket.assigns.syncing, provider))
-          |> put_flash(:info, "Sync started for #{platform_name}")
+    if MapSet.member?(socket.assigns.syncing, provider) do
+      {:noreply,
+       put_flash(socket, :error, "A sync for #{platform_name} is already in progress.")}
+    else
+      case DataSync.sync_integration(scope, provider) do
+        {:ok, _sync_job} ->
+          socket =
+            socket
+            |> assign(:syncing, MapSet.put(socket.assigns.syncing, provider))
+            |> put_flash(:info, "Sync started for #{platform_name}")
 
-        {:noreply, socket}
+          {:noreply, socket}
 
-      {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Integration not found.")}
+        {:error, _reason} ->
+          {:noreply, put_flash(socket, :error, "Integration not found.")}
+      end
     end
   end
 
