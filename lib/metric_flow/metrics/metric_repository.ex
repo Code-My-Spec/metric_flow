@@ -158,6 +158,21 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   @doc """
+  Returns the most recent date any metric was recorded for the scoped user,
+  or nil if they have no metric data at all.
+
+  Used to anchor lookback windows (e.g. correlation analysis) to the
+  account's actual data instead of the wall-clock "today", since seeded or
+  historical data commonly falls outside a fixed recent window.
+  """
+  @spec get_latest_metric_date(Scope.t()) :: Date.t() | nil
+  def get_latest_metric_date(%Scope{user: user}) do
+    from(m in Metric, where: m.user_id == ^user.id)
+    |> select([m], max(fragment("?::date", m.recorded_at)))
+    |> Repo.one()
+  end
+
+  @doc """
   Returns the distinct providers with data for a canonical metric name,
   ignoring any `:provider` filter already in `opts` -- this is how callers
   discover whether a metric spans more than one platform.

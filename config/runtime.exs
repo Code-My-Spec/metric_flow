@@ -210,7 +210,8 @@ if config_env() == :prod do
       {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)},
       {Oban.Plugins.Cron,
        crontab: [
-         {"0 2 * * *", MetricFlow.DataSync.Scheduler, queue: :sync, max_attempts: 1}
+         {"0 2 * * *", MetricFlow.DataSync.Scheduler, queue: :sync, max_attempts: 1},
+         {"30 2 * * *", MetricFlow.Correlations.Scheduler, queue: :correlations, max_attempts: 1}
        ]}
     ]
 end

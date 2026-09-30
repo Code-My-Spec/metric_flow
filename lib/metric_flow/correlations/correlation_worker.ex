@@ -71,15 +71,16 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
 
   defp execute(scope, job) do
     goal_metric_name = job.goal_metric_name
+    date_range = default_date_range(scope)
 
     metric_names =
       Metrics.list_metric_names(scope)
       |> Enum.reject(&(&1 == goal_metric_name))
 
     goal_series =
-      Metrics.query_time_series(scope, goal_metric_name, date_range: default_date_range())
+      Metrics.query_time_series(scope, goal_metric_name, date_range: date_range)
 
-    {results, data_window} = compute_correlations(scope, metric_names, goal_series, job)
+    {results, data_window} = compute_correlations(scope, metric_names, goal_series, date_range)
 
     case persist_results(scope, job, results, goal_metric_name, data_window) do
       {:ok, updated_job} ->
@@ -97,13 +98,13 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
       {:error, {:exception, error_message}}
   end
 
-  defp compute_correlations(scope, metric_names, goal_series, _job) do
+  defp compute_correlations(scope, metric_names, goal_series, date_range) do
     goal_values = Enum.map(goal_series, & &1)
 
     results =
       metric_names
       |> Task.async_stream(
-        &compute_metric_correlation(scope, &1, goal_values),
+        &compute_metric_correlation(scope, &1, goal_values, date_range),
         max_concurrency: System.schedulers_online(),
         timeout: 30_000,
         on_timeout: :kill_task
@@ -118,9 +119,9 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     {results, data_window}
   end
 
-  defp compute_metric_correlation(scope, metric_name, goal_values) do
+  defp compute_metric_correlation(scope, metric_name, goal_values, date_range) do
     metric_series =
-      Metrics.query_time_series(scope, metric_name, date_range: default_date_range())
+      Metrics.query_time_series(scope, metric_name, date_range: date_range)
 
     {metric_values, goal_aligned} = Math.extract_values(metric_series, goal_values)
 
@@ -199,8 +200,8 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   # Private — helpers
   # ---------------------------------------------------------------------------
 
-  defp default_date_range do
-    end_date = Date.utc_today()
+  defp default_date_range(scope) do
+    end_date = Metrics.get_latest_metric_date(scope) || Date.utc_today()
     start_date = Date.add(end_date, -90)
     {start_date, end_date}
   end
