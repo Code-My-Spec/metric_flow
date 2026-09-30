@@ -68,3 +68,12 @@ Note from story 8's QA pass this session: `submit_qa_result` intermittently roll
 - 135/754: pass. With real data loaded (custom range), `[data-role="vega-lite-chart"][phx-hook="VegaLite"]` renders an actual SVG element (Vega-Lite's default renderer), confirmed via `browser_count` for `svg` → 1, not just an empty container.
 - 749: pass. Toggling off every metric in `[data-role="metric-toggles"]` produces "No metric data available for the selected filters." (chart) and "No data to display." (table) rather than an error, and zero stat cards render.
 
+## Retest (after fixes for 103e0ac5 and 1059f96a)
+
+Commit e52e4af fixed both issues at their shared root cause (absent-vs-nil ambiguity for :date_range across get_dashboard_data/2, resolve_time_series_date_range/1, and reload_dashboard_data/2). Confirmed live on http://127.0.0.1:59302 as qa@example.com:
+
+- All Time now correctly shows "Showing all available data (today excluded -- incomplete day)" and surfaces all 593 real rows of this account's 2022-2026 data, matching what the custom range showed. Criterion 131/750 now fully passes.
+- Platform filter + custom range combination: setting a custom range (2022-01-01 to 2026-04-12) then clicking a platform filter (Google Ads) no longer reverts the date range -- it stays exactly as set. Criterion 130/748 now fully passes.
+
+Both previously-open issues are resolved; all of story 18's criteria now pass.
+
