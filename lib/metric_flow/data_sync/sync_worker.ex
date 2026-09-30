@@ -472,6 +472,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
          started_at,
          date_range
        ) do
+    delete_stale_performance_metrics(scope, metrics)
+
     {records_synced, _errors} =
       Enum.reduce(metrics, {0, []}, fn metric_attrs, {count, errors} ->
         # Ensure all top-level keys are atoms to avoid mixed-key maps after
@@ -525,6 +527,25 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  # Deletes existing Google Business Profile performance-metric rows for any
+  # (location, day) this batch is about to (re)write, so re-running a sync is
+  # idempotent per the story's upsert rule even though there is no
+  # database-level unique constraint to upsert against. Scoped to
+  # :google_business only -- reviews (:google_business_reviews) are a
+  # separate, page-based fetch with no equivalent re-run duplication risk.
+  defp delete_stale_performance_metrics(scope, metrics) do
+    metrics
+    |> Enum.filter(&(Map.get(&1, :provider) == :google_business))
+    |> Enum.map(fn metric ->
+      location_id = get_in(metric, [:dimensions, :location_id])
+      {location_id, DateTime.to_date(metric.recorded_at)}
+    end)
+    |> Enum.uniq()
+    |> Enum.each(fn {location_id, date} ->
+      Metrics.delete_metrics_by_location_and_date(scope, :google_business, location_id, date)
+    end)
   end
 
   defp record_success_history(scope, integration, sync_job_id, sync_type, started_at, mod, mod_metrics) do

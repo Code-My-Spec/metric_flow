@@ -130,6 +130,36 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   # ---------------------------------------------------------------------------
+  # delete_metrics_by_location_and_date/4
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Deletes existing metric rows for a specific provider, location and day.
+
+  Used to make a resync idempotent for providers keyed by location and day
+  (e.g. Google Business Profile) when there is no database-level unique
+  constraint to upsert against: the caller deletes the prior rows for the
+  location/day it is about to write, then inserts the fresh batch, so
+  re-running a sync never accumulates duplicates.
+  """
+  @spec delete_metrics_by_location_and_date(Scope.t(), atom(), String.t(), Date.t()) ::
+          {:ok, integer()}
+  def delete_metrics_by_location_and_date(%Scope{user: user}, provider, location_id, date) do
+    start_dt = date_to_start_of_day(date)
+    end_dt = date_to_end_of_day(date)
+
+    {count, _} =
+      from(m in Metric,
+        where: m.user_id == ^user.id and m.provider == ^provider,
+        where: m.recorded_at >= ^start_dt and m.recorded_at <= ^end_dt,
+        where: fragment("?->>'location_id' = ?", m.dimensions, ^location_id)
+      )
+      |> Repo.delete_all()
+
+    {:ok, count}
+  end
+
+  # ---------------------------------------------------------------------------
   # query_time_series/3
   # ---------------------------------------------------------------------------
 
