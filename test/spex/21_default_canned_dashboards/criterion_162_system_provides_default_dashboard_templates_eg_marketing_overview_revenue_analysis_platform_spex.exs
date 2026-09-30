@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System provides default dashboard templates (e.g., Marketing Overview, Revenue Analysis, Platform Comparison)", criterion: 162 do
+  spex "System provides default dashboard templates (e.g., Marketing Overview, Revenue Analysis, Platform Comparison)",
+    criterion: 162 do
     scenario "authenticated user can navigate to the dashboards index page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboards page", context do
         result = live(context.owner_conn, "/app/dashboards")
@@ -28,7 +29,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     end
 
     scenario "dashboards page displays a Marketing Overview template" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "canned dashboards exist in the database", context do
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
@@ -56,7 +57,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     end
 
     scenario "dashboards page displays a Revenue Analysis template" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "canned dashboards exist in the database", context do
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
@@ -84,7 +85,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     end
 
     scenario "dashboards page displays a Platform Comparison template" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "canned dashboards exist in the database", context do
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
@@ -112,7 +113,7 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
     end
 
     scenario "dashboards page lists multiple canned templates" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "canned dashboards exist in the database", context do
         for name <- ["Marketing Overview", "Revenue Analysis", "Platform Comparison"] do
@@ -127,7 +128,8 @@ defmodule MetricFlowSpex.SystemProvidesDefaultDashboardTemplatesSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page displays at least one dashboard template for the user to choose from", context do
+      then_ "the page displays at least one dashboard template for the user to choose from",
+            context do
         html = render(context.view)
 
         assert has_element?(context.view, "[data-role='canned-dashboards']") or
