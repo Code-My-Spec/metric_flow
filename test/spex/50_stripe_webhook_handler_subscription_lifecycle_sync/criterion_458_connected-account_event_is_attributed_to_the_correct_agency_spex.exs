@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.ConnectedAccountEventIsAttributedToTheCorrectAgencySpex
         payload =
           Jason.encode!(%{
             "id" => "evt_connected_#{System.unique_integer([:positive])}",
-            "type" => "customer.subscription.updated",
+            "type" => "customer.subscription.created",
             "account" => context.stripe_account_id,
             "data" => %{
               "object" => %{
