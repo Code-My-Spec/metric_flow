@@ -53,3 +53,9 @@ Executed live against qa@example.com's 7 real seeded integrations (6 of which ha
 - **620** **FAIL** — the SyncHistory page's displayed text ("yesterday — today excluded") is correct and its own spex passes, but the *real* fetch window used by an actual sync (`determine_date_range/3` for every incremental/daily sync, and every provider's `default_date_range/0` for initial syncs) ends at `Date.utc_today()`, not yesterday — the display is decorative, not what's actually queried. Issue 3ad77a15 (medium).
 
 Also filed and self-resolved a qa-scope blocker: this worktree's dev DB had a pending migration (this story's own `add_sync_type_to_sync_history`) causing a total PendingMigrationError outage at session start — issue 686cd7aa.
+
+## Retest (commit 428e70d)
+
+- **4a3d10af (critical, 610/616)**: FIXED, confirmed live. facebook_ads (expired, no refresh token) now gets a real Oban job, SyncJob, and a persisted sync_history row (status=failed, 'Token expired and could not be refreshed').
+- **3ad77a15 (medium, 620)**: FIXED, confirmed live and in code. determine_date_range/3's incremental branch and all provider default ranges now end at yesterday. A transient 'bad_request' on google_analytics during retest traced to a stray metric dated today created by my own earlier pre-fix trigger (repro-consumed-itself) -- cleaned up, not a product bug.
+- **f736bee3 (high, 614)**: PARTIALLY FIXED -- works correctly for providers recognized by SyncJob's own Ecto.Enum but unimplemented in SyncWorker (e.g. google_business_reviews, per the coder's own verification). But found a new regression: providers outside that enum entirely (e.g. codemyspec, a real integration on this account unrelated to data-sync) still silently vanish -- create_sync_job fails changeset validation before any SyncJob/Oban job exists, and both the LiveView trigger and the real Scheduler discard that error silently. Filed as issue 8c617ca8 (high).
