@@ -53,6 +53,12 @@ defmodule MetricFlowSpex.Criterion849CorrelationCalculationsUseDailyAggregatedDa
 
       when_ "correlation calculations run", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
+
+        # The goal-metric save above already enqueued the CorrelationWorker
+        # job -- Oban runs in :manual testing mode, so nothing executes it
+        # until drained, matching the exunit precedent in correlations_test.exs.
+        Oban.drain_queue(queue: :correlations)
+
         {:ok, Map.put(context, :view, view)}
       end
 
