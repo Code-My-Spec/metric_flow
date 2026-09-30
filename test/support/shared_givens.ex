@@ -521,6 +521,18 @@ defmodule MetricFlowSpex.SharedGivens do
         {"POST", "/v1/prices"} ->
           {200, %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
 
+        {"GET", "/v1/prices/" <> price_id} ->
+          {200,
+           %{
+             "id" => price_id,
+             "object" => "price",
+             "product" => "prod_test_#{System.unique_integer([:positive])}",
+             "active" => true
+           }}
+
+        {"POST", "/v1/prices/" <> price_id} ->
+          {200, %{"id" => price_id, "object" => "price", "active" => false}}
+
         {"DELETE", "/v1/accounts/" <> account_id} ->
           {200, %{"id" => account_id, "object" => "account", "deleted" => true}}
 
