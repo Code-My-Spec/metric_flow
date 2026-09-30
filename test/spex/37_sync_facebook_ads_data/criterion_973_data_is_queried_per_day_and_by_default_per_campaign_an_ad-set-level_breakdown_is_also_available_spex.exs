@@ -18,6 +18,8 @@ defmodule MetricFlowSpex.Criterion973DataQueriedPerCampaignByDefaultAdsetBreakdo
         {:ok, Map.put(context, :view, view)}
       end
 
+      given_ :with_facebook_ads_sync_stub
+
       when_ "they choose to sync with an ad-set-level breakdown instead of the campaign-level default", context do
         assert has_element?(context.view, "[data-role='facebook-adset-breakdown-toggle']"),
                "Expected a control to opt into ad-set-level breakdown for Facebook Ads syncs"

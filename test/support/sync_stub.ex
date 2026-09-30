@@ -71,6 +71,31 @@ defmodule MetricFlowTest.SyncStub do
   end
 
   @doc """
+  A minimal valid Facebook Marketing API `insights` response body: one day,
+  all core metrics, one purchase action (for conversions extraction).
+  """
+  @spec facebook_ads_success_body() :: String.t()
+  def facebook_ads_success_body do
+    Jason.encode!(%{
+      "data" => [
+        %{
+          "campaign_name" => "Fall Promo",
+          "date_start" => Date.to_iso8601(Date.utc_today()),
+          "impressions" => "1000",
+          "clicks" => "50",
+          "spend" => "25.00",
+          "cpm" => "25.00",
+          "cpc" => "0.50",
+          "ctr" => "5.00",
+          "actions" => [
+            %{"action_type" => "purchase", "value" => "3"}
+          ]
+        }
+      ]
+    })
+  end
+
+  @doc """
   A minimal valid GA4 `runReport` response body: one day, all core metrics.
   """
   @spec google_analytics_success_body() :: String.t()

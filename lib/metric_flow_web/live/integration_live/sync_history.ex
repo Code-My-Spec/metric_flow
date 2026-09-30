@@ -77,6 +77,19 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Manually runs the same daily sync cycle, for testing without waiting for the 2:00 AM UTC schedule.
           </p>
         </div>
+        <div class="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="facebook-adset-breakdown-toggle"
+            data-role="facebook-adset-breakdown-toggle"
+            phx-click="toggle_facebook_adset_breakdown"
+            checked={@facebook_adset_breakdown}
+            class="checkbox checkbox-sm"
+          />
+          <label for="facebook-adset-breakdown-toggle" class="text-sm text-base-content/70">
+            Sync Facebook Ads with ad-set-level breakdown (default: campaign-level)
+          </label>
+        </div>
       </div>
 
       <%!-- Date range section --%>
@@ -370,6 +383,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
       |> assign(:date_range_end, date_range_end)
       |> assign(:sync_events, [])
       |> assign(:status_filter, "all")
+      |> assign(:facebook_adset_breakdown, false)
       |> assign(:page_title, "Sync History")
 
     {:ok, socket}
@@ -387,15 +401,20 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   def handle_event("trigger_daily_sync", _params, socket) do
     scope = socket.assigns.current_scope
+    facebook_adset_breakdown = socket.assigns.facebook_adset_breakdown
 
     data_sync_providers = SyncJob.data_sync_providers()
 
     scope
     |> Integrations.list_integrations()
     |> Enum.filter(&(&1.provider in data_sync_providers))
-    |> Enum.each(&DataSync.sync_integration(scope, &1.provider))
+    |> Enum.each(&sync_integration(scope, &1.provider, facebook_adset_breakdown))
 
     {:noreply, put_flash(socket, :info, "Sync triggered for all connected integrations.")}
+  end
+
+  def handle_event("toggle_facebook_adset_breakdown", _params, socket) do
+    {:noreply, update(socket, :facebook_adset_breakdown, &(!&1))}
   end
 
   # ---------------------------------------------------------------------------
@@ -416,6 +435,14 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp sync_integration(scope, :facebook_ads, true) do
+    DataSync.sync_integration(scope, :facebook_ads, breakdown: :adset)
+  end
+
+  defp sync_integration(scope, provider, _facebook_adset_breakdown) do
+    DataSync.sync_integration(scope, provider)
+  end
 
   defp provider_display_name(provider) when is_atom(provider) do
     case Map.get(@provider_names, provider) do

@@ -90,7 +90,7 @@ defmodule MetricFlow.DataSync do
   """
   @spec sync_integration(Scope.t(), atom()) ::
           {:ok, SyncJob.t()} | {:error, :not_found}
-  def sync_integration(%Scope{user: user} = scope, provider) do
+  def sync_integration(%Scope{user: user} = scope, provider, opts \\ []) do
     with {:ok, integration} <- Integrations.get_integration(scope, provider),
          {:ok, sync_job} <-
            SyncJobRepository.create_sync_job(scope, integration.id, %{provider: provider}),
@@ -98,10 +98,18 @@ defmodule MetricFlow.DataSync do
            Oban.insert(
              SyncWorker.new(
                %{integration_id: integration.id, user_id: user.id, sync_job_id: sync_job.id}
+               |> maybe_put_breakdown(opts)
                |> maybe_put_test_http_plug(provider)
              )
            ) do
       {:ok, sync_job}
+    end
+  end
+
+  defp maybe_put_breakdown(args, opts) do
+    case Keyword.get(opts, :breakdown) do
+      nil -> args
+      breakdown -> Map.put(args, :breakdown, to_string(breakdown))
     end
   end
 

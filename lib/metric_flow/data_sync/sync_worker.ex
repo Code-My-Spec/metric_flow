@@ -68,6 +68,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     user_id = Map.get(args, "user_id")
     sync_job_id = Map.get(args, "sync_job_id")
     http_plug = resolve_plug(Map.get(args, "http_plug"))
+    breakdown = resolve_breakdown(Map.get(args, "breakdown"))
 
     scope = build_scope(user_id)
     started_at = DateTime.utc_now()
@@ -80,7 +81,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:ok, _job} ->
         result =
           try do
-            execute_sync(scope, integration_id, sync_job_id, http_plug, started_at)
+            execute_sync(scope, integration_id, sync_job_id, http_plug, breakdown, started_at)
           rescue
             e ->
               error_message = Exception.message(e)
@@ -193,7 +194,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     error
   end
 
-  defp execute_sync(scope, integration_id, sync_job_id, http_plug, started_at) do
+  defp execute_sync(scope, integration_id, sync_job_id, http_plug, breakdown, started_at) do
     case fetch_integration(integration_id) do
       {:error, :integration_not_found} ->
         {:error, :integration_not_found}
@@ -209,6 +210,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
           sync_type,
           date_range,
           http_plug,
+          breakdown,
           started_at
         )
     end
@@ -243,6 +245,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
          sync_type,
          date_range,
          http_plug,
+         breakdown,
          started_at
        ) do
     case ensure_fresh_tokens(scope, integration) do
@@ -254,6 +257,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
           sync_type,
           date_range,
           http_plug,
+          breakdown,
           started_at
         )
 
@@ -281,7 +285,16 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp run_provider_sync(scope, integration, sync_job_id, sync_type, date_range, http_plug, started_at) do
+  defp run_provider_sync(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         date_range,
+         http_plug,
+         breakdown,
+         started_at
+       ) do
     case providers_for(integration.provider) do
       {:error, :unsupported_provider} ->
         error_message = "#{integration.provider} is not yet supported for automated sync"
@@ -306,7 +319,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         {:error, :unsupported_provider}
 
       {:ok, provider_mods} ->
-        opts = build_fetch_opts(http_plug, date_range)
+        opts = build_fetch_opts(http_plug, date_range, breakdown)
 
         run_all_providers(
           scope,
@@ -409,14 +422,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp build_fetch_opts(http_plug, date_range) do
+  defp build_fetch_opts(http_plug, date_range, breakdown) do
     []
     |> maybe_put(:http_plug, http_plug)
     |> maybe_put(:date_range, date_range)
+    |> maybe_put(:breakdown, breakdown)
   end
 
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)
+
+  defp resolve_breakdown("adset"), do: :adset
+  defp resolve_breakdown(_), do: nil
 
   # Resolves the http_plug from job args. In production, there is no http_plug
   # and this returns nil. In tests, the value may be:
