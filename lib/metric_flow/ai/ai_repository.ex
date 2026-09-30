@@ -179,6 +179,31 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
+  Retrieves the chat session for the user scoped to a specific context (e.g.
+  a particular visualization being edited), with messages preloaded.
+
+  Messages are ordered by inserted_at ascending. Returns {:ok, session} when
+  found or {:error, :not_found} when no session matches.
+  """
+  @spec get_chat_session_by_context(Scope.t(), atom(), integer()) ::
+          {:ok, ChatSession.t()} | {:error, :not_found}
+  def get_chat_session_by_context(%Scope{user: user}, context_type, context_id) do
+    case Repo.get_by(ChatSession,
+           user_id: user.id,
+           context_type: context_type,
+           context_id: context_id
+         ) do
+      nil ->
+        {:error, :not_found}
+
+      session ->
+        messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
+        loaded = Repo.preload(session, chat_messages: messages_query)
+        {:ok, loaded}
+    end
+  end
+
+  @doc """
   Creates a new ChatSession with user_id and account_id from Scope.
 
   Returns {:ok, session} on success or {:error, changeset} on validation failure.

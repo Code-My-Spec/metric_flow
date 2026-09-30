@@ -351,6 +351,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:chart_preview, preview)
           |> assign(:raw_vega_spec, format_spec(template))
           |> assign(:page_title, "Edit Visualization")
+          |> load_chat_history(scope, visualization)
 
         {:noreply, socket}
 
@@ -422,8 +423,23 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:chat_generating, false)
     |> assign(:chat_error, nil)
     |> assign(:chat_context, nil)
+    |> assign(:chat_session_id, nil)
     |> assign(:show_data_table, false)
     |> stream(:chat_messages, [])
+  end
+
+  # Loads any prior chat history for this visualization so reopening the
+  # workspace shows the full conversation rather than starting blank.
+  defp load_chat_history(socket, scope, %Visualization{id: id}) do
+    case Ai.get_chat_session_by_context(scope, :visualization, id) do
+      {:ok, session} ->
+        socket
+        |> assign(:chat_session_id, session.id)
+        |> stream(:chat_messages, session.chat_messages)
+
+      {:error, :not_found} ->
+        socket
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -535,6 +551,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         {:noreply, socket}
 
       trimmed ->
+        scope = socket.assigns.current_scope
+        {session_id, socket} = ensure_chat_session(socket, scope)
+        persist_chat_message(scope, session_id, :user, trimmed)
+
         user_msg = %{role: :user, content: trimmed, id: System.unique_integer([:positive])}
 
         socket =
@@ -543,7 +563,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:chat_generating, true)
           |> assign(:chat_error, nil)
 
-        scope = socket.assigns.current_scope
         req_opts = Application.get_env(:metric_flow, :req_http_options, [])
         chat_context = socket.assigns.chat_context
         current_spec = current_template_spec(socket)
@@ -595,6 +614,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   def handle_info({ref, {:ok, %{text: text, spec: spec, context: updated_context}}}, socket)
       when is_reference(ref) do
     Process.demonitor(ref, [:flush])
+    require Logger
+    Logger.warning("viz_chat exchange completed session_id=#{inspect(socket.assigns.chat_session_id)}")
+    persist_chat_message(socket.assigns.current_scope, socket.assigns.chat_session_id, :assistant, text)
 
     assistant_msg = %{
       role: :assistant,
@@ -692,6 +714,46 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     end
   end
 
+  # Finds or creates the chat session backing this authoring workspace so
+  # messages can be persisted. A brand-new, unsaved visualization gets a
+  # session with no context_id yet; `link_chat_session_to_visualization/3`
+  # backfills it once the visualization is saved.
+  defp ensure_chat_session(%{assigns: %{chat_session_id: id}} = socket, _scope) when not is_nil(id) do
+    {id, socket}
+  end
+
+  defp ensure_chat_session(socket, scope) do
+    context_id = socket.assigns.visualization && socket.assigns.visualization.id
+
+    case Ai.create_chat_session(scope, %{context_type: :visualization, context_id: context_id}) do
+      {:ok, session} -> {session.id, assign(socket, :chat_session_id, session.id)}
+      {:error, _changeset} -> {nil, socket}
+    end
+  end
+
+  defp persist_chat_message(_scope, nil, _role, _content), do: :ok
+
+  defp persist_chat_message(scope, session_id, role, content) do
+    Ai.create_chat_message(scope, %{chat_session_id: session_id, role: role, content: content})
+    :ok
+  end
+
+  # Backfills the chat session's context_id once a previously-unsaved
+  # visualization is saved for the first time, so history survives reopening.
+  defp link_chat_session_to_visualization(socket, _scope, nil), do: socket
+
+  defp link_chat_session_to_visualization(%{assigns: %{chat_session_id: nil}} = socket, _scope, %Visualization{}),
+    do: socket
+
+  defp link_chat_session_to_visualization(socket, scope, %Visualization{} = visualization) do
+    case Ai.get_chat_session(scope, socket.assigns.chat_session_id) do
+      {:ok, session} -> Ai.update_chat_session(scope, session, %{context_id: visualization.id})
+      {:error, :not_found} -> :ok
+    end
+
+    socket
+  end
+
   defp do_save(socket) do
     scope = socket.assigns.current_scope
     name = socket.assigns.name
@@ -719,6 +781,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     case Dashboards.save_visualization(scope, attrs) do
       {:ok, visualization} ->
         Dashboards.set_visualization_metrics(visualization, metric_names)
+        socket = link_chat_session_to_visualization(socket, scope, visualization)
 
         {:noreply,
          socket

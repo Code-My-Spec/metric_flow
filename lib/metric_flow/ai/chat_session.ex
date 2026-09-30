@@ -3,8 +3,8 @@ defmodule MetricFlow.Ai.ChatSession do
   Ecto schema representing a conversational AI chat session.
 
   Each session belongs to a user and an account, and may optionally be scoped
-  to a specific correlation result, metric, or dashboard so the assistant has
-  focused context for its responses.
+  to a specific correlation result, metric, dashboard, or visualization so the
+  assistant has focused context for its responses.
 
   Sessions begin in the :active state and can be moved to :archived by the
   user. There is no transition back to :active — archiving is irreversible.
@@ -29,7 +29,7 @@ defmodule MetricFlow.Ai.ChatSession do
   alias MetricFlow.Ai.ChatMessage
   alias MetricFlow.Users.User
 
-  @context_types [:general, :correlation, :metric, :dashboard]
+  @context_types [:general, :correlation, :metric, :dashboard, :visualization]
   @statuses [:active, :archived]
 
   @type t :: %__MODULE__{
@@ -37,7 +37,7 @@ defmodule MetricFlow.Ai.ChatSession do
           user_id: integer() | nil,
           account_id: integer() | nil,
           title: String.t() | nil,
-          context_type: :general | :correlation | :metric | :dashboard | nil,
+          context_type: :general | :correlation | :metric | :dashboard | :visualization | nil,
           context_id: integer() | nil,
           status: :active | :archived,
           user: User.t() | Ecto.Association.NotLoaded.t(),
