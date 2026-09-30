@@ -334,6 +334,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp run_all_providers(scope, integration, sync_job_id, sync_type, provider_mods, opts, started_at) do
+    date_range = Keyword.get(opts, :date_range)
     results = Enum.map(provider_mods, &fetch_provider_metrics(&1, integration, opts))
 
     all_metrics =
@@ -347,7 +348,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     if length(errors) == length(provider_mods) do
       Enum.each(errors, fn {:error, mod, reason} ->
         provider = provider_name(mod, integration)
-        error_msg = format_error(reason)
+        error_msg = format_error(reason, integration, date_range)
 
         record_history(scope, integration, sync_job_id, sync_type, started_at, %{
           provider: provider,
@@ -364,7 +365,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         {:sync_failed,
          %{
            provider: integration.provider,
-           reason: format_error(first_reason),
+           reason: format_error(first_reason, integration, date_range),
            completed_at: DateTime.utc_now(),
            sync_type: sync_type
          }}
@@ -379,7 +380,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
         sync_type,
         all_metrics,
         results,
-        started_at
+        started_at,
+        date_range
       )
     end
   end
@@ -467,7 +469,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
          sync_type,
          metrics,
          results,
-         started_at
+         started_at,
+         date_range
        ) do
     {records_synced, _errors} =
       Enum.reduce(metrics, {0, []}, fn metric_attrs, {count, errors} ->
@@ -496,7 +499,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider_name(mod, integration),
           status: :failed,
           records_synced: 0,
-          error_message: format_error(reason)
+          error_message: format_error(reason, integration, date_range)
         })
     end)
 
@@ -602,6 +605,41 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp broadcast_sync_event(user_id, message) do
     Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
   end
+
+  defp format_error(:missing_site_url, _integration, date_range) do
+    "No Search Console site URL configured#{format_date_range(date_range)}. " <>
+      "Go to the integration's account selection to choose a site."
+  end
+
+  defp format_error(:site_not_found, integration, date_range) do
+    site = site_url_from(integration) || "the configured site"
+
+    "Search Console site #{site} was not found#{format_date_range(date_range)}. " <>
+      "It may have been removed or the URL changed."
+  end
+
+  defp format_error(:insufficient_permissions, integration, date_range) do
+    site = site_url_from(integration) || "the configured site"
+
+    "Insufficient permissions to access Search Console site #{site}#{format_date_range(date_range)}. " <>
+      "Reconnect with an account that has access."
+  end
+
+  defp format_error(reason, _integration, _date_range), do: format_error(reason)
+
+  defp site_url_from(%Integration{provider_metadata: meta}) do
+    case Map.get(meta || %{}, "site_url") do
+      url when is_binary(url) and url != "" -> url
+      _ -> nil
+    end
+  end
+
+  defp site_url_from(_), do: nil
+
+  defp format_date_range(nil), do: ""
+
+  defp format_date_range({start_date, end_date}),
+    do: " (date range: #{start_date} to #{end_date})"
 
   defp format_error(:missing_property_id) do
     "No Google Analytics property configured. " <>
