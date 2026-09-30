@@ -55,7 +55,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
           :if={@report.vega_spec != nil}
           phx-hook="VegaLite"
           phx-update="ignore"
-          data-spec={Jason.encode!(@report.vega_spec)}
+          data-spec={Jason.encode!(@render_spec)}
           id="report-chart"
           data-role="vega-lite-chart"
           style="width: 100%"
@@ -96,13 +96,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
       {id_int, ""} ->
         case Dashboards.get_visualization(scope, id_int) do
           {:ok, report} ->
-            socket =
-              socket
-              |> assign(:page_title, report.name)
-              |> assign(:report, report)
-              |> assign(:metric_names, Metrics.list_metric_names(scope))
-
-            {:ok, socket}
+            {:ok, assign_report(socket, scope, report)}
 
           {:error, :not_found} ->
             {:ok,
@@ -117,6 +111,16 @@ defmodule MetricFlowWeb.ReportLive.Show do
          |> put_flash(:error, "Report not found.")
          |> redirect(to: ~p"/app/reports")}
     end
+  end
+
+  defp assign_report(socket, scope, report) do
+    render_spec = if report.vega_spec, do: Dashboards.build_render_spec(scope, report)
+
+    socket
+    |> assign(:page_title, report.name)
+    |> assign(:report, report)
+    |> assign(:render_spec, render_spec)
+    |> assign(:metric_names, Metrics.list_metric_names(scope))
   end
 
   # ---------------------------------------------------------------------------
