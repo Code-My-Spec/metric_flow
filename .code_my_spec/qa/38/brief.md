@@ -83,6 +83,17 @@ All testing happens at `/app/integrations/sync-history` — log in, navigate the
 
 .code_my_spec/qa/38/result.md
 
+## Retest (issue 534f7d2b)
+
+Commit 23d3ca2 added effective_sync_type/2 in sync_worker.ex, forcing :incremental for the :google_business_reviews provider tag at all three record sites, and rewrote criterion 983's spex to scope its check to the reviews entry specifically.
+
+Created a genuinely fresh google_business_reviews integration (id 63, cloned from integration 59's real tokens/location, zero prior sync history) and triggered a first-ever sync via [data-role='trigger-daily-sync']. Confirmed live and in the DB:
+
+- The integration's job produced two sync_history rows: one tagged Google Business Profile (performance, sync_type=initial, 6028 records) which legitimately keeps the Initial Sync badge, and one tagged Google Business Reviews (sync_type=incremental, 6 records) with no Initial Sync badge and no backfill-limit notice, exactly the fix's intended split.
+- Triggered a second sync: the reviews entry still shows sync_type=incremental, still fetched all 6 reviews (no narrowing), confirming no-backfill-window-ever holds across syncs too.
+
+Criterion 983 is fixed. Criteria 981/982/987/988 are unaffected by this commit (diff is scoped to sync_type computation only) and were already verified passing in the prior attempt.
+
 ## Setup Notes
 
 The existing real integration (id 59, provider `google_business`) belongs to qa@example.com and is a standing QA fixture used by prior sessions (stories 13/14) — safe to read its tokens but don't modify or delete that row. Only the new `google_business_reviews` row (created in Step 1) should be mutated/deleted during this session.
