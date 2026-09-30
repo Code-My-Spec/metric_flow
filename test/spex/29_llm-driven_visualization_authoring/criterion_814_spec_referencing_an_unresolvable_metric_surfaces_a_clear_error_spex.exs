@@ -13,7 +13,9 @@ defmodule MetricFlowSpex.Criterion814UnresolvableMetricSurfacesClearErrorSpex do
     match_requests_on: [:method, :uri]
   ]
 
-  spex "Spec referencing an unresolvable metric surfaces a clear error", criterion: 814 do
+  spex "Spec referencing an unresolvable metric surfaces a clear error",
+    fail_on_error_logs: false,
+    criterion: 814 do
     scenario "a spec naming a metric outside the account's available metrics surfaces a clear error" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

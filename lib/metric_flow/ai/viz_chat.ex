@@ -129,18 +129,30 @@ defmodule MetricFlow.Ai.VizChat do
 
     # Execute tools — frame.assigns.validated_spec is set by UpdateSpec
     # on successful validation, cleared on failure
-    frame = put_in(frame.assigns[:validated_spec], nil)
+    frame =
+      frame
+      |> put_in([Access.key(:assigns), :validated_spec], nil)
+      |> put_in([Access.key(:assigns), :unresolvable_metrics], nil)
+
     {context, frame} = execute_tools(context, tool_calls, frame)
 
     validated_spec = frame.assigns[:validated_spec]
+    unresolvable_metrics = frame.assigns[:unresolvable_metrics]
 
-    if validated_spec do
-      # Tool validated and accepted a new spec — show it to the user
-      {:ok, %{text: text, spec: validated_spec, context: context}}
-    else
-      # No valid spec yet (other tools, or validation failed and errors
-      # were sent back to the LLM) — continue so the model can fix it
-      run_tool_loop(context, frame, opts, depth + 1, accumulated_spec)
+    cond do
+      unresolvable_metrics ->
+        # A metric the model referenced doesn't exist for this account —
+        # surface it directly rather than letting the model keep guessing
+        {:error, {:unresolvable_metric, unresolvable_metrics}}
+
+      validated_spec ->
+        # Tool validated and accepted a new spec — show it to the user
+        {:ok, %{text: text, spec: validated_spec, context: context}}
+
+      true ->
+        # No valid spec yet (other tools, or validation failed and errors
+        # were sent back to the LLM) — continue so the model can fix it
+        run_tool_loop(context, frame, opts, depth + 1, accumulated_spec)
     end
   end
 

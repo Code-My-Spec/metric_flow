@@ -1012,6 +1012,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp generation_error_message(:no_metrics), do: "No metrics available. Connect a platform first."
   defp generation_error_message(:invalid_spec), do: "AI generated an invalid chart spec. Try rephrasing."
   defp generation_error_message(:api_error), do: "AI service is temporarily unavailable."
+
+  defp generation_error_message({:unresolvable_metric, names}) when is_list(names) do
+    "Chart references metric(s) not available in this account: " <> Enum.join(names, ", ")
+  end
+
   defp generation_error_message(reason) when is_binary(reason), do: reason
   defp generation_error_message(_), do: "Something went wrong. Please try again."
 end

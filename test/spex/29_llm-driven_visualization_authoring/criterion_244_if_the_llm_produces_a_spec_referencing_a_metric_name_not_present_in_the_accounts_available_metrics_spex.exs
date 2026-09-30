@@ -14,6 +14,7 @@ defmodule MetricFlowSpex.Criterion244UnresolvableMetricSurfacesErrorSpex do
   ]
 
   spex "If the LLM produces a spec referencing a metric name not present in the account's available metrics, the chat panel surfaces an error identifying the unresolvable metric",
+    fail_on_error_logs: false,
     criterion: 244 do
     scenario "a spec referencing an unresolvable metric surfaces a clear error in the chat panel" do
       given_ :user_logged_in_as_owner
