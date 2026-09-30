@@ -1,48 +1,42 @@
-# QA Brief: Story 1101 — Agency Plan Management: Create Custom Subscription Plans
+# QA Story Brief — Story 48: Agency Plan Management
 
-## Component
-MetricFlowWeb.AgencyLive.Plans (`lib/metric_flow_web/live/agency_live/plans.ex`)
-Route: `/app/agency/plans` (see router.ex agency live_session)
+## Tool
 
-## Prior findings
-Two issues from an earlier pass are resolved: missing billing tables migration
-(b4c99209) and StripeClient lacking product/price creation (21f958fa). This
-brief covers a fresh, full pass against all 9 gherkin rules / 15 criteria.
+web
 
-## Auth / setup
-- Log in as qa@example.com / hello world! per plan.md.
-- Need an agency-type account with no Stripe connected (to test the blocking
-  rule) and, separately, one with Stripe connected (to test creation/rotation).
-- Seed script: priv/repo/qa_seeds_1101.exs creates "QA Agency 1101" (team
-  account, owned by qa@example.com) with no Stripe account initially.
-- Existing DB already has agency accounts id=1 ("Desert First Cleaning") and
-  id=3 ("My Test Agency") with StripeAccount rows carrying synthetic
-  stripe_account_id values from prior story-1103 QA (acct_qa1103_connected,
-  acct_qa1103c_connected) — these are NOT real Stripe Connect accounts and
-  will fail real Stripe API calls (create_product/create_price hit
-  api.stripe.com for real). Real Stripe Connect onboarding is required to
-  fully exercise the create/rotate-price scenarios end-to-end.
+## Auth
 
-## Scenarios to test
-1. Agency admin creates a new plan (happy path, needs real Stripe Connect)
-2. Plan name cannot be blank (client-side changeset validation, no Stripe needed)
-3. Plan price must be positive (same)
-4. Plan creation provisions a Stripe Product and Price (needs real Stripe Connect)
-5. Plan creation blocked without a connected Stripe account (no Stripe needed)
-6. Updating plan price rotates the Stripe Price (needs real Stripe Connect) —
-   CODE REVIEW FLAG: `handle_event("update_plan", ...)` in plans.ex calls
-   `Plan.changeset/2` + `Repo.update/1` directly — no call into
-   `MetricFlow.Billing` or `StripeClient` at all. There is no
-   `Billing.update_plan/2` function in lib/metric_flow/billing.ex. This looks
-   like the rotation was never implemented; confirm via UI.
-7. Deactivating a plan stops new signups but keeps existing subscribers
-   (DB-level check via BillingRepository.list_plans/1 filtering active==true;
-   can verify without Stripe)
-8. Another agency's admin cannot see or select this plan (DB scoping, no
-   Stripe needed — can seed plan rows directly)
-9. Agency settings lists active plans with Stripe Price ID and status (no
-   Stripe needed once any plan row exists)
+Log in via vibium MCP browser tools against this working copy's own instance (http://127.0.0.1:59302), not main's 4070.
 
-## Tooling
-- vibium MCP browser tools per plan.md Tools Registry.
-- mix run --no-start seeds (MIX_ENV=dev, since MIX_ENV=dev_cli is the wrong env in this worktree).
+```
+browser_navigate(url: "http://127.0.0.1:59302/users/log-in")
+browser_scroll_into_view(selector: "#login_form_password")
+browser_fill(selector: "#password_email", text: "qa@example.com")
+browser_fill(selector: "#user_password", text: "hello world!")
+browser_click(selector: "#login_form_password button[name='user[remember_me]']")
+browser_wait_for_url(pattern: "/", timeout: 5000)
+```
+
+QA Test Account (agency) is owned by qa@example.com per priv/repo/qa_seeds.exs.
+
+## Seeds
+
+```
+mix run --no-start -e "Application.ensure_all_started(:postgrex); Application.ensure_all_started(:ecto); MetricFlow.Repo.start_link([])" priv/repo/qa_seeds.exs
+```
+
+Only if login as qa@example.com fails — seeds are idempotent and normally already in place.
+
+## What To Test
+
+This is a targeted retest of the two issues left partial by the prior attempt (30c52318, 40e41769), now that this checkout's own app can be tested directly (no promotion/spex-gate blocker on this copy).
+
+- **Regression check (code + exunit, per plan.md's documented Stripe-Connect-disabled limitation):** confirm commit 5dc07a9 ("rotate Stripe Price on plan price update; decouple edit button from Stripe connection") is present in this checkout's `git log`, and `mix test test/metric_flow_web/live/agency_live/plans_test.exs test/metric_flow/billing_test.exs` passes in full, specifically:
+  - `updating price rotates the Stripe Price and leaves the Product unchanged` (covers issue 30c52318 / criterion 423, 465)
+  - `editing an existing plan is not blocked by a disconnected Stripe account` (covers issue 40e41769)
+- **Live browser check:** navigate to the agency Plans page as qa@example.com, open the edit form on an existing plan, and confirm the Update button is not disabled by the agency's Stripe-connected state (only Create is gated) — matches `disabled={!@editing_plan_id && !@stripe_connected}` in `plans.ex:100`.
+- Live confirmation of the actual Stripe Price rotation call itself is out of scope for this pass — the platform's Stripe test account has Connect disabled (documented in `.code_my_spec/qa/plan.md`), so that behavior is verified via the exunit suite above, consistent with the prior attempt's approach.
+
+## Result Path
+
+.code_my_spec/qa/48/result.md (not read by the harness — findings go through create_issue/submit_qa_result only)
