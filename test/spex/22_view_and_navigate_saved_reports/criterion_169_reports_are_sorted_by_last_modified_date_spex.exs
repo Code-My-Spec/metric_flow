@@ -45,7 +45,11 @@ defmodule MetricFlowSpex.Criterion169ReportsSortedByLastModifiedSpex do
       when_ "the user reopens and re-saves the older report, changing its content", context do
         {:ok, index_view, _html} = live(context.owner_conn, "/app/reports")
         html = render(index_view)
-        [_, older_id] = Regex.run(~r/data-report-id="(\d+)".*?Older Report/s, html)
+
+        pairs =
+          Regex.scan(~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s, html)
+
+        [older_id, _] = Enum.find(pairs, fn [_, _id, name] -> name == "Older Report" end) |> tl()
 
         {:ok, edit_view, _html} =
           live(context.owner_conn, "/app/visualizations/#{older_id}/edit")

@@ -151,6 +151,18 @@ defmodule MetricFlow.Dashboards do
     end
   end
 
+  @doc """
+  Creates an independent copy of a visualization owned by the scoped user,
+  including its bound metrics.
+  """
+  @spec duplicate_visualization(Scope.t(), integer()) ::
+          {:ok, Visualization.t()} | {:error, :not_found | Ecto.Changeset.t()}
+  def duplicate_visualization(%Scope{} = scope, id) do
+    with {:ok, visualization} <- VisualizationsRepository.get_visualization(scope, id) do
+      VisualizationsRepository.duplicate_visualization(visualization)
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Visualization metrics (many-to-many metric binding)
   # ---------------------------------------------------------------------------

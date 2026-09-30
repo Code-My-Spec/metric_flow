@@ -20,13 +20,13 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
 
   @doc """
   Returns all visualizations for the scoped user, ordered by most recently
-  created first.
+  modified first.
   """
   @spec list_visualizations(Scope.t()) :: list(Visualization.t())
   def list_visualizations(%Scope{user: user}) do
     from(v in Visualization,
       where: v.user_id == ^user.id,
-      order_by: [desc: v.inserted_at, desc: v.id]
+      order_by: [desc: v.updated_at, desc: v.id]
     )
     |> Repo.all()
   end
@@ -105,6 +105,31 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
           {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
   def delete_visualization(%Visualization{} = visualization) do
     Repo.delete(visualization)
+  end
+
+  # ---------------------------------------------------------------------------
+  # duplicate_visualization/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Creates an independent copy of a visualization, including its bound
+  metrics, owned by the same user.
+  """
+  @spec duplicate_visualization(Visualization.t()) ::
+          {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
+  def duplicate_visualization(%Visualization{} = original) do
+    attrs = %{
+      name: original.name <> " (Copy)",
+      user_id: original.user_id,
+      vega_spec: original.vega_spec,
+      shareable: false
+    }
+
+    with {:ok, copy} <- %Visualization{} |> Visualization.changeset(attrs) |> Repo.insert() do
+      metric_names = get_visualization_metric_names(original)
+      set_visualization_metrics(copy, metric_names)
+      {:ok, copy}
+    end
   end
 
   # ---------------------------------------------------------------------------

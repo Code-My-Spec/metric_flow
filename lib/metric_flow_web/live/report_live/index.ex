@@ -138,14 +138,26 @@ defmodule MetricFlowWeb.ReportLive.Index do
 
         <%!-- Saved reports (visualizations) --%>
         <div data-role="reports-list">
-          <h2 class="text-xl font-semibold mb-1">Saved Reports</h2>
+          <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+            <h2 class="text-xl font-semibold">Saved Reports</h2>
+            <input
+              type="text"
+              name="search"
+              value={@search}
+              phx-change="search"
+              phx-debounce="200"
+              data-role="report-search-input"
+              placeholder="Search reports by name"
+              class="input input-bordered input-sm w-full sm:w-64"
+            />
+          </div>
           <p class="text-base-content/60 text-sm mb-4">
             AI-generated and manually created report snapshots
           </p>
 
           <%!-- Empty state --%>
           <div
-            :if={@reports == []}
+            :if={@reports == [] and @search == ""}
             data-role="empty-reports"
             class="mf-card p-8 text-center"
           >
@@ -153,6 +165,15 @@ defmodule MetricFlowWeb.ReportLive.Index do
             <.link navigate={~p"/app/reports/new"} class="btn btn-primary btn-sm">
               Create your first report
             </.link>
+          </div>
+
+          <%!-- No search results --%>
+          <div
+            :if={@reports == [] and @search != ""}
+            data-role="no-search-results"
+            class="mf-card p-8 text-center"
+          >
+            <p class="text-base-content/60">No reports match "{@search}"</p>
           </div>
 
           <%!-- Reports grid --%>
@@ -180,6 +201,14 @@ defmodule MetricFlowWeb.ReportLive.Index do
                 >
                   View
                 </.link>
+                <button
+                  phx-click="duplicate"
+                  phx-value-id={report.id}
+                  data-role={"duplicate-report-#{report.id}"}
+                  class="btn btn-ghost btn-xs"
+                >
+                  Duplicate
+                </button>
                 <button
                   :if={@can_modify}
                   phx-click="delete"
@@ -255,10 +284,12 @@ defmodule MetricFlowWeb.ReportLive.Index do
     socket =
       socket
       |> assign(:page_title, "Reports")
-      |> assign(:reports, Dashboards.list_visualizations(scope))
+      |> assign(:all_reports, Dashboards.list_visualizations(scope))
+      |> assign(:search, "")
       |> assign(:metric_names, Metrics.list_metric_names(scope))
       |> assign(:confirming_delete, nil)
       |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
+      |> assign(:reports, Dashboards.list_visualizations(scope))
 
     {:ok, socket}
   end
@@ -277,6 +308,37 @@ defmodule MetricFlowWeb.ReportLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_event("search", %{"search" => query}, socket) do
+    filtered = filter_reports(socket.assigns.all_reports, query)
+
+    socket =
+      socket
+      |> assign(:search, query)
+      |> assign(:reports, filtered)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("duplicate", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+
+    case Dashboards.duplicate_visualization(scope, String.to_integer(id)) do
+      {:ok, _copy} ->
+        all_reports = Dashboards.list_visualizations(scope)
+
+        socket =
+          socket
+          |> assign(:all_reports, all_reports)
+          |> assign(:reports, filter_reports(all_reports, socket.assigns.search))
+          |> put_flash(:info, "Report duplicated.")
+
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Could not duplicate report.")}
+    end
+  end
+
   def handle_event("delete", %{"id" => id}, socket) do
     {:noreply, assign(socket, :confirming_delete, String.to_integer(id))}
   end
@@ -292,11 +354,12 @@ defmodule MetricFlowWeb.ReportLive.Index do
     if socket.assigns.can_modify do
       case Dashboards.delete_visualization(scope, id_int) do
         {:ok, _deleted} ->
-          updated = Enum.reject(socket.assigns.reports, &(&1.id == id_int))
+          updated_all = Enum.reject(socket.assigns.all_reports, &(&1.id == id_int))
 
           socket =
             socket
-            |> assign(:reports, updated)
+            |> assign(:all_reports, updated_all)
+            |> assign(:reports, filter_reports(updated_all, socket.assigns.search))
             |> assign(:confirming_delete, nil)
             |> put_flash(:info, "Report deleted.")
 
@@ -323,4 +386,11 @@ defmodule MetricFlowWeb.ReportLive.Index do
   defp format_report_type("custom"), do: "Custom Report"
   defp format_report_type(nil), do: "Report"
   defp format_report_type(type), do: type |> String.replace("_", " ") |> String.capitalize()
+
+  defp filter_reports(reports, ""), do: reports
+
+  defp filter_reports(reports, query) do
+    downcased_query = String.downcase(query)
+    Enum.filter(reports, &String.contains?(String.downcase(&1.name), downcased_query))
+  end
 end

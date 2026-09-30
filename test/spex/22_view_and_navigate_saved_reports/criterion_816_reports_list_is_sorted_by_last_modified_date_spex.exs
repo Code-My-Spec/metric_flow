@@ -45,7 +45,10 @@ defmodule MetricFlowSpex.Criterion816ReportsListSortedByLastModifiedSpex do
             {:ok, html}
           end).()
 
-        [_, first_id] = Regex.run(~r/data-report-id="(\d+)".*?First Saved/s, html)
+        pairs =
+          Regex.scan(~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s, html)
+
+        [first_id, _] = Enum.find(pairs, fn [_, _id, name] -> name == "First Saved" end) |> tl()
 
         {:ok, edit_view, _html} =
           live(context.owner_conn, "/app/visualizations/#{first_id}/edit")
