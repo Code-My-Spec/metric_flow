@@ -12,6 +12,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Dashboards
+  alias MetricFlow.Metrics.NormalizedMetric
 
   # Known raw/additive metrics that always appear on the dashboard
   @known_raw_metrics ["clicks", "total_cost", "impressions", "revenue", "conversions"]
@@ -45,13 +46,55 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               Your complete marketing and financial picture
             </p>
           </div>
-          <button
-            phx-click="open_ai_chat"
-            data-role="open-ai-chat"
-            class="btn btn-ghost btn-sm flex-shrink-0"
-          >
-            AI Chat
-          </button>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button
+              :if={@has_integrations}
+              phx-click="show_metric_mappings"
+              data-role="metric-mappings-link"
+              class="btn btn-ghost btn-sm"
+            >
+              Metric Mappings
+            </button>
+            <button
+              phx-click="open_ai_chat"
+              data-role="open-ai-chat"
+              class="btn btn-ghost btn-sm"
+            >
+              AI Chat
+            </button>
+          </div>
+        </div>
+
+        <%!-- Platform-to-canonical metric mappings panel --%>
+        <div
+          :if={@has_integrations and @mappings_panel_open}
+          data-role="metric-mappings-panel"
+          class="mf-card p-5 mb-6"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Metric Mappings</h3>
+            <button
+              phx-click="hide_metric_mappings"
+              data-role="close-metric-mappings"
+              aria-label="Close"
+              class="btn btn-ghost btn-xs"
+            >
+              ✕
+            </button>
+          </div>
+          <div :for={platform <- @dashboard_data.available_filters.platforms} class="mb-3 last:mb-0">
+            <p class="text-sm font-medium mb-1">{platform_display_name(platform)}</p>
+            <ul class="text-xs text-base-content/70 space-y-1">
+              <li
+                :for={{native_name, canonical_name} <- NormalizedMetric.mapping_for(platform)}
+                data-role="metric-mapping"
+                data-native-name={native_name}
+                data-canonical-name={canonical_name}
+              >
+                {native_name} → {canonical_name}
+              </li>
+            </ul>
+          </div>
         </div>
 
         <%!-- Inline AI chat panel --%>
@@ -257,6 +300,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
             <div
               :for={stat <- visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics)}
               data-role="stat-card"
+              data-metric-scope={metric_scope(stat.metric_name)}
               class="mf-card p-4"
             >
               <p class="text-sm text-base-content/60 font-medium">{stat.metric_name}</p>
@@ -377,6 +421,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:ai_panel_open, false)
           |> assign(:ai_panel_metric, nil)
           |> assign(:chat_panel_open, false)
+          |> assign(:mappings_panel_open, false)
           |> assign(:page_title, "All Metrics")
           |> rebuild_chart_and_table()
 
@@ -485,6 +530,14 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     {:noreply, assign(socket, :chat_panel_open, true)}
   end
 
+  def handle_event("show_metric_mappings", _params, socket) do
+    {:noreply, assign(socket, :mappings_panel_open, true)}
+  end
+
+  def handle_event("hide_metric_mappings", _params, socket) do
+    {:noreply, assign(socket, :mappings_panel_open, false)}
+  end
+
   def handle_event("close_ai_chat", _params, socket) do
     {:noreply, assign(socket, :chat_panel_open, false)}
   end
@@ -576,11 +629,12 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       |> Enum.map(& &1.metric_name)
       |> Enum.sort()
 
-    aggregated_ts = aggregate_time_series(visible_ts, granularity)
+    chart_ts = expand_with_platform_breakdown(visible_ts, dashboard_data)
+    aggregated_chart_ts = aggregate_time_series(chart_ts, granularity)
 
     chart_spec =
-      if aggregated_ts != [] do
-        Dashboards.build_multi_series_chart_spec("Metrics Over Time", aggregated_ts)
+      if aggregated_chart_ts != [] do
+        Dashboards.build_multi_series_chart_spec("Metrics Over Time", aggregated_chart_ts)
       else
         nil
       end
@@ -592,6 +646,25 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     |> assign(:table_rows, table_rows)
     |> assign(:visible_metric_names, visible_metric_names)
     |> push_chart_update(chart_spec)
+  end
+
+  # Splits a canonical metric's aggregate series into one series per platform
+  # for the chart, when dashboard_data.platform_breakdown found more than one
+  # provider contributing to it -- the table and stat cards stay aggregate.
+  defp expand_with_platform_breakdown(visible_ts, dashboard_data) do
+    breakdown = Map.get(dashboard_data, :platform_breakdown, %{})
+
+    Enum.flat_map(visible_ts, fn entry ->
+      case Map.get(breakdown, entry.metric_name) do
+        series when is_list(series) and length(series) > 1 ->
+          Enum.map(series, fn %{provider: provider, data: data} ->
+            %{metric_name: "#{entry.metric_name} (#{provider})", data: data}
+          end)
+
+        _ ->
+          [entry]
+      end
+    end)
   end
 
   defp aggregate_time_series(time_series, :day), do: time_series
@@ -704,6 +777,14 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp granularity_label(:day), do: "Daily"
   defp granularity_label(:week), do: "Weekly"
   defp granularity_label(:month), do: "Monthly"
+
+  defp metric_scope(metric_name) do
+    cond do
+      metric_name in Enum.map(@known_derived_metrics, & &1.name) -> "derived"
+      MapSet.member?(NormalizedMetric.known_canonical_names(), metric_name) -> "canonical"
+      true -> "platform-specific"
+    end
+  end
 
   defp format_number(value) when is_float(value) do
     :erlang.float_to_binary(value, decimals: 1)

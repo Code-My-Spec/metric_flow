@@ -305,6 +305,9 @@ defmodule MetricFlow.Dashboards do
     time_series = build_time_series(scope, metric_names, metric_query_opts)
     summary_stats = build_summary_stats(scope, metric_names, metric_query_opts)
 
+    platform_breakdown =
+      build_platform_breakdown(scope, metric_names, metric_query_opts, metric_provider)
+
     available_filters = %{
       platforms: connected_platforms,
       metric_types: [],
@@ -315,6 +318,7 @@ defmodule MetricFlow.Dashboards do
      %{
        time_series: time_series,
        summary_stats: summary_stats,
+       platform_breakdown: platform_breakdown,
        available_filters: available_filters,
        connected_platforms: connected_platforms,
        applied_filters: applied_filters
@@ -482,6 +486,35 @@ defmodule MetricFlow.Dashboards do
       stats = Metrics.aggregate_metrics(scope, name, opts)
       provider = Map.get(provider_map, name)
       %{metric_name: name, stats: stats, provider: provider}
+    end)
+  end
+
+  # Only meaningful when no platform filter narrowed the query already --
+  # a filtered view is single-platform by construction, so there is nothing
+  # to break down. Only metrics that genuinely span more than one provider
+  # get an entry; single-platform metrics are left for the aggregate series.
+  defp build_platform_breakdown(_scope, _metric_names, _opts, platform) when not is_nil(platform),
+    do: %{}
+
+  defp build_platform_breakdown(scope, metric_names, opts, nil) do
+    Enum.reduce(metric_names, %{}, fn name, acc ->
+      providers =
+        scope
+        |> Metrics.list_providers_for_metric(name, opts)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      if length(providers) > 1 do
+        series =
+          Enum.map(providers, fn provider ->
+            data = Metrics.query_time_series(scope, name, Keyword.put(opts, :provider, provider))
+            %{provider: provider, data: data}
+          end)
+
+        Map.put(acc, name, series)
+      else
+        acc
+      end
     end)
   end
 

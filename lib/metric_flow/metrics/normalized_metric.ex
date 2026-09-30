@@ -116,4 +116,18 @@ defmodule MetricFlow.Metrics.NormalizedMetric do
   """
   @spec mapping_for(atom()) :: map()
   def mapping_for(provider), do: Map.get(@provider_maps, provider, %{})
+
+  @doc """
+  Returns every canonical name any provider's mapping produces.
+
+  A normalized name outside this set did not come from a known mapping --
+  `normalize/2` fell back to downcasing an unrecognized raw metric name.
+  """
+  @spec known_canonical_names() :: MapSet.t(normalized_name())
+  def known_canonical_names do
+    @provider_maps
+    |> Map.values()
+    |> Enum.flat_map(&Map.values/1)
+    |> MapSet.new()
+  end
 end

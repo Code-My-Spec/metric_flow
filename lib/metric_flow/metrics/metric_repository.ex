@@ -157,6 +157,23 @@ defmodule MetricFlow.Metrics.MetricRepository do
     |> Repo.all()
   end
 
+  @doc """
+  Returns the distinct providers with data for a canonical metric name,
+  ignoring any `:provider` filter already in `opts` -- this is how callers
+  discover whether a metric spans more than one platform.
+  """
+  @spec list_providers_for_metric(Scope.t(), String.t(), keyword()) :: list(atom())
+  def list_providers_for_metric(%Scope{user: user}, metric_name, opts \\ []) do
+    date_range = resolve_time_series_date_range(opts)
+
+    from(m in Metric, where: m.user_id == ^user.id)
+    |> apply_metric_name_or_normalized(metric_name)
+    |> apply_date_range_filter_with_default(date_range)
+    |> distinct(true)
+    |> select([m], m.provider)
+    |> Repo.all()
+  end
+
   # ---------------------------------------------------------------------------
   # aggregate_metrics/3
   # ---------------------------------------------------------------------------
