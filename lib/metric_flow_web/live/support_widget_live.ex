@@ -15,7 +15,6 @@ defmodule MetricFlowWeb.SupportWidgetLive do
 
   use MetricFlowWeb, :live_view
 
-
   on_mount {MetricFlowWeb.UserAuth, :mount_current_scope}
 
   alias MetricFlow.CodeMySpec.Widget
@@ -114,7 +113,8 @@ defmodule MetricFlowWeb.SupportWidgetLive do
   def handle_event("request_chat_upload", %{"content_type" => ct, "filename" => filename}, socket) do
     Widget.request_chat_upload(socket.assigns.identity.id, ct, filename)
 
-    {:noreply, assign(socket, :chat_pending_meta, %{"filename" => filename, "content_type" => ct})}
+    {:noreply,
+     assign(socket, :chat_pending_meta, %{"filename" => filename, "content_type" => ct})}
   end
 
   # The browser finished uploading the file to S3 — stage it for the next send.
@@ -175,7 +175,10 @@ defmodule MetricFlowWeb.SupportWidgetLive do
     {:noreply,
      socket
      |> assign(:screenshot_key, key)
-     |> assign(:screenshot_content_type, params["content_type"] || socket.assigns.pending_content_type)
+     |> assign(
+       :screenshot_content_type,
+       params["content_type"] || socket.assigns.pending_content_type
+     )
      |> assign(:capturing, false)}
   end
 
@@ -192,28 +195,26 @@ defmodule MetricFlowWeb.SupportWidgetLive do
     description = String.trim(params["description"] || socket.assigns.fb_description)
     severity = params["severity"] || socket.assigns.fb_severity
 
-    cond do
-      title == "" ->
-        {:noreply, assign(socket, :fb_error, "Please add a short summary.")}
+    if title == "" do
+      {:noreply, assign(socket, :fb_error, "Please add a short summary.")}
+    else
+      Widget.submit_feedback(socket.assigns.identity.id, %{
+        "title" => title,
+        "description" => description,
+        "severity" => severity,
+        "screenshot_key" => socket.assigns.screenshot_key,
+        "screenshot_content_type" => socket.assigns.screenshot_content_type
+      })
 
-      true ->
-        Widget.submit_feedback(socket.assigns.identity.id, %{
-          "title" => title,
-          "description" => description,
-          "severity" => severity,
-          "screenshot_key" => socket.assigns.screenshot_key,
-          "screenshot_content_type" => socket.assigns.screenshot_content_type
-        })
-
-        {:noreply,
-         socket
-         |> assign(:fb_submitted, true)
-         |> assign(:fb_error, nil)
-         |> assign(:fb_title, "")
-         |> assign(:fb_description, "")
-         |> assign(:fb_severity, "medium")
-         |> assign(:screenshot_key, nil)
-         |> assign(:screenshot_content_type, nil)}
+      {:noreply,
+       socket
+       |> assign(:fb_submitted, true)
+       |> assign(:fb_error, nil)
+       |> assign(:fb_title, "")
+       |> assign(:fb_description, "")
+       |> assign(:fb_severity, "medium")
+       |> assign(:screenshot_key, nil)
+       |> assign(:screenshot_content_type, nil)}
     end
   end
 
@@ -276,7 +277,6 @@ defmodule MetricFlowWeb.SupportWidgetLive do
   @impl true
   def render(assigns) do
     ~H"""
-    
     <div
       id="codemyspec-support-widget"
       data-cms-widget
@@ -410,7 +410,6 @@ defmodule MetricFlowWeb.SupportWidgetLive do
           </button>
         </div>
 
-        
         <div :if={@tab == :chat} data-test="chat-pane" class="flex min-h-0 flex-1 flex-col">
           <script :type={Phoenix.LiveView.ColocatedHook} name=".ChatScroll">
             export default {
@@ -423,7 +422,12 @@ defmodule MetricFlowWeb.SupportWidgetLive do
               scroll() { this.el.scrollTop = this.el.scrollHeight },
             }
           </script>
-          <div id="cms-chat-scroll" phx-hook=".ChatScroll" data-test="chat-messages" class="flex-1 space-y-2 overflow-y-auto p-3">
+          <div
+            id="cms-chat-scroll"
+            phx-hook=".ChatScroll"
+            data-test="chat-messages"
+            class="flex-1 space-y-2 overflow-y-auto p-3"
+          >
             <button
               :if={@messages != []}
               type="button"
@@ -445,7 +449,9 @@ defmodule MetricFlowWeb.SupportWidgetLive do
               class={["chat", if(message["role"] == "user", do: "chat-end", else: "chat-start")]}
             >
               <div class="chat-bubble max-w-[15rem] break-words">
-                <p :if={message["body"] not in [nil, ""]} class="whitespace-pre-wrap">{message["body"]}</p>
+                <p :if={message["body"] not in [nil, ""]} class="whitespace-pre-wrap">
+                  {message["body"]}
+                </p>
                 <div :for={att <- message_attachments(message)} class="mt-1">
                   <a :if={image_attachment?(att)} href={att["url"]} target="_blank" rel="noopener">
                     <img src={att["url"]} alt={att["filename"]} class="max-h-40 rounded" />
@@ -465,7 +471,11 @@ defmodule MetricFlowWeb.SupportWidgetLive do
           </div>
 
           <div class="border-t border-base-300 p-3">
-            <div :if={@pending_attachments != []} data-test="pending-attachments" class="mb-2 flex flex-wrap gap-1.5">
+            <div
+              :if={@pending_attachments != []}
+              data-test="pending-attachments"
+              class="mb-2 flex flex-wrap gap-1.5"
+            >
               <span
                 :for={att <- @pending_attachments}
                 class="badge badge-ghost gap-1 max-w-[10rem]"
@@ -514,8 +524,11 @@ defmodule MetricFlowWeb.SupportWidgetLive do
           </div>
         </div>
 
-        
-        <div :if={@tab == :feedback} data-test="feedback-pane" class="min-h-0 flex-1 overflow-y-auto p-4">
+        <div
+          :if={@tab == :feedback}
+          data-test="feedback-pane"
+          class="min-h-0 flex-1 overflow-y-auto p-4"
+        >
           <div :if={@fb_submitted} class="py-6 text-center" data-test="feedback-thanks">
             <.icon name="hero-check-circle" class="mx-auto size-10 text-success" />
             <p class="mt-2 text-sm font-medium">Thanks — we've logged it.</p>
@@ -568,9 +581,13 @@ defmodule MetricFlowWeb.SupportWidgetLive do
               <span class="mb-1 block text-xs font-medium">Severity</span>
               <select name="severity" class="select select-bordered select-sm w-full">
                 <option value="low" selected={@fb_severity == "low"}>Low — minor annoyance</option>
-                <option value="medium" selected={@fb_severity == "medium"}>Medium — something's off</option>
+                <option value="medium" selected={@fb_severity == "medium"}>
+                  Medium — something's off
+                </option>
                 <option value="high" selected={@fb_severity == "high"}>High — blocks my work</option>
-                <option value="critical" selected={@fb_severity == "critical"}>Critical — nothing works</option>
+                <option value="critical" selected={@fb_severity == "critical"}>
+                  Critical — nothing works
+                </option>
               </select>
             </label>
 
