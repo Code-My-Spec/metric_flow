@@ -199,7 +199,17 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
       {:ok, integration} ->
         sync_type = determine_sync_type(integration_id)
-        sync_with_fresh_tokens(scope, integration, sync_job_id, sync_type, http_plug, started_at)
+        date_range = determine_date_range(scope, integration, sync_type)
+
+        sync_with_fresh_tokens(
+          scope,
+          integration,
+          sync_job_id,
+          sync_type,
+          date_range,
+          http_plug,
+          started_at
+        )
     end
   end
 
@@ -211,10 +221,40 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp sync_with_fresh_tokens(scope, integration, sync_job_id, sync_type, http_plug, started_at) do
+  # First syncs use each provider's own default backfill window. For
+  # incremental syncs, anchor to the day after the provider's own last
+  # stored metric rather than the wall-clock date, so a sync that has never
+  # actually persisted data (e.g. every prior run failed) still falls back
+  # to a full backfill instead of narrowing to a window with nothing in it.
+  defp determine_date_range(_scope, _integration, :initial), do: nil
+
+  defp determine_date_range(scope, integration, :incremental) do
+    case Metrics.get_latest_metric_date(scope, integration.provider) do
+      nil -> nil
+      last_date -> {Date.add(last_date, 1), Date.utc_today()}
+    end
+  end
+
+  defp sync_with_fresh_tokens(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         date_range,
+         http_plug,
+         started_at
+       ) do
     case ensure_fresh_tokens(scope, integration) do
       {:ok, fresh_integration} ->
-        run_provider_sync(scope, fresh_integration, sync_job_id, sync_type, http_plug, started_at)
+        run_provider_sync(
+          scope,
+          fresh_integration,
+          sync_job_id,
+          sync_type,
+          date_range,
+          http_plug,
+          started_at
+        )
 
       {:error, :token_expired} ->
         error_message = "Token expired and could not be refreshed"
@@ -240,13 +280,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp run_provider_sync(scope, integration, sync_job_id, sync_type, http_plug, started_at) do
+  defp run_provider_sync(scope, integration, sync_job_id, sync_type, date_range, http_plug, started_at) do
     case providers_for(integration.provider) do
       {:error, :unsupported_provider} ->
         {:error, :unsupported_provider}
 
       {:ok, provider_mods} ->
-        opts = build_fetch_opts(http_plug)
+        opts = build_fetch_opts(http_plug, date_range)
 
         run_all_providers(
           scope,
@@ -349,8 +389,14 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp build_fetch_opts(nil), do: []
-  defp build_fetch_opts(plug), do: [http_plug: plug]
+  defp build_fetch_opts(http_plug, date_range) do
+    []
+    |> maybe_put(:http_plug, http_plug)
+    |> maybe_put(:date_range, date_range)
+  end
+
+  defp maybe_put(opts, _key, nil), do: opts
+  defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)
 
   # Resolves the http_plug from job args. In production, there is no http_plug
   # and this returns nil. In tests, the value may be:

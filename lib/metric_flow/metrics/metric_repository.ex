@@ -173,6 +173,21 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   @doc """
+  Returns the most recent date any metric was recorded for the scoped user
+  from the given provider, or nil if that provider has no metric data yet.
+
+  Used to anchor a sync's date_range to the provider's own last-synced date
+  instead of always re-fetching each provider's full default backfill window
+  on every run.
+  """
+  @spec get_latest_metric_date(Scope.t(), atom()) :: Date.t() | nil
+  def get_latest_metric_date(%Scope{user: user}, provider) do
+    from(m in Metric, where: m.user_id == ^user.id and m.provider == ^provider)
+    |> select([m], max(fragment("?::date", m.recorded_at)))
+    |> Repo.one()
+  end
+
+  @doc """
   Returns the distinct providers with data for a canonical metric name,
   ignoring any `:provider` filter already in `opts` -- this is how callers
   discover whether a metric spans more than one platform.

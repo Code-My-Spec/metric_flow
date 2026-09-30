@@ -31,6 +31,7 @@ defmodule MetricFlow.Metrics do
   defdelegate query_time_series(scope, metric_name, opts), to: MetricRepository
   defdelegate list_providers_for_metric(scope, metric_name, opts \\ []), to: MetricRepository
   defdelegate get_latest_metric_date(scope), to: MetricRepository
+  defdelegate get_latest_metric_date(scope, provider), to: MetricRepository
   defdelegate aggregate_metrics(scope, metric_name, opts), to: MetricRepository
   defdelegate list_metric_names(scope), to: MetricRepository
   defdelegate list_metric_names(scope, opts), to: MetricRepository
