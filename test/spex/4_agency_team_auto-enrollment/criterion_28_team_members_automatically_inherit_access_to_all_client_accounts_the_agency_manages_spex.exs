@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
 
   spex "Team members automatically inherit access to all client accounts the agency manages", criterion: 28 do
     scenario "auto-enrolled team member can see all client accounts the agency manages on the accounts page" do
-      given_(:user_logged_in_as_owner)
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has configured auto-enrollment and added client accounts", context do
         # Configure auto-enrollment via the UI
@@ -24,8 +24,8 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         |> render_submit()
 
         # Set up client accounts via domain layer (client account management UI is a separate story)
-        client1 = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Client Alpha"})
-        client2 = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Client Beta"})
+        client1 = MetricFlowSpex.Fixtures.client_account_fixture("Client Alpha")
+        client2 = MetricFlowSpex.Fixtures.client_account_fixture("Client Beta")
 
         MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client1.id, :admin, true)
         MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client2.id, :admin, true)
@@ -93,7 +93,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
     end
 
     scenario "auto-enrolled team member's access to client accounts reflects their assigned role" do
-      given_(:user_logged_in_as_owner)
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has configured auto-enrollment and added a client account", context do
         # Configure auto-enrollment via the UI
@@ -110,7 +110,7 @@ defmodule MetricFlowSpex.TeamMembersAutomaticallyInheritAccessToAllClientAccount
         |> render_submit()
 
         # Set up client account via domain layer (client account management UI is a separate story)
-        client = MetricFlowTest.AgenciesFixtures.account_fixture(%{name: "Managed Client Corp"})
+        client = MetricFlowSpex.Fixtures.client_account_fixture("Managed Client Corp")
 
         MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
 

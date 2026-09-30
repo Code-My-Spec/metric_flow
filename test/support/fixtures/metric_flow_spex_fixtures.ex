@@ -75,6 +75,10 @@ defmodule MetricFlowSpex.Fixtures do
   accounts before exercising the surface under test.
   """
   @spec grant_client_account_access(String.t(), integer(), atom(), boolean()) :: :ok
+  def client_account_fixture(name) do
+    MetricFlowTest.AgenciesFixtures.account_fixture(%{name: name, type: "client"})
+  end
+
   def grant_client_account_access(email, client_account_id, access_level, is_originator) do
     scope = scope_for(email)
     agency_account_id = Accounts.get_personal_account_id(scope)

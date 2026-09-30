@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
 
   spex "Users who register with matching email domain are automatically added to agency account", criterion: 24 do
     scenario "new user with matching email domain is auto-enrolled in the agency account after registration" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -44,7 +44,7 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
     end
 
     scenario "new user with non-matching email domain is NOT auto-enrolled" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

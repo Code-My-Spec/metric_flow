@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
 
   spex "Agency admin can view and manage all auto-enrolled team members", criterion: 26 do
     scenario "auto-enrolled team members appear in the members list on the account members page" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner configures auto-enrollment for domain agencyco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -69,7 +69,7 @@ defmodule MetricFlowSpex.AgencyAdminCanViewAndManageAllAutoEnrolledTeamMembersSp
     end
 
     scenario "agency admin can change the role of an auto-enrolled team member" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner configures auto-enrollment for domain staffco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

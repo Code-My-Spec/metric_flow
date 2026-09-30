@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
 
   spex "Auto-enrolled users get default access level set by agency admin", criterion: 25 do
     scenario "agency admin can configure a default access level for auto-enrolled users on the settings page" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -43,7 +43,7 @@ defmodule MetricFlowSpex.AutoEnrolledUsersGetDefaultAccessLevelSetByAgencyAdminS
     end
 
     scenario "auto-enrolled user receives the configured default role visible on the members page" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner has configured auto-enrollment for a unique domain with default role read_only", context do
         domain = "autoenroll-#{System.unique_integer([:positive])}.com"

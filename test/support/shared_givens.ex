@@ -123,6 +123,59 @@ defmodule MetricFlowSpex.SharedGivens do
      })}
   end
 
+  register_given :agency_owner_logged_in, context do
+    email = "agencyowner#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form",
+      user: %{
+        email: email,
+        password: password,
+        account_name: "Agency Owner Account",
+        account_type: "agency"
+      }
+    )
+    |> render_submit()
+
+    Process.sleep(50)
+
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+
+    drain.(drain)
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password",
+        user: %{
+          email: email,
+          password: password,
+          remember_me: true
+        }
+      )
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok,
+     Map.merge(context, %{
+       owner_conn: authed_conn,
+       owner_email: email,
+       owner_password: password
+     })}
+  end
+
   register_given :owner_with_integrations, context do
     email = "owner#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"

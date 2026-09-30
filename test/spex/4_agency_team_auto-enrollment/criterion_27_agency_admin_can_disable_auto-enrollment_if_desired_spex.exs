@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
   spex "Agency admin can disable auto-enrollment if desired", criterion: 27 do
     scenario "agency admin sees a disable button or toggle when auto-enrollment is active" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario1-#{System.unique_integer([:positive])}.com"
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
     end
 
     scenario "agency admin can disable auto-enrollment from the settings page" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario2-#{System.unique_integer([:positive])}.com"
@@ -62,7 +62,7 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
     end
 
     scenario "after disabling auto-enrollment, a new user with matching domain is not auto-added" do
-      given_ :user_logged_in_as_owner
+      given_ :agency_owner_logged_in
 
       given_ "the owner has configured and then disabled auto-enrollment for a unique domain", context do
         domain = "scenario3-#{System.unique_integer([:positive])}.com"
