@@ -206,6 +206,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                       Sync Now
                     </button>
                     <.link
+                      :if={@can_modify}
                       data-role="edit-integration-accounts"
                       navigate={
                         ~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"

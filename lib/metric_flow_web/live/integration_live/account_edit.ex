@@ -11,6 +11,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Accounts
   alias MetricFlow.Integrations
 
   @platform_metadata %{
@@ -36,46 +37,46 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto max-w-lg">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
-        <p class="mt-1 text-base-content/60">
-          Choose which accounts or properties to sync.
-        </p>
-      </div>
+      <div class="mx-auto max-w-lg">
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
+          <p class="mt-1 text-base-content/60">
+            Choose which accounts or properties to sync.
+          </p>
+        </div>
 
-      <div data-role="account-selection" class="mf-card p-6">
-        <div class="space-y-3">
-          <div
-            :for={{account, idx} <- Enum.with_index(@display_accounts)}
-            class="flex items-center gap-3 p-3 bg-base-200 rounded"
-          >
-            <input
-              type="checkbox"
-              data-role="account-checkbox"
-              name={"accounts[#{idx}]"}
-              value={account.id}
-              checked={account.selected}
-              class="checkbox checkbox-sm"
-            />
-            <span class="text-sm">{account.label}</span>
+        <div data-role="account-selection" class="mf-card p-6">
+          <div class="space-y-3">
+            <div
+              :for={{account, idx} <- Enum.with_index(@display_accounts)}
+              class="flex items-center gap-3 p-3 bg-base-200 rounded"
+            >
+              <input
+                type="checkbox"
+                data-role="account-checkbox"
+                name={"accounts[#{idx}]"}
+                value={account.id}
+                checked={account.selected}
+                class="checkbox checkbox-sm"
+              />
+              <span class="text-sm">{account.label}</span>
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-col gap-2">
+            <button
+              phx-click="save_account_selection"
+              data-role="save-account-selection"
+              class="btn btn-primary w-full"
+            >
+              Save Selection
+            </button>
+            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
+              Back to integrations
+            </.link>
           </div>
         </div>
-
-        <div class="mt-6 flex flex-col gap-2">
-          <button
-            phx-click="save_account_selection"
-            data-role="save-account-selection"
-            class="btn btn-primary w-full"
-          >
-            Save Selection
-          </button>
-          <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
-            Back to integrations
-          </.link>
-        </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -86,6 +87,15 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
 
   @impl true
   def mount(_params, _session, socket) do
+    scope = socket.assigns.current_scope
+
+    current_user_role =
+      if socket.assigns.active_account_id do
+        Accounts.get_user_role(scope, scope.user.id, socket.assigns.active_account_id)
+      end
+
+    socket = assign(socket, :can_modify, current_user_role in [:owner, :admin, :account_manager])
+
     {:ok, socket}
   end
 
@@ -110,11 +120,18 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
         ArgumentError -> :unknown_provider
       end
 
-    case result do
-      :unknown_provider ->
+    cond do
+      not socket.assigns.can_modify ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "You are not authorized to edit integration accounts.")
+         |> push_navigate(to: ~p"/app/integrations")}
+
+      match?(:unknown_provider, result) ->
         {:noreply, push_navigate(socket, to: ~p"/app/integrations")}
 
-      {:ok, _provider, _integration, accounts, platform_name} ->
+      true ->
+        {:ok, _provider, _integration, accounts, platform_name} = result
         display_accounts = build_display_accounts(accounts)
 
         socket =
@@ -146,7 +163,13 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
   defp build_display_accounts([]) do
     # Show a placeholder unchecked checkbox when no accounts are configured,
     # allowing the user to see the selection interface and confirm the empty state.
-    [%{id: "placeholder", label: "No accounts configured — connect and sync to populate", selected: false}]
+    [
+      %{
+        id: "placeholder",
+        label: "No accounts configured — connect and sync to populate",
+        selected: false
+      }
+    ]
   end
 
   defp build_display_accounts(accounts) do

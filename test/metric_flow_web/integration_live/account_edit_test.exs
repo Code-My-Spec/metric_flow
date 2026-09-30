@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
   describe "mount/3" do
     test "mounts successfully for authenticated user", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
@@ -32,6 +33,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
   describe "handle_params/3" do
     test "renders edit page with platform name heading for valid provider", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
@@ -48,6 +50,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
 
     test "displays checkboxes for each selected account", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
 
       integration_fixture(user, %{
         provider: :google_analytics,
@@ -75,6 +78,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
 
     test "shows placeholder when no accounts are configured", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
 
       integration_fixture(user, %{
         provider: :google_analytics,
@@ -93,8 +97,27 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       assert_receive :done
     end
 
+    test "redirects read_only members away with an authorization error", %{conn: conn} do
+      user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :read_only)
+      integration_fixture(user, %{provider: :google_analytics})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        assert {:error, {:live_redirect, %{to: to, flash: flash}}} =
+                 live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
+
+        assert to == ~p"/app/integrations"
+        assert flash["error"] =~ "not authorized"
+        send(self(), :done)
+      end)
+
+      assert_receive :done
+    end
+
     test "redirects to integrations for unknown provider", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -121,6 +144,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
   describe ~s|handle_event/3 ("save_account_selection")| do
     test "flashes success message and redirects to integrations", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
@@ -144,6 +168,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
   describe "render/1" do
     test "renders account checkboxes with data-role attribute", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
@@ -159,6 +184,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
 
     test "renders save button", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
@@ -174,6 +200,7 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
 
     test "renders back link to integrations", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       integration_fixture(user, %{provider: :google_analytics})
       conn = log_in_user(conn, user)
 
