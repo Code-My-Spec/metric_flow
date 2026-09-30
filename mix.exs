@@ -67,7 +67,7 @@ defmodule MetricFlow.MixProject do
        compile: false,
        depth: 1},
       {:swoosh, "~> 1.16"},
-      {:req, "~> 0.5"},
+      {:req, "~> 0.6"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},
@@ -94,6 +94,7 @@ defmodule MetricFlow.MixProject do
       {:sweet_xml, "~> 0.7"},
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
+      {:alloy, git: "https://github.com/Code-My-Spec/alloy.git", branch: "main"},
       # MCP server (tool definitions for LLM agent)
       {:anubis_mcp, "~> 1.1.0"},
       # Data providers (ADR: data_provider_apis)
@@ -105,7 +106,7 @@ defmodule MetricFlow.MixProject do
       # HTML parsing
       {:floki, "~> 0.38.0"},
       # Testing (ADR: e2e_testing)
-      {:req_cassette, "~> 0.5", only: :test},
+      {:req_cassette, "~> 0.6", only: :test},
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
