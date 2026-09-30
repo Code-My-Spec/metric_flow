@@ -53,3 +53,15 @@ This story's implementation and story 18/33 (already QA'd and passed this sessio
   Note for future testers: `qa-member@example.com` is NOT a zero-integration user despite the name -- it has its own real integration rows (`integrations.user_id` is per-user, not per-account, despite users sharing an `account_members` business account). Use `qa-empty@example.com` or `qa-noint@example.com` instead. Also: a GET navigation to `/users/log-out` does not actually end the session (Phoenix's logout route requires POST/DELETE) -- use `browser_delete_cookies({})` to force a clean session before switching test users, or the browser will silently keep testing as the previously logged-in user while appearing to have logged in as someone else.
 
 **Overall: partial.** One high-severity issue filed (`0e10ecbc-89a9-4693-a7ea-5b86eefb8cab`) covering criteria 162's template-differentiation intent and 163/775's per-template "auto-populates it" claim.
+
+## Retest (issue 0e10ecbc, commit 2f4d80c)
+
+`DashboardLive.Show.mount/3` now resolves the requested dashboard by id (canned dashboards looked up unscoped, matching the listing page; other ids fall back to ownership-scoped lookup) and, for a recognized canned template, filters `dashboard_data` down to a per-template metric set.
+
+Confirmed live as qa@example.com: `/app/dashboards/1`, `/2`, `/3` now render genuinely different `<main>` content -- body lengths 20057 / 7065 / 10681 chars respectively (previously byte-identical at 29566 each). Browser tab `<title>` correctly reads "Marketing Overview" / "Revenue Analysis" / "Platform Comparison" per dashboard (`@page_title` assign, lib/metric_flow_web/live/dashboard_live/show.ex:503). Criteria 162/163/775 (and by extension 166/167/781/782/780/164, which apply to whichever content is now correctly rendered) pass.
+
+One new, much smaller finding: the on-page visible `<h1>` (show.ex:60) is still a hardcoded literal `"All Metrics"` string, never interpolated from `@page_title` -- so the browser tab says "Marketing Overview" but the heading on the page itself still says "All Metrics" for all three dashboards. Filed as issue `f62d6934-b019-4ced-9ced-2a90257effa8` (low) -- not blocking, since no acceptance criterion specifically requires the in-page heading to name the template, and the browser tab title + underlying data are both correct.
+
+Re-verified criterion 776 (empty state) after the mount/3 rewrite: qa-empty@example.com still sees `data-role="onboarding-prompt"` on `/app/dashboards/1` -- the has_integrations? check still runs correctly ahead of the new per-dashboard resolution logic.
+
+**Overall: pass.** One new low-severity cosmetic issue filed (`f62d6934-b019-4ced-9ced-2a90257effa8`), not blocking.
