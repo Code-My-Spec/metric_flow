@@ -747,6 +747,15 @@ defmodule MetricFlowSpex.SharedGivens do
     {:ok, context}
   end
 
+  register_given :with_google_ads_sync_stub, context do
+    MetricFlowTest.SyncStub.stub_success(
+      :google_ads,
+      MetricFlowTest.SyncStub.google_ads_success_body()
+    )
+
+    {:ok, context}
+  end
+
   register_given :with_facebook_ads_sync_stub, context do
     MetricFlowTest.SyncStub.stub_success(
       :facebook_ads,

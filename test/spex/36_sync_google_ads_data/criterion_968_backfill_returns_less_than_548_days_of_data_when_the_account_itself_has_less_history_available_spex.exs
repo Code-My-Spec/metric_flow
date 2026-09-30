@@ -17,6 +17,8 @@ defmodule MetricFlowSpex.Criterion968BackfillReturnsLessThan548DaysWhenAccountHa
         {:ok, context}
       end
 
+      given_ :with_google_ads_sync_stub
+
       when_ "the first sync backfills it", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()

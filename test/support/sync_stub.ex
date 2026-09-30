@@ -167,6 +167,33 @@ defmodule MetricFlowTest.SyncStub do
   end
 
   @doc """
+  A minimal valid Google Ads `searchStream` response body: one page, one
+  row, all core metrics.
+  """
+  @spec google_ads_success_body() :: String.t()
+  def google_ads_success_body do
+    Jason.encode!([
+      %{
+        "results" => [
+          %{
+            "campaign" => %{"name" => "Search Campaign"},
+            "segments" => %{"date" => Date.to_iso8601(Date.utc_today())},
+            "metrics" => %{
+              "impressions" => "1000",
+              "clicks" => "50",
+              "costMicros" => "25000000",
+              "conversions" => "3.0",
+              "ctr" => 0.05,
+              "averageCpc" => "500000",
+              "conversionsValue" => "150.0"
+            }
+          }
+        ]
+      }
+    ])
+  end
+
+  @doc """
   A minimal valid GA4 `runReport` response body: one day, all core metrics.
   """
   @spec google_analytics_success_body() :: String.t()

@@ -18,6 +18,8 @@ defmodule MetricFlowSpex.Criterion965DataQueriedPerCampaignByDefaultAdGroupBreak
         {:ok, Map.put(context, :view, view)}
       end
 
+      given_ :with_google_ads_sync_stub
+
       when_ "they choose to sync with an ad-group-level breakdown instead of the campaign-level default", context do
         assert has_element?(context.view, "[data-role='google-ads-adgroup-breakdown-toggle']"),
                "Expected a control to opt into ad-group-level breakdown for Google Ads syncs"

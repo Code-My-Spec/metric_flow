@@ -435,6 +435,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)
 
   defp resolve_breakdown("adset"), do: :adset
+  defp resolve_breakdown("ad_group"), do: :ad_group
   defp resolve_breakdown(_), do: nil
 
   # Resolves the http_plug from job args. In production, there is no http_plug
