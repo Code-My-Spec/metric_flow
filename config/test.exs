@@ -36,9 +36,6 @@ config :metric_flow, Oban,
   repo: MetricFlow.Repo,
   testing: :manual
 
-# Disable AppSignal agent in test — no push to the platform from CI.
-config :appsignal, :config, active: false
-
 # Default to :warning to reduce noise in test output.
 # Tests that need capture_log at :info can use @tag capture_log: true
 # with Logger.configure(level: :info) in their setup block.

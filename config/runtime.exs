@@ -188,11 +188,6 @@ if config_env() == :prod do
       ]
   end
 
-  # AppSignal: configuration is env-var-driven and read by the :appsignal
-  # OTP app at start. APPSIGNAL_PUSH_API_KEY / APPSIGNAL_APP_NAME /
-  # APPSIGNAL_APP_ENV come from envs/<env>.enc.env via rel/overlays/bin/boot.
-  # No runtime block needed.
-
   # Tigris file storage (ADR: file_storage)
   config :ex_aws,
     access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),

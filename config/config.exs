@@ -93,12 +93,6 @@ config :metric_flow, Oban,
     {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
   ]
 
-# AppSignal error tracking + APM (ADR: appsignal_observability_hetzner).
-# All runtime values (push_api_key, name, env, active) come from env vars
-# decrypted from envs/<env>.enc.env at boot — see APPSIGNAL_*.
-# This block exists so the :appsignal app starts; values are env-driven.
-config :appsignal, :config, otp_app: :metric_flow
-
 # ExAws for Tigris file storage (ADR: file_storage)
 # Use Req as the HTTP adapter to avoid adding Hackney as a dependency
 config :ex_aws,

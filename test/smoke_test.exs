@@ -34,17 +34,6 @@ defmodule MetricFlow.SmokeTest do
       assert spec["mark"] == "point"
     end
 
-    # Was Sentry and `MetricFlowWeb.PromEx`. The appsignal_observability_hetzner
-    # ADR supersedes the 2026-02-21 Sentry+PromEx ADR after the move off Fly.io
-    # — neither is a dependency any more and `prom_ex.ex` does not exist, so
-    # both assertions were pinning a decision that had been reversed.
-    test "AppSignal is configured" do
-      assert Code.ensure_loaded?(Appsignal)
-      assert Code.ensure_loaded?(Appsignal.Phoenix)
-      # Off in test so a suite run reports nothing; the point is that it loads.
-      assert Application.fetch_env!(:appsignal, :config)[:active] == false
-    end
-
     test "ExAws is configured" do
       assert Code.ensure_loaded?(ExAws)
       assert Code.ensure_loaded?(ExAws.S3)
