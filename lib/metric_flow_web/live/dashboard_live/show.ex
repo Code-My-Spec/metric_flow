@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   alias MetricFlow.Ai
   alias MetricFlow.Dashboards
+  alias MetricFlow.Metrics
   alias MetricFlow.Metrics.NormalizedMetric
 
   # Known raw/additive metrics that always appear on the dashboard
@@ -57,6 +58,14 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               Metric Mappings
             </button>
             <button
+              :if={@has_integrations}
+              phx-click="show_define_derived_metric"
+              data-role="define-derived-metric"
+              class="btn btn-ghost btn-sm"
+            >
+              Define Derived Metric
+            </button>
+            <button
               phx-click="open_ai_chat"
               data-role="open-ai-chat"
               class="btn btn-ghost btn-sm"
@@ -96,6 +105,72 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               </li>
             </ul>
           </div>
+        </div>
+
+        <%!-- Define a new derived metric type panel --%>
+        <div
+          :if={@has_integrations and @define_derived_metric_panel_open}
+          data-role="define-derived-metric-panel"
+          class="mf-card p-5 mb-6"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Define a New Derived Metric</h3>
+            <button
+              phx-click="hide_define_derived_metric"
+              data-role="close-define-derived-metric"
+              aria-label="Close"
+              class="btn btn-ghost btn-xs"
+            >
+              &times;
+            </button>
+          </div>
+          <p class="text-xs text-base-content/60 mb-3">
+            A derived metric is computed as one raw metric divided by another, e.g. CPA = total_cost / conversions.
+            Adding one here makes it available on this dashboard without any code changes.
+          </p>
+          <form
+            id="define-derived-metric-form"
+            phx-submit="create_derived_metric"
+            class="flex items-end gap-3 flex-wrap"
+          >
+            <div>
+              <label class="label text-xs" for="derived-metric-name">Name</label>
+              <input
+                type="text"
+                id="derived-metric-name"
+                name="name"
+                data-role="derived-metric-name-input"
+                class="input input-bordered input-sm"
+                placeholder="cpa"
+                required
+              />
+            </div>
+            <div>
+              <label class="label text-xs" for="derived-metric-numerator">Numerator</label>
+              <select
+                id="derived-metric-numerator"
+                name="numerator"
+                data-role="derived-metric-numerator-input"
+                class="select select-bordered select-sm"
+              >
+                <option :for={name <- @known_raw_metrics_list} value={name}>{name}</option>
+              </select>
+            </div>
+            <div>
+              <label class="label text-xs" for="derived-metric-denominator">Denominator</label>
+              <select
+                id="derived-metric-denominator"
+                name="denominator"
+                data-role="derived-metric-denominator-input"
+                class="select select-bordered select-sm"
+              >
+                <option :for={name <- @known_raw_metrics_list} value={name}>{name}</option>
+              </select>
+            </div>
+            <button type="submit" data-role="submit-derived-metric" class="btn btn-primary btn-sm">
+              Add Derived Metric
+            </button>
+          </form>
         </div>
 
         <%!-- Inline AI chat panel --%>
@@ -301,7 +376,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
             <div
               :for={stat <- visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics)}
               data-role="stat-card"
-              data-metric-scope={metric_scope(stat.metric_name)}
+              data-metric-scope={metric_scope(stat.metric_name, @derived_metrics)}
               class="mf-card p-4"
             >
               <p class="text-sm text-base-content/60 font-medium">{stat.metric_name}</p>
@@ -431,9 +506,10 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
         available_date_ranges = Dashboards.available_date_ranges()
         default_range = Dashboards.default_date_range()
+        derived_metrics = derived_metrics_for(scope)
 
         {:ok, dashboard_data} = Dashboards.get_dashboard_data(scope, date_range: default_range)
-        dashboard_data = enrich_with_known_metrics(dashboard_data)
+        dashboard_data = enrich_with_known_metrics(dashboard_data, derived_metrics)
 
         all_metric_names = Enum.map(dashboard_data.time_series, & &1.metric_name) |> Enum.sort()
         visible_metrics = MapSet.new(all_metric_names)
@@ -457,6 +533,9 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:ai_panel_insights, [])
           |> assign(:chat_panel_open, false)
           |> assign(:mappings_panel_open, false)
+          |> assign(:derived_metrics, derived_metrics)
+          |> assign(:known_raw_metrics_list, @known_raw_metrics)
+          |> assign(:define_derived_metric_panel_open, false)
           |> assign(:page_title, "All Metrics")
           |> rebuild_chart_and_table()
 
@@ -582,6 +661,40 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     {:noreply, assign(socket, :mappings_panel_open, false)}
   end
 
+  def handle_event("show_define_derived_metric", _params, socket) do
+    {:noreply, assign(socket, :define_derived_metric_panel_open, true)}
+  end
+
+  def handle_event("hide_define_derived_metric", _params, socket) do
+    {:noreply, assign(socket, :define_derived_metric_panel_open, false)}
+  end
+
+  def handle_event("create_derived_metric", %{"name" => name} = params, socket) do
+    scope = socket.assigns.current_scope
+
+    attrs = %{
+      "name" => name,
+      "numerator" => params["numerator"],
+      "denominator" => params["denominator"]
+    }
+
+    case Metrics.create_derived_metric_definition(scope, attrs) do
+      {:ok, _definition} ->
+        socket =
+          socket
+          |> assign(:derived_metrics, derived_metrics_for(scope))
+          |> assign(:define_derived_metric_panel_open, false)
+          |> put_flash(:info, "Derived metric \"#{name}\" added.")
+          |> reload_dashboard_data([])
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        message = changeset |> changeset_error_summary()
+        {:noreply, put_flash(socket, :error, "Could not add derived metric: #{message}")}
+    end
+  end
+
   def handle_event("close_ai_chat", _params, socket) do
     {:noreply, assign(socket, :chat_panel_open, false)}
   end
@@ -650,7 +763,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     # viewing google_ads) misrepresents that platform as having the metric.
     dashboard_data =
       if is_nil(selected_platform) do
-        enrich_with_known_metrics(dashboard_data)
+        enrich_with_known_metrics(dashboard_data, socket.assigns.derived_metrics)
       else
         dashboard_data
       end
@@ -853,9 +966,9 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp granularity_label(:week), do: "Weekly"
   defp granularity_label(:month), do: "Monthly"
 
-  defp metric_scope(metric_name) do
+  defp metric_scope(metric_name, derived_metrics) do
     cond do
-      metric_name in Enum.map(@known_derived_metrics, & &1.name) -> "derived"
+      metric_name in Enum.map(derived_metrics, & &1.name) -> "derived"
       MapSet.member?(NormalizedMetric.known_canonical_names(), metric_name) -> "canonical"
       true -> "platform-specific"
     end
@@ -878,10 +991,37 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   end
 
   # ---------------------------------------------------------------------------
+  # Derived metric definitions
+  # ---------------------------------------------------------------------------
+
+  defp changeset_error_summary(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map_join("; ", fn {field, errors} -> "#{field} #{Enum.join(errors, ", ")}" end)
+  end
+
+  # Merges the built-in derived metrics with the scoped user's own -- an
+  # agency admin adds a new derived metric type (e.g. CPA = total_cost /
+  # conversions) as data via Metrics.create_derived_metric_definition/2,
+  # with no change to this module required.
+  defp derived_metrics_for(scope) do
+    custom =
+      scope
+      |> Metrics.list_derived_metric_definitions()
+      |> Enum.map(&%{name: &1.name, numerator: &1.numerator, denominator: &1.denominator})
+
+    @known_derived_metrics ++ custom
+  end
+
+  # ---------------------------------------------------------------------------
   # Known metrics enrichment
   # ---------------------------------------------------------------------------
 
-  defp enrich_with_known_metrics(dashboard_data) do
+  defp enrich_with_known_metrics(dashboard_data, derived_metrics) do
     existing_stat_names = MapSet.new(Enum.map(dashboard_data.summary_stats, & &1.metric_name))
 
     raw_zero_stats =
@@ -895,7 +1035,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     raw_counts = Map.new(all_raw_stats, fn s -> {s.metric_name, s.stats.count} end)
 
     derived_stats =
-      Enum.map(@known_derived_metrics, fn %{name: name, numerator: num, denominator: den} ->
+      Enum.map(derived_metrics, fn %{name: name, numerator: num, denominator: den} ->
         num_val = Map.get(raw_sums, num, 0.0)
         den_val = Map.get(raw_sums, den, 0.0)
         value = safe_divide(num_val, den_val)
@@ -916,7 +1056,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     existing_ts_names = MapSet.new(Enum.map(dashboard_data.time_series, & &1.metric_name))
 
     all_known_names =
-      @known_raw_metrics ++ Enum.map(@known_derived_metrics, & &1.name)
+      @known_raw_metrics ++ Enum.map(derived_metrics, & &1.name)
 
     zero_ts =
       all_known_names

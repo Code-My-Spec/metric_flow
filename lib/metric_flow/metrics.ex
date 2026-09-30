@@ -14,7 +14,7 @@ defmodule MetricFlow.Metrics do
   multi-tenant isolation.
   """
 
-  use Boundary, deps: [MetricFlow], exports: [Metric]
+  use Boundary, deps: [MetricFlow], exports: [Metric, DerivedMetricDefinition]
 
   alias MetricFlow.Metrics.MetricRepository
   alias MetricFlow.Metrics.ReviewMetrics
@@ -41,6 +41,8 @@ defmodule MetricFlow.Metrics do
   defdelegate delete_metrics_by_location_and_date(scope, provider, location_id, date), to: MetricRepository
   defdelegate list_metric_providers(scope), to: MetricRepository
   defdelegate list_metric_providers(scope, opts), to: MetricRepository
+  defdelegate list_derived_metric_definitions(scope), to: MetricRepository
+  defdelegate create_derived_metric_definition(scope, attrs), to: MetricRepository
 
   # ---------------------------------------------------------------------------
   # Rolling review metrics

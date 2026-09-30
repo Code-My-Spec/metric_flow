@@ -14,6 +14,7 @@ defmodule MetricFlow.Metrics.MetricRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.Metrics.DerivedMetricDefinition
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
@@ -434,4 +435,30 @@ defmodule MetricFlow.Metrics.MetricRepository do
   defp decimal_to_float(v) when is_float(v), do: v
   defp decimal_to_float(v) when is_integer(v), do: v * 1.0
   defp decimal_to_float(nil), do: 0.0
+
+  # ---------------------------------------------------------------------------
+  # Derived metric definitions
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns the scoped user's derived metric definitions, e.g. a user-defined
+  CPA = total_cost / conversions -- lets a new derived metric type be added
+  as data rather than by an engineer changing aggregation code.
+  """
+  @spec list_derived_metric_definitions(Scope.t()) :: list(DerivedMetricDefinition.t())
+  def list_derived_metric_definitions(%Scope{user: user}) do
+    from(d in DerivedMetricDefinition, where: d.user_id == ^user.id)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a derived metric definition for the scoped user.
+  """
+  @spec create_derived_metric_definition(Scope.t(), map()) ::
+          {:ok, DerivedMetricDefinition.t()} | {:error, Ecto.Changeset.t()}
+  def create_derived_metric_definition(%Scope{user: user}, attrs) do
+    %DerivedMetricDefinition{}
+    |> DerivedMetricDefinition.changeset(Map.put(attrs, "user_id", user.id))
+    |> Repo.insert()
+  end
 end
