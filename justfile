@@ -7,10 +7,8 @@
 #    Schema validation is currently best-effort (varlock auto-loading
 #    doesn't play perfectly with the existing .env/.env.dev split — see
 #    priv/knowledge/devops/varlock.md).
-#  - DEPLOY: thin wrappers over scripts/deploy*. Operator-side env
-#    injection still uses `render-env` until ex_aws_ssm wiring in
-#    runtime.exs lands and lets the deployed app fetch its own secrets
-#    (see priv/knowledge/devops/secrets-runtime.md).
+#  - DEPLOY: CodeMySpec deploys via bin/deploy; these are the by-hand
+#    equivalents. Secrets are sops-encrypted in envs/<env>.enc.env.
 #
 # Tooling:
 #  - varlock: `brew install varlock` (system binary).
@@ -146,7 +144,7 @@ init-worktree name target:
 # === DEPLOY ==================================================================
 
 deploy:
-    ./scripts/deploy
+    bin/deploy prod
 
 deploy-uat:
-    ./scripts/deploy-uat
+    bin/deploy uat

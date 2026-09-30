@@ -1,26 +1,29 @@
-# Kamal config for metric_flow UAT on the Hetzner UAT box (Nuremberg ARM).
-# Run with: scripts/deploy-uat
+# Kamal config for metric_flow uat on the Hetzner UAT box (Nuremberg ARM).
+# Deployed by CodeMySpec (bin/deploy migrate|swap uat).
 #
-# Same shape as deploy.yml; differs in host, alias, and arch. Service name
-# matches deploy.yml so the multi-arch image labels resolve.
+# The container decrypts envs/uat.enc.env at boot via rel/overlays/bin/boot;
+# the only secret kamal carries is SOPS_AGE_KEY.
 
 service: metric-flow
-image: code-my-spec/metric_flow
+image: metric-flow
 
 servers:
   web:
     hosts:
-      - 46.225.105.88
+      - uat.metric-flow.app
     options:
-      network: db_net           # pre-attach so app can reach infra-postgres-1 at start
-    proxy:                      # role-level override of deploy.yml's `proxy: false`
+      network: db_net           # reach cms-postgres at start
+    proxy:
       ssl: true
       host: uat.metric-flow.app
       app_port: 4000
+      healthcheck:
+        path: /up
 
 registry:
-  server: ghcr.io
-  username: johns10
+  server: 10.1.0.2:5000
+  username:
+    - KAMAL_REGISTRY_USERNAME
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -28,16 +31,17 @@ builder:
   arch: arm64
   local: true
 
-# Container fetches its own secrets from /metric_flow/uat/* in SSM at
-# boot via MetricFlow.Secrets.load!/1 (config/runtime.exs). The only env
-# Kamal carries is AWS bootstrap creds + APP_ENV.
 env:
   clear:
     APP_ENV: uat
-    AWS_REGION: us-east-1
+    PORT: "4000"
   secret:
-    - AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY
+    - SOPS_AGE_KEY
 
 ssh:
   user: root
+<% if ENV["CMS_SSH_KEY_PATH"] %>
+  keys: ["<%= ENV["CMS_SSH_KEY_PATH"] %>"]
+  keys_only: true
+  log_level: debug
+<% end %>

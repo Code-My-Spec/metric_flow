@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#
+#   bin/deploy [uat|prod]              — for a human: push, wait for CI,
+#                                         migrate, then swap.
+#   bin/deploy migrate|swap <uat|prod> — what CodeMySpec's own setup
+#                                         calls. It already built and
+#                                         pushed a specific image and
+#                                         drives health checking itself
+#                                         between the two phases, so
+#                                         neither is meant to run alone
+#                                         by hand.
+set -euo pipefail
+
+case "${1:-}" in
+  migrate|swap)
+    PHASE="$1"
+    ENVIRONMENT="${2:?usage: bin/deploy $1 <uat|prod>}"
+    ;;
+  *)
+    PHASE="all"
+    ENVIRONMENT="${1:-uat}"
+    ;;
+esac
+
+CONFIG="config/deploy.yml"
+[ "$ENVIRONMENT" = "uat" ] && CONFIG="config/deploy.uat.yml"
+
+# CMS_IMAGE names the exact image (registry/repo:tag) setup already built
+# and pushed. Building or pulling another one here would deploy a
+# different commit than the one setup verified. Without it — a human
+# running this by hand — the version is whatever HEAD names once CI has
+# published it.
+if [ -n "${CMS_IMAGE:-}" ]; then
+  VERSION="${CMS_IMAGE##*:}"
+else
+  VERSION="$(git rev-parse HEAD)"
+fi
+
+swap() {
+  # `--skip-push`: by the time this runs, the image is already on the
+  # registry — setup's own builder pushed it (the automated path) or
+  # `wait for CI to publish it` already did (the human "all" path).
+  # Without this flag, `kamal deploy` rebuilds and re-pushes the image
+  # itself before pulling it back down, and that redundant push's
+  # blob-existence check (verifying blobs the FIRST push already
+  # uploaded) is a different code path in buildx's registry client than
+  # uploading new content — one that ignores the daemon's
+  # insecure-registries config and always assumes HTTPS. Confirmed live
+  # against MarketMySpec: a self-hosted HTTP-only registry accepted the
+  # first push fine and only failed on kamal's own redundant second one.
+  kamal deploy --config-file "$CONFIG" --version "$VERSION" --skip-push
+}
+
+migrate() {
+  # `-e`, so the migration carries the key instead of reading the host's
+  # copy. `kamal app exec` loads env/roles/<role>.env from the host, and
+  # kamal writes that only when it boots a container — so the migration
+  # ran against the environment of the last successful boot. A rotated
+  # SOPS_AGE_KEY deadlocked on it: the deploy re-encrypts to the new key,
+  # the migration reads the old one off the host, and the deploy that
+  # would replace the host's copy is the one that cannot finish.
+  #
+  # `--config-file`, not `--config` — kamal has no `--config` flag at
+  # all, only `-c`/`--config-file`. Thor silently folded the unrecognised
+  # `--config "$CONFIG"` into `app exec`'s own CMD positional, so runc
+  # tried to exec the literal string "--config" as the container's
+  # entrypoint. Confirmed live against MarketMySpec on kamal 2.11.0.
+  #
+  # A host with no successful deploy in its history has no env file at
+  # all yet — kamal only ever writes one as a side effect of booting a
+  # container. `CodeMySpec.Provisioning.Deploy.run/3` is what handles
+  # that case (an explicit, logged "bootstrap" phase before retrying
+  # migrate), not this script: `bin/deploy migrate` just fails here, the
+  # same as any other migrate failure, and the caller decides what a
+  # missing env file means.
+  kamal app exec --config-file "$CONFIG" --version "$VERSION" -e "SOPS_AGE_KEY:${SOPS_AGE_KEY:-}" "bin/migrate"
+}
+
+case "$PHASE" in
+  migrate)
+    migrate
+    ;;
+  swap)
+    swap
+    ;;
+  all)
+    echo "deploying $VERSION to $ENVIRONMENT"
+
+    git push origin HEAD
+
+    echo "waiting for CI to publish the image for $VERSION"
+    gh run watch --exit-status "$(gh run list --commit "$VERSION" --limit 1 --json databaseId --jq '.[0].databaseId')"
+
+    migrate
+    swap
+
+    echo "deployed $VERSION to $ENVIRONMENT"
+    ;;
+esac

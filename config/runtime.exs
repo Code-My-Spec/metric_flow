@@ -21,14 +21,9 @@ import Dotenvy
 # === Secret loading ==========================================================
 #
 # Dev/test: source secrets from local .env files (gitignored).
-# Prod (UAT + prod box): fetch from AWS SSM Parameter Store at boot via
-#   MetricFlow.Secrets.load!/1 — Kamal carries only AWS bootstrap creds,
-#   never the app secrets themselves. See lib/metric_flow/secrets.ex
-#   and priv/knowledge/devops/secrets-runtime.md.
-#
-# In all cases, env!/3 below reads from the Dotenvy process dict that
-# source! populates — so SSM values must be in System env BEFORE source!
-# runs, then source! pulls them in via System.get_env().
+# Prod (UAT + prod box): rel/overlays/bin/boot decrypts envs/<APP_ENV>.enc.env
+#   with SOPS_AGE_KEY and execs the release with those values already in
+#   the OS environment.
 if config_env() in [:dev, :test] do
   env_dir_prefix = System.get_env("RELEASE_ROOT") || "."
 
@@ -38,8 +33,6 @@ if config_env() in [:dev, :test] do
     System.get_env()
   ])
 else
-  app_env = System.get_env("APP_ENV") || raise "APP_ENV must be set (prod|uat)"
-  MetricFlow.Secrets.load!(app_env)
   source!([System.get_env()])
 end
 
@@ -197,7 +190,7 @@ if config_env() == :prod do
 
   # AppSignal: configuration is env-var-driven and read by the :appsignal
   # OTP app at start. APPSIGNAL_PUSH_API_KEY / APPSIGNAL_APP_NAME /
-  # APPSIGNAL_APP_ENV are populated by MetricFlow.Secrets.load!/1 above.
+  # APPSIGNAL_APP_ENV come from envs/<env>.enc.env via rel/overlays/bin/boot.
   # No runtime block needed.
 
   # Tigris file storage (ADR: file_storage)

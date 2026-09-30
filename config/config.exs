@@ -95,7 +95,7 @@ config :metric_flow, Oban,
 
 # AppSignal error tracking + APM (ADR: appsignal_observability_hetzner).
 # All runtime values (push_api_key, name, env, active) come from env vars
-# loaded by MetricFlow.Secrets at boot — see SSM keys APPSIGNAL_*.
+# decrypted from envs/<env>.enc.env at boot — see APPSIGNAL_*.
 # This block exists so the :appsignal app starts; values are env-driven.
 config :appsignal, :config, otp_app: :metric_flow
 
