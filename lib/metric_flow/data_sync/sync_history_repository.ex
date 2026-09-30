@@ -89,6 +89,18 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
     |> Repo.insert()
   end
 
+  @doc """
+  Checks whether any sync history record already exists for the given
+  integration, regardless of outcome.
+
+  Used to determine whether a sync run is the integration's first (`:initial`)
+  or a subsequent (`:incremental`) sync.
+  """
+  @spec has_prior_sync_history?(integer()) :: boolean()
+  def has_prior_sync_history?(integration_id) do
+    Repo.exists?(from(sh in SyncHistory, where: sh.integration_id == ^integration_id))
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------

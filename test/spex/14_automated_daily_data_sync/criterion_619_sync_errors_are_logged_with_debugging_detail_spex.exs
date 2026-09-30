@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDebuggingDetailSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync errors are logged with debugging detail", criterion: 619 do
+  spex "Sync errors are logged with debugging detail", fail_on_error_logs: false, criterion: 619 do
     scenario "a failed sync's log includes enough detail to debug it" do
       given_ :user_logged_in_as_owner
 

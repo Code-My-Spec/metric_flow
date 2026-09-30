@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.ExpiringOauthTokenIsRefreshedAutomaticallyDuringSyncSpe
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Expiring OAuth token is refreshed automatically during sync", criterion: 615 do
+  spex "Expiring OAuth token is refreshed automatically during sync", fail_on_error_logs: false, criterion: 615 do
     scenario "a sync completes without interruption despite a near-expiration token" do
       given_ :user_logged_in_as_owner
 

@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.DataSync
+  alias MetricFlow.Integrations
 
   # Provider display names for both marketing and financial platforms.
   @provider_names %{
@@ -61,6 +62,19 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         </p>
         <div class="mt-3 flex items-center gap-2 flex-wrap">
           <span class="badge badge-info">Daily</span>
+        </div>
+        <div class="mt-4">
+          <button
+            type="button"
+            phx-click="trigger_daily_sync"
+            data-role="trigger-daily-sync"
+            class="btn btn-sm btn-outline"
+          >
+            Trigger Sync Now (Dev)
+          </button>
+          <p class="mt-1 text-xs text-base-content/50">
+            Manually runs the same daily sync cycle, for testing without waiting for the 2:00 AM UTC schedule.
+          </p>
         </div>
       </div>
 
@@ -166,6 +180,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         <p :if={@entry[:completed_at]} class="text-xs text-base-content/50 mt-0.5">
           Completed at {format_datetime(@entry.completed_at)}
         </p>
+        <p
+          :if={@entry[:sync_type] == :initial}
+          data-role="backfill-limit-notice"
+          class="text-xs text-base-content/50 mt-0.5"
+        >
+          Backfilled the maximum history available from this platform's API.
+        </p>
       </div>
       <div class="text-right">
         <p :if={@entry[:data_date]} class="text-xs text-base-content/50">
@@ -185,6 +206,9 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-error">Failed</span>
+          <span :if={@entry[:sync_type] == :initial} data-sync-type="initial" class="badge badge-ghost">
+            Initial Sync
+          </span>
         </div>
         <p :if={@entry[:reason]} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.reason}
@@ -194,6 +218,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           class="text-xs text-base-content/50 mt-0.5"
         >
           Attempt {@entry.attempt}/{@entry.max_attempts}
+        </p>
+        <p
+          :if={@entry[:sync_type] == :initial}
+          data-role="backfill-limit-notice"
+          class="text-xs text-base-content/50 mt-0.5"
+        >
+          Backfilled the maximum history available from this platform's API.
         </p>
       </div>
       <div class="text-right">
@@ -220,12 +251,22 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-success">Success</span>
+          <span :if={@entry.sync_type == :initial} data-sync-type="initial" class="badge badge-ghost">
+            Initial Sync
+          </span>
         </div>
         <p class="text-sm text-base-content/60 mt-1">
           {@entry.records_synced} records synced
         </p>
         <p :if={@entry.completed_at} class="text-xs text-base-content/50 mt-0.5">
           Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p
+          :if={@entry.sync_type == :initial}
+          data-role="backfill-limit-notice"
+          class="text-xs text-base-content/50 mt-0.5"
+        >
+          Backfilled the maximum history available from this platform's API.
         </p>
       </div>
       <div class="text-right">
@@ -246,9 +287,19 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-error">Failed</span>
+          <span :if={@entry.sync_type == :initial} data-sync-type="initial" class="badge badge-ghost">
+            Initial Sync
+          </span>
         </div>
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.error_message}
+        </p>
+        <p
+          :if={@entry.sync_type == :initial}
+          data-role="backfill-limit-notice"
+          class="text-xs text-base-content/50 mt-0.5"
+        >
+          Backfilled the maximum history available from this platform's API.
         </p>
       </div>
       <div class="text-right">
@@ -325,6 +376,16 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   def handle_event("filter", %{"status" => status}, socket)
       when status in ["all", "success", "failed"] do
     {:noreply, assign(socket, :status_filter, status)}
+  end
+
+  def handle_event("trigger_daily_sync", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    scope
+    |> Integrations.list_integrations()
+    |> Enum.each(&DataSync.sync_integration(scope, &1.provider))
+
+    {:noreply, put_flash(socket, :info, "Sync triggered for all connected integrations.")}
   end
 
   # ---------------------------------------------------------------------------

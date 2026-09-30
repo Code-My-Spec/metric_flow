@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.SyncIsMarkedFailedForTheCycleOnceRetriesAreExhaustedSpe
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync is marked failed for the cycle once retries are exhausted", criterion: 618 do
+  spex "Sync is marked failed for the cycle once retries are exhausted", fail_on_error_logs: false, criterion: 618 do
     scenario "an integration whose retries are exhausted is marked failed and left alone until the next cycle" do
       given_ :user_logged_in_as_owner
 

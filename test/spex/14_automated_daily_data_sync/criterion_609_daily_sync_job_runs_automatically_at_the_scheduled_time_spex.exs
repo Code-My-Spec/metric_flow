@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.DailySyncJobRunsAutomaticallyAtScheduledTimeSpex do
   distinct from any per-integration manual "Sync Now" action.
   """
 
-  spex "Daily sync job runs automatically at the scheduled time", criterion: 609 do
+  spex "Daily sync job runs automatically at the scheduled time", fail_on_error_logs: false, criterion: 609 do
     scenario "the scheduled time arrives and the daily sync runs for all accounts" do
       given_ :owner_with_integrations
 

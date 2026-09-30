@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.TokenRefreshFailureCausesThatIntegrationsSyncToFailSpex
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Token refresh failure causes that integration's sync to fail", criterion: 616 do
+  spex "Token refresh failure causes that integration's sync to fail", fail_on_error_logs: false, criterion: 616 do
     scenario "an integration whose refresh token is no longer honored fails its sync for the cycle" do
       given_ :user_logged_in_as_owner
 

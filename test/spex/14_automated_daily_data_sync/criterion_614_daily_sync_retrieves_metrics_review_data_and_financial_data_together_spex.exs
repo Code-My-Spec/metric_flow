@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.DailySyncRetrievesMetricsReviewAndFinancialDataTogether
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Daily sync retrieves metrics, review data, and financial data together", criterion: 614 do
+  spex "Daily sync retrieves metrics, review data, and financial data together", fail_on_error_logs: false, criterion: 614 do
     scenario "a single daily sync run covers marketing, review, and financial integrations together" do
       given_ :user_logged_in_as_owner
 

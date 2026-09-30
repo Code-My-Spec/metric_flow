@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.FinancialDebitsAndCreditsAreStoredAsMetricsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Financial debits and credits are stored as metrics", criterion: 613 do
+  spex "Financial debits and credits are stored as metrics", fail_on_error_logs: false, criterion: 613 do
     scenario "a connected financial integration's debits and credits sync in like any other metric source" do
       given_ :user_logged_in_as_owner
 

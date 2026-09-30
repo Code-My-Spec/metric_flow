@@ -24,6 +24,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
           sync_job_id: integer() | nil,
           provider: atom() | nil,
           status: atom() | nil,
+          sync_type: atom() | nil,
           records_synced: integer() | nil,
           error_message: String.t() | nil,
           started_at: DateTime.t() | nil,
@@ -46,10 +47,12 @@ defmodule MetricFlow.DataSync.SyncHistory do
     :quickbooks
   ]
   @statuses [:success, :partial_success, :failed]
+  @sync_types [:initial, :incremental]
 
   schema "sync_history" do
     field :provider, Ecto.Enum, values: @providers
     field :status, Ecto.Enum, values: @statuses
+    field :sync_type, Ecto.Enum, values: @sync_types
     field :records_synced, :integer
     field :error_message, :string
     field :started_at, :utc_datetime_usec
@@ -79,6 +82,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
       :sync_job_id,
       :provider,
       :status,
+      :sync_type,
       :records_synced,
       :error_message,
       :started_at,

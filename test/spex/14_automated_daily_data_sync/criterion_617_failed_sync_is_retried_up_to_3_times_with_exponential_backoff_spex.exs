@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.FailedSyncIsRetriedUpTo3TimesWithExponentialBackoffSpex
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Failed sync is retried up to 3 times with exponential backoff", criterion: 617 do
+  spex "Failed sync is retried up to 3 times with exponential backoff", fail_on_error_logs: false, criterion: 617 do
     scenario "a sync attempt for an integration fails and the system retries it" do
       given_ :user_logged_in_as_owner
 

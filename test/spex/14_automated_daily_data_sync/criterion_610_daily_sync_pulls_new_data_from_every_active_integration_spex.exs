@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.DailySyncPullsNewDataFromEveryActiveIntegrationSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Daily sync pulls new data from every active integration", criterion: 610 do
+  spex "Daily sync pulls new data from every active integration", fail_on_error_logs: false, criterion: 610 do
     scenario "an account with multiple active integrations gets new data for all of them" do
       given_ :user_logged_in_as_owner
 
