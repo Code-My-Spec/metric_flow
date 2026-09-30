@@ -30,6 +30,7 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Agencies
   alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Correlations.CorrelationJob
+  alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations.Integration
@@ -228,6 +229,57 @@ defmodule MetricFlowSpex.Fixtures do
       started_at: DateTime.utc_now(),
       completed_at: DateTime.utc_now()
     })
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Inserts a completed CorrelationJob for the goal metric (reusing one
+  already present for it, if any) and a CorrelationResult row on it.
+
+  Calculating a real correlation requires driving
+  Correlations.run_correlations end to end via an async Oban worker that
+  Spex cannot execute synchronously, so specs needing a specific
+  coefficient/lag insert the result directly.
+  """
+  @spec create_correlation_result!(String.t(), map()) :: CorrelationResult.t()
+  def create_correlation_result!(email, attrs) do
+    user = Users.get_user_by_email(email)
+    scope = %Scope{user: user}
+    account_id = Accounts.get_personal_account_id(scope)
+    goal_metric_name = Map.fetch!(attrs, :goal_metric_name)
+
+    job =
+      Repo.get_by(CorrelationJob,
+        account_id: account_id,
+        goal_metric_name: goal_metric_name,
+        status: :completed
+      ) ||
+        (%CorrelationJob{}
+         |> CorrelationJob.changeset(%{
+           account_id: account_id,
+           status: :completed,
+           goal_metric_name: goal_metric_name,
+           data_window_start: Date.add(Date.utc_today(), -30),
+           data_window_end: Date.utc_today(),
+           data_points: 90,
+           results_count: 0,
+           started_at: DateTime.utc_now(),
+           completed_at: DateTime.utc_now()
+         })
+         |> Repo.insert!())
+
+    defaults = %{
+      account_id: account_id,
+      correlation_job_id: job.id,
+      goal_metric_name: goal_metric_name,
+      optimal_lag: 0,
+      data_points: 90,
+      provider: :google_ads,
+      calculated_at: DateTime.utc_now()
+    }
+
+    %CorrelationResult{}
+    |> CorrelationResult.changeset(Map.merge(defaults, attrs))
     |> Repo.insert!()
   end
 
