@@ -66,6 +66,33 @@ defmodule MetricFlowTest.PlugStore do
   @spec plug_key?(term()) :: boolean()
   def plug_key?("__plug_ref_" <> _rest), do: true
   def plug_key?(_), do: false
+
+  @doc """
+  Registers a plug for a provider, for specs that trigger a sync through
+  `DataSync.sync_integration/2` (a LiveView click) rather than calling a
+  provider's `fetch_metrics/2` directly. A click can't pass a function
+  through `render_click/1`, so `sync_integration/2` looks up a plug
+  registered here (by provider) instead of one threaded through job args.
+  """
+  @spec put_provider_plug(atom(), function()) :: :ok
+  def put_provider_plug(provider, fun) when is_atom(provider) and is_function(fun) do
+    ensure_table()
+    :ets.insert(@table, {{:provider_plug, provider}, fun})
+    :ok
+  end
+
+  @doc """
+  Retrieves a plug registered for a provider via `put_provider_plug/2`.
+  """
+  @spec get_provider_plug(atom()) :: {:ok, function()} | :error
+  def get_provider_plug(provider) when is_atom(provider) do
+    ensure_table()
+
+    case :ets.lookup(@table, {:provider_plug, provider}) do
+      [{_, fun}] -> {:ok, fun}
+      [] -> :error
+    end
+  end
 end
 
 defimpl JSON.Encoder, for: Function do

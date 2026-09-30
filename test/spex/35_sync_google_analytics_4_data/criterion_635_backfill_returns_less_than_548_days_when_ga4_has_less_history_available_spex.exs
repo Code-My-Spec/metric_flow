@@ -16,6 +16,8 @@ defmodule MetricFlowSpex.BackfillReturnsLessThan548DaysWhenGa4HasLessHistoryAvai
         {:ok, context}
       end
 
+      given_ :with_google_analytics_sync_stub
+
       when_ "the first sync backfills it", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()

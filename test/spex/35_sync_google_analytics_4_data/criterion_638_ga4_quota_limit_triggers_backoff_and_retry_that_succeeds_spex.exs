@@ -4,7 +4,7 @@ defmodule MetricFlowSpex.Ga4QuotaLimitTriggersBackoffAndRetryThatSucceedsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "GA4 quota limit triggers backoff and retry that succeeds", criterion: 638 do
+  spex "GA4 quota limit triggers backoff and retry that succeeds", fail_on_error_logs: false, criterion: 638 do
     scenario "a sync that hits the GA4 quota limit is retried with backoff and eventually succeeds" do
       given_ :user_logged_in_as_owner
 
@@ -16,10 +16,15 @@ defmodule MetricFlowSpex.Ga4QuotaLimitTriggersBackoffAndRetryThatSucceedsSpex do
         {:ok, context}
       end
 
+      given_ :with_google_analytics_quota_retry_stub
+
       when_ "the request is retried with exponential backoff", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()
-        Oban.drain_queue(queue: :sync, with_recursion: true)
+        # A retried job moves to `:scheduled` with a future `scheduled_at`;
+        # `with_recursion` alone only re-drains newly `:available` jobs, so
+        # `with_scheduled: true` is also needed to pick the retry back up.
+        Oban.drain_queue(queue: :sync, with_recursion: true, with_scheduled: true)
         {:ok, Map.put(context, :view, view)}
       end
 

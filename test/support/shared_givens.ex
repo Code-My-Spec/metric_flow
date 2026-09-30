@@ -719,4 +719,22 @@ defmodule MetricFlowSpex.SharedGivens do
     MetricFlowTest.AiStub.setup_ai_stubs()
     {:ok, context}
   end
+
+  register_given :with_google_analytics_sync_stub, context do
+    MetricFlowTest.SyncStub.stub_success(
+      :google_analytics,
+      MetricFlowTest.SyncStub.google_analytics_success_body()
+    )
+
+    {:ok, context}
+  end
+
+  register_given :with_google_analytics_quota_retry_stub, context do
+    MetricFlowTest.SyncStub.stub_quota_then_success(
+      :google_analytics,
+      MetricFlowTest.SyncStub.google_analytics_success_body()
+    )
+
+    {:ok, context}
+  end
 end

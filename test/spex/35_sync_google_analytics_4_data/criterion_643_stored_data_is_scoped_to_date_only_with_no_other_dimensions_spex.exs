@@ -16,6 +16,8 @@ defmodule MetricFlowSpex.StoredDataIsScopedToDateOnlyWithNoOtherDimensionsSpex d
         {:ok, context}
       end
 
+      given_ :with_google_analytics_sync_stub
+
       when_ "the records are written", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()

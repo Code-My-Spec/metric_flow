@@ -96,13 +96,38 @@ defmodule MetricFlow.DataSync do
            SyncJobRepository.create_sync_job(scope, integration.id, %{provider: provider}),
          {:ok, _oban_job} <-
            Oban.insert(
-             SyncWorker.new(%{
-               integration_id: integration.id,
-               user_id: user.id,
-               sync_job_id: sync_job.id
-             })
+             SyncWorker.new(
+               %{integration_id: integration.id, user_id: user.id, sync_job_id: sync_job.id}
+               |> maybe_put_test_http_plug(provider)
+             )
            ) do
       {:ok, sync_job}
+    end
+  end
+
+  # A LiveView click can't pass a function through render_click/1, so specs
+  # that need to drive a real sync register a plug by provider beforehand
+  # (MetricFlowTest.PlugStore.put_provider_plug/2) instead of it arriving
+  # through job args. Resolved dynamically, the same way SyncWorker resolves
+  # its own test plugs, so this module still compiles outside :test.
+  defp maybe_put_test_http_plug(args, provider) do
+    plug_store = Module.concat([MetricFlowTest, PlugStore])
+
+    if Code.ensure_loaded?(plug_store) do
+      case :erlang.apply(plug_store, :get_provider_plug, [provider]) do
+        {:ok, plug} ->
+          # Oban.insert/1 persists args to Postgres via Jason, unlike
+          # Oban.Testing.perform_job/3's own round-trip (native JSON module,
+          # what PlugStore's JSON.Encoder targets) -- Jason has no Function
+          # encoder, so the key is resolved here rather than the raw plug.
+          key = :erlang.apply(plug_store, :store, [plug])
+          Map.put(args, :http_plug, key)
+
+        :error ->
+          args
+      end
+    else
+      args
     end
   end
 
