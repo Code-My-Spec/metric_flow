@@ -26,6 +26,20 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     %{name: "roas", numerator: "revenue", denominator: "total_cost"}
   ]
 
+  # Canned dashboards are differentiated by which normalized metrics they show,
+  # not by separate chart-building logic -- this maps each built-in template's
+  # name to the metric_name set it's scoped to. Any dashboard whose name isn't
+  # here (a custom user dashboard, or a canned one with an unrecognized name)
+  # falls back to the unfiltered "all metrics" view.
+  @canned_template_metrics %{
+    "marketing overview" =>
+      MapSet.new(~w(impressions clicks rate cost_rate conversions sessions users new_users views duration bounce_rate position orders reviews ctr cpc)),
+    "revenue analysis" =>
+      MapSet.new(~w(revenue expenses total_cost conversions conversions_value roas)),
+    "platform comparison" =>
+      MapSet.new(~w(impressions clicks total_cost cost_rate rate conversions cpc ctr))
+  }
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -483,8 +497,11 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     scope = socket.assigns.current_scope
+    requested_dashboard = lookup_requested_dashboard(scope, params["id"])
+    page_title = (requested_dashboard && requested_dashboard.name) || "All Metrics"
+    metric_filter = template_metric_filter(requested_dashboard)
 
     case Dashboards.has_integrations?(scope) do
       false ->
@@ -495,7 +512,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:ai_panel_metric, nil)
           |> assign(:ai_panel_insights, [])
           |> assign(:chat_panel_open, false)
-          |> assign(:page_title, "All Metrics")
+          |> assign(:page_title, page_title)
 
         {:ok, socket}
 
@@ -509,7 +526,11 @@ defmodule MetricFlowWeb.DashboardLive.Show do
         derived_metrics = derived_metrics_for(scope)
 
         {:ok, dashboard_data} = Dashboards.get_dashboard_data(scope, date_range: default_range)
-        dashboard_data = enrich_with_known_metrics(dashboard_data, derived_metrics)
+
+        dashboard_data =
+          dashboard_data
+          |> enrich_with_known_metrics(derived_metrics)
+          |> filter_by_template(metric_filter)
 
         all_metric_names = Enum.map(dashboard_data.time_series, & &1.metric_name) |> Enum.sort()
         visible_metrics = MapSet.new(all_metric_names)
@@ -536,11 +557,57 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:derived_metrics, derived_metrics)
           |> assign(:known_raw_metrics_list, @known_raw_metrics)
           |> assign(:define_derived_metric_panel_open, false)
-          |> assign(:page_title, "All Metrics")
+          |> assign(:page_title, page_title)
           |> rebuild_chart_and_table()
 
         {:ok, socket}
     end
+  end
+
+  # Canned dashboards are shared system-wide (any authenticated user can view
+  # one by id, same as the listing page), so the lookup isn't ownership-scoped
+  # for those. A non-canned id falls back to the normal owned-dashboard lookup;
+  # anything unresolved renders the unfiltered "all metrics" view, same as an
+  # absent id always has.
+  defp lookup_requested_dashboard(_scope, nil), do: nil
+
+  defp lookup_requested_dashboard(scope, id_str) do
+    case Integer.parse(id_str) do
+      {id, ""} -> find_canned_dashboard(id) || find_owned_dashboard(scope, id)
+      _ -> nil
+    end
+  end
+
+  defp find_canned_dashboard(id) do
+    Enum.find(Dashboards.list_canned_dashboards(), &(&1.id == id))
+  end
+
+  defp find_owned_dashboard(scope, id) do
+    case Dashboards.get_dashboard(scope, id) do
+      {:ok, dashboard} -> dashboard
+      {:error, :not_found} -> nil
+    end
+  end
+
+  defp template_metric_filter(nil), do: nil
+
+  defp template_metric_filter(%{name: name}) do
+    Map.get(@canned_template_metrics, String.downcase(String.trim(name)))
+  end
+
+  defp filter_by_template(dashboard_data, nil), do: dashboard_data
+
+  defp filter_by_template(dashboard_data, %MapSet{} = allowed) do
+    %{
+      dashboard_data
+      | time_series: Enum.filter(dashboard_data.time_series, &MapSet.member?(allowed, &1.metric_name)),
+        summary_stats: Enum.filter(dashboard_data.summary_stats, &MapSet.member?(allowed, &1.metric_name)),
+        platform_breakdown: Map.take(dashboard_data.platform_breakdown, MapSet.to_list(allowed)),
+        available_filters:
+          Map.update!(dashboard_data.available_filters, :metric_names, fn names ->
+            Enum.filter(names, &MapSet.member?(allowed, &1))
+          end)
+    }
   end
 
   # ---------------------------------------------------------------------------
