@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency can configure custom subdomain (e.g., reports.andersonthefish.com)", criterion: 252 do
+  spex "Agency can configure custom subdomain (e.g., reports.andersonthefish.com)",
+    criterion: 252 do
     scenario "agency settings page shows a custom subdomain input field" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -19,7 +20,11 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
       end
 
       then_ "a Subdomain input field is present in the white-label form", context do
-        assert has_element?(context.view, "#white-label-form input[name='white_label[subdomain]']")
+        assert has_element?(
+                 context.view,
+                 "#white-label-form input[name='white_label[subdomain]']"
+               )
+
         {:ok, context}
       end
 
@@ -30,7 +35,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
     end
 
     scenario "agency owner can enter and save a custom subdomain" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -39,12 +44,14 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
 
       when_ "the owner submits the white-label form with a custom subdomain", context do
         context.view
-        |> form("#white-label-form", white_label: %{
-          subdomain: "reports-andersonthefish",
-          logo_url: "",
-          primary_color: "#3B82F6",
-          secondary_color: "#1E40AF"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            subdomain: "reports-andersonthefish",
+            logo_url: "",
+            primary_color: "#3B82F6",
+            secondary_color: "#1E40AF"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -62,18 +69,20 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
     end
 
     scenario "saved subdomain is visible when the settings page is revisited" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings and saves a subdomain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          subdomain: "andersonthefish",
-          logo_url: "",
-          primary_color: "#3B82F6",
-          secondary_color: "#1E40AF"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            subdomain: "andersonthefish",
+            logo_url: "",
+            primary_color: "#3B82F6",
+            secondary_color: "#1E40AF"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -86,9 +95,10 @@ defmodule MetricFlowSpex.AgencyCanConfigureCustomSubdomainEgReportsandersonthefi
 
       then_ "the previously saved subdomain is pre-filled in the subdomain input", context do
         assert has_element?(
-          context.view,
-          "#white-label-form input[name='white_label[subdomain]'][value='andersonthefish']"
-        )
+                 context.view,
+                 "#white-label-form input[name='white_label[subdomain]'][value='andersonthefish']"
+               )
+
         {:ok, context}
       end
     end

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
 
   spex "Changes preview in real-time before saving", criterion: 253 do
     scenario "changing primary color updates the preview before form is submitted" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner is on the account settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -17,9 +17,11 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
         view = context.view
 
         view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#E74C3C"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#E74C3C"
+          }
+        )
         |> render_change()
 
         {:ok, context}
@@ -38,7 +40,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
     end
 
     scenario "changing secondary color updates the preview before form is submitted" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner is on the account settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -49,9 +51,11 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
         view = context.view
 
         view
-        |> form("#white-label-form", white_label: %{
-          secondary_color: "#2ECC71"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            secondary_color: "#2ECC71"
+          }
+        )
         |> render_change()
 
         {:ok, context}
@@ -70,7 +74,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
     end
 
     scenario "changing both primary and secondary colors updates the preview simultaneously" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner is on the account settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -81,10 +85,12 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
         view = context.view
 
         view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#9B59B6",
-          secondary_color: "#F39C12"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#9B59B6",
+            secondary_color: "#F39C12"
+          }
+        )
         |> render_change()
 
         {:ok, context}
@@ -107,7 +113,7 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
     end
 
     scenario "preview updates on every keystroke as the user types a color value" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner is on the account settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -118,9 +124,11 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
         view = context.view
 
         view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#1A"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#1A"
+          }
+        )
         |> render_change()
 
         {:ok, context}
@@ -135,9 +143,11 @@ defmodule MetricFlowSpex.ChangesPreviewInRealTimeBeforeSavingSpex do
         view = context.view
 
         view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#1ABC9C"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#1ABC9C"
+          }
+        )
         |> render_change()
 
         {:ok, context}

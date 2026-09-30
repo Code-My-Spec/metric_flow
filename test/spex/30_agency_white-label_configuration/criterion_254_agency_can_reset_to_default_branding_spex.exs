@@ -6,18 +6,20 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
 
   spex "Agency can reset to default branding", criterion: 254 do
     scenario "agency owner with custom branding sees a Reset to Default button" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has saved custom branding settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/logo.png",
-          subdomain: "reset-#{System.unique_integer([:positive])}",
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/logo.png",
+            subdomain: "reset-#{System.unique_integer([:positive])}",
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -30,18 +32,20 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
     end
 
     scenario "clicking Reset to Default clears custom branding and shows confirmation" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has saved custom branding settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/logo.png",
-          subdomain: "reset-#{System.unique_integer([:positive])}",
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/logo.png",
+            subdomain: "reset-#{System.unique_integer([:positive])}",
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -62,19 +66,21 @@ defmodule MetricFlowSpex.AgencyCanResetToDefaultBrandingSpex do
     end
 
     scenario "after resetting branding the white-label form fields are empty" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has saved custom branding settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         subdomain = "resetcheck-#{System.unique_integer([:positive])}"
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/logo.png",
-          subdomain: subdomain,
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/logo.png",
+            subdomain: subdomain,
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, context |> Map.put(:view, view) |> Map.put(:subdomain, subdomain)}

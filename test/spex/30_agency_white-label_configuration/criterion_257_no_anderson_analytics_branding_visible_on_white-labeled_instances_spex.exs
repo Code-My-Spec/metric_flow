@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
 
   spex "No Anderson Analytics branding visible on white-labeled instances", criterion: 257 do
     scenario "white-labeled dashboard does not show Anderson Analytics or MetricFlow brand text" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "an agency with white-label branding is configured as the account originator", context do
+      given_ "an agency with white-label branding is configured as the account originator",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "nodefaultbrand",
-          logo_url: "https://cdn.clientbrand.com/logo.png",
-          primary_color: "#1A2B3C",
-          secondary_color: "#3C2B1A"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "nodefaultbrand",
+            logo_url: "https://cdn.clientbrand.com/logo.png",
+            primary_color: "#1A2B3C",
+            secondary_color: "#3C2B1A"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -61,17 +63,19 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
     end
 
     scenario "white-labeled account settings page does not show Anderson Analytics or MetricFlow brand text" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "an agency with white-label branding is configured as the account originator", context do
+      given_ "an agency with white-label branding is configured as the account originator",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "nobrandcheck",
-          logo_url: "https://cdn.clientbrand.com/brand.png",
-          primary_color: "#FF0000",
-          secondary_color: "#0000FF"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "nobrandcheck",
+            logo_url: "https://cdn.clientbrand.com/brand.png",
+            primary_color: "#FF0000",
+            secondary_color: "#0000FF"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -104,7 +108,7 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
     end
 
     scenario "a page without white-label active on the main domain may show default platform branding" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner visits the dashboard on the main (non-white-labeled) domain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -128,7 +132,8 @@ defmodule MetricFlowSpex.NoAndersonAnalyticsBrandingOnWhiteLabeledInstancesSpex 
         {:ok, context}
       end
 
-      then_ "no Anderson Analytics branding appears on the main domain dashboard either", context do
+      then_ "no Anderson Analytics branding appears on the main domain dashboard either",
+            context do
         html = render(context.view)
 
         refute html =~ "Anderson Analytics",

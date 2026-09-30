@@ -6,18 +6,20 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
 
   spex "White-label settings are stored at agency account level", criterion: 255 do
     scenario "saved white-label settings persist after remounting the LiveView (page refresh)" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings and saves white-label branding", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.agencytest.com/stored-logo.png",
-          subdomain: "storedagency",
-          primary_color: "#AA1122",
-          secondary_color: "#334455"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.agencytest.com/stored-logo.png",
+            subdomain: "storedagency",
+            primary_color: "#AA1122",
+            secondary_color: "#334455"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -51,17 +53,19 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
     end
 
     scenario "white-label settings saved by owner are visible to another admin in the same agency account" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:agency_owner_logged_in)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user as an admin of the agency account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -71,12 +75,14 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://agency.example.com/shared-logo.svg",
-          subdomain: "sharedagency",
-          primary_color: "#112233",
-          secondary_color: "#AABBCC"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://agency.example.com/shared-logo.svg",
+            subdomain: "sharedagency",
+            primary_color: "#112233",
+            secondary_color: "#AABBCC"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -86,11 +92,13 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         admin_conn = recycle(logged_in_conn)
@@ -125,18 +133,20 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
     end
 
     scenario "white-label settings from one agency account are not visible to users of a different account" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       when_ "the owner saves white-label settings for their agency", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://owner-agency.example.com/private-logo.png",
-          subdomain: "owneragency",
-          primary_color: "#FF0000",
-          secondary_color: "#00FF00"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://owner-agency.example.com/private-logo.png",
+            subdomain: "owneragency",
+            primary_color: "#FF0000",
+            secondary_color: "#00FF00"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -149,21 +159,25 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
         {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Separate Agency"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Separate Agency"
+          }
+        )
         |> render_submit()
 
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         separate_conn = recycle(logged_in_conn)
@@ -176,7 +190,9 @@ defmodule MetricFlowSpex.WhiteLabelSettingsStoredAtAgencyAccountLevelSpex do
       end
 
       then_ "the separate user does not see the first owner's logo URL", context do
-        refute render(context.separate_view) =~ "https://owner-agency.example.com/private-logo.png"
+        refute render(context.separate_view) =~
+                 "https://owner-agency.example.com/private-logo.png"
+
         {:ok, context}
       end
 

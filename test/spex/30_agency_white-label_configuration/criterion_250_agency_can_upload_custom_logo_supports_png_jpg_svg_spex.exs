@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
 
   spex "Agency can upload custom logo (supports PNG, JPG, SVG)", criterion: 250 do
     scenario "agency owner sees a Logo URL field in the White-Label Branding section" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
     end
 
     scenario "agency owner can save a PNG logo URL and sees confirmation" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -36,12 +36,14 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
         subdomain = "agency-png-#{System.unique_integer([:positive])}"
 
         context.view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/logo.png",
-          subdomain: subdomain,
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/logo.png",
+            subdomain: subdomain,
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -59,7 +61,7 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
     end
 
     scenario "agency owner can save a JPG logo URL and sees confirmation" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -70,12 +72,14 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
         subdomain = "agency-jpg-#{System.unique_integer([:positive])}"
 
         context.view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/brand-logo.jpg",
-          subdomain: subdomain,
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/brand-logo.jpg",
+            subdomain: subdomain,
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -93,7 +97,7 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
     end
 
     scenario "agency owner can save an SVG logo URL and sees confirmation" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -104,12 +108,14 @@ defmodule MetricFlowSpex.AgencyCanUploadCustomLogoSupportsPngJpgSvgSpex do
         subdomain = "agency-svg-#{System.unique_integer([:positive])}"
 
         context.view
-        |> form("#white-label-form", white_label: %{
-          logo_url: "https://cdn.example.com/vector-logo.svg",
-          subdomain: subdomain,
-          primary_color: "#FF5733",
-          secondary_color: "#3498DB"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            logo_url: "https://cdn.example.com/vector-logo.svg",
+            subdomain: subdomain,
+            primary_color: "#FF5733",
+            secondary_color: "#3498DB"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
   spex "Agency can set custom color scheme (primary, secondary, accent colors)", criterion: 251 do
     scenario "agency owner sees color scheme inputs in the White-Label Branding section" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -19,18 +19,26 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
       end
 
       then_ "a Primary Color input field is present in the white-label form", context do
-        assert has_element?(context.view, "#white-label-form input[name='white_label[primary_color]']")
+        assert has_element?(
+                 context.view,
+                 "#white-label-form input[name='white_label[primary_color]']"
+               )
+
         {:ok, context}
       end
 
       then_ "a Secondary Color input field is present in the white-label form", context do
-        assert has_element?(context.view, "#white-label-form input[name='white_label[secondary_color]']")
+        assert has_element?(
+                 context.view,
+                 "#white-label-form input[name='white_label[secondary_color]']"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "agency owner can set a custom primary color and sees it saved" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -39,12 +47,14 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       when_ "the owner submits the white-label form with a custom primary color", context do
         context.view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#1A2B3C",
-          secondary_color: "#FFFFFF",
-          logo_url: "",
-          subdomain: "color-primary-#{System.unique_integer([:positive])}"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#1A2B3C",
+            secondary_color: "#FFFFFF",
+            logo_url: "",
+            subdomain: "color-primary-#{System.unique_integer([:positive])}"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -62,7 +72,7 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
     end
 
     scenario "agency owner can set a custom secondary color and sees it saved" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -71,12 +81,14 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       when_ "the owner submits the white-label form with a custom secondary color", context do
         context.view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#000000",
-          secondary_color: "#E74C3C",
-          logo_url: "",
-          subdomain: "color-secondary-#{System.unique_integer([:positive])}"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#000000",
+            secondary_color: "#E74C3C",
+            logo_url: "",
+            subdomain: "color-secondary-#{System.unique_integer([:positive])}"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -94,7 +106,7 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
     end
 
     scenario "agency owner can set all three colors together and sees them saved" do
-      given_ :user_logged_in_as_owner
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -103,12 +115,14 @@ defmodule MetricFlowSpex.AgencyCanSetCustomColorSchemePrimarySecondaryAccentColo
 
       when_ "the owner submits the white-label form with all three custom colors", context do
         context.view
-        |> form("#white-label-form", white_label: %{
-          primary_color: "#3498DB",
-          secondary_color: "#2ECC71",
-          logo_url: "",
-          subdomain: "color-all-#{System.unique_integer([:positive])}"
-        })
+        |> form("#white-label-form",
+          white_label: %{
+            primary_color: "#3498DB",
+            secondary_color: "#2ECC71",
+            logo_url: "",
+            subdomain: "color-all-#{System.unique_integer([:positive])}"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
