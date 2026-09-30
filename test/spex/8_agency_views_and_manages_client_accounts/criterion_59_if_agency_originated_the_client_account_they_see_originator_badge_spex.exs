@@ -8,12 +8,17 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
 
   spex "If agency originated the client account, they see Originator badge", criterion: 59 do
     scenario "agency that originated a client account sees Originator badge on the accounts page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has originated a client account", context do
         client = AgenciesFixtures.account_fixture(%{name: "Originated Client Co"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client.id,
+          :admin,
+          true
+        )
 
         {:ok, Map.put(context, :client_name, "Originated Client Co")}
       end
@@ -35,12 +40,17 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
     end
 
     scenario "agency with invited (non-originator) access does NOT see Originator badge for that client" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has been invited to access a client account (not originated)", context do
         client = AgenciesFixtures.account_fixture(%{name: "Invited Client Inc"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client.id,
+          :admin,
+          false
+        )
 
         {:ok, Map.put(context, :client_name, "Invited Client Inc")}
       end
@@ -67,19 +77,31 @@ defmodule MetricFlowSpex.IfAgencyOriginatedTheClientAccountTheySeeOriginatorBadg
     end
 
     scenario "agency with both originated and invited clients sees the correct badge for each" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has originated one client and been invited to another", context do
         originated_client = AgenciesFixtures.account_fixture(%{name: "Founded Client LLC"})
         invited_client = AgenciesFixtures.account_fixture(%{name: "Partner Client Ltd"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, originated_client.id, :admin, true)
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, invited_client.id, :read_only, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          originated_client.id,
+          :admin,
+          true
+        )
 
-        {:ok, Map.merge(context, %{
-          originated_client_name: "Founded Client LLC",
-          invited_client_name: "Partner Client Ltd"
-        })}
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          invited_client.id,
+          :read_only,
+          false
+        )
+
+        {:ok,
+         Map.merge(context, %{
+           originated_client_name: "Founded Client LLC",
+           invited_client_name: "Partner Client Ltd"
+         })}
       end
 
       when_ "the agency owner navigates to the accounts page", context do

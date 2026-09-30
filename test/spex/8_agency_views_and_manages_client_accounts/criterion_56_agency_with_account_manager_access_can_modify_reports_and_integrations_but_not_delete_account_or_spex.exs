@@ -7,7 +7,8 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
   alias MetricFlowTest.AgenciesFixtures
   alias MetricFlowTest.UsersFixtures
 
-  spex "Agency with account manager access can modify integrations but not delete account or manage users", criterion: 56 do
+  spex "Agency with account manager access can modify integrations but not delete account or manage users",
+    criterion: 56 do
     scenario "account manager can navigate to the integrations page" do
       given_ "a user is registered and added as account_manager on a client account", context do
         email = "acctmgr#{System.unique_integer([:positive])}@example.com"
@@ -17,11 +18,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -31,11 +34,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -65,7 +70,8 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
     end
 
     scenario "account manager does not see the Delete Account section on account settings" do
-      given_ "a user has account_manager membership on a client account and is logged in", context do
+      given_ "a user has account_manager membership on a client account and is logged in",
+             context do
         email = "acctmgr#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -73,11 +79,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -87,11 +95,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -116,7 +126,8 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
     end
 
     scenario "account manager does not see the Transfer Ownership section on account settings" do
-      given_ "a user has account_manager membership on a client account and is logged in", context do
+      given_ "a user has account_manager membership on a client account and is logged in",
+             context do
         email = "acctmgr#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -124,11 +135,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -138,11 +151,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -167,7 +182,8 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
     end
 
     scenario "account manager sees read-only account settings with no editable form" do
-      given_ "a user has account_manager membership on a client account and is logged in", context do
+      given_ "a user has account_manager membership on a client account and is logged in",
+             context do
         email = "acctmgr#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -175,11 +191,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -189,11 +207,13 @@ defmodule MetricFlowSpex.AccountManagerCanModifyIntegrationsButNotDeleteOrManage
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)

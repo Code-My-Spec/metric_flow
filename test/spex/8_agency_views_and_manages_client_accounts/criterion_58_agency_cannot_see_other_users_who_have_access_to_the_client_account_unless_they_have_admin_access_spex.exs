@@ -7,7 +7,8 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
   alias MetricFlowTest.AgenciesFixtures
   alias MetricFlowTest.UsersFixtures
 
-  spex "Agency cannot see other users who have access to the client account unless they have admin access", criterion: 58 do
+  spex "Agency cannot see other users who have access to the client account unless they have admin access",
+    criterion: 58 do
     scenario "read-only agency user cannot see the members list on the members page" do
       given_ "a user is registered and added as read_only member on a client account", context do
         email = "readonly#{System.unique_integer([:positive])}@example.com"
@@ -17,11 +18,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -31,11 +34,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -68,11 +73,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -82,11 +89,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -111,7 +120,8 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
     end
 
     scenario "account manager agency user cannot see the members list on the members page" do
-      given_ "a user is registered and added as account_manager member on a client account", context do
+      given_ "a user is registered and added as account_manager member on a client account",
+             context do
         email = "acctmgr#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -119,11 +129,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -133,11 +145,13 @@ defmodule MetricFlowSpex.AgencyCannotSeeOtherUsersUnlessAdminSpex do
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)

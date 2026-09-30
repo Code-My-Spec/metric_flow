@@ -17,11 +17,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -31,11 +33,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -68,11 +72,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -82,11 +88,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -114,11 +122,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -128,11 +138,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -160,11 +172,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -174,11 +188,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -211,11 +227,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "My Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "My Personal Account"
+          }
+        )
         |> render_submit()
 
         user = UsersFixtures.get_user_by_email(email)
@@ -225,11 +243,13 @@ defmodule MetricFlowSpex.AgencyWithAdminAccessCanDoEverythingExceptDeleteTheAcco
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)

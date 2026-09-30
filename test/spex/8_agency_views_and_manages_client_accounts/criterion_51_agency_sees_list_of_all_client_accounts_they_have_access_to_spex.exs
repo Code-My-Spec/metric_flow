@@ -8,7 +8,7 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
 
   spex "Agency sees list of all client accounts they have access to", criterion: 51 do
     scenario "agency owner with multiple client accounts sees all of them listed on the accounts page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has been granted access to multiple client accounts", context do
         # Create client accounts via fixture (no UI for creating client accounts exists yet)
@@ -16,13 +16,25 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
         client2 = AgenciesFixtures.account_fixture(%{name: "Client Beta"})
 
         # Grant the agency owner access to the client accounts (no UI exists yet)
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client1.id, :admin, true)
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client2.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client1.id,
+          :admin,
+          true
+        )
 
-        {:ok, Map.merge(context, %{
-          client_account_1: "Client Alpha",
-          client_account_2: "Client Beta"
-        })}
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client2.id,
+          :admin,
+          true
+        )
+
+        {:ok,
+         Map.merge(context, %{
+           client_account_1: "Client Alpha",
+           client_account_2: "Client Beta"
+         })}
       end
 
       when_ "the agency owner navigates to the accounts page", context do
@@ -42,7 +54,7 @@ defmodule MetricFlowSpex.AgencySeesListOfAllClientAccountsTheyHaveAccessToSpex d
     end
 
     scenario "agency user with no client accounts sees only their own account on the accounts page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the agency user navigates to the accounts page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts")

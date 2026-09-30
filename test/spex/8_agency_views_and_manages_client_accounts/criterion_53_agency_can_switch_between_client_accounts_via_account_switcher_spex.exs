@@ -8,12 +8,17 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
 
   spex "Agency can switch between client accounts via account switcher", criterion: 53 do
     scenario "agency owner sees a switch action on each client account card on the accounts page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has been granted access to a client account", context do
         client = AgenciesFixtures.account_fixture(%{name: "Client Alpha"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client.id,
+          :admin,
+          false
+        )
 
         {:ok, Map.put(context, :client_account_name, "Client Alpha")}
       end
@@ -29,18 +34,28 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
       end
 
       then_ "the switch account action is labeled with the client account name", context do
-        assert has_element?(context.view, "[data-role='switch-account']", context.client_account_name)
+        assert has_element?(
+                 context.view,
+                 "[data-role='switch-account']",
+                 context.client_account_name
+               )
+
         {:ok, context}
       end
     end
 
     scenario "agency owner can click a client account card to switch into that client's context" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has been granted access to a client account named Client Beta", context do
         client = AgenciesFixtures.account_fixture(%{name: "Client Beta"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client.id,
+          :admin,
+          false
+        )
 
         {:ok, Map.put(context, :client_account_name, "Client Beta")}
       end
@@ -65,17 +80,24 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
     end
 
     scenario "agency owner switching to a client account sees the client account name in the settings page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "the owner has been granted access to a client account named Switched Client", context do
+      given_ "the owner has been granted access to a client account named Switched Client",
+             context do
         client = AgenciesFixtures.account_fixture(%{name: "Switched Client"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client.id,
+          :admin,
+          false
+        )
 
         {:ok, Map.put(context, :client_account_name, "Switched Client")}
       end
 
-      when_ "the agency owner navigates to the accounts page and switches to the client account", context do
+      when_ "the agency owner navigates to the accounts page and switches to the client account",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts")
 
         element(view, "[data-role='switch-account']", context.client_account_name)
@@ -96,19 +118,31 @@ defmodule MetricFlowSpex.AgencyCanSwitchBetweenClientAccountsViaAccountSwitcherS
     end
 
     scenario "agency owner with multiple clients can switch between them independently" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner has been granted access to two different client accounts", context do
         client_one = AgenciesFixtures.account_fixture(%{name: "First Client Co"})
         client_two = AgenciesFixtures.account_fixture(%{name: "Second Client Inc"})
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_one.id, :admin, false)
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client_two.id, :admin, false)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client_one.id,
+          :admin,
+          false
+        )
 
-        {:ok, Map.merge(context, %{
-          client_one_name: "First Client Co",
-          client_two_name: "Second Client Inc"
-        })}
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client_two.id,
+          :admin,
+          false
+        )
+
+        {:ok,
+         Map.merge(context, %{
+           client_one_name: "First Client Co",
+           client_two_name: "Second Client Inc"
+         })}
       end
 
       when_ "the agency owner navigates to the accounts page", context do

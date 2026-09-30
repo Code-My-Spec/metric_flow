@@ -224,6 +224,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                       Manage
                     </.link>
                     <button
+                      :if={@can_modify}
                       data-role="disconnect-integration"
                       phx-click="confirm_disconnect"
                       phx-value-provider={Atom.to_string(platform.provider)}
@@ -348,6 +349,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       |> assign(:sync_results, %{})
       |> assign(:disconnecting, nil)
       |> assign(:can_sync, current_user_role in [:owner, :admin])
+      |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
 
     {:ok, socket}
   end
@@ -453,29 +455,36 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     provider = String.to_existing_atom(provider_str)
     scope = socket.assigns.current_scope
 
-    case Integrations.disconnect(scope, provider) do
-      {:ok, _} ->
-        integrations = Integrations.list_integrations(scope)
+    if not socket.assigns.can_modify do
+      {:noreply,
+       socket
+       |> assign(:disconnecting, nil)
+       |> put_flash(:error, "You are not authorized to disconnect integrations.")}
+    else
+      case Integrations.disconnect(scope, provider) do
+        {:ok, _} ->
+          integrations = Integrations.list_integrations(scope)
 
-        socket =
-          socket
-          |> assign(:integrations, integrations)
-          |> assign(:disconnecting, nil)
-          |> put_flash(
-            :info,
-            "Disconnected from #{provider_display_name(provider)}. " <>
-              "Historical data is retained; no new data will sync after disconnecting."
-          )
+          socket =
+            socket
+            |> assign(:integrations, integrations)
+            |> assign(:disconnecting, nil)
+            |> put_flash(
+              :info,
+              "Disconnected from #{provider_display_name(provider)}. " <>
+                "Historical data is retained; no new data will sync after disconnecting."
+            )
 
-        {:noreply, socket}
+          {:noreply, socket}
 
-      {:error, _} ->
-        socket =
-          socket
-          |> assign(:disconnecting, nil)
-          |> put_flash(:error, "Failed to disconnect integration.")
+        {:error, _} ->
+          socket =
+            socket
+            |> assign(:disconnecting, nil)
+            |> put_flash(:error, "Failed to disconnect integration.")
 
-        {:noreply, socket}
+          {:noreply, socket}
+      end
     end
   end
 

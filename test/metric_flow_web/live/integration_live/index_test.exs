@@ -214,6 +214,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "opens disconnect confirmation modal on Disconnect click" do
     test "opens disconnect confirmation modal on Disconnect click", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
 
@@ -236,6 +237,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "disconnects provider and shows success flash on confirm" do
     test "disconnects provider and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
@@ -263,6 +265,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "cancels disconnect modal without modifying data" do
     test "cancels disconnect modal without modifying data", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       scope = Scope.for_user(user)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)

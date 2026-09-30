@@ -71,6 +71,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   describe "displays saved report cards with name and actions" do
     test "displays saved report cards with name and actions", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       report = visualization_fixture(user, %{name: "Q1 Revenue Summary", shareable: true})
       conn = log_in_user(conn, user)
 
@@ -133,6 +134,7 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
   describe "deletes report and shows success flash on confirm" do
     test "deletes report and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       report = visualization_fixture(user, %{name: "Expendable Report"})
       conn = log_in_user(conn, user)
 

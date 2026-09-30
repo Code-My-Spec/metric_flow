@@ -29,6 +29,8 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Agencies
   alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Dashboards.Visualization
+  alias MetricFlow.Integrations.Integration
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Repo
   alias MetricFlow.Users
@@ -77,6 +79,48 @@ defmodule MetricFlowSpex.Fixtures do
   @spec grant_client_account_access(String.t(), integer(), atom(), boolean()) :: :ok
   def client_account_fixture(name) do
     MetricFlowTest.AgenciesFixtures.account_fixture(%{name: name, type: "client"})
+  end
+
+  @doc """
+  Creates a saved report (Visualization) owned by the user registered with `email`.
+
+  For specs that need an existing report to exercise view/modify permissions
+  against, without a report-creation UI flow to drive.
+  """
+  @spec create_report_for(String.t(), String.t()) :: Visualization.t()
+  def create_report_for(email, name) do
+    user = Users.get_user_by_email(email)
+
+    %Visualization{}
+    |> Visualization.changeset(%{
+      name: name,
+      user_id: user.id,
+      vega_spec: %{"chart_type" => "custom"}
+    })
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Creates a connected integration owned by the user registered with `email`.
+
+  For specs that need an existing integration to exercise view/modify
+  permissions against, without a real OAuth connect flow to drive.
+  """
+  @spec create_integration_for(String.t(), atom()) :: Integration.t()
+  def create_integration_for(email, provider) do
+    user = Users.get_user_by_email(email)
+
+    %Integration{}
+    |> Integration.changeset(%{
+      user_id: user.id,
+      provider: provider,
+      access_token: "spex-access-token-#{System.unique_integer([:positive])}",
+      refresh_token: "spex-refresh-token-#{System.unique_integer([:positive])}",
+      expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
+      granted_scopes: ["email", "profile"],
+      provider_metadata: %{}
+    })
+    |> Repo.insert!()
   end
 
   def grant_client_account_access(email, client_account_id, access_level, is_originator) do
@@ -149,7 +193,10 @@ defmodule MetricFlowSpex.Fixtures do
   @spec login_token_for(String.t()) :: String.t()
   def login_token_for(email) do
     user = Users.get_user_by_email(email)
-    {:ok, captured_email} = Users.deliver_login_instructions(user, &("[TOKEN]" <> &1 <> "[TOKEN]"))
+
+    {:ok, captured_email} =
+      Users.deliver_login_instructions(user, &("[TOKEN]" <> &1 <> "[TOKEN]"))
+
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
   end
@@ -185,7 +232,8 @@ defmodule MetricFlowSpex.Fixtures do
       account_id: customer_account.id,
       plan_id: plan.id,
       current_period_start: DateTime.utc_now() |> DateTime.truncate(:second),
-      current_period_end: DateTime.utc_now() |> DateTime.add(30, :day) |> DateTime.truncate(:second)
+      current_period_end:
+        DateTime.utc_now() |> DateTime.add(30, :day) |> DateTime.truncate(:second)
     })
   end
 
