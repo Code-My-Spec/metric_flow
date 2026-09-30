@@ -289,12 +289,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
     scope = socket.assigns.current_scope
     id_int = String.to_integer(id)
 
-    if not socket.assigns.can_modify do
-      {:noreply,
-       socket
-       |> assign(:confirming_delete, nil)
-       |> put_flash(:error, "You are not authorized to delete reports.")}
-    else
+    if socket.assigns.can_modify do
       case Dashboards.delete_visualization(scope, id_int) do
         {:ok, _deleted} ->
           updated = Enum.reject(socket.assigns.reports, &(&1.id == id_int))
@@ -313,6 +308,11 @@ defmodule MetricFlowWeb.ReportLive.Index do
            |> assign(:confirming_delete, nil)
            |> put_flash(:error, "Report not found.")}
       end
+    else
+      {:noreply,
+       socket
+       |> assign(:confirming_delete, nil)
+       |> put_flash(:error, "You are not authorized to delete reports.")}
     end
   end
 

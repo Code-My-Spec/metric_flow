@@ -456,12 +456,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     provider = String.to_existing_atom(provider_str)
     scope = socket.assigns.current_scope
 
-    if not socket.assigns.can_modify do
-      {:noreply,
-       socket
-       |> assign(:disconnecting, nil)
-       |> put_flash(:error, "You are not authorized to disconnect integrations.")}
-    else
+    if socket.assigns.can_modify do
       case Integrations.disconnect(scope, provider) do
         {:ok, _} ->
           integrations = Integrations.list_integrations(scope)
@@ -486,6 +481,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
           {:noreply, socket}
       end
+    else
+      {:noreply,
+       socket
+       |> assign(:disconnecting, nil)
+       |> put_flash(:error, "You are not authorized to disconnect integrations.")}
     end
   end
 
