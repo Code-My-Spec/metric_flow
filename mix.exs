@@ -4,7 +4,7 @@ defmodule MetricFlow.MixProject do
   def project do
     [
       app: :metric_flow,
-      version: "0.1.10",
+      version: "0.1.11",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -48,6 +48,7 @@ defmodule MetricFlow.MixProject do
     [
       {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.1"},
+      {:slipstream, "~> 1.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},

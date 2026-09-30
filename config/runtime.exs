@@ -219,3 +219,11 @@ end
 if anthropic_key = env!("ANTHROPIC_API_KEY", :string, test_placeholder.("test-anthropic-api-key")) do
   config :req_llm, :anthropic_api_key, anthropic_key
 end
+
+# The support widget's socket, and the key it authenticates with. Read at
+# runtime so one image serves every environment.
+config :metric_flow,
+  codemyspec_widget_url:
+    System.get_env("CODEMYSPEC_WIDGET_URL") || "wss://codemyspec.com/widget"
+
+config :metric_flow, :deploy_key, System.get_env("DEPLOY_KEY")
