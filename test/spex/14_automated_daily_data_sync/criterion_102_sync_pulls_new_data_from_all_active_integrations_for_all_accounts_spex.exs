@@ -1,112 +1,61 @@
-defmodule MetricFlowSpex.SyncPullsNewDataFromAllActiveIntegrationsForAllAccountsSpex do
+defmodule MetricFlowSpex.SyncPullsFromAllActiveIntegrationsForAllAccountsSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
+  @moduledoc """
+  Verifies the scheduled sync is system-wide, not scoped to a single account.
+  """
+
   spex "Sync pulls new data from all active integrations for all accounts", criterion: 102 do
-    scenario "sync history page lists an entry for the connected Google integration" do
+    scenario "the scheduled sync runs for every account with an active integration" do
       given_ :owner_with_integrations
 
-      given_ "the user navigates to the sync history page", context do
+      given_ "a second, unrelated account also has an active integration", context do
+        other_email = "other#{System.unique_integer([:positive])}@example.com"
+        other_password = "SecurePassword123!"
+
+        reg_conn = build_conn()
+        {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+        reg_view
+        |> form("#registration_form",
+          user: %{email: other_email, password: other_password, account_name: "Other Account"}
+        )
+        |> render_submit()
+
+        MetricFlowSpex.Fixtures.create_integration_for(other_email, :google_ads)
+
+        login_conn = build_conn()
+        {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+        other_conn =
+          login_view
+          |> form("#login_form_password",
+            user: %{email: other_email, password: other_password, remember_me: true}
+          )
+          |> submit_form(login_conn)
+          |> recycle()
+
+        {:ok, Map.put(context, :other_conn, other_conn)}
+      end
+
+      when_ "the scheduled daily sync fires", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
+        view |> element("[data-role='trigger-daily-sync']") |> render_click()
+        Oban.drain_queue(queue: :sync)
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page displays the sync history list", context do
-        assert has_element?(context.view, "[data-role='sync-history']"),
-               "Expected a [data-role='sync-history'] element listing sync history entries"
+      then_ "the first account's sync history shows a new entry", context do
+        assert has_element?(context.view, "[data-role='sync-history-entry']")
         {:ok, context}
       end
 
-      then_ "the sync history list shows the connected integration provider name", context do
-        html = render(context.view)
-
-        assert html =~ "Google" or html =~ "google",
-               "Expected the sync history to include the connected Google integration, got: #{html}"
-        {:ok, context}
-      end
-    end
-
-    scenario "each sync history entry shows the provider name and sync result" do
-      given_ :owner_with_integrations
-
-      given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      when_ "the LiveView receives a sync completion event for the Google integration", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google,
-          records_synced: 25,
-          completed_at: DateTime.utc_now()
-        }})
-
-        :timer.sleep(100)
-
-        {:ok, context}
-      end
-
-      then_ "the user sees a sync result entry for the Google integration", context do
-        html = render(context.view)
-
-        assert html =~ "Google" or html =~ "google",
-               "Expected the sync history entry to show the provider name 'Google', got: #{html}"
-        {:ok, context}
-      end
-
-      then_ "the sync result entry shows the number of records synced", context do
-        html = render(context.view)
-
-        assert html =~ "25" or html =~ "records" or html =~ "synced",
-               "Expected the sync history entry to show the number of records synced, got: #{html}"
-        {:ok, context}
-      end
-    end
-
-    scenario "a user with only inactive integrations sees an empty sync history" do
-      given_ :user_logged_in_as_owner
-
-      given_ "the user navigates to the sync history page without any connected integrations", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      then_ "the sync history page loads successfully", context do
-        html = render(context.view)
-
-        assert html =~ "Sync History" or html =~ "sync history" or html =~ "sync-history",
-               "Expected the sync history page to render, got: #{html}"
-        {:ok, context}
-      end
-
-      then_ "no sync entries are shown for the user with no connected integrations", context do
-        refute has_element?(context.view, "[data-role='sync-history-entry']"),
-               "Expected no sync history entries when no integrations are connected"
-        {:ok, context}
-      end
-    end
-
-    scenario "sync history page shows entries scoped to all integrations belonging to the user" do
-      given_ :owner_with_integrations
-
-      given_ "the user navigates to the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      then_ "the sync history section is present on the page", context do
-        assert has_element?(context.view, "[data-role='sync-history']"),
-               "Expected the sync history page to have a [data-role='sync-history'] section"
-        {:ok, context}
-      end
-
-      then_ "the page heading or label references sync history or synced data", context do
-        html = render(context.view)
-
-        assert html =~ "Sync History" or html =~ "Sync history" or html =~ "sync history",
-               "Expected the page to display a 'Sync History' heading, got: #{html}"
+      then_ "the second, unrelated account's sync history also shows a new entry", context do
+        {:ok, other_view, _html} = live(context.other_conn, "/app/integrations/sync-history")
+        assert has_element?(other_view, "[data-role='sync-history-entry']")
         {:ok, context}
       end
     end

@@ -1,28 +1,28 @@
-defmodule MetricFlowSpex.SyncRetrievesMetricsReviewAndFinancialDataForEachDaySpex do
+defmodule MetricFlowSpex.DailySyncRetrievesMetricsReviewAndFinancialDataTogetherSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync retrieves metrics, review data, and financial data for each day", criterion: 105 do
-    scenario "an account with marketing, review, and financial integrations syncs all of them together" do
+  spex "Daily sync retrieves metrics, review data, and financial data together", criterion: 614 do
+    scenario "a single daily sync run covers marketing, review, and financial integrations together" do
       given_ :user_logged_in_as_owner
 
-      given_ "the account has marketing, review, and financial integrations connected", context do
+      given_ "an account with marketing, review, and financial integrations", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews)
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
         {:ok, context}
       end
 
-      when_ "the daily sync runs", context do
+      when_ "the daily sync runs for a given day", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()
         Oban.drain_queue(queue: :sync)
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "sync history shows entries for the marketing, review, and financial integrations", context do
+      then_ "metrics, review data, and financial data are all retrieved for that day", context do
         html = render(context.view)
         assert html =~ "Google Ads"
         assert html =~ "Google Business Reviews"

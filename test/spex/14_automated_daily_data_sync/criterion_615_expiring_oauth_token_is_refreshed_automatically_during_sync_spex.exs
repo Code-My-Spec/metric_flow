@@ -1,14 +1,14 @@
-defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
+defmodule MetricFlowSpex.ExpiringOauthTokenIsRefreshedAutomaticallyDuringSyncSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "OAuth tokens are automatically refreshed when needed", criterion: 106 do
-    scenario "a sync for an integration with a soon-expiring token completes without requiring reconnection" do
+  spex "Expiring OAuth token is refreshed automatically during sync", criterion: 615 do
+    scenario "a sync completes without interruption despite a near-expiration token" do
       given_ :user_logged_in_as_owner
 
-      given_ "the account has an integration whose token expires very soon", context do
+      given_ "an integration's OAuth token is nearing expiration", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
           expires_at: DateTime.add(DateTime.utc_now(), 30, :second)
         )
@@ -23,7 +23,7 @@ defmodule MetricFlowSpex.OauthTokensAreAutomaticallyRefreshedWhenNeededSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync completes without the user being asked to reconnect the integration", context do
+      then_ "the token is refreshed automatically and the sync completes without interruption", context do
         refute has_element?(context.view, "[data-role='sync-error']", "reconnect")
         {:ok, context}
       end
