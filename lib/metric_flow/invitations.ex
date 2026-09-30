@@ -20,6 +20,7 @@ defmodule MetricFlow.Invitations do
   import Ecto.Query, only: [from: 2]
 
   alias Ecto.Multi
+  alias MetricFlow.Accounts
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Invitations.Invitation
@@ -58,7 +59,9 @@ defmodule MetricFlow.Invitations do
   @spec send_invitation(Scope.t(), integer(), map()) ::
           {:ok, Invitation.t()} | {:error, :unauthorized | Ecto.Changeset.t()}
   def send_invitation(%Scope{user: user} = scope, account_id, attrs) do
-    with :ok <- authorize_invite(scope, account_id) do
+    target_role = extract_role(attrs)
+
+    with :ok <- authorize_invite(scope, account_id, target_role) do
       account = Repo.get!(Account, account_id)
 
       expires_at = DateTime.add(DateTime.utc_now(:second), @invitation_validity_in_days, :day)
@@ -372,17 +375,26 @@ defmodule MetricFlow.Invitations do
   # Private helpers — authorization
   # ---------------------------------------------------------------------------
 
-  defp authorize_invite(%Scope{user: user}, account_id) do
-    query =
-      from(m in AccountMember,
-        where: m.user_id == ^user.id and m.account_id == ^account_id,
-        select: m.role
-      )
-
-    case Repo.one(query) do
-      role when role in [:owner, :admin] -> :ok
-      _ -> {:error, :unauthorized}
+  defp authorize_invite(%Scope{} = scope, account_id, target_role) do
+    if Accounts.can_assign_role?(scope, account_id, target_role) do
+      :ok
+    else
+      {:error, :unauthorized}
     end
+  end
+
+  # The invitation form submits role as a string ("admin", "read_only",
+  # "account_manager"); authorization needs it as the same atom the Invitation
+  # schema's Ecto.Enum will later cast it to.
+  defp extract_role(%{"role" => role}) when is_binary(role), do: safe_to_atom(role)
+  defp extract_role(%{role: role}) when is_atom(role), do: role
+  defp extract_role(%{role: role}) when is_binary(role), do: safe_to_atom(role)
+  defp extract_role(_attrs), do: nil
+
+  defp safe_to_atom(role) do
+    String.to_existing_atom(role)
+  rescue
+    ArgumentError -> nil
   end
 
   defp check_not_already_member(user_id, account_id) do

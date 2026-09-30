@@ -14,6 +14,7 @@ defmodule MetricFlow.Accounts do
 
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountRepository
+  alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -34,6 +35,17 @@ defmodule MetricFlow.Accounts do
   defdelegate leave_account(scope, account_id), to: AccountRepository
   defdelegate touch_membership(scope, account_id), to: AccountRepository
   defdelegate get_account_by_slug(slug), to: AccountRepository
+
+  @doc """
+  Returns true if the calling user may assign `target_role` to a member of the
+  account — the same role-hierarchy check `add_user_to_account/4` and
+  `update_user_role/4` enforce, exposed for callers outside this context (such
+  as Invitations) that need to validate a target role before acting elsewhere.
+  """
+  @spec can_assign_role?(Scope.t(), integer(), atom()) :: boolean()
+  def can_assign_role?(%Scope{} = scope, account_id, target_role) do
+    Authorization.can?(scope, :add_member, %{account_id: account_id, target_role: target_role})
+  end
 
   @doc """
   Returns the primary account ID for the scoped user.

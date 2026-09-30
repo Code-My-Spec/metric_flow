@@ -72,19 +72,14 @@ defmodule MetricFlowWeb.InvitationLive.Send do
             </label>
             <select class="select w-full" name="invitation[role]">
               <option
-                value="read_only"
-                selected={selected_role(@invitation_form, "read_only") || is_nil(@invitation_form.params["role"])}
+                :for={role <- invite_roles(@current_user_role)}
+                value={role}
+                selected={
+                  selected_role(@invitation_form, role) ||
+                    (role == "read_only" and is_nil(@invitation_form.params["role"]))
+                }
               >
-                Read Only
-              </option>
-              <option value="admin" selected={selected_role(@invitation_form, "admin")}>
-                Admin
-              </option>
-              <option
-                value="account_manager"
-                selected={selected_role(@invitation_form, "account_manager")}
-              >
-                Account Manager
+                {role_label(String.to_existing_atom(role))}
               </option>
             </select>
             <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error mt-1">
@@ -175,6 +170,7 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       socket
       |> assign(:page_title, "Invite Members")
       |> assign(:account, account)
+      |> assign(:current_user_role, role)
       |> assign(:pending_invitations, pending_invitations)
       |> assign(:invitation_form, build_invitation_form(invitation_changeset, %{}, false))
 
@@ -292,6 +288,12 @@ defmodule MetricFlowWeb.InvitationLive.Send do
   defp selected_role(form, role_value) do
     Map.get(form.params, "role") == role_value
   end
+
+  # Owners may invite at any role. Admins may only invite at account_manager
+  # and below — matches Authorization.target_role_allowed?/2, which the
+  # backend also enforces via Accounts.can_assign_role?/3.
+  defp invite_roles(:owner), do: ~w(read_only account_manager admin owner)
+  defp invite_roles(_role), do: ~w(read_only account_manager)
 
   defp role_badge_class(:admin), do: "badge badge-secondary"
   defp role_badge_class(:account_manager), do: "badge badge-accent"

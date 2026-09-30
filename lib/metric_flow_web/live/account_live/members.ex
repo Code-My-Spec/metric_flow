@@ -307,6 +307,17 @@ defmodule MetricFlowWeb.AccountLive.Members do
     end
   end
 
+  # The accessible sr-only "change-role" button (see render/1 above) carries no
+  # phx-value-role, since it has no single correct value per row — a real click
+  # or keyboard/screen-reader activation sends only user_id. Without this
+  # clause that payload matches no other handle_event("change_role", ...) head
+  # and crashes the LiveView. Handle it explicitly instead of letting it fall
+  # through to a FunctionClauseError.
+  def handle_event("change_role", %{"user_id" => _user_id}, socket) do
+    {:noreply,
+     put_flash(socket, :error, "Select a new access level before changing this member's role")}
+  end
+
   def handle_event("remove_member", %{"user_id" => user_id}, socket) do
     scope = socket.assigns.current_scope
     account_id = socket.assigns.account.id
