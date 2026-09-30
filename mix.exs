@@ -82,7 +82,7 @@ defmodule MetricFlow.MixProject do
       {:cachex, "~> 4.1"},
       # Monitoring (ADR: appsignal_observability_hetzner — supersedes the
       # 2026-02-21 Sentry+PromEx ADR after the move off Fly.io)
-      {:appsignal, "~> 2.16"},
+      {:appsignal, "~> 2.17.1"},
       {:appsignal_phoenix, "~> 2.5"},
       # Charting (ADR: charting_library)
       {:vega_lite, "~> 0.1.11"},
