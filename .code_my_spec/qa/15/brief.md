@@ -47,6 +47,10 @@ For the ownership-vs-role scenario below, a synthetic integration row is inserte
 
 .code_my_spec/qa/15/screenshots/
 
+## Retest Notes (post-fix)
+
+Issue a2063fdc resolved: `mount/3` now computes `can_sync` from the user's actual account role (`owner`/`admin` only) via `Accounts.get_user_role/3`, gating both the button's rendering and the `sync` event handlers server-side (not just a hidden button). Confirmed live: qa@example.com (owner) still sees and can use Sync Now on http://127.0.0.1:59302 -- no regression. The specific "non-admin who personally owns an integration" case is covered by the coder's own passing story 15 spex suite (14/14); a live repro of that exact combination still isn't practical here for the same DB-encryption reasons noted in the original issue, so this is accepted on the strength of the code fix (role check is now unconditional and independent of ownership) plus the passing automated suite.
+
 ## Setup Notes
 
 Results are recorded via `submit_qa_result` (a DB-backed attempt) plus `create_issue` for findings — there is no `result.md` file; the path above is where screenshot evidence is saved.
