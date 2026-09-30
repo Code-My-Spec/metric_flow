@@ -1,17 +1,11 @@
 # MetricFlow operator surface — `just <recipe>`.
 #
 # Two scopes:
-#  - DEV: `just run <cmd>` wraps a command in `varlock run` so `@sensitive`
-#    values are redacted in stdout/stderr. Useful for `mix phx.server`,
-#    `iex -S mix`, etc., when you want leak protection in your terminal.
-#    Schema validation is currently best-effort (varlock auto-loading
-#    doesn't play perfectly with the existing .env/.env.dev split — see
-#    priv/knowledge/devops/varlock.md).
+#  - DEV: dev/test secrets are sops-encrypted in envs/{dev,test}.enc.env.
 #  - DEPLOY: CodeMySpec deploys via bin/deploy; these are the by-hand
 #    equivalents. Secrets are sops-encrypted in envs/<env>.enc.env.
 #
 # Tooling:
-#  - varlock: `brew install varlock` (system binary).
 #  - kamal:   ruby gem on PATH.
 
 set shell := ["bash", "-uc"]
@@ -21,12 +15,6 @@ default:
     @just --list
 
 # === DEV =====================================================================
-
-# Run a command under varlock so `@sensitive` env values are redacted in
-# its stdout/stderr.
-#   just run iex -S mix phx.server
-run *cmd:
-    varlock run -- {{cmd}}
 
 # Bring the application back up on the code that is now checked out.
 #

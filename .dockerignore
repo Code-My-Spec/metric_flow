@@ -1,0 +1,16 @@
+# Build context: only what the Dockerfile copies.
+.git
+_build
+deps
+.elixir_ls
+node_modules
+assets/node_modules
+test
+tmp
+erl_crash.dump
+
+# Plaintext env files never enter the image; envs/*.enc.env (sops) do.
+.env
+.env.*
+*.env
+!envs/*.enc.env
