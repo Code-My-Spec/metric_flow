@@ -35,8 +35,8 @@ defmodule MetricFlowSpex.Criterion818SearchNoMatchShowsEmptyResultSpex do
 
       when_ "no report name matches the search term", context do
         context.view
-        |> element("[data-role='report-search-input']")
-        |> render_change(%{"search" => "no-such-report-name-xyz"})
+        |> form("#report-search-form", %{"search" => "no-such-report-name-xyz"})
+        |> render_change()
 
         {:ok, context}
       end

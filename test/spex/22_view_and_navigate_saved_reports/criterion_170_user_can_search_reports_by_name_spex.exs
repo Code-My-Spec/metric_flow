@@ -48,8 +48,8 @@ defmodule MetricFlowSpex.Criterion170UserCanSearchReportsByNameSpex do
                "Expected a search input on the reports list"
 
         context.view
-        |> element("[data-role='report-search-input']")
-        |> render_change(%{"search" => "Quarterly"})
+        |> form("#report-search-form", %{"search" => "Quarterly"})
+        |> render_change()
 
         {:ok, context}
       end

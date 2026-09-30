@@ -160,16 +160,17 @@ defmodule MetricFlowWeb.ReportLive.Index do
         <div data-role="reports-list">
           <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
             <h2 class="text-xl font-semibold">Saved Reports</h2>
-            <input
-              type="text"
-              name="search"
-              value={@search}
-              phx-change="search"
-              phx-debounce="200"
-              data-role="report-search-input"
-              placeholder="Search reports by name"
-              class="input input-bordered input-sm w-full sm:w-64"
-            />
+            <form id="report-search-form" phx-change="search" class="w-full sm:w-64">
+              <input
+                type="text"
+                name="search"
+                value={@search}
+                phx-debounce="200"
+                data-role="report-search-input"
+                placeholder="Search reports by name"
+                class="input input-bordered input-sm w-full"
+              />
+            </form>
           </div>
           <p class="text-base-content/60 text-sm mb-4">
             AI-generated and manually created report snapshots
