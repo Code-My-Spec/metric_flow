@@ -29,6 +29,7 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Agencies
   alias MetricFlow.Billing.BillingRepository
+  alias MetricFlow.Correlations.CorrelationJob
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations.Integration
@@ -202,6 +203,32 @@ defmodule MetricFlowSpex.Fixtures do
     end
 
     visualization
+  end
+
+  @doc """
+  Inserts a completed CorrelationJob row directly, so specs can exercise a
+  persisted "selected goal metric" without running a real correlation
+  analysis end to end (which requires an Oban worker to actually execute).
+  """
+  @spec set_goal_metric!(String.t(), String.t()) :: CorrelationJob.t()
+  def set_goal_metric!(email, goal_metric_name) do
+    user = Users.get_user_by_email(email)
+    scope = %Scope{user: user}
+    account_id = Accounts.get_personal_account_id(scope)
+
+    %CorrelationJob{}
+    |> CorrelationJob.changeset(%{
+      account_id: account_id,
+      status: :completed,
+      goal_metric_name: goal_metric_name,
+      data_window_start: Date.add(Date.utc_today(), -30),
+      data_window_end: Date.utc_today(),
+      data_points: 90,
+      results_count: 0,
+      started_at: DateTime.utc_now(),
+      completed_at: DateTime.utc_now()
+    })
+    |> Repo.insert!()
   end
 
   @doc """
