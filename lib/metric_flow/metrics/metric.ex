@@ -79,7 +79,6 @@ defmodule MetricFlow.Metrics.Metric do
       :dimensions
     ])
     |> validate_required([:user_id, :metric_type, :metric_name, :value, :recorded_at, :provider])
-    |> normalize_metric_name()
     |> validate_dimensions()
     |> assoc_constraint(:user)
   end
@@ -87,14 +86,6 @@ defmodule MetricFlow.Metrics.Metric do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
-
-  defp normalize_metric_name(changeset) do
-    case get_change(changeset, :metric_name) do
-      nil -> changeset
-      name when is_binary(name) -> put_change(changeset, :metric_name, String.downcase(name))
-      _ -> changeset
-    end
-  end
 
   defp validate_dimensions(changeset) do
     case get_change(changeset, :dimensions) do

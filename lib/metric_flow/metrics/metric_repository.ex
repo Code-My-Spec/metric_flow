@@ -101,7 +101,6 @@ defmodule MetricFlow.Metrics.MetricRepository do
       Enum.map(attrs_list, fn attrs ->
         attrs
         |> Map.put(:user_id, user.id)
-        |> Map.update(:metric_name, nil, &if(is_binary(&1), do: String.downcase(&1), else: &1))
         |> Map.put(:inserted_at, now)
         |> Map.put(:updated_at, now)
       end)

@@ -2,11 +2,13 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   @moduledoc """
   Google Analytics data provider implementing the DataProviders.Behaviour contract.
 
-  Fetches website traffic metrics from the Google Analytics Data API (GA4),
-  including sessions, pageviews, users, bounce_rate, average_session_duration,
-  and new_users. Supports dimension breakdowns by date, source/medium, and
-  page path. Transforms GA4 API responses to the unified metric format and
-  stores metrics with provider :google_analytics.
+  Fetches the 11 core GA4 daily metrics (activeUsers, active7DayUsers,
+  active28DayUsers, newUsers, engagedSessions, sessions,
+  userEngagementDuration, screenPageViews, eventCount, keyEvents,
+  scrolledUsers) from the Google Analytics Data API. Supports dimension
+  breakdowns by date, source/medium, and page path. Transforms GA4 API
+  responses to the unified metric format and stores metrics with provider
+  :google_analytics.
 
   Accepts an `http_plug` option for dependency injection during tests, allowing
   callers to supply a Plug-compatible function instead of making real HTTP calls.
@@ -19,12 +21,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   @ga4_base_url "https://analyticsdata.googleapis.com/v1beta"
 
   @metric_names [
-    "sessions",
-    "screenPageViews",
     "activeUsers",
-    "bounceRate",
-    "averageSessionDuration",
-    "newUsers"
+    "active7DayUsers",
+    "active28DayUsers",
+    "newUsers",
+    "engagedSessions",
+    "sessions",
+    "userEngagementDuration",
+    "screenPageViews",
+    "eventCount",
+    "keyEvents",
+    "scrolledUsers"
   ]
 
   # Safe compile-time mapping of the known GA4 dimension name strings to atoms.
@@ -318,14 +325,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
     end)
   end
 
-  defp parse_metric_value("bounceRate", raw) do
-    case Float.parse(raw) do
-      {val, _} -> val
-      :error -> 0.0
-    end
-  end
-
-  defp parse_metric_value("averageSessionDuration", raw) do
+  defp parse_metric_value("userEngagementDuration", raw) do
     case Float.parse(raw) do
       {val, _} -> val
       :error -> 0.0

@@ -60,42 +60,59 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
     )
   end
 
-  # GA4 response with 6 metrics per row: sessions, screenPageViews, users,
-  # bounceRate, averageSessionDuration, newUsers
+  # GA4 response with the 11 core metrics per row, in @metric_names order:
+  # activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions,
+  # sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents,
+  # scrolledUsers
   defp valid_api_response do
     Jason.encode!(%{
       "rows" => [
         %{
           "dimensionValues" => [%{"value" => "20260115"}],
           "metricValues" => [
-            %{"value" => "1234"},
-            %{"value" => "5678"},
             %{"value" => "987"},
-            %{"value" => "0.4523"},
+            %{"value" => "3200"},
+            %{"value" => "9800"},
+            %{"value" => "450"},
+            %{"value" => "1100"},
+            %{"value" => "1234"},
             %{"value" => "125.7"},
-            %{"value" => "450"}
+            %{"value" => "5678"},
+            %{"value" => "2200"},
+            %{"value" => "15"},
+            %{"value" => "600"}
           ]
         },
         %{
           "dimensionValues" => [%{"value" => "20260116"}],
           "metricValues" => [
-            %{"value" => "2500"},
-            %{"value" => "9800"},
             %{"value" => "1800"},
-            %{"value" => "0.3100"},
+            %{"value" => "4100"},
+            %{"value" => "11000"},
+            %{"value" => "820"},
+            %{"value" => "2000"},
+            %{"value" => "2500"},
             %{"value" => "98.2"},
-            %{"value" => "820"}
+            %{"value" => "9800"},
+            %{"value" => "3500"},
+            %{"value" => "22"},
+            %{"value" => "950"}
           ]
         }
       ],
       "dimensionHeaders" => [%{"name" => "date"}],
       "metricHeaders" => [
-        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
-        %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
-        %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
-        %{"name" => "newUsers", "type" => "TYPE_INTEGER"}
+        %{"name" => "active7DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "active28DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "newUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "engagedSessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "userEngagementDuration", "type" => "TYPE_SECONDS"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
+        %{"name" => "eventCount", "type" => "TYPE_INTEGER"},
+        %{"name" => "keyEvents", "type" => "TYPE_INTEGER"},
+        %{"name" => "scrolledUsers", "type" => "TYPE_INTEGER"}
       ],
       "metadata" => %{"currencyCode" => "USD"}
     })
@@ -111,12 +128,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
             %{"value" => "organic"}
           ],
           "metricValues" => [
-            %{"value" => "500"},
-            %{"value" => "1200"},
             %{"value" => "430"},
-            %{"value" => "0.35"},
+            %{"value" => "1200"},
+            %{"value" => "3800"},
+            %{"value" => "200"},
+            %{"value" => "380"},
+            %{"value" => "500"},
             %{"value" => "110.5"},
-            %{"value" => "200"}
+            %{"value" => "1200"},
+            %{"value" => "900"},
+            %{"value" => "8"},
+            %{"value" => "250"}
           ]
         }
       ],
@@ -126,12 +148,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
         %{"name" => "sessionMedium"}
       ],
       "metricHeaders" => [
-        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
-        %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
-        %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
-        %{"name" => "newUsers", "type" => "TYPE_INTEGER"}
+        %{"name" => "active7DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "active28DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "newUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "engagedSessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "userEngagementDuration", "type" => "TYPE_SECONDS"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
+        %{"name" => "eventCount", "type" => "TYPE_INTEGER"},
+        %{"name" => "keyEvents", "type" => "TYPE_INTEGER"},
+        %{"name" => "scrolledUsers", "type" => "TYPE_INTEGER"}
       ]
     })
   end
@@ -145,12 +172,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
             %{"value" => "/home"}
           ],
           "metricValues" => [
-            %{"value" => "800"},
-            %{"value" => "2000"},
             %{"value" => "650"},
-            %{"value" => "0.28"},
+            %{"value" => "1800"},
+            %{"value" => "5200"},
+            %{"value" => "300"},
+            %{"value" => "520"},
+            %{"value" => "800"},
             %{"value" => "95.0"},
-            %{"value" => "300"}
+            %{"value" => "2000"},
+            %{"value" => "1300"},
+            %{"value" => "10"},
+            %{"value" => "400"}
           ]
         }
       ],
@@ -159,12 +191,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
         %{"name" => "pagePath"}
       ],
       "metricHeaders" => [
-        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
-        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
         %{"name" => "activeUsers", "type" => "TYPE_INTEGER"},
-        %{"name" => "bounceRate", "type" => "TYPE_FLOAT"},
-        %{"name" => "averageSessionDuration", "type" => "TYPE_SECONDS"},
-        %{"name" => "newUsers", "type" => "TYPE_INTEGER"}
+        %{"name" => "active7DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "active28DayUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "newUsers", "type" => "TYPE_INTEGER"},
+        %{"name" => "engagedSessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "sessions", "type" => "TYPE_INTEGER"},
+        %{"name" => "userEngagementDuration", "type" => "TYPE_SECONDS"},
+        %{"name" => "screenPageViews", "type" => "TYPE_INTEGER"},
+        %{"name" => "eventCount", "type" => "TYPE_INTEGER"},
+        %{"name" => "keyEvents", "type" => "TYPE_INTEGER"},
+        %{"name" => "scrolledUsers", "type" => "TYPE_INTEGER"}
       ]
     })
   end
@@ -179,12 +216,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
         %{
           "dimensionValues" => [%{"value" => "20260115"}],
           "metricValues" => [
-            %{"value" => "500"},
-            %{"value" => "1200"},
             %{"value" => "400"},
-            %{"value" => "0.40"},
+            %{"value" => "1000"},
+            %{"value" => "3000"},
+            %{"value" => "180"},
+            %{"value" => "350"},
+            %{"value" => "500"},
             %{"value" => "88.0"},
-            %{"value" => "180"}
+            %{"value" => "1200"},
+            %{"value" => "800"},
+            %{"value" => "6"},
+            %{"value" => "220"}
           ]
         }
       ],
@@ -199,12 +241,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
         %{
           "dimensionValues" => [%{"value" => "20260116"}],
           "metricValues" => [
-            %{"value" => "600"},
-            %{"value" => "1400"},
             %{"value" => "500"},
-            %{"value" => "0.38"},
+            %{"value" => "1300"},
+            %{"value" => "3800"},
+            %{"value" => "220"},
+            %{"value" => "420"},
+            %{"value" => "600"},
             %{"value" => "92.0"},
-            %{"value" => "220"}
+            %{"value" => "1400"},
+            %{"value" => "950"},
+            %{"value" => "9"},
+            %{"value" => "280"}
           ]
         }
       ],
@@ -336,7 +383,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       assert date_range["startDate"] == Date.to_iso8601(expected_start)
     end
 
-    test "requests sessions, screenPageViews, users, bounceRate, averageSessionDuration, newUsers metrics" do
+    test "requests all 11 core GA4 metrics" do
       test_pid = self()
       plug = capture_request_plug(test_pid)
 
@@ -348,11 +395,17 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       {:ok, decoded} = Jason.decode(body)
       metric_names = Enum.map(decoded["metrics"], & &1["name"])
 
-      assert "sessions" in metric_names
-      assert "screenPageViews" in metric_names
-      assert "bounceRate" in metric_names
-      assert "averageSessionDuration" in metric_names
+      assert "activeUsers" in metric_names
+      assert "active7DayUsers" in metric_names
+      assert "active28DayUsers" in metric_names
       assert "newUsers" in metric_names
+      assert "engagedSessions" in metric_names
+      assert "sessions" in metric_names
+      assert "userEngagementDuration" in metric_names
+      assert "screenPageViews" in metric_names
+      assert "eventCount" in metric_names
+      assert "keyEvents" in metric_names
+      assert "scrolledUsers" in metric_names
     end
 
     test "includes date dimension by default" do
@@ -495,26 +548,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       end
     end
 
-    test "handles bounceRate as percentage value" do
-      plug = build_stub_plug(200, valid_api_response())
-
-      assert {:ok, metrics} =
-               GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
-
-      bounce_rate_metrics =
-        Enum.filter(metrics, fn m ->
-          metric_name = Map.get(m, :metric_name, "")
-          String.contains?(metric_name, "bounce") or String.contains?(metric_name, "Bounce")
-        end)
-
-      for metric <- bounce_rate_metrics do
-        assert is_float(metric.value)
-        assert metric.value >= 0.0
-        assert metric.value <= 1.0
-      end
-    end
-
-    test "handles averageSessionDuration in seconds" do
+    test "handles userEngagementDuration in seconds" do
       plug = build_stub_plug(200, valid_api_response())
 
       assert {:ok, metrics} =

@@ -30,7 +30,8 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     "google_business" =>
       ~w(review_count review_rating call_clicks direction_requests website_clicks),
     "google_analytics" =>
-      ~w(sessions activeUsers screenPageViews bounceRate averageSessionDuration),
+      ~w(activeUsers active7DayUsers active28DayUsers newUsers engagedSessions sessions
+         userEngagementDuration screenPageViews eventCount keyEvents scrolledUsers),
     "google_ads" => ~w(impressions clicks cost conversions ctr cpc),
     "facebook_ads" => ~w(impressions clicks spend conversions ctr cpc),
     "quickbooks" => ~w(revenue expenses net_income gross_profit cash_on_hand)
@@ -431,7 +432,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   end
 
   defp format_metric_value(metric_name, value)
-       when metric_name in ["cpc", "averageSessionDuration"] do
+       when metric_name in ["cpc", "userEngagementDuration"] do
     "#{Float.round(value * 1.0, 2)}"
   end
 
