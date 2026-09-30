@@ -175,8 +175,8 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   end
 
-  describe "saves visualization and navigates to index with success flash" do
-    test "saves visualization and navigates to index with success flash", %{conn: conn} do
+  describe "saves visualization and shows success flash" do
+    test "saves visualization and shows success flash", %{conn: conn} do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -186,9 +186,9 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
         render_change(lv, "validate_name", %{"name" => "My New Chart"})
         lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        lv |> element("[data-role='save-visualization-btn']") |> render_click()
+        html = lv |> element("[data-role='save-visualization-btn']") |> render_click()
 
-        assert_redirect(lv, "/app/dashboards")
+        assert html =~ "Visualization saved."
       end)
     end
 

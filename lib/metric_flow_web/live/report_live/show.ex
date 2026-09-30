@@ -153,7 +153,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
         not valid_vega_spec?(report.vega_spec) ->
           {nil, "This chart's specification is invalid or corrupted.", nil}
 
-        bound_metrics != [] and no_metric_data?(scope, bound_metrics) ->
+        bound_metrics != [] and metric_unavailable?(scope, bound_metrics) ->
           {nil, nil, "This visualization is bound to a metric with no available data."}
 
         true ->
@@ -173,12 +173,9 @@ defmodule MetricFlowWeb.ReportLive.Show do
   defp valid_vega_spec?(spec) when is_map(spec), do: Map.has_key?(spec, "mark") or Map.has_key?(spec, "layer")
   defp valid_vega_spec?(_), do: false
 
-  defp no_metric_data?(scope, metric_names) do
-    {start_date, end_date} = Dashboards.default_date_range()
-
-    Enum.all?(metric_names, fn name ->
-      Metrics.query_time_series(scope, name, date_range: {start_date, end_date}) == []
-    end)
+  defp metric_unavailable?(scope, metric_names) do
+    known = MapSet.new(Metrics.list_metric_names(scope))
+    Enum.all?(metric_names, fn name -> not MapSet.member?(known, name) end)
   end
 
   # ---------------------------------------------------------------------------

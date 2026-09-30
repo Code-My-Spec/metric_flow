@@ -36,8 +36,6 @@ defmodule MetricFlowSpex.Criterion4077SwitchChartTypesRetainsSelectionsSpex do
       end
 
       then_ "the metric selection is preserved", context do
-        html = render(context.view)
-        # The impressions button should still have active styling
         # The metric selector dropdown should show the selected metric name
         html = render(context.view)
         assert html =~ "impressions"

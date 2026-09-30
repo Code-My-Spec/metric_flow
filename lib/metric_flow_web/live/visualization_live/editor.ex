@@ -722,8 +722,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Visualization saved.")
-         |> redirect(to: "/app/dashboards")}
+         |> assign(:visualization, visualization)
+         |> put_flash(:info, "Visualization saved.")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
@@ -737,8 +737,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Visualization saved.")
-         |> redirect(to: "/app/dashboards")}
+         |> assign(:visualization, updated)
+         |> put_flash(:info, "Visualization saved.")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}

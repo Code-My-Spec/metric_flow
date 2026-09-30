@@ -20,9 +20,9 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
         assert html =~ "Line"
         assert html =~ "Bar"
         assert html =~ "Area"
-        assert html =~ "Point"
-        assert html =~ "Arc"
-        assert html =~ "Rect"
+        assert html =~ "Scatter"
+        assert html =~ "Donut"
+        assert html =~ "Gantt"
         {:ok, context}
       end
     end
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
 
       when_ "user clicks each chart type button", context do
         results =
-          for type <- ["bar", "area", "point", "arc", "rect"] do
+          for type <- ["bar", "area", "scatter", "donut", "gantt"] do
             html =
               context.view
               |> element("[phx-value-chart_type='#{type}']")
