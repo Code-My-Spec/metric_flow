@@ -144,6 +144,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms" do
     test "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
 
@@ -177,6 +178,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "triggers sync and shows success flash on Sync Now click" do
     test "triggers sync and shows success flash on Sync Now click", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       insert_integration!(user.id, :google_ads, %{provider_metadata: %{"provider_user_id" => "stub-user-id", "email" => "stub@example.com", "customer_id" => "1234567890"}})
       conn = log_in_user(conn, user)
 
@@ -196,6 +198,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   describe "shows error flash when syncing a non-existent integration" do
     test "shows error flash when syncing a non-existent integration", %{conn: conn} do
       user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
