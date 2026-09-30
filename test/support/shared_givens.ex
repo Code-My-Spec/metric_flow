@@ -769,4 +769,13 @@ defmodule MetricFlowSpex.SharedGivens do
     MetricFlowTest.SyncStub.stub_google_business_success()
     {:ok, context}
   end
+
+  register_given :with_quickbooks_sync_stub, context do
+    MetricFlowTest.SyncStub.stub_success(
+      :quickbooks,
+      MetricFlowTest.SyncStub.quickbooks_success_body()
+    )
+
+    {:ok, context}
+  end
 end

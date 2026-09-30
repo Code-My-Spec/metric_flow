@@ -214,4 +214,34 @@ defmodule MetricFlowTest.SyncStub do
       ]
     })
   end
+
+  @doc """
+  A minimal valid QuickBooks `TransactionList` report response body: one
+  credit row and one debit row on the same day.
+  """
+  @spec quickbooks_success_body() :: String.t()
+  def quickbooks_success_body do
+    today = Date.to_iso8601(Date.utc_today())
+
+    Jason.encode!(%{
+      "Columns" => %{
+        "Column" => [
+          %{"ColType" => "tx_date"},
+          %{"ColType" => "subt_nat_home_amount"}
+        ]
+      },
+      "Rows" => %{
+        "Row" => [
+          %{
+            "type" => "Data",
+            "ColData" => [%{"value" => today}, %{"value" => "150.00"}]
+          },
+          %{
+            "type" => "Data",
+            "ColData" => [%{"value" => today}, %{"value" => "-40.00"}]
+          }
+        ]
+      }
+    })
+  end
 end

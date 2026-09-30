@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.Criterion1010SyncFetchesCreditsAndDebitsViaExistingOAut
        criterion: 1010 do
     scenario "a client with a connected QuickBooks company and income account syncs daily credit and debit totals" do
       given_ :user_logged_in_as_owner
+      given_ :with_quickbooks_sync_stub
 
       given_ "a client has a connected QuickBooks company with an income account configured", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,

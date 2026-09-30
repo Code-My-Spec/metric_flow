@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.Criterion1015BackfillReturnsLessThan548DaysWhenAccountH
        criterion: 1015 do
     scenario "a QuickBooks account with a shorter history than 548 days still completes its first sync" do
       given_ :user_logged_in_as_owner
+      given_ :with_quickbooks_sync_stub
 
       given_ "a QuickBooks account has less than 548 days of history available", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,

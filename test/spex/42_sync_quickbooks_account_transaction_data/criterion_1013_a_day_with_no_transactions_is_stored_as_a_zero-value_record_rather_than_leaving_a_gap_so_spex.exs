@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.Criterion1013NoTransactionDayStoredAsZeroValueRecordSpe
        criterion: 1013 do
     scenario "a QuickBooks account had no transactions on a given day" do
       given_ :user_logged_in_as_owner
+      given_ :with_quickbooks_sync_stub
 
       given_ "a QuickBooks income account had no transactions on a given day", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,
