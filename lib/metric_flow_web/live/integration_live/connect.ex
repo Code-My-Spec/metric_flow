@@ -22,25 +22,47 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Accounts
   alias MetricFlow.Integrations
   alias MetricFlow.Integrations.Integration
 
   # Each platform has its own OAuth connection and integration record.
   @canonical_providers [
-    %{key: :google_analytics, name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    %{
+      key: :google_analytics,
+      name: "Google Analytics",
+      description: "Website traffic and user behavior analytics"
+    },
     %{key: :google_ads, name: "Google Ads", description: "Paid search and display advertising"},
-    %{key: :google_search_console, name: "Google Search Console", description: "Search performance and indexing data"},
-    %{key: :google_business, name: "Google Business", description: "Business profile locations and reviews"},
+    %{
+      key: :google_search_console,
+      name: "Google Search Console",
+      description: "Search performance and indexing data"
+    },
+    %{
+      key: :google_business,
+      name: "Google Business",
+      description: "Business profile locations and reviews"
+    },
     %{key: :facebook_ads, name: "Facebook", description: "Facebook and Instagram advertising"},
     %{key: :quickbooks, name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   ]
 
   # Display metadata for providers, keyed by provider atom.
   @provider_metadata %{
-    google_analytics: %{name: "Google Analytics", description: "Website traffic and user behavior analytics"},
+    google_analytics: %{
+      name: "Google Analytics",
+      description: "Website traffic and user behavior analytics"
+    },
     google_ads: %{name: "Google Ads", description: "Paid search and display advertising"},
-    google_search_console: %{name: "Google Search Console", description: "Search performance and indexing data"},
-    google_business: %{name: "Google Business", description: "Business profile locations and reviews"},
+    google_search_console: %{
+      name: "Google Search Console",
+      description: "Search performance and indexing data"
+    },
+    google_business: %{
+      name: "Google Business",
+      description: "Business profile locations and reviews"
+    },
     facebook_ads: %{name: "Facebook", description: "Facebook and Instagram advertising"},
     quickbooks: %{name: "QuickBooks", description: "Financial accounting and bookkeeping"}
   }
@@ -64,25 +86,25 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto">
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold">Connect a Provider</h1>
-        <p class="mt-1 text-base-content/60">
-          Authenticate with your marketing providers to start syncing data
-        </p>
-      </div>
+      <div class="mx-auto">
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold">Connect a Provider</h1>
+          <p class="mt-1 text-base-content/60">
+            Authenticate with your marketing providers to start syncing data
+          </p>
+        </div>
 
-      <%= case @view_mode do %>
-        <% :selection -> %>
-          <%= render_platform_selection(assigns) %>
-        <% :detail -> %>
-          <%= render_platform_detail(assigns) %>
-        <% :result -> %>
-          <%= render_result(assigns) %>
-        <% :accounts -> %>
-          <%= render_account_selection(assigns) %>
-      <% end %>
-    </div>
+        <%= case @view_mode do %>
+          <% :selection -> %>
+            {render_platform_selection(assigns)}
+          <% :detail -> %>
+            {render_platform_detail(assigns)}
+          <% :result -> %>
+            {render_result(assigns)}
+          <% :accounts -> %>
+            {render_account_selection(assigns)}
+        <% end %>
+      </div>
     </Layouts.app>
     """
   end
@@ -106,10 +128,16 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         </div>
 
         <div class="flex flex-col mt-4">
-          <span :if={provider_connected?(@integrations, provider.key)} class="badge badge-success self-start">
+          <span
+            :if={provider_connected?(@integrations, provider.key)}
+            class="badge badge-success self-start"
+          >
             Connected
           </span>
-          <span :if={not provider_connected?(@integrations, provider.key)} class="badge badge-ghost self-start">
+          <span
+            :if={not provider_connected?(@integrations, provider.key)}
+            class="badge badge-ghost self-start"
+          >
             Not connected
           </span>
 
@@ -139,8 +167,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         </p>
 
         <% meta_key = metadata_key_for_provider(String.to_existing_atom(@provider)) %>
-        <div :if={@integration.provider_metadata[meta_key]} class="mt-2 p-2 bg-base-200 rounded text-sm">
-          <span class="font-medium">{account_labels(String.to_existing_atom(@provider)).id_label}:</span>
+        <div
+          :if={@integration.provider_metadata[meta_key]}
+          class="mt-2 p-2 bg-base-200 rounded text-sm"
+        >
+          <span class="font-medium">
+            {account_labels(String.to_existing_atom(@provider)).id_label}:
+          </span>
           <span class="text-base-content/70">{@integration.provider_metadata[meta_key]}</span>
         </div>
 
@@ -192,8 +225,18 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           Connect {@platform.name}
         </a>
         <div :if={is_nil(@authorize_url)} class="alert alert-warning text-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="stroke-current shrink-0 h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
           <span>OAuth is not configured for this provider. Please contact your administrator.</span>
         </div>
@@ -236,7 +279,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {@error_message}
           </p>
           <div class="flex flex-col gap-2 mt-4">
-            <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="btn btn-primary w-full">
+            <.link
+              navigate={~p"/app/integrations/connect/#{@provider}"}
+              class="btn btn-primary w-full"
+            >
               Try again
             </.link>
             <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
@@ -250,7 +296,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   end
 
   defp render_account_selection(assigns) do
-    assigns = assign(assigns, :account_labels, account_labels(String.to_existing_atom(assigns.provider)))
+    assigns =
+      assign(assigns, :account_labels, account_labels(String.to_existing_atom(assigns.provider)))
+
     is_gbp = assigns.provider == "google_business"
     assigns = assign(assigns, :is_google_business, is_gbp)
 
@@ -281,9 +329,23 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 />
                 <div>
                   <span data-role="location-title" class="text-sm font-medium">{property.name}</span>
-                  <span data-role="location-account-name" class="text-xs text-base-content/60 block">{property.account}</span>
-                  <span :if={property[:address]} data-role="location-address" class="text-xs text-base-content/50 block">{property.address}</span>
-                  <span :if={property[:store_code]} data-role="location-store-code" class="text-xs text-base-content/40 block">Store: {property.store_code}</span>
+                  <span data-role="location-account-name" class="text-xs text-base-content/60 block">
+                    {property.account}
+                  </span>
+                  <span
+                    :if={property[:address]}
+                    data-role="location-address"
+                    class="text-xs text-base-content/50 block"
+                  >
+                    {property.address}
+                  </span>
+                  <span
+                    :if={property[:store_code]}
+                    data-role="location-store-code"
+                    class="text-xs text-base-content/40 block"
+                  >
+                    Store: {property.store_code}
+                  </span>
                 </div>
               </div>
             <% else %>
@@ -304,7 +366,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 />
                 <div>
                   <span class="text-sm font-medium">{property.name}</span>
-                  <span class="text-xs text-base-content/60 block">{property.account} &mdash; {property.id}</span>
+                  <span class="text-xs text-base-content/60 block">
+                    {property.account} &mdash; {property.id}
+                  </span>
                 </div>
               </div>
             <% end %>
@@ -313,15 +377,33 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
         <%= if @missing_locations != [] do %>
           <div data-role="missing-location" class="alert alert-warning text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <div>
               <p class="font-medium">Previously configured location(s) are no longer available:</p>
               <ul class="mt-1 list-disc list-inside">
-                <li :for={loc_id <- @missing_locations} data-role="location-unavailable" class="text-xs">{loc_id}</li>
+                <li
+                  :for={loc_id <- @missing_locations}
+                  data-role="location-unavailable"
+                  class="text-xs"
+                >
+                  {loc_id}
+                </li>
               </ul>
-              <p class="mt-1 text-xs">These locations may have been removed or access revoked. Please select a new location.</p>
+              <p class="mt-1 text-xs">
+                These locations may have been removed or access revoked. Please select a new location.
+              </p>
             </div>
           </div>
         <% end %>
@@ -330,10 +412,22 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           <div data-role="manual-entry" class="space-y-2">
             <%= if @accounts_error == :api_disabled do %>
               <div class="alert alert-warning text-sm mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="stroke-current shrink-0 h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
-                <span>Could not fetch accounts automatically. You can enter your account ID manually below.</span>
+                <span>
+                  Could not fetch accounts automatically. You can enter your account ID manually below.
+                </span>
               </div>
             <% end %>
 
@@ -403,10 +497,16 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     integrations = Integrations.list_integrations(scope)
     providers = build_provider_list(integrations)
 
+    current_user_role =
+      if socket.assigns.active_account_id do
+        Accounts.get_user_role(scope, scope.user.id, socket.assigns.active_account_id)
+      end
+
     socket =
       socket
       |> assign(:integrations, integrations)
       |> assign(:providers, providers)
+      |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
       |> assign(:view_mode, :selection)
       |> assign(:integration, nil)
       |> assign(:platform, nil)
@@ -467,10 +567,16 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     provider_str = socket.assigns.provider
     provider_atom = String.to_existing_atom(provider_str)
 
-    if provider_atom == :google_business do
-      save_google_business_selection(scope, provider_atom, provider_str, params, socket)
-    else
-      save_single_account_selection(scope, provider_atom, provider_str, params, socket)
+    cond do
+      not socket.assigns.can_modify ->
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to edit integration accounts.")}
+
+      provider_atom == :google_business ->
+        save_google_business_selection(scope, provider_atom, provider_str, params, socket)
+
+      true ->
+        save_single_account_selection(scope, provider_atom, provider_str, params, socket)
     end
   end
 
@@ -507,7 +613,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     else
       metadata_key = metadata_key_for_provider(provider_atom)
 
-      case Integrations.update_provider_metadata(scope, provider_atom, %{metadata_key => account_id}) do
+      case Integrations.update_provider_metadata(scope, provider_atom, %{
+             metadata_key => account_id
+           }) do
         {:ok, _integration} ->
           {:noreply,
            socket
@@ -564,10 +672,19 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         integration = fetch_existing_integration(socket, provider_atom)
 
         cond do
+          not socket.assigns.can_modify ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "You are not authorized to edit integration accounts.")
+             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
           is_nil(integration) ->
             {:noreply,
              socket
-             |> put_flash(:error, "Please connect #{provider_str} first before selecting accounts.")
+             |> put_flash(
+               :error,
+               "Please connect #{provider_str} first before selecting accounts."
+             )
              |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
           Integration.expired?(integration) ->
