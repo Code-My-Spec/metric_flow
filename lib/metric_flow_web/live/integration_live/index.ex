@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   alias MetricFlow.DataSync
   alias MetricFlow.Integrations
+  alias MetricFlow.Integrations.Integration
 
   # Data platforms — each has its own OAuth provider and integration record.
   @data_platforms [
@@ -124,7 +125,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                 :for={platform <- @connected_platforms}
                 data-role="integration-card"
                 data-platform={Atom.to_string(platform.key)}
-                data-status="connected"
+                data-status={integration_status(platform, @integrations)}
                 class="mf-card p-5"
               >
                 <div data-role="integration-row" class="flex items-start justify-between">
@@ -135,7 +136,13 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                     <p class="text-sm text-base-content/60">{platform.description}</p>
 
                     <div class="mt-1 flex flex-wrap items-center gap-2">
-                      <span data-status="connected" class="badge badge-success">Connected</span>
+                      <%= if integration_status(platform, @integrations) == "error" do %>
+                        <span data-status="error" class="badge badge-error">
+                          Connection error — reconnect required
+                        </span>
+                      <% else %>
+                        <span data-status="connected" class="badge badge-success">Connected</span>
+                      <% end %>
                       <span data-role="integration-sync-status" class="flex items-center gap-1">
                         <%= if MapSet.member?(@syncing, platform.key) do %>
                           <span class="badge badge-warning">
@@ -536,6 +543,13 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   defp provider_connected?(provider_key, integrations) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)
+  end
+
+  defp integration_status(platform, integrations) do
+    case find_integration(integrations, platform.provider) do
+      nil -> "connected"
+      integration -> if Integration.expired?(integration), do: "error", else: "connected"
+    end
   end
 
   defp find_platform_name(platform_key) do
