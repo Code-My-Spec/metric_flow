@@ -103,3 +103,10 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+/* Expand toggled client-side (see report_live/show.ex) -- #report-chart has
+   phx-update="ignore", so the height must change via a JS-toggled class
+   rather than a server-patched style attribute. */
+#report-chart.report-chart-expanded {
+  height: 600px;
+}

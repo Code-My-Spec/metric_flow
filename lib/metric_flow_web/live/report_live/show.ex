@@ -80,7 +80,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
           <div class="flex items-center justify-end mb-2">
             <button
               type="button"
-              phx-click="toggle_expand"
+              phx-click={JS.push("toggle_expand") |> JS.toggle_class("report-chart-expanded", to: "#report-chart")}
               data-role="report-chart-expand"
               class="btn btn-ghost btn-xs"
               aria-label="Expand chart"
@@ -95,7 +95,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
             data-spec={Jason.encode!(@render_spec)}
             id="report-chart"
             data-role="vega-lite-chart"
-            style={"width: 100%; height: #{if @expanded, do: "600px", else: "320px"}"}
+            style="width: 100%; height: 320px;"
           >
           </div>
 
