@@ -107,9 +107,10 @@ defmodule MetricFlowSpex.Fixtures do
   For specs that need an existing integration to exercise view/modify
   permissions against, without a real OAuth connect flow to drive.
   """
-  @spec create_integration_for(String.t(), atom()) :: Integration.t()
-  def create_integration_for(email, provider) do
+  @spec create_integration_for(String.t(), atom(), keyword()) :: Integration.t()
+  def create_integration_for(email, provider, opts \\ []) do
     user = Users.get_user_by_email(email)
+    expires_at = Keyword.get(opts, :expires_at, DateTime.add(DateTime.utc_now(), 3600, :second))
 
     %Integration{}
     |> Integration.changeset(%{
@@ -117,11 +118,46 @@ defmodule MetricFlowSpex.Fixtures do
       provider: provider,
       access_token: "spex-access-token-#{System.unique_integer([:positive])}",
       refresh_token: "spex-refresh-token-#{System.unique_integer([:positive])}",
-      expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
+      expires_at: expires_at,
       granted_scopes: ["email", "profile"],
       provider_metadata: %{}
     })
     |> Repo.insert!()
+  end
+
+  @doc """
+  Updates an existing integration's expiry, simulating what a successful
+  OAuth reconnection would produce (a fresh token and expiry) without
+  going through the real provider exchange.
+  """
+  @spec reconnect_integration_for(String.t(), atom()) :: Integration.t()
+  def reconnect_integration_for(email, provider) do
+    user = Users.get_user_by_email(email)
+
+    integration =
+      Repo.get_by!(Integration, user_id: user.id, provider: provider)
+
+    integration
+    |> Integration.changeset(%{
+      access_token: "spex-access-token-#{System.unique_integer([:positive])}",
+      refresh_token: "spex-refresh-token-#{System.unique_integer([:positive])}",
+      expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+    })
+    |> Repo.update!()
+  end
+
+  @doc """
+  Expires an existing integration in place, simulating what elapsed time
+  would do to a previously-connected integration without inserting a
+  second row for the same user/provider pair.
+  """
+  @spec expire_integration_for(String.t(), atom()) :: Integration.t()
+  def expire_integration_for(email, provider) do
+    user = Users.get_user_by_email(email)
+
+    Repo.get_by!(Integration, user_id: user.id, provider: provider)
+    |> Integration.changeset(%{expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)})
+    |> Repo.update!()
   end
 
   @doc """
