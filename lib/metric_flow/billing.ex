@@ -142,7 +142,7 @@ defmodule MetricFlow.Billing do
       current_period_start: from_unix(sub["current_period_start"]),
       current_period_end: from_unix(sub["current_period_end"]),
       account_id: resolve_update_account_id(sub["id"], account_id),
-      plan_id: resolve_plan_id(sub)
+      plan_id: resolve_update_plan_id(sub["id"], sub)
     })
   end
 
@@ -184,6 +184,24 @@ defmodule MetricFlow.Billing do
     case BillingRepository.get_subscription_by_stripe_id(stripe_subscription_id) do
       nil -> nil
       %Subscription{account_id: existing_account_id} -> existing_account_id
+    end
+  end
+
+  # Same principle as resolve_update_account_id/2: an update event that carries
+  # no resolvable price (no line items, or a price not provisioned as a local
+  # Plan) must not overwrite an already-attributed subscription's plan_id with
+  # nil, or a status-only update (e.g. this one has no "items" at all) would
+  # silently detach the subscription from its plan.
+  defp resolve_update_plan_id(stripe_subscription_id, sub) do
+    case resolve_plan_id(sub) do
+      nil ->
+        case BillingRepository.get_subscription_by_stripe_id(stripe_subscription_id) do
+          nil -> nil
+          %Subscription{plan_id: existing_plan_id} -> existing_plan_id
+        end
+
+      plan_id ->
+        plan_id
     end
   end
 
