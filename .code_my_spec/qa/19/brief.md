@@ -61,6 +61,16 @@ All chart-type (136/783), switch-preserves-selection (137/784), Vega-Lite render
 
 One real bug: the report's click-to-Expand button (145/793/794) toggles its own label and the server-side `@expanded` assign correctly, but the chart div's `style` (height) never visually changes because the div has `phx-update="ignore"`, which freezes it after first render — filed as issue `05b7e4b0`. The separate manual drag-resize handle is present and unaffected.
 
+## Retest (issue 3dbb26ab, commit 5da4d43)
+
+Commit `5da4d43` removed the frozen inline `style` from `#report-chart` entirely (the div now only carries `style="width: 100%;"`), leaving height fully driven by the `.report-chart-box` (320px) / `.report-chart-expanded` (600px) CSS classes toggled via `JS.toggle_class`.
+
+Re-linked visualization 22 ("QA Story19 MultiMetric Viz") for this retest -- its prior report binding had been cleared by an unrelated dashboard-editor test run. Note for future testers: `/app/reports/:id` takes a **visualization id** directly (`ReportLive.Show.mount/3` calls `Dashboards.get_visualization(scope, id_int)`), not a dashboard id -- `dashboard_visualizations` is an unrelated join table used by the dashboard *editor* (story 33), not by the reports library. Visit `/app/reports/22` directly.
+
+Confirmed live as qa@example.com: before clicking Expand, `#report-chart` (`getBoundingClientRect().height`) is 320; after clicking, it is 600 and the button label flips to "Collapse". The fix works. This was the only open issue from the prior partial pass, and `git log --since` shows no other commits touching this story's code since then, so all other criteria verified in the prior pass stand unchanged.
+
+**Overall: pass. No new issues.**
+
 ## Retest (issue 05b7e4b0)
 
 The fix added a client-side `JS.toggle_class("report-chart-expanded", to: "#report-chart")` and a matching `#report-chart.report-chart-expanded { height: 600px; }` CSS rule. Both are correctly wired -- confirmed the class toggles onto `#report-chart` and the button label flips to "Collapse" on click, and the compiled `priv/static/assets/css/app.css` served by this dev server contains the rule (curl-confirmed).
