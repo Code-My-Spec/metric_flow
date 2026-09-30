@@ -354,8 +354,11 @@ defmodule MetricFlowWeb.DashboardLive.Show do
             </p>
           </div>
 
-          <%!-- Semantic difference footnote --%>
+          <%!-- Semantic difference footnote -- only meaningful when metrics in view
+               genuinely span more than one provider (see platform_breakdown); a
+               single-platform view has no cross-platform difference to warn about. --%>
           <div
+            :if={map_size(@dashboard_data.platform_breakdown) > 0}
             data-role="semantic-warning"
             data-semantic-difference="attribution"
             class="mt-6 text-xs text-base-content/50"

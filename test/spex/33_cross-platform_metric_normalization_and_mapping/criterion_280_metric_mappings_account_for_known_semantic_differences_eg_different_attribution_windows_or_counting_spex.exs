@@ -29,7 +29,26 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
     end
 
     scenario "dashboard surfaces semantic difference warnings when comparing cross-platform metrics" do
-      given_(:owner_with_integrations)
+      given_(:user_logged_in_as_owner)
+
+      given_ "the same canonical metric is recorded on two different platforms", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads)
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "clicks",
+          value: 30.0
+        })
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :facebook_ads,
+          metric_name: "clicks",
+          value: 20.0
+        })
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -68,8 +87,27 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
       end
     end
 
-    scenario "dashboard indicates attribution window differences when displaying click metrics" do
-      given_(:owner_with_integrations)
+    scenario "dashboard indicates attribution window differences when displaying click metrics across platforms" do
+      given_(:user_logged_in_as_owner)
+
+      given_ "clicks are recorded on two different platforms", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads)
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "clicks",
+          value: 30.0
+        })
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :facebook_ads,
+          metric_name: "clicks",
+          value: 20.0
+        })
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -105,7 +143,26 @@ defmodule MetricFlowSpex.MetricMappingsSemanticDifferencesWarningsSpex do
     end
 
     scenario "semantic difference warnings are visible when comparing metrics across platforms" do
-      given_(:owner_with_integrations)
+      given_(:user_logged_in_as_owner)
+
+      given_ "the same canonical metric is recorded on two different platforms", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads)
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "clicks",
+          value: 30.0
+        })
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :facebook_ads,
+          metric_name: "clicks",
+          value: 20.0
+        })
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

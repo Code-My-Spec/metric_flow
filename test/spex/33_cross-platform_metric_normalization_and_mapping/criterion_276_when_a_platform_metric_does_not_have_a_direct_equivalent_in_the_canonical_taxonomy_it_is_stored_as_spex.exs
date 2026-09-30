@@ -29,7 +29,19 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
     end
 
     scenario "dashboard clearly labels any platform-specific metrics that have no canonical equivalent" do
-      given_(:owner_with_integrations)
+      given_(:user_logged_in_as_owner)
+
+      given_ "a platform metric with no canonical equivalent is recorded", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "custom_audience_overlap_score",
+          value: 7.0
+        })
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -47,11 +59,11 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
           html =~ "platform-specific" or
             html =~ "Platform-Specific" or
             html =~ "Platform Specific" or
+            has_element?(context.view, "[data-metric-scope='platform-specific']") or
             has_element?(context.view, "[data-metric-type='platform_specific']") or
             has_element?(context.view, "[data-metric-type='platform-specific']") or
             has_element?(context.view, "[data-role='platform-specific-metric']") or
-            has_element?(context.view, "[data-canonical='false']") or
-            has_element?(context.view, "[data-semantic-difference]")
+            has_element?(context.view, "[data-canonical='false']")
 
         assert has_platform_specific_label,
                "Expected the dashboard to label non-canonical metrics as platform-specific using visible text or a data attribute. Got: #{html}"
@@ -61,7 +73,25 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
     end
 
     scenario "platform-specific metrics are visually distinct from canonical metrics on the dashboard" do
-      given_(:owner_with_integrations)
+      given_(:user_logged_in_as_owner)
+
+      given_ "a platform-specific metric and a canonical metric are both recorded", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "clicks",
+          value: 10.0
+        })
+
+        MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
+          provider: :google_ads,
+          metric_name: "custom_audience_overlap_score",
+          value: 7.0
+        })
+
+        {:ok, context}
+      end
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -84,9 +114,9 @@ defmodule MetricFlowSpex.PlatformSpecificMetricLabeledAsNonCanonicalSpex do
             has_element?(context.view, "[data-section='platform-specific-metrics']") or
             has_element?(context.view, "[data-role='platform-specific-metrics-section']") or
             has_element?(context.view, "[data-role='platform-specific-metric']") or
+            has_element?(context.view, "[data-metric-scope='platform-specific']") or
             has_element?(context.view, "[data-metric-type='platform_specific']") or
-            has_element?(context.view, "[data-canonical='false']") or
-            has_element?(context.view, "[data-semantic-difference]")
+            has_element?(context.view, "[data-canonical='false']")
 
         assert has_separation,
                "Expected the dashboard to visually separate or group platform-specific metrics from canonical metrics. Got: #{html}"
