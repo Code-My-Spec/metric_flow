@@ -72,6 +72,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
               </ul>
               <div class="card-actions justify-center mt-4">
                 <button
+                  :if={@billing_available?}
                   phx-click="subscribe"
                   phx-value-plan-id={plan.id}
                   data-role="subscribe-button"
@@ -79,6 +80,9 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
                 >
                   Subscribe
                 </button>
+                <p :if={!@billing_available?} class="text-sm text-base-content/60">
+                  Billing is currently unavailable for this plan. Please contact support.
+                </p>
               </div>
             </div>
           </div>
@@ -87,12 +91,8 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
         <%!-- No plans available --%>
         <div :if={!@subscription && @plans == []} class="card bg-base-100 shadow">
           <div class="card-body text-center">
-            <h2 class="card-title justify-center">MetricFlow Pro</h2>
-            <p class="text-3xl font-bold">$49.99<span class="text-sm font-normal">/month</span></p>
-            <p class="text-base-content/60">Correlations, Intelligence, and Visualizations</p>
-            <div class="card-actions justify-center mt-4">
-              <p class="text-sm text-base-content/60">No plans available. Please contact support.</p>
-            </div>
+            <h2 class="card-title justify-center">No Plans Available</h2>
+            <p class="text-base-content/60">No plans available. Please contact support.</p>
           </div>
         </div>
       </div>
@@ -112,6 +112,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
       socket
       |> assign(:subscription, subscription)
       |> assign(:plans, plans)
+      |> assign(:billing_available?, billing_available?(plans))
 
     {:ok, socket}
   end
@@ -166,6 +167,20 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
       BillingRepository.list_plans(nil)
     end
   end
+
+  # Platform plans (agency_account_id: nil) always bill through the platform's
+  # own Stripe account. Agency plans require that agency to have completed
+  # Stripe Connect onboarding first, since checkout has nowhere else to route
+  # the payment.
+  defp billing_available?([%{agency_account_id: agency_account_id} | _])
+       when not is_nil(agency_account_id) do
+    match?(
+      %{onboarding_status: :complete},
+      BillingRepository.get_stripe_account_by_agency(agency_account_id)
+    )
+  end
+
+  defp billing_available?(_plans), do: true
 
   defp format_price(cents, currency) do
     dollars = cents / 100

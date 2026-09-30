@@ -5,14 +5,19 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
 
   spex "Agency customer subscription status is synced via webhooks", criterion: 432 do
     scenario "subscription.updated webhook arrives for an agency customer" do
+      given_ :user_logged_in_as_owner
+      given_ :owner_has_agency_plan
+      given_ :owner_has_stripe_connect
+
       when_ "a subscription updated event is sent for an agency customer", context do
         event_id = "evt_agency_update_#{System.unique_integer([:positive])}"
+        stripe_account_id = MetricFlowSpex.Fixtures.agency_stripe_account_id(context.owner_email)
 
         payload =
           Jason.encode!(%{
             "id" => event_id,
             "type" => "customer.subscription.updated",
-            "account" => "acct_agency_stripe_123",
+            "account" => stripe_account_id,
             "data" => %{
               "object" => %{
                 "id" => "sub_agency_abc",

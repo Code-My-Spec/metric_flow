@@ -5,14 +5,19 @@ defmodule MetricFlowSpex.AgencyWebhookEventsRoutedCorrectlySpex do
 
   spex "Webhook events for agency customer subscriptions are routed and processed correctly", criterion: 431 do
     scenario "webhook event arrives with agency Stripe account ID in the payload" do
+      given_ :user_logged_in_as_owner
+      given_ :owner_has_agency_plan
+      given_ :owner_has_stripe_connect
+
       when_ "a subscription event is sent for an agency customer", context do
         event_id = "evt_agency_#{System.unique_integer([:positive])}"
+        stripe_account_id = MetricFlowSpex.Fixtures.agency_stripe_account_id(context.owner_email)
 
         payload =
           Jason.encode!(%{
             "id" => event_id,
             "type" => "customer.subscription.created",
-            "account" => "acct_agency_stripe_123",
+            "account" => stripe_account_id,
             "data" => %{
               "object" => %{
                 "id" => "sub_agency_abc",
