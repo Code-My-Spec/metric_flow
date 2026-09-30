@@ -21,10 +21,7 @@ defmodule MetricFlow.MixProject do
   def application do
     [
       mod: {MetricFlowWeb.Application, []},
-      # :ex_aws_ssm and :hackney are listed here so they're booted by the
-      # release before MetricFlow.Secrets.load!/1 is called from
-      # config/runtime.exs — no manual Application.ensure_all_started.
-      extra_applications: [:logger, :runtime_tools, :ex_aws_ssm, :hackney]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -91,18 +88,13 @@ defmodule MetricFlow.MixProject do
       # File storage + secrets (ADR: file_storage, secrets_management)
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
-      # Secrets fetched from AWS SSM Parameter Store at boot in
-      # config/runtime.exs. See priv/knowledge/devops/secrets-runtime.md.
-      # hackney is the HTTP client ExAws uses by default; listed
-      # explicitly so it can go in `extra_applications` and start with
-      # the release before runtime.exs runs.
-      {:ex_aws_ssm, "~> 2.1"},
+      # hackney is the HTTP client ExAws uses by default.
       {:hackney, "~> 1.20"},
       {:sweet_xml, "~> 0.7"},
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
       # MCP server (tool definitions for LLM agent)
-      {:anubis_mcp, github: "zoedsoupe/anubis-mcp"},
+      {:anubis_mcp, "~> 1.1.0"},
       # Data providers (ADR: data_provider_apis)
       {:google_api_analytics_data, "~> 0.17"},
       # Environment variables (ADR: dotenvy)

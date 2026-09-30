@@ -1,3 +1,10 @@
+# One age recipient per environment — a key for one environment cannot open
+# another's file. prod/uat keys live in CodeMySpec (ProjectSecrets) and reach
+# the container as SOPS_AGE_KEY; dev/test decrypt from the local keyring.
 creation_rules:
   - path_regex: envs/(dev|test)\.
     age: age1x03s486cx3tw94am06lasevlc6ltcslkfx70wz4xq0vw05rqedusncxttm
+  - path_regex: envs/prod\.enc\.env$
+    age: age18vx938wlcgc3gp5uknwk903q4k0px8xs2ww22v7aa0ghc65lzvrqtvkldr
+  - path_regex: envs/uat\.enc\.env$
+    age: age13ytnxgus9ckhxsxr2sf3yduuhgjm3wf8ae9q3rw5z7mh73x6uewqlnwkv5

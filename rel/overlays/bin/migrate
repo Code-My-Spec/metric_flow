@@ -1,5 +1,25 @@
 #!/bin/sh
+# Release overlay: turn the age key into an environment, then migrate.
+#
+# Mirrors bin/boot's own sops decryption exactly — `bin/deploy`'s migrate
+# phase invokes this directly (kamal app exec ... bin/migrate), outside
+# the swap/boot path, so it needs the same env decryption bin/boot does
+# rather than assuming something else already populated it.
 set -eu
 
-cd -P -- "$(dirname -- "$0")"
-exec ./metric_flow eval MetricFlow.Release.migrate
+cd -P -- "$(dirname -- "$0")/.."
+
+ENV_NAME="${APP_ENV:-prod}"
+ENV_FILE="envs/${ENV_NAME}.enc.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "$0: no $ENV_FILE in this image — setup encrypts one per environment" >&2
+  exit 1
+fi
+
+if [ -z "${SOPS_AGE_KEY:-}" ]; then
+  echo "$0: SOPS_AGE_KEY is not set, so $ENV_FILE cannot be decrypted" >&2
+  exit 1
+fi
+
+exec sops exec-env "$ENV_FILE" "./bin/metric_flow eval MetricFlow.Release.migrate"

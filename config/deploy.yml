@@ -1,32 +1,29 @@
-# Kamal config for metric_flow PROD on the Hetzner prod box (Ashburn x86).
-# Run with: scripts/deploy
+# Kamal config for metric_flow prod on the Hetzner prod box (Ashburn x86).
+# Deployed by CodeMySpec (bin/deploy migrate|swap prod).
 #
-# Notes:
-# - kamal-proxy serves traffic on :80/:443 directly (Caddy retired 2026-05-07).
-# - db_net is pre-attached so the container can reach infra-postgres-1 at start.
-# - App secrets are fetched at container boot from AWS SSM
-#   (`/metric_flow/prod/*`) by MetricFlow.Secrets.load!/1 in
-#   config/runtime.exs. Kamal carries only the AWS bootstrap credentials
-#   listed under env.secret below — never app secrets.
+# The container decrypts envs/prod.enc.env at boot via rel/overlays/bin/boot;
+# the only secret kamal carries is SOPS_AGE_KEY.
 
 service: metric-flow
-image: code-my-spec/metric_flow
+image: metric-flow
 
 servers:
   web:
     hosts:
-      - 178.156.143.212
+      - metric-flow.app
     options:
-      network: db_net
-
-proxy:
-  ssl: true
-  host: metric-flow.app
-  app_port: 4000
+      network: db_net           # reach cms-postgres at start
+    proxy:
+      ssl: true
+      host: metric-flow.app
+      app_port: 4000
+      healthcheck:
+        path: /up
 
 registry:
-  server: ghcr.io
-  username: johns10
+  server: 10.0.0.2:5000
+  username:
+    - KAMAL_REGISTRY_USERNAME
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -34,16 +31,17 @@ builder:
   arch: amd64
   local: true
 
-# Container fetches its own secrets from /metric_flow/prod/* in SSM at
-# boot via MetricFlow.Secrets.load!/1 (config/runtime.exs). The only env
-# Kamal carries is AWS bootstrap creds + APP_ENV.
 env:
   clear:
     APP_ENV: prod
-    AWS_REGION: us-east-1
+    PORT: "4000"
   secret:
-    - AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY
+    - SOPS_AGE_KEY
 
 ssh:
   user: root
+<% if ENV["CMS_SSH_KEY_PATH"] %>
+  keys: ["<%= ENV["CMS_SSH_KEY_PATH"] %>"]
+  keys_only: true
+  log_level: debug
+<% end %>

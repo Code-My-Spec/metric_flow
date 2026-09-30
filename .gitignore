@@ -35,7 +35,7 @@ metric_flow-*.tar
 npm-debug.log
 /assets/node_modules/
 
-# Varlock local-override env files (we don't use these but never commit them)
+# Local-override env files (never commit them)
 .env.local
 .env.*.local
 
@@ -45,7 +45,6 @@ npm-debug.log
 .env.*
 *.env
 !.env.example
-!.env.schema
 
 # Diagnostics
 diagnostics.jsonl
