@@ -505,24 +505,27 @@ defmodule MetricFlow.Dashboards do
     do: %{}
 
   defp build_platform_breakdown(scope, metric_names, opts, nil) do
-    Enum.reduce(metric_names, %{}, fn name, acc ->
-      providers =
-        scope
-        |> Metrics.list_providers_for_metric(name, opts)
-        |> Enum.uniq()
-        |> Enum.sort()
+    Enum.reduce(metric_names, %{}, &put_platform_breakdown_entry(&1, &2, scope, opts))
+  end
 
-      if length(providers) > 1 do
-        series =
-          Enum.map(providers, fn provider ->
-            data = Metrics.query_time_series(scope, name, Keyword.put(opts, :provider, provider))
-            %{provider: provider, data: data}
-          end)
+  defp put_platform_breakdown_entry(name, acc, scope, opts) do
+    providers =
+      scope
+      |> Metrics.list_providers_for_metric(name, opts)
+      |> Enum.uniq()
+      |> Enum.sort()
 
-        Map.put(acc, name, series)
-      else
-        acc
-      end
+    if length(providers) > 1 do
+      Map.put(acc, name, build_provider_series(scope, name, opts, providers))
+    else
+      acc
+    end
+  end
+
+  defp build_provider_series(scope, name, opts, providers) do
+    Enum.map(providers, fn provider ->
+      data = Metrics.query_time_series(scope, name, Keyword.put(opts, :provider, provider))
+      %{provider: provider, data: data}
     end)
   end
 

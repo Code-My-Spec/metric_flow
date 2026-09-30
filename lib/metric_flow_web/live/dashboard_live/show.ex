@@ -667,17 +667,22 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   # provider contributing to it -- the table and stat cards stay aggregate.
   defp expand_with_platform_breakdown(visible_ts, dashboard_data) do
     breakdown = Map.get(dashboard_data, :platform_breakdown, %{})
+    Enum.flat_map(visible_ts, &expand_entry_with_breakdown(&1, breakdown))
+  end
 
-    Enum.flat_map(visible_ts, fn entry ->
-      case Map.get(breakdown, entry.metric_name) do
-        series when is_list(series) and length(series) > 1 ->
-          Enum.map(series, fn %{provider: provider, data: data} ->
-            %{metric_name: "#{entry.metric_name} (#{provider})", data: data}
-          end)
+  defp expand_entry_with_breakdown(entry, breakdown) do
+    case Map.get(breakdown, entry.metric_name) do
+      series when is_list(series) and length(series) > 1 ->
+        split_series_by_provider(entry.metric_name, series)
 
-        _ ->
-          [entry]
-      end
+      _ ->
+        [entry]
+    end
+  end
+
+  defp split_series_by_provider(metric_name, series) do
+    Enum.map(series, fn %{provider: provider, data: data} ->
+      %{metric_name: "#{metric_name} (#{provider})", data: data}
     end)
   end
 
