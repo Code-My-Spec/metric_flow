@@ -23,6 +23,7 @@ defmodule MetricFlow.Correlations.CorrelationJob do
           account_id: integer() | nil,
           status: atom(),
           goal_metric_name: String.t() | nil,
+          time_window: atom() | nil,
           data_window_start: Date.t() | nil,
           data_window_end: Date.t() | nil,
           data_points: integer() | nil,
@@ -36,10 +37,12 @@ defmodule MetricFlow.Correlations.CorrelationJob do
         }
 
   @statuses [:pending, :running, :completed, :failed]
+  @time_windows [:days_30, :days_90, :all_time]
 
   schema "correlation_jobs" do
     field :status, Ecto.Enum, values: @statuses, default: :pending
     field :goal_metric_name, :string
+    field :time_window, Ecto.Enum, values: @time_windows, default: :days_90
     field :data_window_start, :date
     field :data_window_end, :date
     field :data_points, :integer
@@ -60,6 +63,7 @@ defmodule MetricFlow.Correlations.CorrelationJob do
       :account_id,
       :status,
       :goal_metric_name,
+      :time_window,
       :data_window_start,
       :data_window_end,
       :data_points,

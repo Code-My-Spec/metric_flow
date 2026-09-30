@@ -71,7 +71,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
 
   defp execute(scope, job) do
     goal_metric_name = job.goal_metric_name
-    date_range = default_date_range(scope)
+    date_range = date_range_for_window(scope, job.time_window)
 
     metric_names =
       Metrics.list_metric_names(scope)
@@ -200,10 +200,24 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   # Private — helpers
   # ---------------------------------------------------------------------------
 
-  defp default_date_range(scope) do
+  # Anchored to the account's actual latest metric date, not wall-clock
+  # "today" -- seeded or historical data commonly falls outside a fixed
+  # recent window. :all_time returns nil, which Metrics.query_time_series
+  # treats as no date constraint at all (not the same as the key being
+  # absent, which would default to the last 30 days).
+  defp date_range_for_window(scope, :days_30) do
     end_date = Metrics.get_latest_metric_date(scope) || Date.utc_today()
-    start_date = Date.add(end_date, -90)
-    {start_date, end_date}
+    {Date.add(end_date, -30), end_date}
+  end
+
+  defp date_range_for_window(scope, :all_time) do
+    _ = scope
+    nil
+  end
+
+  defp date_range_for_window(scope, _days_90_or_nil) do
+    end_date = Metrics.get_latest_metric_date(scope) || Date.utc_today()
+    {Date.add(end_date, -90), end_date}
   end
 
   defp extract_data_window([]), do: nil

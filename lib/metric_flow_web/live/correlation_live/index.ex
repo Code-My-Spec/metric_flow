@@ -75,6 +75,33 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               Smart
             </button>
           </div>
+          <%!-- Time window selector --%>
+          <div data-role="time-window-selector" class="flex items-center gap-1">
+            <button
+              phx-click="set_time_window"
+              phx-value-window="days_30"
+              data-role="time-window-30"
+              class={if @time_window == :days_30, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
+            >
+              30 days
+            </button>
+            <button
+              phx-click="set_time_window"
+              phx-value-window="days_90"
+              data-role="time-window-90"
+              class={if @time_window == :days_90, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
+            >
+              90 days
+            </button>
+            <button
+              phx-click="set_time_window"
+              phx-value-window="all_time"
+              data-role="time-window-all"
+              class={if @time_window == :all_time, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"}
+            >
+              All time
+            </button>
+          </div>
           <%!-- Configure Goals link --%>
           <.link
             navigate={~p"/app/correlations/goals"}
@@ -460,6 +487,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
       socket
       |> assign(:summary, summary)
       |> assign(:mode, :raw)
+      |> assign(:time_window, :days_90)
       |> assign(:sort_by, :coefficient)
       |> assign(:sort_dir, :desc)
       |> assign(:platform_filter, nil)
@@ -514,8 +542,23 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   def handle_event("run_correlations", _params, socket) do
     scope = socket.assigns.current_scope
     goal_metric_name = socket.assigns.summary.goal_metric_name
+    time_window = socket.assigns.time_window
 
-    do_run_correlations(socket, scope, goal_metric_name)
+    do_run_correlations(socket, scope, goal_metric_name, time_window)
+  end
+
+  def handle_event("set_time_window", %{"window" => window_string}, socket) do
+    time_window = String.to_existing_atom(window_string)
+    scope = socket.assigns.current_scope
+    goal_metric_name = socket.assigns.summary.goal_metric_name
+
+    socket = assign(socket, :time_window, time_window)
+
+    if goal_metric_name do
+      do_run_correlations(socket, scope, goal_metric_name, time_window)
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_event("enable_ai_suggestions", _params, socket) do
@@ -526,8 +569,11 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
     {:noreply, assign(socket, :ai_feedback_submitted, true)}
   end
 
-  defp do_run_correlations(socket, scope, goal_metric_name) do
-    case Correlations.run_correlations(scope, %{goal_metric_name: goal_metric_name}) do
+  defp do_run_correlations(socket, scope, goal_metric_name, time_window) do
+    case Correlations.run_correlations(scope, %{
+           goal_metric_name: goal_metric_name,
+           time_window: time_window
+         }) do
       {:ok, _job} ->
         socket =
           socket

@@ -168,8 +168,11 @@ defmodule MetricFlow.Correlations do
 
   defp create_and_enqueue(%Scope{user: user} = scope, attrs) do
     goal_metric_name = Map.get(attrs, :goal_metric_name) || Map.get(attrs, "goal_metric_name")
+    time_window = Map.get(attrs, :time_window) || Map.get(attrs, "time_window") || :days_90
 
-    case CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: goal_metric_name}) do
+    job_attrs = %{goal_metric_name: goal_metric_name, time_window: time_window}
+
+    case CorrelationsRepository.create_correlation_job(scope, job_attrs) do
       {:ok, job} ->
         %{job_id: job.id, user_id: user.id}
         |> CorrelationWorker.new()
