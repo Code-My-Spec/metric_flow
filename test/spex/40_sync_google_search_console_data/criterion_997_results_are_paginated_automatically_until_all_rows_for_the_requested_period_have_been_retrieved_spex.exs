@@ -17,6 +17,8 @@ defmodule MetricFlowSpex.ResultsArePaginatedAutomaticallyUntilAllRowsRetrievedSp
         {:ok, context}
       end
 
+      given_ :with_google_search_console_sync_stub
+
       when_ "the sync runs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()

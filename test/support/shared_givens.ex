@@ -737,4 +737,13 @@ defmodule MetricFlowSpex.SharedGivens do
 
     {:ok, context}
   end
+
+  register_given :with_google_search_console_sync_stub, context do
+    MetricFlowTest.SyncStub.stub_success(
+      :google_search_console,
+      MetricFlowTest.SyncStub.google_search_console_success_body()
+    )
+
+    {:ok, context}
+  end
 end

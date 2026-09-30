@@ -52,6 +52,25 @@ defmodule MetricFlowTest.SyncStub do
   end
 
   @doc """
+  A minimal valid Search Console `searchAnalytics/query` response body: one
+  day, all four core metrics.
+  """
+  @spec google_search_console_success_body() :: String.t()
+  def google_search_console_success_body do
+    Jason.encode!(%{
+      "rows" => [
+        %{
+          "keys" => [Date.to_iso8601(Date.utc_today())],
+          "clicks" => 45,
+          "impressions" => 900,
+          "ctr" => 0.05,
+          "position" => 12.3
+        }
+      ]
+    })
+  end
+
+  @doc """
   A minimal valid GA4 `runReport` response body: one day, all core metrics.
   """
   @spec google_analytics_success_body() :: String.t()
