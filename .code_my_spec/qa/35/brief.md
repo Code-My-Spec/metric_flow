@@ -40,3 +40,13 @@ Base seeds already in place (qa@example.com / hello world!). This account has a 
 ## Setup Notes
 
 The core, highest-severity finding for this story is expected to be the metric list mismatch (293/631): the implementation's `@metric_names` in `google_analytics.ex` doesn't match the 11 metrics the story's own acceptance criteria and BDD moduledoc require. Criterion 293's spex (`criterion_293_system_syncs_the_following_ga4_metrics_as_core_daily_values_activeusers_active7dayusers_active28dayusers_newusers_engagedsessions_sessions_userengagementduration_screenpageviews_eventcount_keyevents_scrolledusers_spex.exs`) only asserts that a sync-history entry shows the "Google Analytics" provider name — it never inspects which metrics were actually synced, so it passes regardless of this gap.
+
+## Retest (after fixes for 0837169f, 291cf8b6)
+
+Both fixes confirmed in code:
+- `google_analytics.ex`'s `@metric_names` now lists exactly the 11 required metrics (activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers).
+- `metric.ex`/`metric_repository.ex` no longer force-downcase `metric_name` on insert (grep for `downcase`/`normalize_metric_name` in both files returns nothing).
+
+Live verification via the browser was attempted (triggered "Sync Now" on the real, connected `properties/343881087` integration three times), but every attempt failed against the real Google Analytics API with `error_message: "bad_request"` — visible directly in `sync_history` on this worktree's own DB (`metric_flow_dev_wc_bd0baac8`, not the default `metric_flow_dev` a bare `mix run` shell connects to by default). This is a live-API/credential issue on this QA account, not an application bug, and blocks a true end-to-end confirmation of the fix via a real sync. Filed as qa-scope issue.
+
+Corroborated instead via the dedicated unit suite: `mix test test/metric_flow/data_sync/data_providers/google_analytics_test.exs` (35/35 pass, fixtures use the new 11-metric list) and `mix test test/metric_flow/metrics/` (93/93 pass, no casing-related assertions broken).
