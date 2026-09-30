@@ -137,11 +137,15 @@ defmodule MetricFlowWeb.UserLive.Registration do
     slug = user.account_name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-")
     unique_slug = "#{slug}-#{:erlang.unique_integer([:positive])}"
 
-    Accounts.create_team_account(scope, %{
-      name: user.account_name,
-      slug: unique_slug
-    })
+    Accounts.create_team_account(
+      scope,
+      %{name: user.account_name, slug: unique_slug},
+      account_type(user.account_type)
+    )
   end
+
+  defp account_type("agency"), do: :agency
+  defp account_type(_), do: :client
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     form = to_form(changeset, as: "user")

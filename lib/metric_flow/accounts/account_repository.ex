@@ -64,7 +64,20 @@ defmodule MetricFlow.Accounts.AccountRepository do
   """
   @spec create_team_account(Scope.t(), map()) ::
           {:ok, Account.t()} | {:error, Ecto.Changeset.t()}
-  def create_team_account(%Scope{user: user}, attrs) do
+  def create_team_account(scope, attrs), do: create_team_account(scope, attrs, :client)
+
+  @doc """
+  Same as `create_team_account/2`, but with an explicit account `type`.
+
+  `type` is a trusted argument, not read from `attrs` — callers that pass
+  raw client-submitted params as `attrs` (e.g. a team-creation form) must
+  not let the client control account type this way; only pass a `type`
+  derived from a value the server has already validated (e.g. a registered
+  user's own `account_type` field).
+  """
+  @spec create_team_account(Scope.t(), map(), :client | :agency) ::
+          {:ok, Account.t()} | {:error, Ecto.Changeset.t()}
+  def create_team_account(%Scope{user: user}, attrs, type) when type in [:client, :agency] do
     # Normalize attrs to string keys to avoid mixed-key maps when merging
     # server-controlled fields (type, originator_user_id) with user-provided
     # form params that arrive as string-keyed maps from LiveView.
@@ -72,7 +85,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
 
     account_attrs =
       Map.merge(string_attrs, %{
-        "type" => :client,
+        "type" => type,
         "originator_user_id" => user.id
       })
 

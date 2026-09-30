@@ -23,6 +23,7 @@ defmodule MetricFlow.Accounts do
   defdelegate list_accounts(scope), to: AccountRepository
   defdelegate get_account!(scope, account_id), to: AccountRepository
   defdelegate create_team_account(scope, attrs), to: AccountRepository
+  defdelegate create_team_account(scope, attrs, type), to: AccountRepository
   defdelegate update_account(scope, account, attrs), to: AccountRepository
   defdelegate delete_account(scope, account), to: AccountRepository
   defdelegate list_account_members(scope, account_id), to: AccountRepository
