@@ -1,11 +1,10 @@
-defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndAnyErrorMessagesSpex do
+defmodule MetricFlowSpex.SyncHistoryEntryShowsTimestampStatusRecordsSyncedAndErrorsSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync history shows: timestamp, status (success or failure), records synced, and any error messages",
-    criterion: 119 do
+  spex "Sync history entry shows timestamp, status, records synced, and errors", criterion: 626 do
     scenario "a sync history entry shows its timestamp, status, records synced, and error message" do
       given_(:user_logged_in_as_owner)
 

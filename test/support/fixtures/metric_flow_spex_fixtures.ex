@@ -30,6 +30,7 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Agencies
   alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Dashboards.Visualization
+  alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Repo
@@ -120,6 +121,33 @@ defmodule MetricFlowSpex.Fixtures do
       granted_scopes: ["email", "profile"],
       provider_metadata: %{}
     })
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Creates a completed sync history record for the user registered with `email`.
+
+  For specs that need past sync outcomes to exercise the sync history/status
+  surface against — this is state a real daily sync run would have produced,
+  not something any UI flow creates directly.
+  """
+  @spec create_sync_history_for(String.t(), map()) :: SyncHistory.t()
+  def create_sync_history_for(email, attrs) do
+    user = Users.get_user_by_email(email)
+    completed_at = Map.get(attrs, :completed_at, DateTime.utc_now())
+
+    defaults = %{
+      user_id: user.id,
+      provider: :google_ads,
+      status: :success,
+      records_synced: 10,
+      error_message: nil,
+      started_at: DateTime.add(completed_at, -60, :second),
+      completed_at: completed_at
+    }
+
+    %SyncHistory{}
+    |> SyncHistory.changeset(Map.merge(defaults, attrs))
     |> Repo.insert!()
   end
 

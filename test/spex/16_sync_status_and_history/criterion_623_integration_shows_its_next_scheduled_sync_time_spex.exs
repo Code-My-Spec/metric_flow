@@ -1,10 +1,10 @@
-defmodule MetricFlowSpex.EachIntegrationShowsNextScheduledSyncTimeSpex do
+defmodule MetricFlowSpex.IntegrationShowsItsNextScheduledSyncTimeSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Each integration shows next scheduled sync time", criterion: 117 do
+  spex "Integration shows its next scheduled sync time", criterion: 623 do
     scenario "a connected active integration shows its next scheduled sync time" do
       given_(:user_logged_in_as_owner)
 

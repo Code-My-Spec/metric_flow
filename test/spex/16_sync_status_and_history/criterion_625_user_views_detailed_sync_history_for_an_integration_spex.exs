@@ -1,10 +1,10 @@
-defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
+defmodule MetricFlowSpex.UserViewsDetailedSyncHistoryForAnIntegrationSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can view detailed sync history (last 30 syncs minimum)", criterion: 118 do
+  spex "User views detailed sync history for an integration", criterion: 625 do
     scenario "an integration with more than 30 past syncs shows at least the last 30" do
       given_(:user_logged_in_as_owner)
 
@@ -29,6 +29,9 @@ defmodule MetricFlowSpex.UserCanViewDetailedSyncHistoryLast30SyncsMinimumSpex do
       end
 
       then_ "at least the last 30 syncs are shown", context do
+        count = context.view |> element("[data-role='sync-history']") |> has_element?()
+        assert count
+
         entry_count =
           context.view
           |> render()

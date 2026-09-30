@@ -1,43 +1,46 @@
-defmodule MetricFlowSpex.SyncHistoryShowsTimestampStatusRecordsSyncedAndAnyErrorMessagesSpex do
+defmodule MetricFlowSpex.FailedSyncIsHighlightedWithItsErrorDetailsSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync history shows: timestamp, status (success or failure), records synced, and any error messages",
-    criterion: 119 do
-    scenario "a sync history entry shows its timestamp, status, records synced, and error message" do
+  spex "Failed sync is highlighted with its error details", criterion: 627 do
+    scenario "a failed sync history entry is visually distinguished and shows its error" do
       given_(:user_logged_in_as_owner)
 
-      given_ "a sync history entry for an integration", context do
+      given_ "a sync attempt in the history failed", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
 
         MetricFlowSpex.Fixtures.create_sync_history_for(context.owner_email, %{
           provider: :google_ads,
           status: :failed,
           records_synced: 0,
-          error_message: "Token expired and could not be refreshed",
+          error_message: "All data providers failed. Check your integration settings.",
           completed_at: DateTime.utc_now()
         })
 
         {:ok, context}
       end
 
-      when_ "the user views it", context do
+      when_ "the user views the sync history", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "it shows the timestamp, status, number of records synced, and any error messages",
-            context do
-        html = render(context.view)
-        assert html =~ "Failed"
-        assert html =~ "0 records synced"
-        assert html =~ "Token expired and could not be refreshed"
-
+      then_ "that entry is visually highlighted", context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='failed']"
+               )
+
+        {:ok, context}
+      end
+
+      then_ "it shows its error details", context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-error']",
+                 "All data providers failed. Check your integration settings."
                )
 
         {:ok, context}

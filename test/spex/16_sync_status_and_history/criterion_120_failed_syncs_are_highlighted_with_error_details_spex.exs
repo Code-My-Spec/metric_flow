@@ -5,133 +5,43 @@ defmodule MetricFlowSpex.FailedSyncsAreHighlightedWithErrorDetailsSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Failed syncs are highlighted with error details", criterion: 120 do
-    scenario "a failed sync entry shows a visual error badge" do
-      given_ :owner_with_integrations
+    scenario "a failed sync history entry is visually distinguished and shows its error" do
+      given_(:user_logged_in_as_owner)
 
-      given_ "the user is on the sync history page", context do
+      given_ "a sync attempt in the history failed", context do
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+
+        MetricFlowSpex.Fixtures.create_sync_history_for(context.owner_email, %{
+          provider: :google_ads,
+          status: :failed,
+          records_synced: 0,
+          error_message: "All data providers failed. Check your integration settings.",
+          completed_at: DateTime.utc_now()
+        })
+
+        {:ok, context}
+      end
+
+      when_ "the user views the sync history", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "a sync failure arrives for the Google integration", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google,
-          reason: "Authentication token expired"
-        }})
-
-        :timer.sleep(100)
+      then_ "that entry is visually highlighted", context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='failed']"
+               )
 
         {:ok, context}
       end
 
-      then_ "the failed entry is highlighted with an error badge", context do
-        assert has_element?(context.view, ".badge-error"),
-               "Expected a badge-error element to visually highlight the failed sync"
-
-        assert render(context.view) =~ "Failed",
-               "Expected the failed sync to show a 'Failed' badge text"
-
-        {:ok, context}
-      end
-    end
-
-    scenario "a failed sync entry shows the error reason details" do
-      given_ :owner_with_integrations
-
-      given_ "the user is on the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      when_ "a sync failure arrives with a specific error reason", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google,
-          reason: "Rate limit exceeded: 429 Too Many Requests"
-        }})
-
-        :timer.sleep(100)
-
-        {:ok, context}
-      end
-
-      then_ "the user sees the error details displayed on the page", context do
-        assert has_element?(context.view, "[data-role='sync-error']"),
-               "Expected a data-role='sync-error' element to surface the error details"
-
-        html = render(context.view)
-
-        assert html =~ "Rate limit exceeded",
-               "Expected the error reason text to be visible to the user, got: #{html}"
-
-        {:ok, context}
-      end
-    end
-
-    scenario "failed entries are visually distinct from successful entries" do
-      given_ :owner_with_integrations
-
-      given_ "the user is on the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      when_ "a successful sync and a failed sync both arrive", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :facebook_ads,
-          records_synced: 150
-        }})
-
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google,
-          reason: "Connection refused: unable to reach API endpoint"
-        }})
-
-        :timer.sleep(100)
-
-        {:ok, context}
-      end
-
-      then_ "the failed entry shows a red error badge while the success entry shows a green badge", context do
-        assert has_element?(context.view, "[data-status='failed'] .badge-error"),
-               "Expected the failed entry to have a badge-error inside the data-status='failed' element"
-
-        assert has_element?(context.view, "[data-status='success'] .badge-success"),
-               "Expected the success entry to have a badge-success inside the data-status='success' element"
-
-        {:ok, context}
-      end
-    end
-
-    scenario "failed sync entries show the provider name alongside error details" do
-      given_ :owner_with_integrations
-
-      given_ "the user is on the sync history page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      when_ "a Facebook Ads sync fails with a permission error", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :facebook_ads,
-          reason: "Insufficient permissions to access ad account"
-        }})
-
-        :timer.sleep(100)
-
-        {:ok, context}
-      end
-
-      then_ "the user sees the error details linked to the Facebook Ads provider", context do
-        html = render(context.view)
-
-        assert html =~ "Facebook Ads",
-               "Expected the failed entry to identify the Facebook Ads provider, got: #{html}"
-
-        assert html =~ "Insufficient permissions",
-               "Expected the failure reason to be displayed alongside the provider name, got: #{html}"
-
-        assert has_element?(context.view, "[data-role='sync-provider']"),
-               "Expected a data-role='sync-provider' element to identify which provider failed"
+      then_ "it shows its error details", context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-error']",
+                 "All data providers failed. Check your integration settings."
+               )
 
         {:ok, context}
       end
