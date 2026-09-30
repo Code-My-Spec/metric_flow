@@ -8,6 +8,7 @@ defmodule MetricFlowSpex.AgencyCustomerSeesTheAgencysPlanAtCheckoutSpex do
     scenario "an agency-affiliated customer visits checkout" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_agency_plan
+      given_ :owner_has_stripe_connect
 
       when_ "the customer navigates to checkout", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")

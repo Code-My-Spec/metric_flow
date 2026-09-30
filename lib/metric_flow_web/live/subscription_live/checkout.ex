@@ -9,6 +9,7 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Agencies
   alias MetricFlow.Billing
   alias MetricFlow.Billing.BillingRepository
 
@@ -157,13 +158,15 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
   end
 
   defp load_plans(account_id) do
-    # Check if user is under an agency with plans
-    agency_plans = BillingRepository.list_plans(account_id)
+    # A client account of an agency sees that agency's plans; an agency's own
+    # account sees the plans it lists for itself. Either way, an account with
+    # no agency plan falls back to the platform's.
+    agency_account_id = Agencies.find_client_agency_account_id(account_id) || account_id
+    agency_plans = BillingRepository.list_plans(agency_account_id)
 
     if agency_plans != [] do
       agency_plans
     else
-      # Fall back to platform plans
       BillingRepository.list_plans(nil)
     end
   end

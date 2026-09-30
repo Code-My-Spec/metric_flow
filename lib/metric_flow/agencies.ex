@@ -6,8 +6,11 @@ defmodule MetricFlow.Agencies do
   configuration, team member management, and client account access grants.
 
   All public functions accept a `%Scope{}` as the first parameter for
-  multi-tenant isolation. The exception is `process_new_user_auto_enrollment/1`,
-  which operates on behalf of a newly registered user with no active session.
+  multi-tenant isolation. The exceptions are `process_new_user_auto_enrollment/1`,
+  `generate_referral_token/1`, `associate_referred_account/2`, and
+  `find_client_agency_account_id/1` — these operate on behalf of a newly
+  registered user with no active session, or answer a routing question about
+  the caller's own account that carries no cross-tenant risk.
   """
 
   use Boundary,
@@ -93,6 +96,77 @@ defmodule MetricFlow.Agencies do
         member = upsert_member_from_rule(user, rule)
         {:ok, [member]}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Agency referral links
+  # ---------------------------------------------------------------------------
+
+  @referral_salt "agency_referral"
+  @referral_max_age_seconds 60 * 60 * 24 * 365
+
+  @doc """
+  Generates a durable, URL-safe referral token for an agency account.
+
+  Meant to be embedded in a shareable signup link (e.g.
+  `/users/register?ref=<token>`), so a new user who registers through it is
+  automatically associated with the issuing agency as a client account.
+  """
+  @spec generate_referral_token(integer()) :: String.t()
+  def generate_referral_token(agency_account_id) when is_integer(agency_account_id) do
+    Phoenix.Token.sign(signing_secret(), @referral_salt, agency_account_id)
+  end
+
+  @doc """
+  Associates a newly created client account with the agency referenced by a
+  referral token, granting that agency read access and marking it as the
+  account's originator.
+
+  Runs with no active session — the token itself is the authorization, since
+  this is called during registration before the new user has a scope.
+
+  Returns `{:ok, agency_account_id}` on success, or `{:error, :invalid_or_expired}`
+  when the token is missing, malformed, or past its validity window.
+  """
+  @spec associate_referred_account(String.t(), integer()) ::
+          {:ok, integer()} | {:error, :invalid_or_expired}
+  def associate_referred_account(referral_token, client_account_id)
+      when is_binary(referral_token) and is_integer(client_account_id) do
+    case Phoenix.Token.verify(signing_secret(), @referral_salt, referral_token,
+           max_age: @referral_max_age_seconds
+         ) do
+      {:ok, agency_account_id} ->
+        {:ok, _grant} =
+          AgenciesRepository.grant_client_access(agency_account_id, client_account_id, :read_only)
+
+        {:ok, _grant} = AgenciesRepository.mark_as_originator(agency_account_id, client_account_id)
+        {:ok, agency_account_id}
+
+      {:error, _reason} ->
+        {:error, :invalid_or_expired}
+    end
+  end
+
+  @doc """
+  Finds the agency account that a client account belongs to, if any.
+
+  Used to route a client's checkout to its agency's plans. Returns the first
+  agency's account id — an account originated by one agency is not expected
+  to carry multiple grants — or `nil` when the account is not a client of
+  any agency.
+  """
+  @spec find_client_agency_account_id(integer()) :: integer() | nil
+  def find_client_agency_account_id(client_account_id) do
+    case AgenciesRepository.list_account_agencies(client_account_id) do
+      [%AgencyClientAccessGrant{agency_account_id: agency_account_id} | _] -> agency_account_id
+      [] -> nil
+    end
+  end
+
+  defp signing_secret do
+    :metric_flow
+    |> Application.get_env(MetricFlowWeb.Endpoint, [])
+    |> Keyword.fetch!(:secret_key_base)
   end
 
   # ---------------------------------------------------------------------------

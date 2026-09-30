@@ -88,12 +88,13 @@ defmodule MetricFlowWeb.UserLive.Registration do
     {:ok, redirect(socket, to: MetricFlowWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     changeset = Users.change_user_registration(%User{}, %{}, validate_unique: false)
 
     socket =
       socket
       |> assign(registered: false, registered_email: nil, registered_account_name: nil)
+      |> assign(:referral_token, Map.get(params, "ref"))
       |> assign_form(changeset)
 
     {:ok, socket, temporary_assigns: [form: nil]}
@@ -109,8 +110,9 @@ defmodule MetricFlowWeb.UserLive.Registration do
             &url(~p"/users/log-in/#{&1}")
           )
 
-        maybe_create_account(user)
+        account = maybe_create_account(user)
         Agencies.process_new_user_auto_enrollment(user)
+        maybe_associate_referring_agency(socket.assigns[:referral_token], account)
 
         {:noreply,
          assign(socket,
@@ -129,23 +131,34 @@ defmodule MetricFlowWeb.UserLive.Registration do
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 
-  defp maybe_create_account(%User{account_name: nil}), do: :ok
-  defp maybe_create_account(%User{account_name: ""}), do: :ok
+  defp maybe_create_account(%User{account_name: nil}), do: nil
+  defp maybe_create_account(%User{account_name: ""}), do: nil
 
   defp maybe_create_account(%User{} = user) do
     scope = Scope.for_user(user)
     slug = user.account_name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-")
     unique_slug = "#{slug}-#{:erlang.unique_integer([:positive])}"
 
-    Accounts.create_team_account(
-      scope,
-      %{name: user.account_name, slug: unique_slug},
-      account_type(user.account_type)
-    )
+    case Accounts.create_team_account(
+           scope,
+           %{name: user.account_name, slug: unique_slug},
+           account_type(user.account_type)
+         ) do
+      {:ok, account} -> account
+      {:error, _changeset} -> nil
+    end
   end
 
   defp account_type("agency"), do: :agency
   defp account_type(_), do: :client
+
+  defp maybe_associate_referring_agency(nil, _account), do: :ok
+  defp maybe_associate_referring_agency(_token, nil), do: :ok
+
+  defp maybe_associate_referring_agency(token, account) do
+    Agencies.associate_referred_account(token, account.id)
+    :ok
+  end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     form = to_form(changeset, as: "user")
