@@ -71,33 +71,44 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       assert html =~ "Correlation"
     end
 
-    test "halts and redirects for accounts with no subscription", %{conn: conn} do
+    test "shows an inline paywall for accounts with no subscription", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
-               live(conn, "/app/correlations")
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      assert has_element?(view, "[data-role='paywall']")
     end
 
-    test "halts and redirects for accounts with cancelled subscription", %{conn: conn} do
+    test "shows an inline paywall for accounts with cancelled subscription", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       subscription_fixture(account, %{status: :cancelled})
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
-               live(conn, "/app/correlations")
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      assert has_element?(view, "[data-role='paywall']")
     end
 
-    test "halts and redirects for accounts with past_due subscription", %{conn: conn} do
+    test "shows an inline paywall for accounts with past_due subscription and no agency plan",
+         %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       subscription_fixture(account, %{status: :past_due})
       conn = log_in_user(conn, user)
 
-      assert {:error, {:redirect, %{to: "/app/subscriptions/checkout"}}} =
-               live(conn, "/app/correlations")
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      assert has_element?(view, "[data-role='paywall']")
+    end
+
+    test "clicking the paywall CTA navigates a free user to checkout", %{conn: conn} do
+      user = user_fixture()
+      _account = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      view |> element("[data-role='paywall-cta']") |> render_click()
+      assert_redirect(view, "/app/subscriptions/checkout")
     end
 
     test "continues when no current scope is present", %{conn: conn} do

@@ -280,6 +280,38 @@ defmodule MetricFlowWeb.CoreComponents do
     """
   end
 
+  attr :paywall, :map, required: true
+
+  @doc """
+  Renders in place of a paywalled route's normal content for a free user.
+  """
+  def paywall_modal(assigns) do
+    ~H"""
+    <div
+      data-role="paywall"
+      id="paywall-modal"
+      class="flex flex-col items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-8 text-center"
+    >
+      <div data-role="upgrade-modal">
+        <h2 class="text-xl font-semibold">Upgrade to access AI features</h2>
+        <p class="mt-2 text-base-content/70">
+          Unlock AI-powered correlations, visualizations, and insights with the
+          <strong>{@paywall.plan_name}</strong>
+          plan for {@paywall.price_text}.
+        </p>
+        <button
+          type="button"
+          phx-click="paywall_upgrade"
+          data-role="paywall-cta"
+          class="btn btn-primary mt-4"
+        >
+          Upgrade to {@paywall.plan_name}
+        </button>
+      </div>
+    </div>
+    """
+  end
+
   @doc """
   Renders a header with title.
   """

@@ -17,6 +17,10 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def render(%{paywall: paywall} = assigns) when not is_nil(paywall) do
+    MetricFlowWeb.CoreComponents.paywall_modal(assigns)
+  end
+
   def render(assigns) do
     ~H"""
     <Layouts.app
@@ -99,6 +103,11 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def mount(_params, _session, %{assigns: %{paywall: paywall}} = socket)
+      when not is_nil(paywall) do
+    {:ok, socket}
+  end
+
   def mount(_params, _session, socket) do
     scope = socket.assigns.current_scope
 

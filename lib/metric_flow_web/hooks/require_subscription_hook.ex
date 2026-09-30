@@ -3,14 +3,23 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   LiveView on_mount hook that gates access to AI-powered features
   behind an active subscription.
 
-  Free users are redirected to `/subscriptions/checkout` with a flash
-  message prompting them to upgrade. Users with active or trialing
-  subscriptions pass through unrestricted.
+  Free users mount normally but are assigned `:paywall` info instead of
+  being redirected, so the paywalled LiveView renders an upgrade modal in
+  place of its usual content — no feature data is ever pushed to a free
+  user's client, since only what is rendered crosses the socket. Users
+  with active or trialing subscriptions, agency admin accounts, and
+  agency-customer subscriptions flagged for review (still paying,
+  pending their agency's Stripe reconnect) pass through unrestricted.
   """
 
-  import Phoenix.LiveView, only: [redirect: 2, put_flash: 3]
+  import Phoenix.Component, only: [assign: 3]
+  import Phoenix.LiveView, only: [attach_hook: 4, push_navigate: 2]
 
   alias MetricFlow.Billing.BillingRepository
+
+  @checkout_path "/app/subscriptions/checkout"
+  @default_plan_name "Pro"
+  @default_plan_price_cents 4900
 
   def on_mount(:require_subscription, _params, _session, socket) do
     scope = socket.assigns[:current_scope]
@@ -30,17 +39,42 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
       true ->
         socket =
           socket
-          |> put_flash(:error, "Upgrade to access AI features")
-          |> redirect(to: "/app/subscriptions/checkout")
+          |> assign(:paywall, paywall_info())
+          |> attach_hook(:require_subscription_cta, :handle_event, &handle_paywall_event/3)
 
-        {:halt, socket}
+        {:cont, socket}
     end
   end
 
+  defp handle_paywall_event("paywall_upgrade", _params, socket) do
+    {:halt, push_navigate(socket, to: @checkout_path)}
+  end
+
+  defp handle_paywall_event(_event, _params, socket), do: {:cont, socket}
+
+  # An agency's Stripe account disconnecting flags its customers' subscriptions
+  # `:past_due` for admin review, but those customers are still paying — only a
+  # subscription with no agency-managed plan behind it represents a real
+  # payment failure that should re-paywall the account.
   defp has_active_subscription?(account_id) do
     case BillingRepository.get_subscription_by_account_id(account_id) do
-      %{status: status} when status in [:active, :trialing] -> true
-      _ -> false
+      %{status: status} when status in [:active, :trialing] ->
+        true
+
+      %{status: :past_due, plan: %{agency_account_id: agency_account_id}} ->
+        not is_nil(agency_account_id)
+
+      _ ->
+        false
     end
   end
+
+  defp paywall_info do
+    case BillingRepository.list_plans(nil) do
+      [plan | _] -> %{plan_name: plan.name, price_text: price_text(plan.price_cents)}
+      [] -> %{plan_name: @default_plan_name, price_text: price_text(@default_plan_price_cents)}
+    end
+  end
+
+  defp price_text(cents), do: "$#{trunc(cents / 100)}/month"
 end

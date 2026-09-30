@@ -38,6 +38,7 @@ defmodule MetricFlow.Billing.BillingRepository do
       [s],
       s.status != :cancelled or is_nil(s.current_period_end) or s.current_period_end > ^now
     )
+    |> preload(:plan)
     |> Repo.one()
   end
 
