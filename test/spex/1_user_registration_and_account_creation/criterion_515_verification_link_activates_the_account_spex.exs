@@ -20,36 +20,20 @@ defmodule MetricFlowSpex.VerificationLinkActivatesAccountSpex do
 
       when_ "Dana clicks the verification link", context do
         token = MetricFlowSpex.Fixtures.login_token_for("activate_dana@example.com")
-        result = live(context.conn, "/users/log-in/#{token}")
-        {:ok, Map.put(context, :verify_result, result)}
+        {:ok, confirm_view, _html} = live(context.conn, "/users/log-in/#{token}")
+
+        form =
+          form(confirm_view, "#confirmation_form", %{"user" => %{"token" => token}})
+
+        render_submit(form)
+        authenticated_conn = follow_trigger_action(form, context.conn)
+
+        {:ok, Map.put(context, :authenticated_conn, authenticated_conn)}
       end
 
       then_ "Dana's account becomes activated and she can reach the app", context do
-        access_result =
-          case context.verify_result do
-            {:ok, _view, _html} ->
-              live(context.conn, "/app/accounts")
-
-            {:error, {:redirect, %{to: path}}} when path != "/users/log-in" ->
-              live(recycle(context.conn), "/app/accounts")
-
-            {:error, {:live_redirect, %{to: path}}} when path != "/users/log-in" ->
-              live(recycle(context.conn), "/app/accounts")
-
-            other ->
-              other
-          end
-
-        case access_result do
-          {:ok, view, _html} ->
-            assert has_element?(view, "h1, h2", "Your Accounts")
-
-          other ->
-            flunk(
-              "Expected Dana to reach the app after clicking the verification link, " <>
-                "but she was denied access: #{inspect(other)}"
-            )
-        end
+        {:ok, accounts_view, _html} = live(context.authenticated_conn, "/app/accounts")
+        assert has_element?(accounts_view, "h1, h2", "Your Accounts")
 
         {:ok, context}
       end

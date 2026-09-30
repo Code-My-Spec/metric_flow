@@ -3,39 +3,45 @@ defmodule MetricFlowSpex.UserLandsInOnboardingAfterRegisteringSpex do
   import Phoenix.LiveViewTest
 
   spex "User lands in onboarding already logged in after registering", criterion: 520 do
-    scenario "Dana is logged in and directed to onboarding as soon as registration succeeds" do
+    scenario "Dana is logged in and directed to onboarding once registration succeeds" do
       given_ "Dana has just completed registration", context do
         {:ok, view, _html} = live(context.conn, "/users/register")
-        {:ok, Map.put(context, :view, view)}
+
+        view
+        |> form("#registration_form", user: %{
+          email: "onboard_now_dana@example.com",
+          password: "SecurePassword123!",
+          account_name: "Dana Onboard Co"
+        })
+        |> render_submit()
+
+        {:ok, context}
       end
 
       when_ "registration succeeds", context do
-        result =
-          context.view
-          |> form("#registration_form", user: %{
-            email: "onboard_now_dana@example.com",
-            password: "SecurePassword123!",
-            account_name: "Dana Onboard Co"
-          })
-          |> render_submit()
+        token = MetricFlowSpex.Fixtures.login_token_for("onboard_now_dana@example.com")
+        {:ok, confirm_view, _html} = live(context.conn, "/users/log-in/#{token}")
 
-        {:ok, Map.put(context, :submit_result, result)}
+        form =
+          form(confirm_view, "#confirmation_form", %{"user" => %{"token" => token}})
+
+        render_submit(form)
+        result_conn = follow_trigger_action(form, context.conn)
+
+        {:ok, Map.put(context, :result_conn, result_conn)}
       end
 
       then_ "Dana is logged in and directed to the onboarding flow", context do
-        case context.submit_result do
-          html when is_binary(html) ->
-            flunk(
-              "Expected registration to log Dana in and redirect her to onboarding, " <>
-                "but the registration page re-rendered in place instead"
-            )
+        assert redirected_to(context.result_conn) == "/onboarding"
 
-          {:error, {:redirect, %{to: path}}} ->
-            assert path =~ "/onboarding"
+        {:ok, context}
+      end
 
-          {:error, {:live_redirect, %{to: path}}} ->
-            assert path =~ "/onboarding"
-        end
+      then_ "Dana's session is authenticated once she reaches onboarding", context do
+        {:ok, onboarding_view, _html} =
+          live(recycle(context.result_conn), "/onboarding")
+
+        refute has_element?(onboarding_view, "a", "Log in")
 
         {:ok, context}
       end

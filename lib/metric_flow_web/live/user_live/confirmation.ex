@@ -75,21 +75,17 @@ defmodule MetricFlowWeb.UserLive.Confirmation do
   @impl true
   def mount(%{"token" => token}, _session, socket) do
     case Users.get_user_by_magic_link_token(token) do
-      %{confirmed_at: nil} = _user ->
-        # Auto-confirm unconfirmed users and redirect to onboarding
-        case Users.login_user_by_magic_link(token) do
-          {:ok, {_user, _tokens}} ->
-            {:ok,
-             socket
-             |> put_flash(:info, "Account confirmed successfully.")
-             |> push_navigate(to: ~p"/onboarding")}
+      %{confirmed_at: nil} = user ->
+        # A LiveView mount can't set an HTTP session cookie itself, so the
+        # unconfirmed-user confirm form (below) must actually submit through
+        # the controller for login to take effect. Arming trigger_submit as
+        # soon as the socket connects makes it submit automatically instead
+        # of waiting for a click, via the same phx-trigger-action mechanism
+        # already used for the confirmed-user form.
+        form = to_form(%{"token" => token}, as: "user")
 
-          _ ->
-            {:ok,
-             socket
-             |> put_flash(:error, "Magic link is invalid or it has expired.")
-             |> push_navigate(to: ~p"/users/log-in")}
-        end
+        {:ok, assign(socket, user: user, form: form, trigger_submit: connected?(socket)),
+         temporary_assigns: [form: nil]}
 
       %{} = user ->
         form = to_form(%{"token" => token}, as: "user")

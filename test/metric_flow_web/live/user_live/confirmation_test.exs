@@ -17,10 +17,18 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
           Users.deliver_login_instructions(user, url)
         end)
 
-      assert {:error, {:live_redirect, %{to: "/onboarding"}}} =
-               live(conn, ~p"/users/log-in/#{token}")
+      {:ok, lv, _html} = live(conn, ~p"/users/log-in/#{token}")
 
+      form = form(lv, "#confirmation_form", %{"user" => %{"token" => token}})
+      render_submit(form)
+
+      conn = follow_trigger_action(form, conn)
+
+      assert redirected_to(conn) == ~p"/onboarding"
       assert Users.get_user!(user.id).confirmed_at
+
+      conn = get(recycle(conn), ~p"/app/accounts")
+      assert html_response(conn, 200)
     end
 
     test "renders login page for confirmed user", %{conn: conn, confirmed_user: user} do
@@ -53,18 +61,23 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
           Users.deliver_login_instructions(user, url)
         end)
 
-      # First visit auto-confirms and redirects to onboarding
-      assert {:error, {:live_redirect, %{to: "/onboarding"}}} =
-               live(conn, ~p"/users/log-in/#{token}")
+      # First visit auto-submits the confirm form, which confirms and logs in
+      {:ok, lv, _html} = live(conn, ~p"/users/log-in/#{token}")
 
+      form = form(lv, "#confirmation_form", %{"user" => %{"token" => token}})
+      render_submit(form)
+      conn = follow_trigger_action(form, conn)
+
+      assert redirected_to(conn) == ~p"/onboarding"
       assert Users.get_user!(user.id).confirmed_at
 
-      # Token is consumed, second visit redirects to login with error
-      conn = build_conn()
+      # Token is consumed, second visit (with a fresh, unauthenticated conn)
+      # redirects to login with error
+      fresh_conn = build_conn()
 
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
-        |> follow_redirect(conn, ~p"/users/log-in")
+        live(fresh_conn, ~p"/users/log-in/#{token}")
+        |> follow_redirect(fresh_conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or it has expired"
     end

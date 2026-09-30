@@ -5,7 +5,9 @@ defmodule MetricFlowWeb.UserSessionController do
   alias MetricFlowWeb.UserAuth
 
   def create(conn, %{"_action" => "confirmed"} = params) do
-    create(conn, params, "User confirmed successfully.")
+    conn
+    |> put_session(:user_return_to, ~p"/onboarding")
+    |> create(params, "User confirmed successfully.")
   end
 
   def create(conn, params) do
