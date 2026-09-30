@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.Criterion981SyncFetchesIndividualReviewsForEachLocation
       given_ :user_logged_in_as_owner
 
       given_ "a client has a connected Google Business Profile location", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 

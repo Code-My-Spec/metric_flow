@@ -641,7 +641,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
       end
     end
 
-    test "sets provider to :google_business for all review metrics" do
+    test "sets provider to :google_business_reviews for all review metrics" do
       plug = build_dual_stub_plug(empty_performance_response(), valid_reviews_response())
 
       assert {:ok, metrics} = GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
@@ -650,7 +650,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
       assert review_metrics != []
 
       for metric <- review_metrics do
-        assert metric.provider == :google_business
+        assert metric.provider == :google_business_reviews
       end
     end
 

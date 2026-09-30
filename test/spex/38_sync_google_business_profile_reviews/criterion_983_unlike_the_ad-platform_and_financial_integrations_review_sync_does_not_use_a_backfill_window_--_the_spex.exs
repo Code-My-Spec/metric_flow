@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.Criterion983ReviewSyncHasNoBackfillWindowSpex do
       given_ :user_logged_in_as_owner
 
       given_ "a Google Business Profile location has never synced reviews before", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 

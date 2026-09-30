@@ -134,6 +134,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
   def providers_for(:facebook_ads), do: {:ok, [FacebookAds]}
   def providers_for(:google_search_console), do: {:ok, [GoogleSearchConsole]}
   def providers_for(:google_business), do: {:ok, [GoogleBusiness]}
+  def providers_for(:google_business_reviews), do: {:ok, [GoogleBusiness]}
   def providers_for(:quickbooks), do: {:ok, [QuickBooks]}
   def providers_for(_), do: {:error, :unsupported_provider}
 
@@ -531,8 +532,16 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp provider_name(mod, integration) do
-    if function_exported?(mod, :provider, 0), do: mod.provider(), else: integration.provider
+  # GoogleBusiness.provider/0 always returns :google_business even when the
+  # triggering integration is :google_business_reviews (both share the same
+  # fetch_metrics/2 call, see its moduledoc) -- the integration's own
+  # declared provider is the correct label except for the :google fan-out
+  # case, where a single integration produces per-service history entries
+  # and the module's own identity is what distinguishes them.
+  defp provider_name(_mod, %Integration{provider: provider}) when provider != :google, do: provider
+
+  defp provider_name(mod, %Integration{provider: :google}) do
+    if function_exported?(mod, :provider, 0), do: mod.provider(), else: :google
   end
 
   defp record_history(scope, integration, sync_job_id, sync_type, started_at, outcome) do

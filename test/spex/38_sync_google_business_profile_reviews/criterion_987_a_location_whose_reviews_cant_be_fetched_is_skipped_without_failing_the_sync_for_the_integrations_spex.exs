@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.Criterion987FailingLocationSkippedWithoutFailingOtherLo
       given_ :user_logged_in_as_owner
 
       given_ "a Google Business Profile integration has two locations, one of which cannot be fetched", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews,
           provider_metadata: %{"included_locations" => ["locations/111", "locations/does-not-exist"]}
         )
 

@@ -2,14 +2,21 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   @moduledoc """
   Google Business Profile data provider implementing the DataProviders.Behaviour contract.
 
-  Fetches two categories of data for each selected location:
+  Fetches two categories of data for each selected location, in one combined
+  call regardless of whether the triggering integration is `:google_business`
+  or `:google_business_reviews` -- the same access token and location list
+  serve both. The two categories are tagged separately before persistence so
+  a `:google_business_reviews` integration's records aren't misattributed to
+  `:google_business` or vice versa:
 
   1. **Performance metrics** from the Business Profile Performance API v1:
      impressions (desktop/mobile, maps/search), conversations, direction
-     requests, call clicks, website clicks, bookings, food orders, food menu clicks.
+     requests, call clicks, website clicks, bookings, food orders, food menu
+     clicks. Stored with `provider: :google_business`.
 
   2. **Reviews** from the My Business v4 API: individual review records with
-     star ratings, reviewer info, and comments.
+     star ratings, reviewer info, and comments. Stored with
+     `provider: :google_business_reviews`.
 
   Accepts an `http_plug` option for dependency injection during tests.
   """
@@ -331,7 +338,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
             reviewer: get_in(review, ["reviewer", "displayName"]) || "Anonymous",
             comment: Map.get(review, "comment") || ""
           },
-          provider: :google_business
+          provider: :google_business_reviews
         },
         %{
           metric_type: "reviews",
@@ -343,7 +350,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
             location_id: location_id,
             date: Date.to_iso8601(DateTime.to_date(recorded_at))
           },
-          provider: :google_business
+          provider: :google_business_reviews
         }
       ]
     end)
