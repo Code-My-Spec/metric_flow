@@ -401,11 +401,13 @@ defmodule MetricFlowWeb.AccountLive.Members do
   defp role_badge_class(:admin), do: "badge badge-secondary"
   defp role_badge_class(:account_manager), do: "badge badge-accent"
   defp role_badge_class(:read_only), do: "badge badge-ghost"
+  defp role_badge_class(:member), do: "badge badge-ghost"
 
   defp role_label(:owner), do: "owner"
   defp role_label(:admin), do: "admin"
   defp role_label(:account_manager), do: "account_manager"
   defp role_label(:read_only), do: "read_only"
+  defp role_label(:member), do: "member"
 
   defp format_date(%DateTime{} = dt), do: Calendar.strftime(dt, "%b %d, %Y")
   defp format_date(%NaiveDateTime{} = dt), do: Calendar.strftime(dt, "%b %d, %Y")
