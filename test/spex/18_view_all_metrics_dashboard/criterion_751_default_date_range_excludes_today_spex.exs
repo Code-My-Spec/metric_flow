@@ -1,15 +1,14 @@
-defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompleteCurrentDaySpex do
+defmodule MetricFlowSpex.DefaultDateRangeExcludesTodaySpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Date ranges default to last X days from yesterday to avoid incomplete current day",
-    criterion: 132 do
-    scenario "a client opens the dashboard and the default range excludes today" do
+  spex "Default date range excludes today", criterion: 751 do
+    scenario "a client opens the dashboard with the default date range before today's data has fully synced" do
       given_(:user_logged_in_as_owner)
 
-      given_ "the client has connected data, including a metric recorded today", context do
+      given_ "a client has connected data, including a metric recorded today", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
 
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
@@ -22,7 +21,7 @@ defmodule MetricFlowSpex.DateRangesDefaultToLastXDaysFromYesterdayToAvoidIncompl
         {:ok, context}
       end
 
-      when_ "they open the dashboard with the default date range", context do
+      when_ "today's data has not yet fully synced and they open the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end

@@ -1,16 +1,14 @@
-defmodule MetricFlowSpex.DashboardDisplaysBothMarketingAndFinancialMetricsWithNoDistinctionSpex do
+defmodule MetricFlowSpex.MarketingAndFinancialMetricsAppearTogetherSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Dashboard displays both marketing metrics and financial metrics with no distinction",
-    criterion: 129 do
-    scenario "a client with both marketing and financial integrations sees both kinds of metrics together" do
+  spex "Marketing and financial metrics appear together", criterion: 747 do
+    scenario "a client with both marketing and financial integrations sees both kinds of metrics with no separation" do
       given_(:user_logged_in_as_owner)
 
-      given_ "the client has a marketing integration and a financial integration, each with data",
-             context do
+      given_ "a client has both marketing and financial integrations connected", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
 
@@ -41,8 +39,8 @@ defmodule MetricFlowSpex.DashboardDisplaysBothMarketingAndFinancialMetricsWithNo
         html = render(context.view)
         assert html =~ "clicks"
         assert html =~ "revenue"
-        refute html =~ "Marketing Metrics"
-        refute html =~ "Financial Metrics"
+        refute html =~ "Marketing"
+        refute html =~ "Financial"
         {:ok, context}
       end
     end

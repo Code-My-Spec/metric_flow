@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can access All Metrics dashboard showing data from all connected platforms", criterion: 128 do
+  spex "User can access All Metrics dashboard showing data from all connected platforms",
+    criterion: 128 do
     scenario "authenticated user can navigate to the dashboard page" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -28,7 +29,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
     end
 
     scenario "dashboard page shows a heading identifying it as the metrics dashboard" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -49,7 +50,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
     end
 
     scenario "dashboard page shows data from connected platforms" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -73,7 +74,7 @@ defmodule MetricFlowSpex.UserCanAccessAllMetricsDashboardShowingDataFromAllConne
     end
 
     scenario "dashboard page includes a metrics data area" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

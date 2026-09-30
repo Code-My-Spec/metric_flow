@@ -161,6 +161,20 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  Inserts a metric row for the user registered with `email`.
+
+  Metrics originate from a provider's sync run, not any UI flow -- there is
+  no "add a metric" form. Attrs is passed through to
+  MetricFlowTest.MetricsFixtures.insert_metric!/2 (provider, metric_name,
+  value, recorded_at, etc).
+  """
+  @spec create_metric_for(String.t(), map()) :: MetricFlow.Metrics.Metric.t()
+  def create_metric_for(email, attrs \\ %{}) do
+    user = Users.get_user_by_email(email)
+    MetricFlowTest.MetricsFixtures.insert_metric!(user, Map.new(attrs))
+  end
+
+  @doc """
   Creates a completed sync history record for the user registered with `email`.
 
   For specs that need past sync outcomes to exercise the sync history/status

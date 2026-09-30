@@ -1,14 +1,14 @@
-defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
+defmodule MetricFlowSpex.UserFiltersTheDashboardSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can filter by platform, date range, or metric type", criterion: 130 do
-    scenario "a client filters the dashboard by platform and only that platform's data is shown" do
+  spex "User filters the dashboard", criterion: 748 do
+    scenario "a client filters by platform and only the matching data is shown" do
       given_(:user_logged_in_as_owner)
 
-      given_ "the client has data from two different platforms", context do
+      given_ "a client is viewing the dashboard with data from two platforms", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
 
@@ -28,18 +28,18 @@ defmodule MetricFlowSpex.UserCanFilterByPlatformDateRangeOrMetricTypeSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "they filter by the google_ads platform", context do
+      when_ "they filter by platform, date range, or metric type", context do
         context.view
-        |> element("[data-role='platform-filter'] button[phx-value-platform='google_ads']")
+        |> element("[data-role='platform-filter'] button[phx-value-platform='quickbooks']")
         |> render_click()
 
         {:ok, context}
       end
 
-      then_ "only data from that platform is shown", context do
+      then_ "only the matching data is shown", context do
         html = render(context.view)
-        assert html =~ "clicks"
-        refute html =~ "revenue"
+        assert html =~ "revenue"
+        refute html =~ "clicks"
         {:ok, context}
       end
     end

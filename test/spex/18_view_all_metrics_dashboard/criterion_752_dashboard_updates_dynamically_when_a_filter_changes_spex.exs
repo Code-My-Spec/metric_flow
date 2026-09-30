@@ -1,14 +1,14 @@
-defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
+defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenAFilterChangesSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Dashboard updates dynamically when filters change", criterion: 133 do
-    scenario "changing the platform filter updates the dashboard without a full page reload" do
+  spex "Dashboard updates dynamically when a filter changes", criterion: 752 do
+    scenario "a client changes a filter and the dashboard's data updates without a full page reload" do
       given_(:user_logged_in_as_owner)
 
-      given_ "the client has data from two platforms", context do
+      given_ "a client is viewing the dashboard with data from two platforms", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
 
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "they change the platform filter", context do
+      when_ "they change a filter", context do
         html =
           context.view
           |> element("[data-role='platform-filter'] button[phx-value-platform='google_ads']")
@@ -38,8 +38,7 @@ defmodule MetricFlowSpex.DashboardUpdatesDynamicallyWhenFiltersChangeSpex do
         {:ok, Map.put(context, :updated_html, html)}
       end
 
-      then_ "the dashboard's data updates in the same connected view, without a full page reload",
-            context do
+      then_ "the dashboard's data updates without a full page reload", context do
         assert context.updated_html =~ "clicks"
         refute context.updated_html =~ "revenue"
         assert Process.alive?(context.view.pid)
