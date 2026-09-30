@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.ModifyingSelectionFailsWhenPlatformAccessHasBeenRevoked
             context do
         case context.result do
           {:ok, view, _html} ->
-            refute has_element?(view, "[data-role='save-account-selection']")
+            refute has_element?(view, "[data-role='save-selection']")
             html = render(view)
             assert html =~ "reconnect" or html =~ "Reconnect"
 

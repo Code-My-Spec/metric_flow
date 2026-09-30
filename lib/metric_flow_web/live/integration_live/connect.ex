@@ -23,6 +23,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Integrations
+  alias MetricFlow.Integrations.Integration
 
   # Each platform has its own OAuth connection and integration record.
   @canonical_providers [
@@ -562,13 +563,24 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       {:ok, provider_atom} ->
         integration = fetch_existing_integration(socket, provider_atom)
 
-        if is_nil(integration) do
-          {:noreply,
-           socket
-           |> put_flash(:error, "Please connect #{provider_str} first before selecting accounts.")
-           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
-        else
-          assign_accounts_state(socket, provider_atom, provider_str, integration)
+        cond do
+          is_nil(integration) ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Please connect #{provider_str} first before selecting accounts.")
+             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+          Integration.expired?(integration) ->
+            {:noreply,
+             socket
+             |> put_flash(
+               :error,
+               "Your #{provider_str} connection has expired. Please reconnect to modify account selection."
+             )
+             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+          true ->
+            assign_accounts_state(socket, provider_atom, provider_str, integration)
         end
     end
   end
