@@ -16,6 +16,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
 
   @behaviour MetricFlow.DataSync.DataProviders.Behaviour
 
+  require Logger
+
   alias MetricFlow.Integrations.Integration
 
   @ga4_base_url "https://analyticsdata.googleapis.com/v1beta"
@@ -188,7 +190,11 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   defp handle_response(%Req.Response{status: 401}), do: {:error, :unauthorized}
   defp handle_response(%Req.Response{status: 403}), do: {:error, :insufficient_permissions}
   defp handle_response(%Req.Response{status: 404}), do: {:error, :property_not_found}
-  defp handle_response(%Req.Response{status: _}), do: {:error, :bad_request}
+
+  defp handle_response(%Req.Response{status: status, body: body}) do
+    Logger.warning("GA4 API returned #{status}: #{inspect(body)}")
+    {:error, :bad_request}
+  end
 
   # ---------------------------------------------------------------------------
   # Private helpers — request building
