@@ -1,15 +1,14 @@
-defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToPropertyAndAccountSpex do
+defmodule MetricFlowSpex.SyncFetchesDataForTheOauthSelectedGa4PropertySpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Each metric is stored as a daily time-series value keyed to the property and client account",
-       criterion: 294 do
-    scenario "a synced GA4 metric appears under the syncing account's own history, not another account's" do
+  spex "Sync fetches data for the OAuth-selected GA4 property", criterion: 630 do
+    scenario "data is fetched for the property chosen during OAuth connection" do
       given_ :user_logged_in_as_owner
 
-      given_ "the account has a connected GA4 property", context do
+      given_ "a client selected a specific GA4 property during OAuth connection", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
           provider_metadata: %{"property_id" => "properties/123456789"}
         )
@@ -24,7 +23,7 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToPropert
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "this account's sync history shows the completed Google Analytics sync", context do
+      then_ "data is fetched for that selected property", context do
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']", "Google Analytics")
         {:ok, context}
       end

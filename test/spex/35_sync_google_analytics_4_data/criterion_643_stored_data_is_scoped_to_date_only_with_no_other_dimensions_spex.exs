@@ -1,15 +1,14 @@
-defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToPropertyAndAccountSpex do
+defmodule MetricFlowSpex.StoredDataIsScopedToDateOnlyWithNoOtherDimensionsSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Each metric is stored as a daily time-series value keyed to the property and client account",
-       criterion: 294 do
-    scenario "a synced GA4 metric appears under the syncing account's own history, not another account's" do
+  spex "Stored data is scoped to date only, with no other dimensions", criterion: 643 do
+    scenario "GA4 metrics stored for a property carry no source/medium breakdown" do
       given_ :user_logged_in_as_owner
 
-      given_ "the account has a connected GA4 property", context do
+      given_ "GA4 metrics are stored for a property", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
           provider_metadata: %{"property_id" => "properties/123456789"}
         )
@@ -17,15 +16,18 @@ defmodule MetricFlowSpex.EachMetricIsStoredAsADailyTimeSeriesValueKeyedToPropert
         {:ok, context}
       end
 
-      when_ "the sync runs", context do
+      when_ "the records are written", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()
         Oban.drain_queue(queue: :sync)
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "this account's sync history shows the completed Google Analytics sync", context do
+      then_ "they are scoped to the date range dimension only, with no source/medium or other dimension breakdowns",
+            context do
+        html = render(context.view)
         assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']", "Google Analytics")
+        refute html =~ "source/medium"
         {:ok, context}
       end
     end

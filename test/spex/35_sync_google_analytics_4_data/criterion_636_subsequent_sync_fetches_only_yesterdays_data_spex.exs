@@ -1,12 +1,11 @@
-defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
+defmodule MetricFlowSpex.SubsequentSyncFetchesOnlyYesterdaysDataSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Subsequent daily syncs fetch data for yesterday only (avoids incomplete current-day data)",
-       criterion: 296 do
-    scenario "a property that already completed its first sync only fetches yesterday's data on the next sync" do
+  spex "Subsequent sync fetches only yesterday's data", criterion: 636 do
+    scenario "a second sync for an already-synced property only fetches yesterday" do
       given_ :user_logged_in_as_owner
 
       given_ "a GA4 property has already completed its first sync", context do
@@ -27,7 +26,7 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync entry's date is yesterday, not today", context do
+      then_ "it fetches data for yesterday only, avoiding incomplete current-day data", context do
         yesterday = Date.utc_today() |> Date.add(-1) |> Date.to_iso8601()
         html = render(context.view)
         assert html =~ yesterday

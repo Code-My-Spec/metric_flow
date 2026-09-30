@@ -113,6 +113,7 @@ defmodule MetricFlowSpex.Fixtures do
   def create_integration_for(email, provider, opts \\ []) do
     user = Users.get_user_by_email(email)
     expires_at = Keyword.get(opts, :expires_at, DateTime.add(DateTime.utc_now(), 3600, :second))
+    provider_metadata = Keyword.get(opts, :provider_metadata, %{})
 
     %Integration{}
     |> Integration.changeset(%{
@@ -122,7 +123,7 @@ defmodule MetricFlowSpex.Fixtures do
       refresh_token: "spex-refresh-token-#{System.unique_integer([:positive])}",
       expires_at: expires_at,
       granted_scopes: ["email", "profile"],
-      provider_metadata: %{}
+      provider_metadata: provider_metadata
     })
     |> Repo.insert!()
   end
