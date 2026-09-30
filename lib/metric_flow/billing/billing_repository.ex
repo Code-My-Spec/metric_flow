@@ -202,6 +202,14 @@ defmodule MetricFlow.Billing.BillingRepository do
     |> Repo.aggregate(:count)
   end
 
+  def count_past_due_agency_subscriptions(agency_account_id) do
+    Subscription
+    |> join(:inner, [s], p in Plan, on: s.plan_id == p.id)
+    |> where([s, p], p.agency_account_id == ^agency_account_id)
+    |> where([s], s.status == :past_due)
+    |> Repo.aggregate(:count)
+  end
+
   @doc """
   Flags an agency's active customer subscriptions for review by marking them
   `:past_due`. Called when the agency disconnects its Stripe account, since

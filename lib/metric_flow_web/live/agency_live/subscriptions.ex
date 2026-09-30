@@ -8,6 +8,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Accounts
   alias MetricFlow.Billing
   alias MetricFlow.Billing.BillingRepository
 
@@ -92,7 +93,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
                     <td>{format_date(sub.current_period_end)}</td>
                     <td>
                       <button
-                        :if={sub.status == :active}
+                        :if={sub.status == :active and @is_admin}
                         phx-click="cancel_customer_subscription"
                         phx-value-id={sub.id}
                         data-confirm="Cancel this customer's subscription at period end?"
@@ -137,12 +138,15 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   @impl true
   def mount(_params, _session, socket) do
     account_id = socket.assigns.active_account_id
+    scope = socket.assigns.current_scope
+    is_admin = Accounts.get_user_role(scope, scope.user.id, account_id) in [:owner, :admin]
 
     socket =
       socket
       |> assign(:search, "")
       |> assign(:page, 0)
       |> assign(:per_page, @per_page)
+      |> assign(:is_admin, is_admin)
       |> load_data(account_id)
 
     {:ok, socket}
@@ -183,6 +187,10 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
     {:noreply, socket}
   end
 
+  def handle_event("cancel_customer_subscription", _params, %{assigns: %{is_admin: false}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("cancel_customer_subscription", %{"id" => id}, socket) do
     account_id = socket.assigns.active_account_id
     subscription = BillingRepository.get_agency_subscription(account_id, String.to_integer(id))
@@ -220,10 +228,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
 
     active_count = BillingRepository.count_active_agency_subscriptions(account_id)
     mrr = BillingRepository.calculate_mrr(account_id)
-
-    past_due_count =
-      subscriptions
-      |> Enum.count(&(&1.status == :past_due))
+    past_due_count = BillingRepository.count_past_due_agency_subscriptions(account_id)
 
     socket
     |> assign(:subscriptions, subscriptions)
