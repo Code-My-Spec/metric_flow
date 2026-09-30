@@ -200,7 +200,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
         <AgencyLive.Settings.white_label_section
           :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
-          white_label_config={@white_label_config}
+          white_label_config={@agency_white_label_config}
           white_label_form={@white_label_form}
         />
 
@@ -531,14 +531,15 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       custom_domain: params["custom_domain"],
       logo_url: params["logo_url"],
       primary_color: params["primary_color"],
-      secondary_color: params["secondary_color"]
+      secondary_color: params["secondary_color"],
+      accent_color: params["accent_color"]
     }
 
     case Agencies.update_white_label_config(scope, account.id, attrs) do
       {:ok, config} ->
         {:noreply,
          socket
-         |> assign(:white_label_config, config)
+         |> assign(:agency_white_label_config, config)
          |> assign(:white_label_form, empty_form())
          |> put_flash(:info, "White-label settings saved")}
 
@@ -561,7 +562,10 @@ defmodule MetricFlowWeb.AccountLive.Settings do
 
     case Agencies.reset_white_label_config(scope, account.id) do
       :ok ->
-        {:noreply, assign(socket, :white_label_config, nil)}
+        {:noreply,
+         socket
+         |> assign(:agency_white_label_config, nil)
+         |> put_flash(:info, "Branding reset to default")}
 
       {:error, :unauthorized} ->
         {:noreply, put_flash(socket, :error, "You are not authorized to reset white-label branding")}
@@ -575,7 +579,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     case Agencies.verify_dns(scope, account.id) do
       {:ok, _results} ->
         config = unwrap(Agencies.get_white_label_config(scope, account.id))
-        {:noreply, socket |> assign(:white_label_config, config) |> put_flash(:info, "DNS verification complete")}
+        {:noreply, socket |> assign(:agency_white_label_config, config) |> put_flash(:info, "DNS verification complete")}
 
       {:error, :no_config} ->
         {:noreply, put_flash(socket, :error, "No white-label configuration to verify")}
@@ -662,14 +666,14 @@ defmodule MetricFlowWeb.AccountLive.Settings do
         grants -> grants
       end
 
-    {auto_enrollment_rule, white_label_config} = agency_config(scope, account, user_role)
+    {auto_enrollment_rule, agency_white_label_config} = agency_config(scope, account, user_role)
 
     socket
     |> assign(:agency_grants, agency_grants)
     |> assign(:grant_agency_form, empty_form())
     |> assign(:auto_enrollment_rule, auto_enrollment_rule)
     |> assign(:auto_enrollment_form, empty_form())
-    |> assign(:white_label_config, white_label_config)
+    |> assign(:agency_white_label_config, agency_white_label_config)
     |> assign(:white_label_form, empty_form())
   end
 

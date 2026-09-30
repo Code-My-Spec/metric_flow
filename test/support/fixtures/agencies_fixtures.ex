@@ -121,12 +121,24 @@ defmodule MetricFlowTest.AgenciesFixtures do
   Accepts optional attribute overrides.
   """
   def white_label_config_fixture(agency_id, attrs \\ %{}) do
+    {verify_subdomain?, attrs} = Map.pop(Map.new(attrs), :verify_subdomain, true)
     defaults = valid_white_label_config_attrs(agency_id)
-    merged = Map.merge(defaults, Map.new(attrs))
+    merged = Map.merge(defaults, attrs)
 
-    %WhiteLabelConfig{}
-    |> WhiteLabelConfig.changeset(merged)
-    |> Repo.insert!()
+    config =
+      %WhiteLabelConfig{}
+      |> WhiteLabelConfig.changeset(merged)
+      |> Repo.insert!()
+
+    if verify_subdomain? and is_binary(Map.get(merged, :subdomain)) do
+      config
+      |> WhiteLabelConfig.dns_verification_changeset(%{
+        subdomain_verified_at: DateTime.utc_now() |> DateTime.truncate(:second)
+      })
+      |> Repo.update!()
+    else
+      config
+    end
   end
 
   # ---------------------------------------------------------------------------

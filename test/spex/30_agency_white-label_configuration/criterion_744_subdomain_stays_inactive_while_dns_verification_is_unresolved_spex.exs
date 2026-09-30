@@ -19,7 +19,8 @@ defmodule MetricFlowSpex.SubdomainStaysInactiveWhileDnsVerificationIsUnresolvedS
             subdomain: "unverified744",
             logo_url: "https://cdn.clientbrand.com/logo.png",
             primary_color: "#1A2B3C",
-            secondary_color: "#3C2B1A"
+            secondary_color: "#3C2B1A",
+            verify_subdomain: false
           })
 
         AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)

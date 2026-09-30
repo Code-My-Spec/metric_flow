@@ -369,6 +369,25 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
             </p>
           </div>
 
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Accent Color</span>
+            </label>
+            <input
+              type="text"
+              name="white_label[accent_color]"
+              value={white_label_value(@white_label_config, @white_label_form, :accent_color)}
+              class={["input w-full font-mono", has_form_error?(@white_label_form, :accent_color) && "input-error"]}
+              placeholder="#RRGGBB"
+            />
+            <p
+              :if={has_form_error?(@white_label_form, :accent_color)}
+              class="text-sm text-error mt-1"
+            >
+              {first_form_error(@white_label_form, :accent_color)}
+            </p>
+          </div>
+
           <div class="card-actions justify-end gap-2">
             <button
               :if={not is_nil(@white_label_config)}

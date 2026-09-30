@@ -378,7 +378,10 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
   """
   @spec get_white_label_config_by_subdomain(String.t()) :: WhiteLabelConfig.t() | nil
   def get_white_label_config_by_subdomain(subdomain) do
-    Repo.get_by(WhiteLabelConfig, subdomain: subdomain)
+    from(c in WhiteLabelConfig,
+      where: c.subdomain == ^subdomain and not is_nil(c.subdomain_verified_at)
+    )
+    |> Repo.one()
   end
 
   @doc """

@@ -37,8 +37,9 @@ defmodule MetricFlow.Agencies.WhiteLabelConfigTest do
 
   defp long_url(length) do
     base = "https://example.com/"
-    suffix_length = max(0, length - String.length(base))
-    base <> String.duplicate("a", suffix_length)
+    extension = ".png"
+    suffix_length = max(0, length - String.length(base) - String.length(extension))
+    base <> String.duplicate("a", suffix_length) <> extension
   end
 
   # ---------------------------------------------------------------------------

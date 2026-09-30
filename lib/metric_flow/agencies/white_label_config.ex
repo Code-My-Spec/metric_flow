@@ -18,6 +18,7 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
           logo_url: String.t() | nil,
           primary_color: String.t() | nil,
           secondary_color: String.t() | nil,
+          accent_color: String.t() | nil,
           subdomain: String.t() | nil,
           custom_domain: String.t() | nil,
           custom_css: String.t() | nil,
@@ -31,6 +32,7 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
     field :logo_url, :string
     field :primary_color, :string
     field :secondary_color, :string
+    field :accent_color, :string
     field :subdomain, :string
     field :custom_domain, :string
     field :custom_css, :string
@@ -56,6 +58,7 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
       :logo_url,
       :primary_color,
       :secondary_color,
+      :accent_color,
       :subdomain,
       :custom_domain,
       :custom_css
@@ -68,7 +71,9 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
     |> validate_custom_domain()
     |> validate_hex_color(:primary_color)
     |> validate_hex_color(:secondary_color)
+    |> validate_hex_color(:accent_color)
     |> validate_length(:logo_url, max: 500)
+    |> validate_logo_file_type()
     |> assoc_constraint(:agency)
     |> unique_constraint(:subdomain)
     |> unique_constraint(:custom_domain)
@@ -101,6 +106,20 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
         [custom_domain: "cannot be a metric-flow.app subdomain — use the Subdomain field instead"]
       else
         []
+      end
+    end)
+  end
+
+  @allowed_logo_extensions ~w(.png .jpg .jpeg .svg)
+
+  defp validate_logo_file_type(changeset) do
+    validate_change(changeset, :logo_url, fn :logo_url, url ->
+      extension = url |> URI.parse() |> Map.get(:path, url) |> to_string() |> Path.extname() |> String.downcase()
+
+      if extension in @allowed_logo_extensions do
+        []
+      else
+        [logo_url: "must be a PNG, JPG, or SVG image file"]
       end
     end)
   end
