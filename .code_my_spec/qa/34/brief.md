@@ -54,4 +54,13 @@ Consumed fixtures: synthetic `metrics` rows with `metric_type='qa_derived_test'`
 
 **Data gap reflected, not silently zeroed (289/761): fail.** No code path detects a genuine missing-component gap; `safe_divide/2` defaults to `0.0`. The story's own BDD spex for this criterion (`criterion_761`) passes today only because the dashboard's unrelated date-range caption always contains the literal substring "incomplete day" — a coincidental match, not real gap detection. Filed as `d3f50b48` (high).
 
+## Retest (issues d2ef8bd0, d3f50b48 resolved)
+
+Both fixes confirmed live against the same repro data (google_ads cost=100/clicks=10, facebook_ads spend=10/clicks=100, metric_type='qa_derived_test'):
+
+- `total_cost` stat card now correctly shows `110.0` (was `0.0`) — matches the Daily Data table. `cpc` now correctly shows `1.0`, the real sum-then-derive combined value (110/110), not the previously-broken `0.0` and not the naive per-platform average (5.05). `d2ef8bd0` fixed.
+- `ctr` and `roas` (whose components — impressions, revenue — have zero real rows for this account) now render `data-role="stat-incomplete"` instead of a bare `0.0`, correctly distinguishing "no data" from "real zero". `d3f50b48` fixed.
+
+All other criteria (283/755 classification, 290/762 identical display) were already passing and are unaffected. `qa_complete` now satisfied.
+
 **Table/chart behavior for derived metrics (part of 285/757):** `cpc`/`ctr`/`roas` never appear as rows in the Daily/Weekly/Monthly table or as chart lines — their `time_series` entries are always empty (`enrich_with_known_metrics` only ever adds a zero-data placeholder), so switching granularity has no visible effect on them; the only demonstration of "time aggregation" is the single current-filter-range stat card.
