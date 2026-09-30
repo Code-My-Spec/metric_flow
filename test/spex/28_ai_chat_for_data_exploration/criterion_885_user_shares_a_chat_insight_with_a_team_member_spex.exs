@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion217UserCanShareChatInsightsWithTeamMembersSpex do
+defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.Criterion217UserCanShareChatInsightsWithTeamMembersSpex
     match_requests_on: [:method, :uri]
   ]
 
-  spex "User can share chat insights with team members", criterion: 217 do
+  spex "User shares a chat insight with a team member", criterion: 885 do
     scenario "a user shares an AI insight and a team member opens the link" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

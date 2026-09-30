@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex do
+defmodule MetricFlowSpex.Criterion883AiSuggestsAVisualizationBasedOnAQuestionSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,8 +13,8 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
     match_requests_on: [:method, :uri]
   ]
 
-  spex "User can ask questions like 'Why did my revenue drop last week?'", criterion: 213 do
-    scenario "a user with a revenue drop asks why revenue dropped last week" do
+  spex "AI suggests a visualization based on a question", criterion: 883 do
+    scenario "a user asks a question best answered visually" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
       given_ :owner_has_metrics
@@ -24,13 +24,15 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "they ask why revenue dropped last week", context do
-        with_cassette "chat_revenue_drop_question", @cassette_opts, fn plug ->
+      when_ "the AI responds to a question best answered visually", context do
+        with_cassette "chat_visual_question", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
 
           capture_log(fn ->
             context.view
-            |> form("form[phx-submit='send_message']", %{"content" => "Why did my revenue drop last week?"})
+            |> form("form[phx-submit='send_message']", %{
+              "content" => "Show me how my clicks have trended over the last month"
+            })
             |> render_submit()
 
             Process.sleep(100)
@@ -43,8 +45,10 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
         {:ok, context}
       end
 
-      then_ "the AI responds with an explanation grounded in that data", context do
-        assert has_element?(context.view, "[data-role='assistant-message']")
+      then_ "it suggests a relevant visualization or report", context do
+        assert has_element?(context.view, "[data-role='suggested-visualization']"),
+               "Expected the AI's response to include a suggested visualization or report"
+
         {:ok, context}
       end
     end

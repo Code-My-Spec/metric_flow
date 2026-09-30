@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
+defmodule MetricFlowSpex.Criterion884ChatHistoryPersistsPerUserAcrossSessionsSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
     match_requests_on: [:method, :uri]
   ]
 
-  spex "Chat history is saved per user", criterion: 216 do
+  spex "Chat history persists per user across sessions", criterion: 884 do
     scenario "a user returns to the chat in a later session" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

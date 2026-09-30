@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex do
+defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidentlySpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,24 +13,25 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
     match_requests_on: [:method, :uri]
   ]
 
-  spex "User can ask questions like 'Why did my revenue drop last week?'", criterion: 213 do
-    scenario "a user with a revenue drop asks why revenue dropped last week" do
+  spex "AI acknowledges when it cannot answer confidently", criterion: 881 do
+    scenario "a user asks a question the available data cannot support a confident answer to" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
 
-      given_ "a user viewing the AI chat", context do
+      given_ "a user viewing the AI chat with no metric data available", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "they ask why revenue dropped last week", context do
-        with_cassette "chat_revenue_drop_question", @cassette_opts, fn plug ->
+      when_ "the AI responds to a question it cannot confidently answer", context do
+        with_cassette "chat_unanswerable_question", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
 
           capture_log(fn ->
             context.view
-            |> form("form[phx-submit='send_message']", %{"content" => "Why did my revenue drop last week?"})
+            |> form("form[phx-submit='send_message']", %{
+              "content" => "What will my revenue be next quarter?"
+            })
             |> render_submit()
 
             Process.sleep(100)
@@ -43,8 +44,13 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
         {:ok, context}
       end
 
-      then_ "the AI responds with an explanation grounded in that data", context do
+      then_ "it states that limitation rather than guessing or fabricating an explanation", context do
+        html = render(context.view)
         assert has_element?(context.view, "[data-role='assistant-message']")
+
+        refute html =~ ~r/\$[\d,]+(\.\d+)?/,
+               "Expected the AI to acknowledge it cannot answer confidently rather than fabricating a specific figure"
+
         {:ok, context}
       end
     end

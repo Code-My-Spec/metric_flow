@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion214AiHasAccessToAllMetricsAndCorrelationDataToAnswerSpex do
+defmodule MetricFlowSpex.Criterion882AiDrawsOnAllMetricsAndCorrelationDataToAnswerSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.Criterion214AiHasAccessToAllMetricsAndCorrelationDataTo
     match_requests_on: [:method, :uri]
   ]
 
-  spex "AI has access to all metrics and correlation data to answer", criterion: 214 do
+  spex "AI draws on all metrics and correlation data to answer", criterion: 882 do
     scenario "a question spans metrics beyond the current view" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

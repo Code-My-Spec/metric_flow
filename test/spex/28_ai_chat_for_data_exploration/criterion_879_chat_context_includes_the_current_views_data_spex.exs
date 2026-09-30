@@ -1,10 +1,10 @@
-defmodule MetricFlowSpex.Criterion212ChatContextIncludesRelevantDataFromCurrentViewSpex do
+defmodule MetricFlowSpex.Criterion879ChatContextIncludesTheCurrentViewsDataSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Chat context includes relevant data from current view", criterion: 212 do
+  spex "Chat context includes the current view's data", criterion: 879 do
     scenario "a user opens AI chat from a specific visualization and asks a question" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

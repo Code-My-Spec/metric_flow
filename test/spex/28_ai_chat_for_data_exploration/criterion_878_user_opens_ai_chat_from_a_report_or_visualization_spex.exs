@@ -1,10 +1,10 @@
-defmodule MetricFlowSpex.Criterion211UserCanOpenAiChatFromAnyReportOrVisualizationSpex do
+defmodule MetricFlowSpex.Criterion878UserOpensAiChatFromAReportOrVisualizationSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can open AI chat from any report or visualization", criterion: 211 do
+  spex "User opens AI chat from a report or visualization", criterion: 878 do
     scenario "a user viewing a visualization opens AI chat from that view" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription

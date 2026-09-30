@@ -1,4 +1,4 @@
-defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropLastWeekSpex do
+defmodule MetricFlowSpex.Criterion880UserAsksANaturalLanguageQuestionAndGetsAnAnswerSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
@@ -13,7 +13,7 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
     match_requests_on: [:method, :uri]
   ]
 
-  spex "User can ask questions like 'Why did my revenue drop last week?'", criterion: 213 do
+  spex "User asks a natural-language question and gets an answer", criterion: 880 do
     scenario "a user with a revenue drop asks why revenue dropped last week" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
