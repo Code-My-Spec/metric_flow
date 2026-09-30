@@ -20,6 +20,8 @@ defmodule MetricFlow.Dashboards.Visualization do
           user_id: integer() | nil,
           vega_spec: map() | nil,
           shareable: boolean(),
+          is_favorite: boolean(),
+          last_viewed_date_range: String.t() | nil,
           user: User.t() | Ecto.Association.NotLoaded.t(),
           dashboard_visualizations:
             [MetricFlow.Dashboards.DashboardVisualization.t()] | Ecto.Association.NotLoaded.t(),
@@ -31,6 +33,8 @@ defmodule MetricFlow.Dashboards.Visualization do
     field :name, :string
     field :vega_spec, :map
     field :shareable, :boolean, default: false
+    field :is_favorite, :boolean, default: false
+    field :last_viewed_date_range, :string
 
     belongs_to :user, User
     has_many :visualization_metrics, MetricFlow.Dashboards.VisualizationMetric
@@ -49,7 +53,7 @@ defmodule MetricFlow.Dashboards.Visualization do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(visualization, attrs) do
     visualization
-    |> cast(attrs, [:name, :user_id, :vega_spec, :shareable])
+    |> cast(attrs, [:name, :user_id, :vega_spec, :shareable, :is_favorite, :last_viewed_date_range])
     |> validate_required([:name, :user_id, :vega_spec])
     |> validate_length(:name, min: 1, max: 255)
     |> assoc_constraint(:user)

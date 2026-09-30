@@ -49,6 +49,21 @@ defmodule MetricFlowWeb.ReportLive.Show do
         </button>
       </div>
 
+      <%!-- Date range filter --%>
+      <div data-role="date-range-filter" class="flex items-center gap-1 flex-wrap mb-4">
+        <button
+          :for={entry <- @available_date_ranges}
+          phx-click="filter_date_range"
+          phx-value-range={entry.key}
+          class={[
+            "btn btn-sm",
+            if(@selected_date_range == entry.key, do: "btn-primary", else: "btn-ghost")
+          ]}
+        >
+          {entry.label}
+        </button>
+      </div>
+
       <%!-- Vega-Lite chart --%>
       <div class="mf-card p-4 mb-6" data-role="report-chart">
         <div :if={@spec_error} data-role="report-spec-error" class="text-center py-8">
@@ -147,6 +162,7 @@ defmodule MetricFlowWeb.ReportLive.Show do
 
   defp assign_report(socket, scope, report) do
     bound_metrics = Dashboards.get_visualization_metric_names(report)
+    selected_date_range = parse_date_range_key(report.last_viewed_date_range)
 
     {render_spec, spec_error, metric_error} =
       cond do
@@ -157,7 +173,8 @@ defmodule MetricFlowWeb.ReportLive.Show do
           {nil, nil, "This visualization is bound to a metric with no available data."}
 
         true ->
-          {Dashboards.build_render_spec(scope, report), nil, nil}
+          date_range = Dashboards.date_range_for_key(selected_date_range)
+          {Dashboards.build_render_spec(scope, report, date_range: date_range), nil, nil}
       end
 
     socket
@@ -168,6 +185,16 @@ defmodule MetricFlowWeb.ReportLive.Show do
     |> assign(:metric_error, metric_error)
     |> assign(:expanded, false)
     |> assign(:metric_names, Metrics.list_metric_names(scope))
+    |> assign(:available_date_ranges, Enum.reject(Dashboards.available_date_ranges(), &(&1.key == :custom)))
+    |> assign(:selected_date_range, selected_date_range)
+  end
+
+  defp parse_date_range_key(nil), do: :last_30_days
+
+  defp parse_date_range_key(key) do
+    String.to_existing_atom(key)
+  rescue
+    ArgumentError -> :last_30_days
   end
 
   defp valid_vega_spec?(spec) when is_map(spec), do: Map.has_key?(spec, "mark") or Map.has_key?(spec, "layer")
@@ -189,5 +216,28 @@ defmodule MetricFlowWeb.ReportLive.Show do
 
   def handle_event("toggle_expand", _params, socket) do
     {:noreply, assign(socket, :expanded, !socket.assigns.expanded)}
+  end
+
+  def handle_event("filter_date_range", %{"range" => range_key}, socket) do
+    scope = socket.assigns.current_scope
+    range_atom = parse_date_range_key(range_key)
+
+    case Dashboards.update_visualization(scope, socket.assigns.report, %{
+           last_viewed_date_range: range_key
+         }) do
+      {:ok, updated_report} ->
+        date_range = Dashboards.date_range_for_key(range_atom)
+
+        socket =
+          socket
+          |> assign(:report, updated_report)
+          |> assign(:selected_date_range, range_atom)
+          |> assign(:render_spec, Dashboards.build_render_spec(scope, updated_report, date_range: date_range))
+
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Could not update date range.")}
+    end
   end
 end

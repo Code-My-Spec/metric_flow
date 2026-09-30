@@ -136,6 +136,26 @@ defmodule MetricFlowWeb.ReportLive.Index do
           </div>
         </div>
 
+        <%!-- Favorite reports --%>
+        <div :if={@favorite_reports != []} data-role="favorite-reports" class="mb-8">
+          <h2 class="text-xl font-semibold mb-1">Favorite Reports</h2>
+          <p class="text-base-content/60 text-sm mb-4">Your reports marked for quick access</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              :for={report <- @favorite_reports}
+              data-role="favorite-report-card"
+              class="mf-card p-4"
+            >
+              <.link
+                navigate={~p"/app/visualizations/#{report.id}/edit"}
+                class="font-semibold hover:underline"
+              >
+                {report.name}
+              </.link>
+            </div>
+          </div>
+        </div>
+
         <%!-- Saved reports (visualizations) --%>
         <div data-role="reports-list">
           <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
@@ -201,6 +221,15 @@ defmodule MetricFlowWeb.ReportLive.Index do
                 >
                   View
                 </.link>
+                <button
+                  phx-click="toggle_favorite"
+                  phx-value-id={report.id}
+                  data-role={"favorite-report-#{report.id}"}
+                  class="btn btn-ghost btn-xs"
+                  aria-label={if report.is_favorite, do: "Unfavorite", else: "Favorite"}
+                >
+                  {if report.is_favorite, do: "★ Favorited", else: "☆ Favorite"}
+                </button>
                 <button
                   phx-click="duplicate"
                   phx-value-id={report.id}
@@ -281,15 +310,18 @@ defmodule MetricFlowWeb.ReportLive.Index do
         Accounts.get_user_role(scope, scope.user.id, socket.assigns.active_account_id)
       end
 
+    all_reports = Dashboards.list_visualizations(scope)
+
     socket =
       socket
       |> assign(:page_title, "Reports")
-      |> assign(:all_reports, Dashboards.list_visualizations(scope))
+      |> assign(:all_reports, all_reports)
       |> assign(:search, "")
       |> assign(:metric_names, Metrics.list_metric_names(scope))
       |> assign(:confirming_delete, nil)
       |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
-      |> assign(:reports, Dashboards.list_visualizations(scope))
+      |> assign(:reports, all_reports)
+      |> assign(:favorite_reports, Enum.filter(all_reports, & &1.is_favorite))
 
     {:ok, socket}
   end
@@ -317,6 +349,29 @@ defmodule MetricFlowWeb.ReportLive.Index do
       |> assign(:reports, filtered)
 
     {:noreply, socket}
+  end
+
+  def handle_event("toggle_favorite", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    id_int = String.to_integer(id)
+
+    with {:ok, visualization} <- Dashboards.get_visualization(scope, id_int),
+         {:ok, updated} <-
+           Dashboards.update_visualization(scope, visualization, %{
+             is_favorite: !visualization.is_favorite
+           }) do
+      all_reports = replace_report(socket.assigns.all_reports, updated)
+
+      socket =
+        socket
+        |> assign(:all_reports, all_reports)
+        |> assign(:reports, filter_reports(all_reports, socket.assigns.search))
+        |> assign(:favorite_reports, Enum.filter(all_reports, & &1.is_favorite))
+
+      {:noreply, socket}
+    else
+      _ -> {:noreply, put_flash(socket, :error, "Could not update favorite.")}
+    end
   end
 
   def handle_event("duplicate", %{"id" => id}, socket) do
@@ -360,6 +415,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
             socket
             |> assign(:all_reports, updated_all)
             |> assign(:reports, filter_reports(updated_all, socket.assigns.search))
+            |> assign(:favorite_reports, Enum.filter(updated_all, & &1.is_favorite))
             |> assign(:confirming_delete, nil)
             |> put_flash(:info, "Report deleted.")
 
@@ -382,6 +438,10 @@ defmodule MetricFlowWeb.ReportLive.Index do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp replace_report(reports, updated) do
+    Enum.map(reports, &if(&1.id == updated.id, do: updated, else: &1))
+  end
 
   defp format_report_type("custom"), do: "Custom Report"
   defp format_report_type(nil), do: "Report"

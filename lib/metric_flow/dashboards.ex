@@ -189,12 +189,13 @@ defmodule MetricFlow.Dashboards do
   For multi-metric, each data point includes a `metric` field for
   color-coding separate series.
   """
-  @spec build_render_spec(Scope.t(), Visualization.t()) :: map()
-  def build_render_spec(%Scope{} = scope, %Visualization{} = viz) do
+  @spec build_render_spec(Scope.t(), Visualization.t(), keyword()) :: map()
+  def build_render_spec(%Scope{} = scope, %Visualization{} = viz, opts \\ []) do
     metric_names = get_visualization_metric_names(viz)
     spec = viz.vega_spec || %{}
 
-    data = fetch_and_combine_metrics(scope, metric_names)
+    date_range = Keyword.get(opts, :date_range, default_date_range())
+    data = fetch_and_combine_metrics(scope, metric_names, date_range)
     spec = Map.put(spec, "data", %{"values" => data})
 
     # For multi-metric, add color encoding if not already present
@@ -212,16 +213,29 @@ defmodule MetricFlow.Dashboards do
     end
   end
 
-  defp fetch_and_combine_metrics(scope, metric_names) do
-    {start_date, end_date} = default_date_range()
-
+  defp fetch_and_combine_metrics(scope, metric_names, date_range) do
     metric_names
     |> Enum.flat_map(fn name ->
-      Metrics.query_time_series(scope, name, date_range: {start_date, end_date})
+      Metrics.query_time_series(scope, name, date_range: date_range)
       |> Enum.map(fn %{date: date, value: value} ->
         %{"date" => Date.to_string(date), "value" => value, "metric" => name}
       end)
     end)
+  end
+
+  @doc """
+  Resolves a preset date range key (one of the `:key` values returned by
+  `available_date_ranges/0`) to its `{start_date, end_date}` range.
+
+  Returns `nil` for `:all_time` (meaning: no date constraint), and falls
+  back to `default_date_range/0` for an unrecognized key.
+  """
+  @spec date_range_for_key(atom()) :: {Date.t(), Date.t()} | nil
+  def date_range_for_key(key) do
+    case Enum.find(available_date_ranges(), &(&1.key == key)) do
+      nil -> default_date_range()
+      entry -> entry.range
+    end
   end
 
   @doc "Returns an Ecto changeset for validating a Visualization name field."
