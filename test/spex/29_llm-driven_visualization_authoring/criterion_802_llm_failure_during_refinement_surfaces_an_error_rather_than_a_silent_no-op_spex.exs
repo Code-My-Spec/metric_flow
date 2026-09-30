@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.Criterion802LlmFailureSurfacesErrorSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "LLM failure during refinement surfaces an error rather than a silent no-op", criterion: 802 do
+  spex "LLM failure during refinement surfaces an error rather than a silent no-op", fail_on_error_logs: false, criterion: 802 do
     scenario "the LLM service fails to return a usable response" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
@@ -17,14 +17,30 @@ defmodule MetricFlowSpex.Criterion802LlmFailureSurfacesErrorSpex do
       end
 
       when_ "the user sends a follow-up refinement message and the LLM service fails", context do
-        # No cassette or req_http_options plug is configured -- in the test
-        # sandbox this call genuinely fails (no network, no API key), the
-        # same shape of failure a real LLM outage would produce.
+        # Stubs the provider request with a plug that always errors, the same
+        # shape of failure a real LLM outage would produce, without a real
+        # network round trip (which is slow and depends on live account state).
+        plug = fn conn ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/json")
+          |> Plug.Conn.send_resp(
+            529,
+            Jason.encode!(%{
+              "type" => "error",
+              "error" => %{"type" => "overloaded_error", "message" => "Overloaded"}
+            })
+          )
+        end
+
+        Application.put_env(:metric_flow, :req_http_options, plug: plug)
+
         capture_log(fn ->
           render_submit(context.view, "send_chat", %{"prompt" => "Change the color to green"})
-          Process.sleep(200)
+          Process.sleep(500)
           render(context.view)
         end)
+
+        Application.delete_env(:metric_flow, :req_http_options)
 
         {:ok, context}
       end

@@ -606,9 +606,23 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
      |> assign(chat_generating: false, chat_error: error_msg)}
   end
 
-  # Task DOWN message — already handled via demonitor flush
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
-    {:noreply, socket}
+  # Reaching here means the task crashed before sending {ref, result} — a
+  # normal completion is already consumed and demonitor-flushed above.
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
+    require Logger
+    Logger.error("viz_chat task crashed: #{inspect(reason)}")
+    error_msg = "The AI service is unavailable right now."
+
+    assistant_msg = %{
+      role: :assistant,
+      content: "Error: #{error_msg}",
+      id: System.unique_integer([:positive])
+    }
+
+    {:noreply,
+     socket
+     |> stream_insert(:chat_messages, assistant_msg)
+     |> assign(chat_generating: false, chat_error: error_msg)}
   end
 
   # ---------------------------------------------------------------------------
