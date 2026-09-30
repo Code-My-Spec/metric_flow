@@ -65,6 +65,7 @@ defmodule MetricFlow.DataSync do
   """
   @spec list_sync_history(Scope.t(), keyword()) :: list(SyncHistory.t())
   defdelegate list_sync_history(scope, opts \\ []), to: SyncHistoryRepository
+  defdelegate get_last_successful_sync_at(scope, provider), to: SyncHistoryRepository
 
   # ---------------------------------------------------------------------------
   # sync_integration/2

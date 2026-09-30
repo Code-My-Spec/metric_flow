@@ -211,6 +211,9 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
+        <p :if={@entry[:records_synced]} class="text-sm text-base-content/60 mt-1">
+          {@entry.records_synced} records synced
+        </p>
         <p :if={@entry[:reason]} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.reason}
         </p>
@@ -292,6 +295,9 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
+        <p class="text-sm text-base-content/60 mt-1">
+          {@entry.records_synced} records synced
+        </p>
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.error_message}
         </p>

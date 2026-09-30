@@ -102,6 +102,26 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   end
 
   # ---------------------------------------------------------------------------
+  # get_last_successful_sync_at/2
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns the completed_at timestamp of the scoped user's most recent
+  successful sync for the given provider, or nil if it has never synced
+  successfully.
+  """
+  @spec get_last_successful_sync_at(Scope.t(), atom()) :: DateTime.t() | nil
+  def get_last_successful_sync_at(%Scope{user: user}, provider) do
+    from(sh in SyncHistory,
+      where: sh.user_id == ^user.id and sh.provider == ^provider and sh.status == :success,
+      order_by: [desc: sh.completed_at, desc: sh.id],
+      limit: 1,
+      select: sh.completed_at
+    )
+    |> Repo.one()
+  end
+
+  # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
 

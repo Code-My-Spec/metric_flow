@@ -162,6 +162,17 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                       </span>
                     </div>
 
+                    <p data-role="last-sync-at" class="text-xs text-base-content/50 mt-1">
+                      <%= if last_sync = @last_synced_at[platform.provider] do %>
+                        Last synced {format_datetime(last_sync)}
+                      <% else %>
+                        Never synced
+                      <% end %>
+                    </p>
+                    <p data-role="next-sync-at" class="text-xs text-base-content/50">
+                      Next sync {format_datetime(@next_sync_at)}
+                    </p>
+
                     <% integration = find_integration(@integrations, platform.provider) %>
                     <%= if integration do %>
                       <p
@@ -342,6 +353,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
         Accounts.get_user_role(scope, scope.user.id, socket.assigns.active_account_id)
       end
 
+    last_synced_at =
+      Map.new(@data_platforms, fn platform ->
+        {platform.provider, DataSync.get_last_successful_sync_at(scope, platform.provider)}
+      end)
+
     socket =
       socket
       |> assign(:integrations, integrations)
@@ -351,6 +367,8 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       |> assign(:disconnecting, nil)
       |> assign(:can_sync, current_user_role in [:owner, :admin])
       |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
+      |> assign(:last_synced_at, last_synced_at)
+      |> assign(:next_sync_at, next_scheduled_sync_at())
 
     {:ok, socket}
   end
@@ -644,4 +662,21 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
   defp metadata_key_for_provider(:facebook_ads), do: "ad_account_id"
   defp metadata_key_for_provider(_), do: "property_id"
+
+  defp next_scheduled_sync_at do
+    now = DateTime.utc_now()
+    today_run = %{now | hour: 2, minute: 0, second: 0, microsecond: {0, 0}}
+
+    if DateTime.compare(now, today_run) == :lt do
+      today_run
+    else
+      DateTime.add(today_run, 1, :day)
+    end
+  end
+
+  defp format_datetime(%DateTime{} = dt) do
+    Calendar.strftime(dt, "%b %d, %Y %H:%M UTC")
+  end
+
+  defp format_datetime(_), do: ""
 end
