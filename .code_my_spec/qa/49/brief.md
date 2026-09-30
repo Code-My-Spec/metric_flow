@@ -78,6 +78,20 @@ All scenarios tested live against this worktree's own dev server (127.0.0.1:5930
 
 **FAIL** — 433/492 (issue `2697db6e`, high): subscriptions created through the real webhook flow never get `plan_id` set (`handle_subscription_event/2` for created/updated never populates it, and nothing else in the codebase resolves it from Stripe's price/product data — the only place `plan_id` is ever written is the `deleted` handler, which explicitly nils it out to downgrade to free). `BillingRepository.flag_agency_subscriptions_for_review/1` attributes subscriptions to an agency via a join on `plan_id`, so it silently flags zero real subscriptions on disconnect. Confirmed live: a genuine active webhook-created subscription for Agency A was not flagged after simulating disconnect (`FLAGGED_COUNT=0`). This same root cause also breaks `calculate_mrr/1` for any agency's real subscriptions (outside this story's own criteria, but worth the fix owner's awareness).
 
+## Retest (2026-09-30, plan_id fix — commit bb29b13)
+
+Retested issue `2697db6e` (433/492: subscriptions never get `plan_id` set, breaking disconnect-flagging). Confirmed fixed via direct execution against this checkout's own dev DB (`metric_flow_dev_wc_bd0baac8`):
+
+- Re-created this checkout's `billing_stripe_accounts` row for Agency A (account 55, `acct_qa49connected`) — the original seed from the prior pass had been lost to a DB reset between attempts.
+- Sent a fresh `customer.subscription.created` webhook (`sub_qa49_retest_1..4`) carrying `price_qa49_agency` and Agency A's connected account: `Billing.process_webhook_event/1` persisted `plan_id: 6` correctly (verified via `MetricFlow.Billing.BillingRepository.get_plan_by_stripe_price_id/1` resolving the price to Agency A's plan).
+- Sent a `customer.subscription.updated` event for the existing `sub_qa49_test1` (account 60, previously `plan_id: nil` from before the fix): `plan_id` backfilled to `6` via the new `resolve_update_plan_id/2` (an uncommitted, in-progress follow-on to the original fix, present on disk at retest time — preserves `plan_id` on updates that don't carry a resolvable price, mirroring the existing `resolve_update_account_id/2` pattern).
+- Called `BillingRepository.flag_agency_subscriptions_for_review(55)` directly: returned `{1, nil}` — the subscription was correctly flagged to `:past_due`, versus `{0, nil}` (silently flagging nothing) before the fix.
+- `mix test test/metric_flow/billing_test.exs`: 10/10 passed. `mix spex` on story 49's own directory: 21/21 passed.
+
+One transient issue during retest, not a story defect: an in-flight, uncommitted edit to `lib/metric_flow/billing.ex` on this shared worktree caused a momentary `CompileError` on first webhook attempt (another session mid-write); resolved itself on retry once the file settled.
+
+**PASS** — all 14 criteria pairs now verified, issue `2697db6e` closed. `qa_complete` now satisfied.
+
 ## Setup Notes
 
 The `resolve_account/1` connected-account path (`Billing.resolve_account/1` in `billing.ex`) prefers `metadata.account_id` over the agency's own account id as a fallback — so scenario 8/9's webhook payloads must include `"metadata": {"account_id": "<client_account_id>"}` inside `data.object` to attribute correctly to the *client*, not the agency. Omitting it will still succeed (falls back to the agency's own account id) but tests a different, less realistic path — do both if time allows, since criterion 431/489's own spex doesn't include metadata at all and would attribute to the agency's account, not a client's, which is a subtlety worth confirming live.
