@@ -519,7 +519,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
          provider: integration.provider,
          records_synced: records_synced,
          completed_at: DateTime.utc_now(),
-         sync_type: sync_type
+         sync_type: effective_sync_type(integration.provider, sync_type)
        }}
     )
 
@@ -553,12 +553,19 @@ defmodule MetricFlow.DataSync.SyncWorker do
     groups = Enum.group_by(mod_metrics, &Map.get(&1, :provider, default_provider))
 
     if map_size(groups) == 0 do
-      record_history(scope, integration, sync_job_id, sync_type, started_at, %{
-        provider: default_provider,
-        status: :success,
-        records_synced: 0,
-        error_message: nil
-      })
+      record_history(
+        scope,
+        integration,
+        sync_job_id,
+        effective_sync_type(default_provider, sync_type),
+        started_at,
+        %{
+          provider: default_provider,
+          status: :success,
+          records_synced: 0,
+          error_message: nil
+        }
+      )
     else
       Enum.each(groups, fn {provider, provider_metrics} ->
         record_grouped_success(
@@ -591,7 +598,9 @@ defmodule MetricFlow.DataSync.SyncWorker do
          provider,
          provider_metrics
        ) do
-    record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+    entry_sync_type = effective_sync_type(provider, sync_type)
+
+    record_history(scope, integration, sync_job_id, entry_sync_type, started_at, %{
       provider: provider,
       status: :success,
       records_synced: length(provider_metrics),
@@ -606,11 +615,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
            provider: provider,
            records_synced: length(provider_metrics),
            completed_at: DateTime.utc_now(),
-           sync_type: sync_type
+           sync_type: entry_sync_type
          }}
       )
     end
   end
+
+  # Google Business reviews have no backfill window -- every sync refetches
+  # the full review history for the location, so labeling a first sync
+  # :initial (which renders an "Initial Sync"/backfill-limit badge implying
+  # this run is special) is misleading: every run is equivalent.
+  defp effective_sync_type(:google_business_reviews, _sync_type), do: :incremental
+  defp effective_sync_type(_provider, sync_type), do: sync_type
 
   defp record_failure_with_integration(
          scope,

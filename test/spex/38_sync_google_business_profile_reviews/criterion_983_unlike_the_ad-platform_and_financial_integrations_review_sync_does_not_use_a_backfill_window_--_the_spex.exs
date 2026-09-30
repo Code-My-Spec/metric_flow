@@ -31,11 +31,29 @@ defmodule MetricFlowSpex.Criterion983ReviewSyncHasNoBackfillWindowSpex do
                  "Google Business Reviews"
                )
 
-        refute has_element?(
-                 context.view,
-                 "[data-role='sync-history-entry'][data-sync-type='initial'] [data-role='sync-provider']",
-                 "Google Business Reviews"
-               )
+        # A compound selector like "[data-sync-type='initial'] [data-role='sync-provider']"
+        # can never distinguish entries: data-sync-type is on an inner badge span,
+        # data-role='sync-provider' is a separate sibling span, and this integration's
+        # single sync produces two entries (performance + reviews) -- one of which
+        # legitimately does carry the Initial Sync badge. Scope to the reviews entry
+        # itself via Floki rather than a single CSS selector.
+        reviews_entries =
+          context.view
+          |> render()
+          |> Floki.parse_document!()
+          |> Floki.find("[data-role='sync-history-entry']")
+          |> Enum.filter(fn entry ->
+            entry
+            |> Floki.find("[data-role='sync-provider']")
+            |> Floki.text()
+            |> String.contains?("Google Business Reviews")
+          end)
+
+        assert reviews_entries != []
+
+        assert Enum.all?(reviews_entries, fn entry ->
+                 Floki.find(entry, "[data-sync-type='initial']") == []
+               end)
 
         {:ok, context}
       end
