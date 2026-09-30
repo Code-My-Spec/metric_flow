@@ -311,6 +311,13 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               <p data-role="stat-avg" class="text-xs text-base-content/50">
                 Avg: {format_number(stat.stats.avg)}
               </p>
+              <p
+                :if={Map.get(stat, :incomplete, false)}
+                data-role="stat-incomplete"
+                class="text-xs text-warning mt-1"
+              >
+                Incomplete — a component metric has missing data (data gap)
+              </p>
               <button
                 phx-click="show_ai_insights"
                 phx-value-metric={stat.metric_name}
@@ -885,13 +892,25 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     all_raw_stats = dashboard_data.summary_stats ++ raw_zero_stats
 
     raw_sums = Map.new(all_raw_stats, fn s -> {s.metric_name, s.stats.sum} end)
+    raw_counts = Map.new(all_raw_stats, fn s -> {s.metric_name, s.stats.count} end)
 
     derived_stats =
       Enum.map(@known_derived_metrics, fn %{name: name, numerator: num, denominator: den} ->
         num_val = Map.get(raw_sums, num, 0.0)
         den_val = Map.get(raw_sums, den, 0.0)
         value = safe_divide(num_val, den_val)
-        %{metric_name: name, stats: %{sum: value, avg: value, min: value, max: value, count: 0}}
+
+        # A component with zero matching rows (not merely a zero value) means the
+        # underlying data is genuinely missing -- e.g. a sync gap -- rather than a
+        # true zero-activity period. safe_divide can't tell those apart on its own
+        # since both render as 0.0, so callers need this flag to show the difference.
+        incomplete? = Map.get(raw_counts, num, 0) == 0 or Map.get(raw_counts, den, 0) == 0
+
+        %{
+          metric_name: name,
+          stats: %{sum: value, avg: value, min: value, max: value, count: 0},
+          incomplete: incomplete?
+        }
       end)
 
     existing_ts_names = MapSet.new(Enum.map(dashboard_data.time_series, & &1.metric_name))

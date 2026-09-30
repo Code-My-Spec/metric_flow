@@ -209,7 +209,8 @@ defmodule MetricFlow.Metrics.MetricRepository do
         }
   def aggregate_metrics(%Scope{user: user}, metric_name, opts) do
     result =
-      from(m in Metric, where: m.user_id == ^user.id and m.metric_name == ^metric_name)
+      from(m in Metric, where: m.user_id == ^user.id)
+      |> apply_metric_name_or_normalized(metric_name)
       |> apply_provider_filter(opts)
       |> apply_date_range_filter(opts)
       |> select([m], %{
