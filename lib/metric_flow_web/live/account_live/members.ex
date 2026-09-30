@@ -14,6 +14,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
   require Logger
 
   alias MetricFlow.Accounts
+  alias MetricFlow.Agencies
   alias MetricFlow.Users
   alias MetricFlowWeb.Hooks.ActiveAccountHook
 
@@ -156,6 +157,42 @@ defmodule MetricFlowWeb.AccountLive.Members do
             </div>
           </div>
 
+          <%!-- Agency access grants — shown to everyone with access to this account --%>
+          <div :if={@agency_grants != []} class="card bg-base-100 shadow" data-role="agency-access-list">
+            <div class="card-body p-0">
+              <div class="overflow-x-auto">
+                <table class="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Agency</th>
+                      <th>Access Level</th>
+                      <th>Granted</th>
+                      <th>Originator</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      :for={grant <- @agency_grants}
+                      data-role="agency-grant-row"
+                      data-agency-account-id={grant.agency_account_id}
+                    >
+                      <td class="font-medium text-sm">{grant.agency_account_name}</td>
+                      <td>
+                        <span class="badge badge-ghost">{grant.access_level}</span>
+                      </td>
+                      <td class="text-sm text-base-content/70">
+                        {format_date(grant.inserted_at)}
+                      </td>
+                      <td>
+                        {if grant.origination_status == :originator, do: "Yes", else: "No"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           <%!-- Invite member form — owners and admins only --%>
           <div :if={@can_manage} class="card bg-base-100 shadow">
             <div class="card-body">
@@ -218,6 +255,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
         members = Accounts.list_account_members(scope, account.id)
         user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
         can_manage = can_manage?(user_role)
+        agency_grants = fetch_agency_grants(scope, account.id)
 
         if connected?(socket), do: Accounts.subscribe_member(scope)
 
@@ -227,6 +265,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
           |> assign(:members, members)
           |> assign(:can_manage, can_manage)
           |> assign(:current_user_role, user_role)
+          |> assign(:agency_grants, agency_grants)
 
         {:ok, socket}
     end
@@ -316,6 +355,13 @@ defmodule MetricFlowWeb.AccountLive.Members do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp fetch_agency_grants(scope, account_id) do
+    case Agencies.list_grants_for_client_account(scope, account_id) do
+      grants when is_list(grants) -> grants
+      {:error, _reason} -> []
+    end
+  end
 
   defp extract_invite_params(%{"invitation" => %{"email" => email, "role" => role}})
        when email != "" do
