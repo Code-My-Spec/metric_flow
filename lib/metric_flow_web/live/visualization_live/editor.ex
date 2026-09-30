@@ -17,7 +17,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Metrics
 
-  @chart_types ["line", "bar", "area", "point", "arc", "rect"]
+  @chart_types ["line", "bar", "area", "scatter", "donut", "gantt"]
 
   # ---------------------------------------------------------------------------
   # Render
@@ -182,14 +182,41 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               </div>
             </div>
 
-            <div
-              :if={not is_nil(@chart_preview)}
-              id="visualization-preview-chart"
-              data-role="vega-lite-chart"
-              phx-hook="VegaLite"
-              data-spec={Jason.encode!(@chart_preview)}
-              class="w-full h-full"
-            >
+            <div :if={not is_nil(@chart_preview)}>
+              <div
+                id="visualization-preview-chart"
+                data-role="vega-lite-chart"
+                phx-hook="VegaLite"
+                data-spec={Jason.encode!(@chart_preview)}
+                class="w-full h-full"
+              >
+              </div>
+
+              <button
+                type="button"
+                phx-click="toggle_data_table"
+                data-role="chart-drilldown"
+                class="btn btn-ghost btn-xs mt-2"
+              >
+                {if @show_data_table, do: "Hide data", else: "View data"}
+              </button>
+
+              <div :if={@show_data_table} data-role="chart-data-table" class="mt-2 overflow-auto max-h-48">
+                <table class="table table-xs">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr :for={row <- preview_data_rows(@chart_preview)}>
+                      <td>{row["date"]}</td>
+                      <td>{row["value"]}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -395,6 +422,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:chat_generating, false)
     |> assign(:chat_error, nil)
     |> assign(:chat_context, nil)
+    |> assign(:show_data_table, false)
     |> stream(:chat_messages, [])
   end
 
@@ -446,6 +474,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       end
 
     {:noreply, socket}
+  end
+
+  def handle_event("toggle_data_table", _params, socket) do
+    {:noreply, assign(socket, :show_data_table, !socket.assigns.show_data_table)}
   end
 
   def handle_event("toggle_shareable", _params, socket) do
@@ -731,10 +763,18 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   defp extract_metric_name(%{"metric_name" => name}) when is_binary(name), do: name
   defp extract_metric_name(_), do: nil
 
-  defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark), do: mark
-  defp extract_chart_type(%{"mark" => mark}) when is_binary(mark), do: mark
+  # "chart_type" is our own round-trip label ("donut", "gantt", "scatter") and
+  # takes priority, since donut/gantt both share a Vega-Lite mark ("arc" and
+  # "bar" respectively) with other chart types and can't be told apart from
+  # the mark alone.
   defp extract_chart_type(%{"chart_type" => type}) when is_binary(type), do: type
+  defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark), do: mark_to_chart_type(mark)
+  defp extract_chart_type(%{"mark" => mark}) when is_binary(mark), do: mark_to_chart_type(mark)
   defp extract_chart_type(_), do: "line"
+
+  defp mark_to_chart_type("point"), do: "scatter"
+  defp mark_to_chart_type("arc"), do: "donut"
+  defp mark_to_chart_type(mark), do: mark
 
   defp format_spec(nil), do: ""
   defp format_spec(spec) when is_map(spec), do: Jason.encode!(spec, pretty: true)
@@ -744,19 +784,16 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   # Single metric: {"data": {"name": "activeUsers"}, ...}
   # Multi metric: {"layer": [{"data": {"name": "activeUsers"}, ...}, ...]}
   defp build_template_spec(metric_names, chart_type, title) do
-    mark = chart_type || "line"
+    chart_type = chart_type || "line"
+    {mark, encoding} = mark_and_encoding_for(chart_type)
     title = title || List.first(metric_names) || "Untitled"
-
-    encoding = %{
-      "x" => %{"field" => "date", "type" => "temporal"},
-      "y" => %{"field" => "value", "type" => "quantitative"}
-    }
 
     base = %{
       "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
       "title" => title,
       "width" => "container",
       "height" => 400,
+      "chart_type" => chart_type,
       "config" => dark_theme()
     }
 
@@ -773,7 +810,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           Enum.map(multiple, fn name ->
             %{
               "data" => %{"name" => name},
-              "mark" => %{"type" => mark, "point" => true, "tooltip" => true},
+              "mark" => layer_mark(mark),
               "encoding" =>
                 Map.merge(encoding, %{
                   "color" => %{"datum" => name}
@@ -784,6 +821,48 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
         Map.put(base, "layer", layers)
     end
   end
+
+  # Maps a display chart type to its Vega-Lite mark and base encoding.
+  # Donut and Gantt need encodings the shared line/bar/area/scatter shape
+  # doesn't fit: donut has no x/y at all (it's angle-based), and Gantt is a
+  # horizontal range bar rather than a vertical value bar. Both work off the
+  # same {date, value} rows every other chart type uses, since that's all
+  # metric time-series data provides.
+  defp mark_and_encoding_for("scatter") do
+    {"point",
+     %{
+       "x" => %{"field" => "date", "type" => "temporal"},
+       "y" => %{"field" => "value", "type" => "quantitative"}
+     }}
+  end
+
+  defp mark_and_encoding_for("donut") do
+    {%{"type" => "arc", "innerRadius" => 50},
+     %{
+       "theta" => %{"field" => "value", "type" => "quantitative"},
+       "color" => %{"field" => "date", "type" => "nominal"}
+     }}
+  end
+
+  defp mark_and_encoding_for("gantt") do
+    {"bar",
+     %{
+       "x" => %{"field" => "date", "type" => "temporal"},
+       "x2" => %{"field" => "date", "type" => "temporal"},
+       "y" => %{"field" => "value", "type" => "nominal"}
+     }}
+  end
+
+  defp mark_and_encoding_for(type) do
+    {type,
+     %{
+       "x" => %{"field" => "date", "type" => "temporal"},
+       "y" => %{"field" => "value", "type" => "quantitative"}
+     }}
+  end
+
+  defp layer_mark(mark) when is_map(mark), do: Map.merge(mark, %{"point" => true, "tooltip" => true})
+  defp layer_mark(mark), do: %{"type" => mark, "point" => true, "tooltip" => true}
 
   # Resolves named data sources in a spec by fetching real metric data.
   # Replaces {"name": "activeUsers"} with {"values": [...]}
@@ -839,6 +918,17 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     Enum.any?(layers, &match?(%{"data" => %{"name" => _}}, &1))
   end
   defp has_named_data?(_), do: false
+
+  defp preview_data_rows(%{"data" => %{"values" => values}}) when is_list(values), do: values
+
+  defp preview_data_rows(%{"layer" => layers}) when is_list(layers) do
+    Enum.flat_map(layers, fn
+      %{"data" => %{"values" => values}} when is_list(values) -> values
+      _ -> []
+    end)
+  end
+
+  defp preview_data_rows(_), do: []
 
   defp dark_theme do
     %{

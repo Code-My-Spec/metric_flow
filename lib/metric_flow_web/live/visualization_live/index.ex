@@ -67,6 +67,9 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
           class="mf-card p-5"
         >
           <p class="font-semibold mb-1">{visualization.name}</p>
+          <p data-role="visualization-updated-at" class="text-xs text-base-content/50 mb-1">
+            Updated {Calendar.strftime(visualization.updated_at, "%b %d, %Y")}
+          </p>
           <p :if={visualization.shareable} class="text-xs text-base-content/60 mb-3">
             Shareable
           </p>

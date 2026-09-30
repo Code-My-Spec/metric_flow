@@ -17,6 +17,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
+  alias MetricFlow.Metrics
 
   @chart_types ["line", "bar", "area"]
 
@@ -251,11 +252,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             </div>
           </div>
 
-          <div
-            data-role="chart-preview"
-            class="mt-2 h-32 flex items-center justify-center bg-base-200 rounded"
-          >
-            <p class="text-sm text-base-content/50">No data yet</p>
+          <div data-role="chart-preview" class="mt-2 h-32 bg-base-200 rounded overflow-hidden">
+            <div
+              id={"dashboard-chart-#{idx}"}
+              data-role="vega-lite-chart"
+              phx-hook="VegaLite"
+              data-spec={Jason.encode!(Enum.at(@chart_specs, idx))}
+              class="w-full h-full"
+            >
+            </div>
           </div>
         </div>
       </div>
@@ -292,6 +297,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard, dashboard)
           |> assign(:changeset, changeset)
           |> assign(:visualizations, visualizations)
+          |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
           |> assign(:picker_open, false)
           |> assign(:picker_selected_metric, nil)
           |> assign(:picker_selected_chart_type, "line")
@@ -321,6 +327,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard, nil)
       |> assign(:changeset, changeset)
       |> assign(:visualizations, [])
+      |> assign(:chart_specs, [])
       |> assign(:picker_open, false)
       |> assign(:picker_selected_metric, nil)
       |> assign(:picker_selected_chart_type, "line")
@@ -393,10 +400,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
     new_viz = %{metric_name: metric, chart_type: chart_type, position: next_position}
     visualizations = socket.assigns.visualizations ++ [new_viz]
+    scope = socket.assigns.current_scope
 
     socket =
       socket
       |> assign(:visualizations, visualizations)
+      |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
       |> assign(:picker_open, false)
       |> assign(:picker_selected_metric, nil)
       |> assign(:picker_selected_chart_type, "line")
@@ -413,19 +422,19 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> List.delete_at(index)
       |> renumber_positions()
 
-    {:noreply, assign(socket, :visualizations, visualizations)}
+    {:noreply, assign_visualizations(socket, visualizations)}
   end
 
   def handle_event("move_visualization_up", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
     visualizations = swap_at(socket.assigns.visualizations, index, index - 1)
-    {:noreply, assign(socket, :visualizations, visualizations)}
+    {:noreply, assign_visualizations(socket, visualizations)}
   end
 
   def handle_event("move_visualization_down", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
     visualizations = swap_at(socket.assigns.visualizations, index, index + 1)
-    {:noreply, assign(socket, :visualizations, visualizations)}
+    {:noreply, assign_visualizations(socket, visualizations)}
   end
 
   def handle_event("select_template", %{"template" => template_key}, socket) do
@@ -436,7 +445,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       template ->
         socket =
           socket
-          |> assign(:visualizations, template.visualizations)
+          |> assign_visualizations(template.visualizations)
           |> assign(:selected_template, template_key)
           |> assign(:viz_error, nil)
 
@@ -447,7 +456,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   def handle_event("clear_canvas", _params, socket) do
     socket =
       socket
-      |> assign(:visualizations, [])
+      |> assign_visualizations([])
       |> assign(:selected_template, "blank")
 
     {:noreply, socket}
@@ -535,6 +544,41 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       nil -> changeset.params["name"] || ""
       name -> name
     end
+  end
+
+  defp assign_visualizations(socket, visualizations) do
+    scope = socket.assigns.current_scope
+
+    socket
+    |> assign(:visualizations, visualizations)
+    |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+  end
+
+  defp resolve_chart_specs(visualizations, scope) do
+    Enum.map(visualizations, fn viz -> build_chart_spec(viz.metric_name, viz.chart_type, scope) end)
+  end
+
+  defp build_chart_spec(metric_name, chart_type, scope) do
+    {start_date, end_date} = Dashboards.default_date_range()
+
+    values =
+      scope
+      |> Metrics.query_time_series(metric_name, date_range: {start_date, end_date})
+      |> Enum.map(fn %{date: date, value: value} ->
+        %{"date" => Date.to_iso8601(date), "value" => value}
+      end)
+
+    %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "width" => "container",
+      "height" => 100,
+      "mark" => chart_type,
+      "encoding" => %{
+        "x" => %{"field" => "date", "type" => "temporal"},
+        "y" => %{"field" => "value", "type" => "quantitative"}
+      },
+      "data" => %{"values" => values}
+    }
   end
 
   defp renumber_positions(visualizations) do

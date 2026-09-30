@@ -4,29 +4,43 @@
  * Usage: add phx-hook="ResizablePanel" to the drag handle div.
  *
  * data-target: CSS selector for the panel to resize
- * data-direction: "left" (resize from right edge) or "right" (resize from left edge)
- * data-min-width: minimum width in px (default 200)
- * data-max-width: maximum width in px (default 600)
+ * data-direction: "left"/"right" resize width (from the right/left edge);
+ *   "bottom" resizes height (dragging down grows the panel)
+ * data-min-width / data-max-width: width bounds in px (default 200 / 600)
+ * data-min-height / data-max-height: height bounds in px (default 200 / 900)
  */
 const ResizablePanel = {
   mounted() {
     this.target = document.querySelector(this.el.dataset.target)
     this.direction = this.el.dataset.direction || "left"
+    this.vertical = this.direction === "bottom"
     this.minWidth = parseInt(this.el.dataset.minWidth || "200", 10)
     this.maxWidth = parseInt(this.el.dataset.maxWidth || "600", 10)
+    this.minHeight = parseInt(this.el.dataset.minHeight || "200", 10)
+    this.maxHeight = parseInt(this.el.dataset.maxHeight || "900", 10)
     this.dragging = false
 
     this.onMouseDown = (e) => {
       e.preventDefault()
       this.dragging = true
       this.startX = e.clientX
+      this.startY = e.clientY
       this.startWidth = this.target ? this.target.offsetWidth : 0
-      document.body.style.cursor = "col-resize"
+      this.startHeight = this.target ? this.target.offsetHeight : 0
+      document.body.style.cursor = this.vertical ? "row-resize" : "col-resize"
       document.body.style.userSelect = "none"
     }
 
     this.onMouseMove = (e) => {
       if (!this.dragging || !this.target) return
+
+      if (this.vertical) {
+        const dy = e.clientY - this.startY
+        const newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, this.startHeight + dy))
+        this.target.style.height = `${newHeight}px`
+        return
+      }
+
       const dx = e.clientX - this.startX
       let newWidth
       if (this.direction === "left") {

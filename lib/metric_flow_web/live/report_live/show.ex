@@ -51,19 +51,51 @@ defmodule MetricFlowWeb.ReportLive.Show do
 
       <%!-- Vega-Lite chart --%>
       <div class="mf-card p-4 mb-6" data-role="report-chart">
-        <div
-          :if={@report.vega_spec != nil}
-          phx-hook="VegaLite"
-          phx-update="ignore"
-          data-spec={Jason.encode!(@render_spec)}
-          id="report-chart"
-          data-role="vega-lite-chart"
-          style="width: 100%"
-        >
+        <div :if={@spec_error} data-role="report-spec-error" class="text-center py-8">
+          <p class="font-semibold text-error">Unable to render this chart</p>
+          <p class="text-sm text-base-content/60 mt-1">{@spec_error}</p>
         </div>
-        <p :if={@report.vega_spec == nil} class="text-base-content/60 text-center py-8">
-          No chart data available.
-        </p>
+
+        <div :if={@metric_error} data-role="metric-unavailable-error" class="text-center py-8">
+          <p class="font-semibold text-warning">Metric unavailable</p>
+          <p class="text-sm text-base-content/60 mt-1">{@metric_error}</p>
+        </div>
+
+        <div :if={@render_spec}>
+          <div class="flex items-center justify-end mb-2">
+            <button
+              type="button"
+              phx-click="toggle_expand"
+              data-role="report-chart-expand"
+              class="btn btn-ghost btn-xs"
+              aria-label="Expand chart"
+            >
+              {if @expanded, do: "Collapse", else: "Expand"}
+            </button>
+          </div>
+
+          <div
+            phx-hook="VegaLite"
+            phx-update="ignore"
+            data-spec={Jason.encode!(@render_spec)}
+            id="report-chart"
+            data-role="vega-lite-chart"
+            style={"width: 100%; height: #{if @expanded, do: "600px", else: "320px"}"}
+          >
+          </div>
+
+          <div
+            id="report-chart-resize-handle"
+            data-role="report-chart-resize-handle"
+            phx-hook="ResizablePanel"
+            data-target="#report-chart"
+            data-direction="bottom"
+            data-min-height="200"
+            data-max-height="900"
+            class="h-2 cursor-row-resize bg-base-300 hover:bg-primary/40 transition-colors mt-1 rounded"
+          >
+          </div>
+        </div>
       </div>
 
       <%!-- Metric summary cards --%>
@@ -114,13 +146,39 @@ defmodule MetricFlowWeb.ReportLive.Show do
   end
 
   defp assign_report(socket, scope, report) do
-    render_spec = if report.vega_spec, do: Dashboards.build_render_spec(scope, report)
+    bound_metrics = Dashboards.get_visualization_metric_names(report)
+
+    {render_spec, spec_error, metric_error} =
+      cond do
+        not valid_vega_spec?(report.vega_spec) ->
+          {nil, "This chart's specification is invalid or corrupted.", nil}
+
+        bound_metrics != [] and no_metric_data?(scope, bound_metrics) ->
+          {nil, nil, "This visualization is bound to a metric with no available data."}
+
+        true ->
+          {Dashboards.build_render_spec(scope, report), nil, nil}
+      end
 
     socket
     |> assign(:page_title, report.name)
     |> assign(:report, report)
     |> assign(:render_spec, render_spec)
+    |> assign(:spec_error, spec_error)
+    |> assign(:metric_error, metric_error)
+    |> assign(:expanded, false)
     |> assign(:metric_names, Metrics.list_metric_names(scope))
+  end
+
+  defp valid_vega_spec?(spec) when is_map(spec), do: Map.has_key?(spec, "mark") or Map.has_key?(spec, "layer")
+  defp valid_vega_spec?(_), do: false
+
+  defp no_metric_data?(scope, metric_names) do
+    {start_date, end_date} = Dashboards.default_date_range()
+
+    Enum.all?(metric_names, fn name ->
+      Metrics.query_time_series(scope, name, date_range: {start_date, end_date}) == []
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -130,5 +188,9 @@ defmodule MetricFlowWeb.ReportLive.Show do
   @impl true
   def handle_event("share", _params, socket) do
     {:noreply, put_flash(socket, :info, "Shareable link copied to clipboard!")}
+  end
+
+  def handle_event("toggle_expand", _params, socket) do
+    {:noreply, assign(socket, :expanded, !socket.assigns.expanded)}
   end
 end
