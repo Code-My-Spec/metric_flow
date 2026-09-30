@@ -275,7 +275,15 @@ defmodule MetricFlow.Dashboards do
            }}
           | {:error, term()}
   def get_dashboard_data(%Scope{} = scope, opts) do
-    date_range = Keyword.get(opts, :date_range, default_date_range())
+    # Keyword.get/3 can't tell "caller wants no date constraint" (explicit
+    # nil, e.g. All Time) from "caller didn't say" (key absent) -- both read
+    # as nil. Keyword.fetch/2 preserves that distinction.
+    date_range =
+      case Keyword.fetch(opts, :date_range) do
+        {:ok, range} -> range
+        :error -> default_date_range()
+      end
+
     platform = Keyword.get(opts, :platform)
     metric_type = Keyword.get(opts, :metric_type)
 
@@ -296,7 +304,7 @@ defmodule MetricFlow.Dashboards do
     metric_query_opts =
       []
       |> maybe_put(:provider, metric_provider)
-      |> maybe_put(:date_range, date_range)
+      |> Keyword.put(:date_range, date_range)
       |> maybe_put(:metric_type, metric_type)
 
     metric_names = resolve_metric_names(scope, metric_provider, metric_type)

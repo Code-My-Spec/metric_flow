@@ -554,11 +554,25 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       Keyword.get(overrides, :selected_date_range, socket.assigns.selected_date_range)
 
     opts =
-      build_filter_opts(
-        selected_platform,
-        selected_date_range,
-        socket.assigns.available_date_ranges
-      )
+      if selected_date_range == :custom do
+        # :custom has no entry in available_date_ranges (its range is real
+        # user input, not a precomputed preset) -- the actual dates only
+        # live in socket.assigns, so a platform-filter change while custom
+        # is active must re-read them here rather than re-resolving through
+        # the static list, which would silently drop back to the default.
+        start_date = Date.from_iso8601!(socket.assigns.custom_start_date)
+        end_date = Date.from_iso8601!(socket.assigns.custom_end_date)
+
+        []
+        |> maybe_put(:platform, selected_platform)
+        |> Keyword.put(:date_range, {start_date, end_date})
+      else
+        build_filter_opts(
+          selected_platform,
+          selected_date_range,
+          socket.assigns.available_date_ranges
+        )
+      end
 
     do_reload(socket, opts, selected_platform, selected_date_range)
   end
@@ -751,7 +765,10 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)
 
-  defp maybe_put_date_range(opts, nil), do: opts
+  # Always set :date_range, even to nil -- Dashboards.get_dashboard_data/2
+  # needs to tell "caller explicitly wants no date constraint" (All Time)
+  # apart from "caller didn't specify one" (use the 30-day default), and an
+  # omitted key can't carry that distinction.
   defp maybe_put_date_range(opts, range), do: Keyword.put(opts, :date_range, range)
 
   # ---------------------------------------------------------------------------

@@ -308,6 +308,8 @@ defmodule MetricFlow.Metrics.MetricRepository do
     end
   end
 
+  defp apply_date_range_filter_with_default(query, nil), do: query
+
   defp apply_date_range_filter_with_default(query, {start_date, end_date}) do
     apply_date_bounds(query, start_date, end_date)
   end
@@ -334,14 +336,17 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   defp resolve_time_series_date_range(opts) do
-    case Keyword.get(opts, :date_range) do
-      nil ->
+    # Keyword.fetch/2, not Keyword.get/3: an explicit `date_range: nil` (no
+    # constraint -- e.g. All Time) must not be treated the same as the key
+    # being absent (caller didn't say, use the 30-day default).
+    case Keyword.fetch(opts, :date_range) do
+      {:ok, date_range} ->
+        date_range
+
+      :error ->
         start_date = Date.utc_today() |> Date.add(-30)
         end_date = Date.utc_today()
         {start_date, end_date}
-
-      date_range ->
-        date_range
     end
   end
 
