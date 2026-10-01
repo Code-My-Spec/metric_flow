@@ -529,12 +529,14 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     case Dashboards.get_visualization(scope, String.to_integer(id_str)) do
       {:ok, viz} ->
         next_position = length(socket.assigns.visualizations)
+        raw_spec = viz.vega_spec || %{}
+        frozen_spec = custom_spec(raw_spec)
 
         new_viz = %{
-          metric_name: viz.name,
-          chart_type: extract_chart_type_from_spec(viz.vega_spec),
+          metric_name: Map.get(raw_spec, "metric_name") || viz.name,
+          chart_type: Map.get(raw_spec, "chart_type") || extract_chart_type_from_spec(raw_spec),
           position: next_position,
-          vega_spec: viz.vega_spec
+          vega_spec: frozen_spec
         }
 
         visualizations = socket.assigns.visualizations ++ [new_viz]

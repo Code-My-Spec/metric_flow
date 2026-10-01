@@ -7,6 +7,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   import MetricFlowTest.MetricsFixtures
 
   alias MetricFlow.Dashboards.Dashboard
+  alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
 
   # ---------------------------------------------------------------------------
@@ -55,6 +56,49 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
         assert html =~ "Edit Dashboard"
         assert html =~ "My Existing Dashboard"
+      end)
+    end
+  end
+
+  describe "inserting a library visualization stored with the plain ad-hoc shape" do
+    test "regenerates a real Vega-Lite spec instead of rendering the literal metric_name/chart_type map",
+         %{conn: conn} do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      insert_metric!(user)
+
+      {:ok, library_viz} =
+        %Visualization{}
+        |> Visualization.changeset(%{
+          name: "sessions",
+          user_id: user.id,
+          vega_spec: %{"metric_name" => "sessions", "chart_type" => "area"}
+        })
+        |> Repo.insert()
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        lv
+        |> element("[data-role='add-visualization-btn']")
+        |> render_click()
+
+        lv
+        |> element("[data-role='library-visualization-option'][phx-value-id='#{library_viz.id}']")
+        |> render_click()
+
+        [data_spec_json] =
+          render(lv)
+          |> Floki.parse_document!()
+          |> Floki.find("[data-role='vega-lite-chart']")
+          |> Floki.attribute("data-spec")
+
+        decoded = Jason.decode!(data_spec_json)
+
+        assert decoded["$schema"] =~ "vega-lite"
+        assert decoded["mark"] == "area"
+        refute decoded == %{"metric_name" => "sessions", "chart_type" => "area"}
       end)
     end
   end
