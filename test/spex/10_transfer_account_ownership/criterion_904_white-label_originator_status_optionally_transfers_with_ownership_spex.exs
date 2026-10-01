@@ -24,6 +24,14 @@ defmodule MetricFlowSpex.Criterion904WhiteLabelOriginatorStatusOptionallyTransfe
       given_ "the agency account is the originator for a client account", context do
         client = MetricFlowSpex.Fixtures.client_account_fixture("Originated Client")
         :ok = MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
+
+        # client_account_fixture/1 creates its owning user via user_fixture/1,
+        # which delivers a real login-instructions email as a side effect of
+        # capturing its token -- drain that now, before the transfer step
+        # sends its own email, since assert_email_sent takes whichever
+        # {:email, _} arrives first.
+        drain_mailbox()
+
         {:ok, context}
       end
 
@@ -60,7 +68,7 @@ defmodule MetricFlowSpex.Criterion904WhiteLabelOriginatorStatusOptionallyTransfe
       end
 
       then_ "originator status still accompanies the account under the new owner", context do
-        {:ok, clients_view, _html} = live(context.member_conn, "/agency/clients")
+        {:ok, clients_view, _html} = live(context.member_conn, "/app/agency/clients")
         assert render(clients_view) =~ "Originated"
         {:ok, context}
       end

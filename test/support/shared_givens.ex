@@ -36,6 +36,22 @@ defmodule MetricFlowSpex.SharedGivens do
 
   @endpoint MetricFlowWeb.Endpoint
 
+  @doc """
+  Discards any emails already queued in the test process's mailbox.
+
+  Fixtures like `user_fixture/1` deliver a real email as a side effect of
+  capturing their own token, which otherwise sits ahead of whatever email a
+  later `assert_email_sent/1` actually means to check -- it matches the
+  first `{:email, _}` message it finds, not the most relevant one.
+  """
+  def drain_mailbox do
+    receive do
+      {:email, _} -> drain_mailbox()
+    after
+      0 -> :ok
+    end
+  end
+
   register_given :user_registered_with_password, context do
     email = "testuser#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
@@ -168,6 +184,12 @@ defmodule MetricFlowSpex.SharedGivens do
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
+
+    # Logging in as a not-yet-confirmed user sends its own "Confirmation
+    # instructions" email, queued after the registration drain above ran --
+    # drain again so it doesn't surface in a later assert_email_sent call.
+    Process.sleep(50)
+    drain.(drain)
 
     {:ok,
      Map.merge(context, %{
@@ -394,6 +416,12 @@ defmodule MetricFlowSpex.SharedGivens do
 
     logged_in_conn = submit_form(login_form, login_conn)
     authed_conn = recycle(logged_in_conn)
+
+    # Logging in as a not-yet-confirmed user sends its own "Confirmation
+    # instructions" email, queued after the registration drain above ran --
+    # drain again so it doesn't surface in a later assert_email_sent call.
+    Process.sleep(50)
+    drain.(drain)
 
     {:ok,
      Map.merge(context, %{

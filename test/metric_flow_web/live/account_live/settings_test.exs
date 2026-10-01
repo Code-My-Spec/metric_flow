@@ -198,14 +198,16 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
         |> form("[data-role='transfer-ownership']", %{"user_id" => target_user.id})
         |> render_submit()
 
-      assert html =~ "transferred"
+      # Ownership does not change immediately -- criteria 68/898 require the
+      # new owner to accept via email confirmation before anything transfers.
+      assert html =~ "pending confirmation"
+      assert has_element?(lv, "[data-role='transfer-pending-banner']")
 
-      new_role =
+      unchanged_role =
         Repo.get_by!(AccountMember, account_id: account.id, user_id: owner.id)
         |> Map.fetch!(:role)
 
-      assert new_role == :admin
-      refute has_element?(lv, "[data-role='transfer-ownership']")
+      assert unchanged_role == :owner
     end
   end
 

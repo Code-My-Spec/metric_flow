@@ -161,6 +161,9 @@ defmodule MetricFlowWeb.Router do
 
       # Invitation acceptance — accessible to both authenticated and unauthenticated users
       live "/invitations/:token", InvitationLive.Accept, :new
+
+      # Ownership transfer confirmation — accessible to both authenticated and unauthenticated users
+      live "/account_transfers/:token", AccountTransferLive.Accept, :new
     end
 
     post "/users/log-in", UserSessionController, :create

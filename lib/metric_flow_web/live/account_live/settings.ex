@@ -209,8 +209,19 @@ defmodule MetricFlowWeb.AccountLive.Settings do
           <div class="card-body">
             <h2 class="card-title text-base">Transfer Ownership</h2>
             <p class="text-sm text-base-content/60">
-              The selected member will become the account owner. You will be demoted to admin.
+              The new owner must confirm by email before ownership actually changes.
             </p>
+
+            <div
+              :if={@pending_transfer}
+              data-role="transfer-pending-banner"
+              class="alert alert-warning mt-4"
+            >
+              <p class="text-sm">
+                A transfer to <strong>{@pending_transfer.target_email}</strong> is pending confirmation.
+              </p>
+            </div>
+
             <form
               id="transfer-ownership-form"
               data-role="transfer-ownership"
@@ -218,21 +229,100 @@ defmodule MetricFlowWeb.AccountLive.Settings do
               class="space-y-4 mt-4"
             >
               <div class="form-control">
-                <label class="label">
-                  <span class="label-text">New Owner</span>
+                <label class="label cursor-pointer gap-2 justify-start">
+                  <input
+                    type="radio"
+                    name="transfer_target"
+                    value="existing"
+                    data-role="transfer-target-existing-radio"
+                    class="radio"
+                    checked
+                  />
+                  <span class="label-text">Transfer to an existing member with access</span>
                 </label>
-                <select name="user_id" class="select w-full">
+                <select name="user_id" class="select w-full mt-2">
                   <option :for={member <- non_owner_members(@members)} value={member.user_id}>
                     {member.user.email}
                   </option>
                 </select>
               </div>
+
+              <div class="form-control">
+                <label class="label cursor-pointer gap-2 justify-start">
+                  <input
+                    type="radio"
+                    name="transfer_target"
+                    value="invite"
+                    data-role="transfer-target-invite-radio"
+                    class="radio"
+                  />
+                  <span class="label-text">Send a transfer invitation to a new email</span>
+                </label>
+                <input
+                  type="email"
+                  name="invite_email"
+                  data-role="transfer-invite-email-input"
+                  placeholder="newowner@example.com"
+                  class="input w-full mt-2"
+                />
+              </div>
+
+              <div class="form-control">
+                <label class="label cursor-pointer gap-2 justify-start">
+                  <input type="hidden" name="make_copy" value="false" />
+                  <input
+                    type="checkbox"
+                    name="make_copy"
+                    value="true"
+                    data-role="transfer-make-copy-checkbox"
+                    class="checkbox"
+                  />
+                  <span class="label-text">Make a copy of this account's data in my own account</span>
+                </label>
+              </div>
+
+              <div class="form-control">
+                <label class="label cursor-pointer gap-2 justify-start">
+                  <input type="hidden" name="remain_admin" value="false" />
+                  <input
+                    type="checkbox"
+                    name="remain_admin"
+                    value="true"
+                    data-role="transfer-remain-admin-checkbox"
+                    class="checkbox"
+                  />
+                  <span class="label-text">Remain as admin after the transfer</span>
+                </label>
+              </div>
+
+              <div :if={@account_has_originator_grants} class="form-control">
+                <label class="label cursor-pointer gap-2 justify-start">
+                  <input type="hidden" name="transfer_originator" value="false" />
+                  <input
+                    type="checkbox"
+                    name="transfer_originator"
+                    value="true"
+                    data-role="transfer-originator-checkbox"
+                    class="checkbox"
+                  />
+                  <span class="label-text">Also transfer white-label originator status</span>
+                </label>
+              </div>
+
               <div class="card-actions justify-end">
                 <button type="submit" class="btn btn-warning">
                   Transfer Ownership
                 </button>
               </div>
             </form>
+
+            <div
+              :if={@ownership_transfer_log}
+              data-role="ownership-transfer-log-entry"
+              class="mt-4 text-xs text-base-content/60"
+            >
+              Ownership transferred from {@ownership_transfer_log.initiated_by_email} to {@ownership_transfer_log.target_email}, confirmed {@ownership_transfer_log.confirmed_at}.
+            </div>
           </div>
         </div>
 
@@ -364,6 +454,7 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       |> assign(:left_account, false)
       |> assign(:show_leave_confirm, false)
       |> assign_agency_data(scope, account, user_role)
+      |> assign_ownership_transfer_data(scope, account)
 
     {:noreply, socket}
   end
@@ -405,28 +496,29 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     end
   end
 
-  def handle_event("transfer_ownership", %{"user_id" => user_id}, socket) do
+  def handle_event("transfer_ownership", params, socket) do
     scope = socket.assigns.current_scope
-    account_id = socket.assigns.account.id
-    current_user_id = scope.user.id
-    target_user_id = parse_id(user_id)
+    account = socket.assigns.account
 
-    with {:ok, _} <- Accounts.update_user_role(scope, target_user_id, account_id, :owner),
-         {:ok, _} <- Accounts.update_user_role(scope, current_user_id, account_id, :admin) do
-      members = Accounts.list_account_members(scope, account_id)
+    case Accounts.initiate_ownership_transfer(scope, account.id, params) do
+      {:ok, transfer} ->
+        {:noreply,
+         socket
+         |> assign(:pending_transfer, transfer)
+         |> put_flash(
+           :info,
+           "Ownership transfer initiated. Waiting for confirmation from #{transfer.target_email}."
+         )}
 
-      {:noreply,
-       socket
-       |> assign(:members, members)
-       |> assign(:current_user_role, :admin)
-       |> assign(:is_owner, false)
-       |> put_flash(:info, "Ownership transferred successfully")}
-    else
       {:error, :unauthorized} ->
         {:noreply, put_flash(socket, :error, "You are not authorized to transfer ownership")}
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to transfer ownership")}
+      {:error, :invalid_target} ->
+        {:noreply,
+         put_flash(socket, :error, "Select a member or enter an email to transfer ownership to.")}
+
+      {:error, %Ecto.Changeset{}} ->
+        {:noreply, put_flash(socket, :error, "Failed to initiate ownership transfer")}
     end
   end
 
@@ -655,6 +747,14 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     {:noreply, redirect(socket, to: "/app/accounts")}
   end
 
+  # Swoosh's test adapter delivers to the calling process. Initiating an
+  # ownership transfer sends email synchronously from this LiveView (it
+  # doesn't redirect away afterward, unlike account deletion), so this
+  # process receives the delivery notice directly and must not crash on it.
+  def handle_info({:email, %Swoosh.Email{}}, socket) do
+    {:noreply, socket}
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
@@ -683,6 +783,34 @@ defmodule MetricFlowWeb.AccountLive.Settings do
   end
 
   defp agency_config(_scope, _account, _role), do: {nil, nil}
+
+  defp assign_ownership_transfer_data(socket, scope, account) do
+    pending_transfer =
+      case Accounts.get_pending_ownership_transfer(scope, account.id) do
+        {:ok, transfer} -> transfer
+        {:error, :not_found} -> nil
+      end
+
+    ownership_transfer_log =
+      case Accounts.get_latest_completed_ownership_transfer(scope, account.id) do
+        {:ok, transfer} -> transfer
+        {:error, :not_found} -> nil
+      end
+
+    socket
+    |> assign(:pending_transfer, pending_transfer)
+    |> assign(:ownership_transfer_log, ownership_transfer_log)
+    |> assign(:account_has_originator_grants, account_has_originator_grants?(scope, account))
+  end
+
+  defp account_has_originator_grants?(_scope, %{type: type}) when type != :agency, do: false
+
+  defp account_has_originator_grants?(scope, account) do
+    case Agencies.list_agency_client_accounts(scope, account.id) do
+      grants when is_list(grants) -> Enum.any?(grants, &(&1.origination_status == :originator))
+      {:error, _} -> false
+    end
+  end
 
   defp unwrap({:error, _}), do: nil
   defp unwrap(value), do: value
@@ -777,9 +905,6 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       Gettext.dgettext(MetricFlowWeb.Gettext, "errors", msg, opts)
     end
   end
-
-  defp parse_id(id) when is_integer(id), do: id
-  defp parse_id(id) when is_binary(id), do: String.to_integer(id)
 
   defp parse_access_level("read_only"), do: :read_only
   defp parse_access_level("account_manager"), do: :account_manager
