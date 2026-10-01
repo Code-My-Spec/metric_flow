@@ -53,8 +53,7 @@ defmodule MetricFlowWeb.HelpLive.AccountOrigination do
             <strong>Originated</strong> on the agency's Clients page.
           </p>
           <p class="text-base-content/60">
-            Note: generating that link isn't exposed anywhere in the product yet — the mechanism
-            exists, but there's no self-service control to produce one today.
+            Find your link on the agency Clients page, under "Your Referral Link."
           </p>
         </section>
 

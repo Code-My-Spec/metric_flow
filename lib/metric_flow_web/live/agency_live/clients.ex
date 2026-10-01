@@ -32,6 +32,24 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
       </.header>
 
       <div class="mt-8 space-y-6">
+        <div :if={@referral_url} class="card bg-base-100 shadow mf-card" data-role="referral-link-card">
+          <div class="card-body">
+            <h2 class="card-title text-base">Your Referral Link</h2>
+            <p class="text-sm text-base-content/60">
+              Share this link with a new client. When they register through it, they're
+              automatically connected to your agency and marked as originated by you.
+            </p>
+            <input
+              type="text"
+              readonly
+              value={@referral_url}
+              data-role="referral-link-input"
+              class="input w-full font-mono text-sm mt-2"
+              onclick="this.select()"
+            />
+          </div>
+        </div>
+
         <div class="stats shadow w-full">
           <div class="stat">
             <div class="stat-title">Total Clients</div>
@@ -95,7 +113,16 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
         grants -> grants
       end
 
-    {:ok, assign(socket, :grants, grants)}
+    referral_url =
+      account_id &&
+        url(~p"/users/register?ref=#{Agencies.generate_referral_token(account_id)}")
+
+    socket =
+      socket
+      |> assign(:grants, grants)
+      |> assign(:referral_url, referral_url)
+
+    {:ok, socket}
   end
 
   defp access_level_label(:read_only), do: "Read Only"
