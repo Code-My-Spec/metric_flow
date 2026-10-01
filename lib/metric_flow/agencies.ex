@@ -118,6 +118,23 @@ defmodule MetricFlow.Agencies do
   end
 
   @doc """
+  Generates a shareable referral signup token for an agency account, after
+  checking admin access.
+
+  Wraps `generate_referral_token/1` with authorization, since the bare token
+  generator carries no scope check of its own. The caller (web layer) embeds
+  the token in a registration URL.
+
+  Returns `{:ok, token}` on success or `{:error, :unauthorized}`.
+  """
+  @spec generate_referral_link(Scope.t(), integer()) :: {:ok, String.t()} | {:error, :unauthorized}
+  def generate_referral_link(%Scope{} = scope, agency_id) do
+    with :ok <- authorize(scope, :admin, agency_id) do
+      {:ok, generate_referral_token(agency_id)}
+    end
+  end
+
+  @doc """
   Associates a newly created client account with the agency referenced by a
   referral token, granting that agency read access and marking it as the
   account's originator.

@@ -28,8 +28,26 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
           <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
             How does origination work?
           </.link>
+          <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
+            Originate a Client
+          </button>
         </:actions>
       </.header>
+
+      <div :if={@referral_url} class="alert mt-4">
+        <div class="w-full">
+          <p class="font-medium mb-2">
+            Share this link with your client — signing up through it connects them to your agency automatically.
+          </p>
+          <input
+            type="text"
+            readonly
+            value={@referral_url}
+            onclick="this.select()"
+            class="input input-bordered w-full font-mono text-sm"
+          />
+        </div>
+      </div>
 
       <div class="mt-8 space-y-6">
         <div class="stats shadow w-full">
@@ -95,7 +113,30 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
         grants -> grants
       end
 
-    {:ok, assign(socket, :grants, grants)}
+    socket =
+      socket
+      |> assign(:grants, grants)
+      |> assign(:referral_url, nil)
+
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("generate_referral_link", _params, socket) do
+    scope = socket.assigns.current_scope
+    account_id = socket.assigns[:active_account_id]
+
+    case account_id && Agencies.generate_referral_link(scope, account_id) do
+      {:ok, token} ->
+        url = MetricFlowWeb.Endpoint.url() <> ~p"/users/register?ref=#{token}"
+        {:noreply, assign(socket, :referral_url, url)}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "You are not authorized to generate a referral link")}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, "Unable to generate a referral link")}
+    end
   end
 
   defp access_level_label(:read_only), do: "Read Only"

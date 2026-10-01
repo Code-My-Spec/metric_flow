@@ -53,8 +53,8 @@ defmodule MetricFlowWeb.HelpLive.AccountOrigination do
             <strong>Originated</strong> on the agency's Clients page.
           </p>
           <p class="text-base-content/60">
-            Note: generating that link isn't exposed anywhere in the product yet — the mechanism
-            exists, but there's no self-service control to produce one today.
+            Generate your agency's link from the <strong>Originate a Client</strong> button on the
+            <.link navigate={~p"/app/agency/clients"} class="link">Clients</.link> page.
           </p>
         </section>
 
