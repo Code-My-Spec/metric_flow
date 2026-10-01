@@ -63,3 +63,15 @@ Given the critical worker bug directly undermines the story's core purpose (a qu
 Also hit a repeated browser-automation quirk this pass: `browser_select` (and even a direct JS `value=`/`dispatchEvent('change')`) intermittently failed to change this specific `<select>`'s value before submission, silently submitting the previously-pre-selected option instead -- not an app bug (confirmed the server-side `phx-change` mechanism itself works correctly when verified step-by-step), but cost significant time triangulating; worth a note for future sessions testing this page.
 
 Submitting as **partial**: the critical blocker is resolved, but a new real finding (account-scoping gap in the editor's badge) replaces it.
+
+## Results (retest 2, commit af6106e)
+
+**d4df9e43 confirmed fixed.** `VisualizationLive.Editor.mount/3` now calls `Scope.put_account_id/2` with `active_account_id`, exactly the pattern already used by `Goals`/`CorrelationLive.Index`/`CorrelationWorker`.
+
+Live verification across both test accounts:
+- Account 14 (Client Alpha): badge now renders on "impressions" in the metric picker. Confirmed via direct DB query (`correlation_jobs` id 57, account_id=14, goal_metric_name="impressions", status=completed, inserted later than the earlier "clicks" job) that this is genuinely the account's current latest goal -- the goal legitimately changed since the last pass due to additional correlation runs from other stories' QA sessions, it isn't a regression.
+- Account 17 (Client Account Manager): switching accounts in the same browser session correctly removes the badge entirely (no element renders for any metric), because account 17's own latest goal (`QUICKBOOKS_ACCOUNT_DAILY_CREDITS`, a leftover synthetic value from earlier QuickBooks fixture testing) doesn't match any current metric name -- a pre-existing fixture-naming artifact unrelated to this story, not a new finding.
+
+Note for future sessions: `Metrics.list_metric_names/2` (and the underlying `metric_repository.ex` queries) filter purely by `scope.user_id` -- the metrics table has no `account_id` column at all. The picker's metric *list* is therefore identical regardless of active account (same user owns both); only the *badge comparison* (which reads the account-scoped correlation summary) actually depends on which account is active. This explains why `qa_viz_test_a`/`qa_viz_test_b` (fixtures from a different account's story 29 session) appear in the list under both accounts 14 and 17 -- that's expected per-user scoping, not a leak introduced by this fix.
+
+Submitting as **pass**: both filed issues for this story (6aa8841a, d4df9e43) are now confirmed resolved.
