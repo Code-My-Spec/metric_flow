@@ -80,7 +80,6 @@ Returns the most recent reviews for the scoped user, optionally filtered by prov
 ## Dependencies
 
 - MetricFlow.Reviews.ReviewRepository
-- MetricFlow.Reviews.ReviewMetrics
 - MetricFlow.Reviews.Review
 
 ## Components
@@ -92,7 +91,3 @@ Ecto schema representing an individual customer review from any platform. Stores
 ### MetricFlow.Reviews.ReviewRepository
 
 Data access layer for Review CRUD and query operations. All queries are scoped via Scope struct for multi-tenant isolation. Provides bulk upsert for sync (deduplicates on external_review_id), listing with filter options (provider, location_id, date_range, limit, offset), total count, and provider-scoped deletion.
-
-### MetricFlow.Reviews.ReviewMetrics
-
-Pure computation module for rolling review metrics. Queries daily review aggregates from the database and computes running totals and rolling averages in Elixir. No side effects — takes query results and returns computed time series.
