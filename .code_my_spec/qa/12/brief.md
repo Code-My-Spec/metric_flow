@@ -55,3 +55,14 @@ Results are recorded via `submit_qa_result` plus `create_issue` — there is no 
 - **86/914, 90/919**: pass via code review -- the existing integration (id 58, real access/refresh tokens and realm_id) is itself proof OAuth completed and granted access previously; `render_result/1`'s `:connected` branch (checkmark, "Integration Active", "ready to sync data", Active badge) is reachable whenever the controller sets `flash: {info: "Successfully connected!"}`, which only happens after `Integrations.handle_callback/4` returns `{:ok, integration}`. Not independently re-exercised live since no fresh consent round trip was available in this environment (no real Intuit sandbox login credentials, only the OAuth app's own client id/secret).
 
 Submitting as **partial** with issue `054abcc0` linked.
+
+## Retest 2026-10-01
+
+Fix for issue `054abcc0` (commits `04b5af1`, `bb3ddbb`) confirmed both at the unit level and live:
+
+- `mix test test/metric_flow/data_sync/data_providers/quick_books_test.exs test/metric_flow_web/live/integration_live/connect_test.exs` -- 48/48 passed, including the dedicated cross-account summing test (750+300=1050 combined credits).
+- Live: bumped integration 58's expiry into the future (UTC) to reach `/app/integrations/connect/quickbooks/accounts`. Confirmed genuine `<input type="checkbox" name="income_account_ids[]">` elements now render (previously a single plain text input). Set the saved selection to two accounts (`["212", "99"]`) via SQL and reloaded: both rendered as separate, correctly pre-checked checkboxes. Unchecked one and saved: DB confirmed `income_account_ids` correctly reduced to `["212"]` only (a direct replace, not a merge) -- an initial attempt at this looked like it hadn't taken effect, but re-checking the checkbox's own state before/after the click showed that was a transient browser-automation glitch, not a real bug; the retry behaved correctly.
+- Noted a stale, now-inaccurate comment in `connect.ex`'s `save_quickbooks_multi_selection/5` claiming "sync still only reads the legacy singular key" -- `quick_books.ex`'s `resolve_account_ids/2` was updated in the second commit to read the plural `income_account_ids` key, so this comment is leftover from before that commit landed. Doesn't affect behavior (purely a stale comment), not filed as a separate issue.
+- Reverted integration 58 back to its original clean single-account state (`income_account_id: "212"`, no `income_account_ids` key, `expires_at` restored) afterward.
+
+88/916 now: **pass**. All other criteria (85/913 through 92/921) were already verified passing in the prior attempt and are unaffected by this fix. Submitting as pass.
