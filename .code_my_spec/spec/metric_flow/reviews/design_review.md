@@ -2,24 +2,20 @@
 
 ## Overview
 
-Reviewed the MetricFlow.Reviews context and its three child components: Review (schema), ReviewRepository (module), and ReviewMetrics (module). The overall architecture is sound with clear separation of concerns and proper multi-tenant scoping throughout. After fixing a missing Functions section in ReviewRepository and adding a `count_reviews/1` function, the design is ready for implementation.
+Reviewed the MetricFlow.Reviews context and its two child components: Review (schema) and ReviewRepository (module). The overall architecture is sound with clear separation of concerns and proper multi-tenant scoping throughout. After fixing a missing Functions section in ReviewRepository and adding a `count_reviews/1` function, the design is ready for implementation.
 
 ## Architecture
 
-- Separation of concerns is clean: Review owns schema and validation, ReviewRepository owns all Ecto queries, ReviewMetrics owns rolling metric computation, and the context exposes the public API.
+- Separation of concerns is clean: Review owns schema and validation, ReviewRepository owns all Ecto queries, and the context exposes the public API.
 - The schema component (Review) correctly holds only changeset logic and field definitions. No query logic leaks into it.
-- ReviewMetrics is correctly a pure computation module — it queries raw aggregates from the database and reduces them in Elixir, with no side effects.
 - ReviewRepository follows the standard repository pattern with scoped get/list/create/delete operations plus a count function. All operations accept Scope as the first parameter.
 - The context's Delegates section accurately reflects pass-through functions to ReviewRepository. The two non-delegated context functions (`review_count/1` and `recent_reviews/2`) are thin wrappers that add default option values before calling the repository.
-- ReviewMetrics is listed as a dependency of the context but `query_rolling_review_metrics/2` is implemented in ReviewMetrics and called from the context — this is consistent with the component descriptions.
 
 ## Integration
 
 - The context delegates `list_reviews/2`, `get_review/2`, `create_reviews/2`, and `delete_reviews_by_provider/2` directly to ReviewRepository with matching signatures.
 - `review_count/1` in the context calls `ReviewRepository.count_reviews/1` (added during review).
 - `recent_reviews/2` in the context calls `ReviewRepository.list_reviews/2` with limit and provider opts, using ReviewRepository as its data source.
-- `query_rolling_review_metrics/2` in the context delegates to `ReviewMetrics.query_rolling_review_metrics/2`.
-- ReviewMetrics depends on `MetricFlow.Reviews.Review` (for the schema), `MetricFlow.Repo` (for queries), and `MetricFlow.Users.Scope` — all valid dependencies within the boundary.
 - ReviewRepository depends on `MetricFlow.Reviews.Review`, `MetricFlow.Repo`, and `MetricFlow.Users.Scope` — all valid.
 - Review schema depends on `MetricFlow.Integrations.Integration` and `MetricFlow.Users.User` for associations — these are cross-context dependencies that must be permitted by Boundary configuration.
 
