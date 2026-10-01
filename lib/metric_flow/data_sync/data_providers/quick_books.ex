@@ -40,18 +40,31 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
   def fetch_metrics(%Integration{} = integration, opts \\ []) do
     with :ok <- check_not_expired(integration),
          {:ok, realm_id} <- resolve_realm_id(integration, opts),
-         {:ok, account_id} <- resolve_account_id(integration, opts),
+         {:ok, account_ids} <- resolve_account_ids(integration, opts),
          {:ok, {start_date, end_date}} <- resolve_date_range(opts) do
       http_plug = Keyword.get(opts, :http_plug)
 
-      case fetch_transaction_list(integration, realm_id, account_id, start_date, end_date, http_plug) do
-        {:ok, daily_totals} ->
-          metrics = build_daily_metrics(daily_totals, account_id, start_date, end_date)
-          {:ok, metrics}
+      fetch_results =
+        Enum.map(account_ids, fn account_id ->
+          fetch_transaction_list(integration, realm_id, account_id, start_date, end_date, http_plug)
+        end)
 
-        {:error, reason} ->
-          {:error, reason}
-      end
+      build_metrics_from_results(fetch_results, account_ids, start_date, end_date)
+    end
+  end
+
+  defp build_metrics_from_results(fetch_results, account_ids, start_date, end_date) do
+    case Enum.find(fetch_results, &match?({:error, _}, &1)) do
+      {:error, _reason} = error ->
+        error
+
+      nil ->
+        combined_totals =
+          fetch_results
+          |> Enum.map(fn {:ok, totals} -> totals end)
+          |> merge_daily_totals()
+
+        {:ok, build_daily_metrics(combined_totals, account_ids, start_date, end_date)}
     end
   end
 
@@ -68,9 +81,20 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
     if realm_id, do: {:ok, realm_id}, else: {:error, :missing_realm_id}
   end
 
-  defp resolve_account_id(%Integration{provider_metadata: meta}, opts) do
-    account_id = Keyword.get(opts, :account_id) || get_in(meta, ["income_account_id"])
-    if account_id, do: {:ok, account_id}, else: {:error, :missing_account_id}
+  # Supports both the plural income_account_ids list (multi-select) and the
+  # legacy singular income_account_id string, plus matching opts overrides
+  # used by tests and by DataSync callers that already know a single account.
+  defp resolve_account_ids(%Integration{provider_metadata: meta}, opts) do
+    account_ids =
+      cond do
+        ids = Keyword.get(opts, :account_ids) -> List.wrap(ids)
+        id = Keyword.get(opts, :account_id) -> [id]
+        ids = get_in(meta, ["income_account_ids"]) -> List.wrap(ids)
+        id = get_in(meta, ["income_account_id"]) -> [id]
+        true -> []
+      end
+
+    if account_ids == [], do: {:error, :missing_account_id}, else: {:ok, account_ids}
   end
 
   defp resolve_date_range(opts) do
@@ -272,14 +296,23 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
   # for days with no transactions to preserve continuity for correlations.
   # ---------------------------------------------------------------------------
 
-  defp build_daily_metrics(daily_totals, account_id, start_date, end_date) do
+  defp merge_daily_totals(totals_list) do
+    Enum.reduce(totals_list, %{}, fn totals, acc ->
+      Map.merge(acc, totals, fn _date, a, b ->
+        %{credits: a.credits + b.credits, debits: a.debits + b.debits}
+      end)
+    end)
+  end
+
+  defp build_daily_metrics(daily_totals, account_ids, start_date, end_date) do
     all_dates = Date.range(start_date, end_date)
+    account_id_value = metadata_account_id(account_ids)
 
     Enum.flat_map(all_dates, fn date ->
       totals = Map.get(daily_totals, date, %{credits: 0.0, debits: 0.0})
       recorded_at = DateTime.new!(date, ~T[00:00:00], "Etc/UTC")
 
-      metadata = %{account_id: account_id}
+      metadata = %{account_id: account_id_value}
 
       [
         %{
@@ -303,4 +336,9 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
       ]
     end)
   end
+
+  # A single tracked account keeps the pre-existing scalar metadata shape;
+  # only a genuine multi-account selection surfaces the list.
+  defp metadata_account_id([single]), do: single
+  defp metadata_account_id(multiple), do: multiple
 end

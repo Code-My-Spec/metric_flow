@@ -71,6 +71,22 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
     )
   end
 
+  defp multi_account_integration do
+    struct!(Integration,
+      id: 5,
+      provider: :quickbooks,
+      access_token: "qb_valid_access_token",
+      refresh_token: "qb_refresh_token",
+      expires_at: future_expires_at(),
+      granted_scopes: ["com.intuit.quickbooks.accounting"],
+      provider_metadata: %{
+        "realm_id" => "1234567890",
+        "income_account_ids" => ["42", "43"]
+      },
+      user_id: 1
+    )
+  end
+
   # ---------------------------------------------------------------------------
   # API response fixtures — TransactionList report
   # ---------------------------------------------------------------------------
@@ -178,9 +194,48 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
     })
   end
 
+  # Single credit entry of 300.00 on Jan 15 -- used as the second account's
+  # response in multi-account summing tests, distinct from the 750.00/100.00
+  # totals in transaction_list_response/0.
+  defp second_account_transaction_list_response do
+    Jason.encode!(%{
+      "Header" => %{"ReportName" => "TransactionList"},
+      "Columns" => %{
+        "Column" => [
+          %{"ColTitle" => "Date", "ColType" => "tx_date"},
+          %{"ColTitle" => "Amount", "ColType" => "subt_nat_amount"}
+        ]
+      },
+      "Rows" => %{
+        "Row" => [
+          %{
+            "ColData" => [%{"value" => "2026-01-15"}, %{"value" => "300.00"}],
+            "type" => "Data"
+          }
+        ]
+      }
+    })
+  end
+
   # ---------------------------------------------------------------------------
   # Test plug helpers
   # ---------------------------------------------------------------------------
+
+  defp multi_account_plug do
+    fn conn ->
+      %{query_params: query} = Plug.Conn.fetch_query_params(conn)
+
+      body =
+        case query["account"] do
+          "42" -> transaction_list_response()
+          "43" -> second_account_transaction_list_response()
+        end
+
+      conn
+      |> Plug.Conn.put_resp_content_type("application/json")
+      |> Plug.Conn.send_resp(200, body)
+    end
+  end
 
   defp capture_request_plug(test_pid, response_body) do
     fn conn ->
@@ -724,6 +779,86 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
 
       assert_receive {:request, conn}
       assert String.contains?(conn.query_string, "account=42")
+    end
+
+    test "sums credits and debits across multiple selected income accounts" do
+      capture_log(fn ->
+        {:ok, metrics} =
+          QuickBooks.fetch_metrics(multi_account_integration(),
+            http_plug: multi_account_plug(),
+            date_range: {~D[2026-01-15], ~D[2026-01-20]}
+          )
+
+        jan15_credits =
+          Enum.find(metrics, fn m ->
+            m.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_CREDITS" and
+              DateTime.to_date(m.recorded_at) == ~D[2026-01-15]
+          end)
+
+        jan20_debits =
+          Enum.find(metrics, fn m ->
+            m.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_DEBITS" and
+              DateTime.to_date(m.recorded_at) == ~D[2026-01-20]
+          end)
+
+        # Account 42: 500.00 + 250.00 credits on Jan 15, 100.00 debit on Jan 20.
+        # Account 43: 300.00 credit on Jan 15, nothing on Jan 20.
+        # Summed across both accounts: 750.00 + 300.00 = 1050.00 credits, 100.00 debits.
+        assert jan15_credits.value == 1050.0
+        assert jan20_debits.value == 100.0
+      end)
+    end
+
+    test "reads account_ids from the plural income_account_ids opt" do
+      plug = multi_account_plug()
+
+      capture_log(fn ->
+        QuickBooks.fetch_metrics(valid_integration(),
+          account_ids: ["42", "43"],
+          http_plug: plug,
+          date_range: {~D[2026-01-15], ~D[2026-01-20]}
+        )
+      end)
+    end
+
+    test "metadata.account_id is the list of ids when multiple accounts are tracked" do
+      capture_log(fn ->
+        {:ok, metrics} =
+          QuickBooks.fetch_metrics(multi_account_integration(),
+            http_plug: multi_account_plug(),
+            date_range: {~D[2026-01-15], ~D[2026-01-15]}
+          )
+
+        for metric <- metrics do
+          assert metric.metadata.account_id == ["42", "43"]
+        end
+      end)
+    end
+
+    test "a failed fetch for any one account fails the whole sync" do
+      plug = fn conn ->
+        %{query_params: query} = Plug.Conn.fetch_query_params(conn)
+
+        case query["account"] do
+          "42" ->
+            conn
+            |> Plug.Conn.put_resp_content_type("application/json")
+            |> Plug.Conn.send_resp(200, transaction_list_response())
+
+          "43" ->
+            conn
+            |> Plug.Conn.put_resp_content_type("application/json")
+            |> Plug.Conn.send_resp(401, ~s({"Fault":{"Error":[{"Message":"AuthenticationFailed"}]}}))
+        end
+      end
+
+      capture_log(fn ->
+        assert {:error, :unauthorized} =
+                 QuickBooks.fetch_metrics(multi_account_integration(),
+                   http_plug: plug,
+                   date_range: {~D[2026-01-15], ~D[2026-01-15]}
+                 )
+      end)
     end
   end
 
