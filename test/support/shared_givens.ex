@@ -27,6 +27,7 @@ defmodule MetricFlowSpex.SharedGivens do
 
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
+  import Swoosh.TestAssertions
 
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Billing.BillingRepository
@@ -266,6 +267,71 @@ defmodule MetricFlowSpex.SharedGivens do
     drain.(drain)
 
     {:ok, Map.merge(context, %{second_user_email: email, second_user_password: password})}
+  end
+
+  # Drives the real invite-then-accept flow (same mechanism as story 5/6)
+  # so the second user ends up an actual member of the owner's account,
+  # rather than an AccountMember row inserted directly.
+  register_given :owner_has_member_with_access, context do
+    email = "member#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form",
+      user: %{email: email, password: password, account_name: "Member Personal Account"}
+    )
+    |> render_submit()
+
+    Process.sleep(50)
+
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+
+    drain.(drain)
+
+    {:ok, invite_view, _html} = live(context.owner_conn, "/app/accounts/invitations")
+
+    invite_view
+    |> form("#invite_member_form", invitation: %{email: email, role: "account_manager"})
+    |> render_submit()
+
+    token =
+      assert_email_sent(fn invite_email ->
+        [_, t] = Regex.run(~r|/invitations/([^\s/]+)|, invite_email.text_body)
+        t
+      end)
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password",
+        user: %{email: email, password: password, remember_me: true}
+      )
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok, accept_view, _html} = live(authed_conn, "/invitations/#{token}")
+
+    accept_view
+    |> element("[data-role=accept-btn]")
+    |> render_click()
+
+    {:ok,
+     Map.merge(context, %{
+       member_conn: authed_conn,
+       member_email: email,
+       member_password: password
+     })}
   end
 
   register_given :agency_member_registered, context do
