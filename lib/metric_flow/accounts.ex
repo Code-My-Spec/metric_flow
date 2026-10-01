@@ -34,6 +34,7 @@ defmodule MetricFlow.Accounts do
   defdelegate add_user_to_account(scope, user_id, account_id, role), to: AccountRepository
   defdelegate leave_account(scope, account_id), to: AccountRepository
   defdelegate touch_membership(scope, account_id), to: AccountRepository
+  defdelegate most_recently_switched_account_id(scope), to: AccountRepository
   defdelegate get_account_by_slug(slug), to: AccountRepository
 
   @doc """

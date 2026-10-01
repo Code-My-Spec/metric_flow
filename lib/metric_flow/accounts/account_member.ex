@@ -20,6 +20,7 @@ defmodule MetricFlow.Accounts.AccountMember do
           account_id: integer() | nil,
           user_id: integer() | nil,
           role: :owner | :admin | :account_manager | :read_only | :member | nil,
+          last_active_at: DateTime.t() | nil,
           account: Account.t() | Ecto.Association.NotLoaded.t(),
           user: User.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
@@ -28,6 +29,10 @@ defmodule MetricFlow.Accounts.AccountMember do
 
   schema "account_members" do
     field :role, Ecto.Enum, values: [:owner, :admin, :account_manager, :read_only, :member]
+    # Set only by an explicit switch (AccountRepository.touch_membership/2), never
+    # by membership creation -- so a membership granted on another account never
+    # outranks the user's own account as "active" until they actually switch to it.
+    field :last_active_at, :utc_datetime
 
     belongs_to :account, Account
     belongs_to :user, User

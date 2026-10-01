@@ -133,14 +133,22 @@ defmodule MetricFlowWeb.AccountLive.Index do
 
     if connected?(socket), do: Accounts.subscribe_account(scope)
 
-    # Use the same resolution every other page uses (ActiveAccountHook.on_mount),
-    # so the account shown as "Active" here always matches the account other
-    # pages actually operate on. primary_account/2's "prefer the user's own
-    # account" override was specific to this mount and could silently revert
-    # the display away from an account the user had just explicitly switched
-    # to via touch_membership, even though every other page kept honoring
-    # the switch.
-    primary = ActiveAccountHook.primary_account(accounts)
+    # Prefer the account the user most recently explicitly switched to
+    # (touch_membership/2) -- this is what keeps this page's "Active" account
+    # in sync with the switch a user just made, which primary_account/2 alone
+    # couldn't do (it always preferred the user's own account, ignoring any
+    # switch). Only when nothing has ever been explicitly switched to --
+    # e.g. right after being granted access to a new account, before ever
+    # using the switcher -- fall back to the user's own account, rather than
+    # whichever membership happens to be newest in the database.
+    switched_account_id = Accounts.most_recently_switched_account_id(scope)
+
+    primary =
+      case switched_account_id && Enum.find(accounts, &(&1.id == switched_account_id)) do
+        nil -> ActiveAccountHook.primary_account(accounts, scope.user)
+        account -> account
+      end
+
     active_account_id = if primary, do: primary.id
 
     {account_roles, agency_grants} = load_account_metadata(scope, accounts)

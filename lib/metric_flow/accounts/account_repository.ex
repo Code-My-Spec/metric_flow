@@ -39,6 +39,23 @@ defmodule MetricFlow.Accounts.AccountRepository do
   end
 
   @doc """
+  Finds the account the user most recently explicitly switched to via
+  `touch_membership/2`, if any. Returns `nil` if the user has never
+  explicitly switched accounts (a membership merely being created does not
+  count -- only an explicit switch sets `last_active_at`).
+  """
+  @spec most_recently_switched_account_id(Scope.t()) :: integer() | nil
+  def most_recently_switched_account_id(%Scope{user: user}) do
+    from(m in AccountMember,
+      where: m.user_id == ^user.id and not is_nil(m.last_active_at),
+      order_by: [desc: m.last_active_at],
+      select: m.account_id,
+      limit: 1
+    )
+    |> Repo.one()
+  end
+
+  @doc """
   Fetches a single account by ID, scoped to ensure the calling user is a member.
   Raises Ecto.NoResultsError when the account does not exist or the user is not
   a member.
@@ -353,10 +370,12 @@ defmodule MetricFlow.Accounts.AccountRepository do
   """
   @spec touch_membership(Scope.t(), integer()) :: :ok
   def touch_membership(%Scope{user: user}, account_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     from(m in AccountMember,
       where: m.user_id == ^user.id and m.account_id == ^account_id
     )
-    |> Repo.update_all(set: [updated_at: DateTime.utc_now()])
+    |> Repo.update_all(set: [updated_at: now, last_active_at: now])
 
     :ok
   end
