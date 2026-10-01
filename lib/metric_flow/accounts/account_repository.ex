@@ -15,6 +15,9 @@ defmodule MetricFlow.Accounts.AccountRepository do
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Accounts.Authorization
+  alias MetricFlow.Dashboards
+  alias MetricFlow.Integrations
+  alias MetricFlow.Metrics
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
@@ -153,13 +156,20 @@ defmodule MetricFlow.Accounts.AccountRepository do
   @doc """
   Deletes an account and all associated membership records atomically.
   Only owners may delete an account. Personal accounts cannot be deleted.
+
+  Also removes every metric, integration, dashboard, and visualization
+  belonging to the owner performing the deletion -- the data this account
+  gives them access to manage has no account_id of its own (it is scoped by
+  user_id), so the owner's own user-scoped data is what "this account's
+  data" resolves to.
+
   Broadcasts {:deleted, account} on success.
   """
   @spec delete_account(Scope.t(), Account.t()) ::
           {:ok, Account.t()} | {:error, :unauthorized}
   def delete_account(%Scope{user: user} = scope, %Account{} = account) do
     with true <- Authorization.can?(scope, :delete_account, %{account_id: account.id}),
-         {:ok, %{account: deleted}} <- run_delete_account_transaction(account) do
+         {:ok, deleted} <- run_delete_account_transaction(scope, account) do
       broadcast("accounts:user:#{user.id}", {:deleted, deleted})
       {:ok, deleted}
     else
@@ -167,11 +177,15 @@ defmodule MetricFlow.Accounts.AccountRepository do
     end
   end
 
-  defp run_delete_account_transaction(%Account{} = account) do
-    Multi.new()
-    |> Multi.delete_all(:members, from(m in AccountMember, where: m.account_id == ^account.id))
-    |> Multi.delete(:account, account)
-    |> Repo.transaction()
+  defp run_delete_account_transaction(%Scope{} = scope, %Account{} = account) do
+    Repo.transaction(fn ->
+      Repo.delete_all(from(m in AccountMember, where: m.account_id == ^account.id))
+      Metrics.delete_all_metrics(scope)
+      Integrations.delete_all_integrations(scope)
+      Dashboards.delete_all_dashboards(scope)
+      Dashboards.delete_all_visualizations(scope)
+      Repo.delete!(account)
+    end)
   end
 
   # ---------------------------------------------------------------------------

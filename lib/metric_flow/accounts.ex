@@ -11,7 +11,7 @@ defmodule MetricFlow.Accounts do
   """
 
   use Boundary,
-    deps: [MetricFlow],
+    deps: [MetricFlow, MetricFlow.Metrics, MetricFlow.Integrations, MetricFlow.Dashboards],
     exports: [Account, AccountMember, AccountOwnershipTransfer]
 
   import Ecto.Query, only: [from: 2]

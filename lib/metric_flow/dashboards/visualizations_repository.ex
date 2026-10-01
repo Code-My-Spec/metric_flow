@@ -177,4 +177,21 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
     )
     |> Repo.all()
   end
+
+  # ---------------------------------------------------------------------------
+  # delete_all_visualizations/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Deletes every visualization for the scoped user.
+
+  Used when the account through which these visualizations are managed is
+  being deleted permanently. Cascades to visualization_metrics and
+  dashboard_visualizations at the DB level.
+  """
+  @spec delete_all_visualizations(Scope.t()) :: :ok
+  def delete_all_visualizations(%Scope{user: user}) do
+    from(v in Visualization, where: v.user_id == ^user.id) |> Repo.delete_all()
+    :ok
+  end
 end

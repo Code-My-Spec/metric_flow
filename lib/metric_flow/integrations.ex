@@ -50,6 +50,7 @@ defmodule MetricFlow.Integrations do
   defdelegate list_integrations(scope), to: IntegrationRepository
   defdelegate list_all_active_integrations(), to: IntegrationRepository
   defdelegate delete_integration(scope, provider), to: IntegrationRepository
+  defdelegate delete_all_integrations(scope), to: IntegrationRepository
   defdelegate connected?(scope, provider), to: IntegrationRepository
   defdelegate get_integration_by_id(id), to: IntegrationRepository
 

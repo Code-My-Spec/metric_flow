@@ -101,6 +101,14 @@ defmodule MetricFlow.Dashboards do
     end
   end
 
+  @doc "Deletes every user-owned dashboard for the scoped user."
+  @spec delete_all_dashboards(Scope.t()) :: :ok
+  defdelegate delete_all_dashboards(scope), to: DashboardsRepository
+
+  @doc "Deletes every visualization for the scoped user."
+  @spec delete_all_visualizations(Scope.t()) :: :ok
+  defdelegate delete_all_visualizations(scope), to: VisualizationsRepository
+
   @doc "Returns an Ecto changeset for a Dashboard."
   @spec dashboard_changeset(Dashboard.t(), map()) :: Ecto.Changeset.t()
   def dashboard_changeset(%Dashboard{} = dashboard, attrs) do

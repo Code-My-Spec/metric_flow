@@ -121,6 +121,19 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   end
 
   @doc """
+  Deletes every integration belonging to the scoped user, regardless of
+  provider.
+
+  Used when the account through which these connections are managed is
+  being deleted permanently.
+  """
+  @spec delete_all_integrations(Scope.t()) :: :ok
+  def delete_all_integrations(%Scope{user: user}) do
+    from(i in Integration, where: i.user_id == ^user.id) |> Repo.delete_all()
+    :ok
+  end
+
+  @doc """
   Alias for get_integration/2 — provides semantic clarity when querying by
   provider name.
   """

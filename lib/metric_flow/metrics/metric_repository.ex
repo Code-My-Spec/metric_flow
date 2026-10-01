@@ -161,6 +161,24 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   # ---------------------------------------------------------------------------
+  # delete_all_metrics/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Deletes every metric and derived metric definition belonging to the scoped
+  user, regardless of provider.
+
+  Used when the account through which this data is managed is being deleted
+  permanently.
+  """
+  @spec delete_all_metrics(Scope.t()) :: :ok
+  def delete_all_metrics(%Scope{user: user}) do
+    from(m in Metric, where: m.user_id == ^user.id) |> Repo.delete_all()
+    from(d in DerivedMetricDefinition, where: d.user_id == ^user.id) |> Repo.delete_all()
+    :ok
+  end
+
+  # ---------------------------------------------------------------------------
   # query_time_series/3
   # ---------------------------------------------------------------------------
 

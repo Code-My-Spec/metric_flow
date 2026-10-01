@@ -217,4 +217,22 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   def delete_dashboard(%Dashboard{} = dashboard) do
     Repo.delete(dashboard)
   end
+
+  # ---------------------------------------------------------------------------
+  # delete_all_dashboards/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Deletes every user-owned (non-built-in) dashboard for the scoped user.
+
+  Used when the account through which these dashboards are managed is being
+  deleted permanently. Cascades to dashboard_visualizations at the DB level.
+  """
+  @spec delete_all_dashboards(Scope.t()) :: :ok
+  def delete_all_dashboards(%Scope{user: user}) do
+    from(d in Dashboard, where: d.user_id == ^user.id and d.built_in == false)
+    |> Repo.delete_all()
+
+    :ok
+  end
 end
