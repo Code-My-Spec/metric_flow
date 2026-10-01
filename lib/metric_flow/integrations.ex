@@ -53,6 +53,7 @@ defmodule MetricFlow.Integrations do
   defdelegate delete_all_integrations(scope), to: IntegrationRepository
   defdelegate connected?(scope, provider), to: IntegrationRepository
   defdelegate get_integration_by_id(id), to: IntegrationRepository
+  defdelegate update_integration(scope, provider, attrs), to: IntegrationRepository
 
   @doc """
   Disconnects an integration by revoking tokens with the provider (if

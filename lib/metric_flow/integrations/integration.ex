@@ -25,6 +25,7 @@ defmodule MetricFlow.Integrations.Integration do
           expires_at: DateTime.t() | nil,
           granted_scopes: [String.t()] | nil,
           provider_metadata: map() | nil,
+          reconnection_notified_at: DateTime.t() | nil,
           user_id: integer() | nil,
           user: User.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
@@ -57,6 +58,7 @@ defmodule MetricFlow.Integrations.Integration do
     field :expires_at, :utc_datetime_usec
     field :granted_scopes, {:array, :string}, default: []
     field :provider_metadata, :map, default: %{}
+    field :reconnection_notified_at, :utc_datetime_usec
 
     belongs_to :user, User
 
@@ -80,7 +82,8 @@ defmodule MetricFlow.Integrations.Integration do
       :refresh_token,
       :expires_at,
       :granted_scopes,
-      :provider_metadata
+      :provider_metadata,
+      :reconnection_notified_at
     ])
     |> validate_required([:user_id, :provider, :access_token, :expires_at])
     |> validate_provider_metadata()

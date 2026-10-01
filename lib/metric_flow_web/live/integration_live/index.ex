@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   alias MetricFlow.DataSync
   alias MetricFlow.Integrations
   alias MetricFlow.Integrations.Integration
+  alias MetricFlow.Integrations.IntegrationNotifier
 
   # Data platforms — each has its own OAuth provider and integration record.
   @data_platforms [
@@ -342,7 +343,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     scope = socket.assigns.current_scope
-    integrations = Integrations.list_integrations(scope)
+    integrations = notify_expired_integrations(scope, Integrations.list_integrations(scope))
 
     if Phoenix.LiveView.connected?(socket) do
       Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
@@ -589,6 +590,39 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   defp provider_connected?(provider_key, integrations) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)
+  end
+
+  # Emails the user once when an integration's credentials expire, and clears
+  # the flag once it's reconnected (expires_at pushed back out) so a future
+  # expiration notifies again rather than staying silent forever.
+  defp notify_expired_integrations(scope, integrations) do
+    Enum.map(integrations, fn integration ->
+      cond do
+        Integration.expired?(integration) and is_nil(integration.reconnection_notified_at) ->
+          IntegrationNotifier.deliver_reconnection_required(
+            scope.user.email,
+            provider_display_name(integration.provider)
+          )
+
+          update_reconnection_notified_at(scope, integration, DateTime.utc_now())
+
+        not Integration.expired?(integration) and
+            not is_nil(integration.reconnection_notified_at) ->
+          update_reconnection_notified_at(scope, integration, nil)
+
+        true ->
+          integration
+      end
+    end)
+  end
+
+  defp update_reconnection_notified_at(scope, integration, value) do
+    case Integrations.update_integration(scope, integration.provider, %{
+           reconnection_notified_at: value
+         }) do
+      {:ok, updated} -> updated
+      {:error, _} -> integration
+    end
   end
 
   defp integration_status(platform, integrations) do
