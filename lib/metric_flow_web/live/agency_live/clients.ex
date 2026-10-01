@@ -24,6 +24,11 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
       <.header>
         Clients
         <:subtitle>Client accounts managed by your agency</:subtitle>
+        <:actions>
+          <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
+            How does origination work?
+          </.link>
+        </:actions>
       </.header>
 
       <div class="mt-8 space-y-6">

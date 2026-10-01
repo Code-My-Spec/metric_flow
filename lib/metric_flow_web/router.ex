@@ -75,6 +75,7 @@ defmodule MetricFlowWeb.Router do
       live "/accounts/members", AccountLive.Members, :index
       live "/accounts/settings", AccountLive.Settings, :index
       live "/accounts/invitations", InvitationLive.Send, :index
+      live "/help/account-origination", HelpLive.AccountOrigination, :index
 
       # Integration routes (LiveView)
       live "/integrations", IntegrationLive.Index, :index
