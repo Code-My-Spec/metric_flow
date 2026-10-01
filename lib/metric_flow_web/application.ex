@@ -48,7 +48,7 @@ defmodule MetricFlowWeb.Application do
     defp dev_children(children) do
       tunnel_config = Application.get_env(:metric_flow, :cloudflare_tunnel, [])
 
-      if tunnel_config[:enabled] and main_copy?() do
+      if tunnel_config[:enabled] and main_copy?() and not tunnel_held_by_harness?() do
         tunnel_opts =
           Keyword.merge(tunnel_config,
             endpoint: MetricFlowWeb.Endpoint,
@@ -115,14 +115,18 @@ defmodule MetricFlowWeb.Application do
   # 2026-09-29: the harness now holds the tunnel for any copy whose preview
   # is DB-backed (`CodeMySpec.Workspaces.PreviewTunnel.stored_credentials/1`
   # finds one) — this project's own preview tunnel above is exactly that
-  # case (real credentials, provisioned through `PreviewTunnel.ensure/1`),
-  # unlike the legacy `dev.metric-flow.app` tunnel below it, which is still
-  # a config-only bootstrap with no DB row and keeps running from here
-  # exactly as before. `true` means the harness is already running — or
-  # about to run — this project's own connector itself; starting a second
-  # one here would be the same stray-connector shape `CMS_MAIN_COPY` above
-  # already exists to prevent, from a new source. Set by
-  # `AppInstance.Runner.Local.launch/7`; unset (not going through the
+  # case (real credentials, provisioned through `PreviewTunnel.ensure/1`).
+  # `dev_children/1` now gates the legacy `dev.metric-flow.app` tunnel on
+  # this too: a real login email landed pointing at that legacy address
+  # instead of the harness's current preview url, because
+  # `ClientUtils.CloudflareTunnel` reconfigures `Endpoint`'s own `:url` to
+  # match whichever named tunnel starts last — and the legacy tunnel used to
+  # start unconditionally, after and over the real one, every time. `true`
+  # means the harness is already running — or about to run — this project's
+  # own connector itself; starting either tunnel of this app's own here
+  # would be the same stray-connector shape `CMS_MAIN_COPY` above already
+  # exists to prevent, from a new source. Set by
+  # `AppInstance.Runner.Local.launch/8`; unset (not going through the
   # harness at all) reads as `false`, the same default `main_copy?/0` uses.
   defp tunnel_held_by_harness?, do: System.get_env("CMS_TUNNEL_HELD_BY_HARNESS") == "true"
 end
