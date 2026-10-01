@@ -122,6 +122,20 @@ if System.get_env("PHX_SERVER") do
   config :metric_flow, MetricFlowWeb.Endpoint, server: true
 end
 
+# A working copy's harness tells the app it launches its own preview hostname
+# at boot (`PHX_HOST`), the same variable :prod already reads below. Without
+# this, `Endpoint.url()` only ever learns a real host in :prod, so a link this
+# app generates outside of a request's own Host header — a login email, for
+# instance — fell back to whatever was last hardcoded here instead of the
+# address a browser could actually reach. Port and scheme are forced to the
+# tunnel's own (443/https), not the local dev listener's — the address this
+# resolves to is only ever reached through Cloudflare's edge, never directly
+# against PORT. A no-op when PHX_HOST isn't set, which is every checkout the
+# harness isn't holding a tunnel for.
+if preview_host = System.get_env("PHX_HOST") do
+  config :metric_flow, MetricFlowWeb.Endpoint, url: [host: preview_host, port: 443, scheme: "https"]
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
