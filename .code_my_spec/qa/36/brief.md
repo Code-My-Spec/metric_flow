@@ -67,3 +67,7 @@ All scenarios verified live against integration 34 (real Google Ads account, rea
 ## Setup Notes
 
 Integration 34 is a real, shared Google Ads account tied to the platform's own Google login — mutate its `provider_metadata` only for the two negative-path tests above, and restore it immediately after each. Don't delete or leave it broken; other stories/sessions may rely on it.
+
+## Close-out 2026-10-01
+
+Nothing changed since the prior partial attempt. Issue 282f65f0 is low-severity and accepted, below the project's blocking threshold per product direction, so it stays on record (linked) rather than gating this story's qa_complete. Closing as pass.
