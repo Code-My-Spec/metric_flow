@@ -61,3 +61,12 @@ Used a fresh dashboard (id 9, "QA Story 20 Test Report", deleted again at the en
 - **160/933**: **fail**. No mechanism exists to insert a saved visualization from the library into a report -- confirmed live (the only "Library" text on the page is the unrelated nav sidebar link) and via the currently-failing spex. Filed as issue `c1d0854a` (high).
 
 Submitting as **partial** with issues `db11efd5` and `c1d0854a` linked (the qa-scope spex-mismatch issue `dc633430` is informational, not blocking).
+
+## Retest 2026-10-01
+
+Commit f543f02 fixes both prior issues' stated gaps (a spec-editor panel and a library-insert mechanism now exist), but live testing found the library-insert path has a real regression:
+
+- **159/932 (spec editor panel)**: pass. `[data-role='open-spec-panel']` opens a single shared `[data-role='spec-panel']` (index-based, one open at a time) with `[data-role='vega-spec-textarea']`. Live-confirmed the mechanism itself works correctly: editing the textarea to a real Vega-Lite spec and blurring (via Tab) updated that card's `data-spec` to the new spec exactly.
+- **160/933 (insert from library)**: **fail, new regression**. `insert_library_visualization` sets `vega_spec: viz.vega_spec` directly from the saved `Visualization` record without running it through `custom_spec/1` first (unlike `load_visualizations_from_dashboard/1`, which correctly does). Since most of this account's library visualizations were saved via the plain ad-hoc metric+chart-type flow (never customized), their own `vega_spec` column is just `%{"metric_name" => _, "chart_type" => _}` -- not a real frozen spec. Confirmed live, side-by-side in one report: inserting visualization id=38 ("sessions", plain-shape DB record) rendered the literal broken spec `{"chart_type":"area","metric_name":"sessions"}` as `data-spec` (not valid Vega-Lite JSON, renders nothing useful), while inserting id=26 ("QA29 LLM Multi-Metric Chart", a real frozen spec) rendered correctly in the same session. Filed as issue `62de766f` (high).
+
+Submitting as **partial** again, with issue `62de766f` linked. `db11efd5` is now resolved; `c1d0854a` is effectively superseded by this more precise regression (the feature exists but is broken for the common case).
