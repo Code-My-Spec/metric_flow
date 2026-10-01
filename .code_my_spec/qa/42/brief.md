@@ -51,3 +51,7 @@ All testing happens at `/app/integrations/sync-history` -- trigger via `[data-ro
 ## Setup Notes
 
 Integration 58 is a real, shared fixture -- its refresh token cannot be un-expired (Intuit's sandbox has no live refresh path for it), so criteria 1010/1012/1013/1014 rely on the historical data it already produced rather than a fresh live trigger. Don't delete this row; other stories may depend on its historical metrics.
+
+## Close-out 2026-10-01
+
+Nothing changed since the prior partial attempt. Issue 4222fa5c is low-severity and accepted, below the project's blocking threshold per product direction, so it stays on record (linked) rather than gating this story's qa_complete. Closing as pass.
