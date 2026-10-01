@@ -13,6 +13,7 @@ defmodule MetricFlow.Accounts do
   use Boundary, deps: [MetricFlow], exports: [Account, AccountMember]
 
   alias MetricFlow.Accounts.Account
+  alias MetricFlow.Accounts.AccountNotifier
   alias MetricFlow.Accounts.AccountRepository
   alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Users.Scope
@@ -26,7 +27,16 @@ defmodule MetricFlow.Accounts do
   defdelegate create_team_account(scope, attrs), to: AccountRepository
   defdelegate create_team_account(scope, attrs, type), to: AccountRepository
   defdelegate update_account(scope, account, attrs), to: AccountRepository
-  defdelegate delete_account(scope, account), to: AccountRepository
+  @doc """
+  Deletes an account and emails the owner a deletion confirmation on success.
+  """
+  @spec delete_account(Scope.t(), Account.t()) :: {:ok, Account.t()} | {:error, :unauthorized}
+  def delete_account(%Scope{} = scope, %Account{} = account) do
+    with {:ok, deleted} <- AccountRepository.delete_account(scope, account) do
+      _ = AccountNotifier.deliver_account_deletion_confirmation(scope.user.email, deleted.name)
+      {:ok, deleted}
+    end
+  end
   defdelegate list_account_members(scope, account_id), to: AccountRepository
   defdelegate get_user_role(scope, user_id, account_id), to: AccountRepository
   defdelegate update_user_role(scope, user_id, account_id, role), to: AccountRepository
