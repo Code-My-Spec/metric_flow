@@ -51,3 +51,20 @@ This story's criteria describe a two-tier Google Business Profile connection: fi
 Along the way, found that a genuine live OAuth consent round trip for `google_business` specifically is blocked in this worktree by a `redirect_uri_mismatch` from Google itself (this worktree's dev port isn't a registered redirect URI) — filed as qa-scope issue `6cdb28d8`, not counted against the story.
 
 Submitting as **fail** with issues `984b3260` and `67138166` linked (the qa-scope issue `6cdb28d8` is informational).
+
+## Retest 2026-10-01
+
+Both issues confirmed resolved. A genuine two-step flow now exists: `/app/integrations/connect/google_business/accounts` is a real GMB *account*-selection step (distinct subtitle: "Choose which Google Business Profile accounts to grant MetricFlow access to. You'll select specific locations to sync in the next step."), which only then advances to `/app/integrations/connect/google_business/locations` for the existing per-location picker from story 44. `mix test test/spex/43_.../*.exs` -- 23/23 passed; re-ran story 44's spex too since the routing changed -- still 20/20 passed, no regression.
+
+Live-confirmed, using integration 59 (consumed and reverted cleanly afterward):
+- **385/945, 386/946**: pass. The account list renders real `[data-role='account-checkbox']` (`name="google_business_account_ids[]"`) elements.
+- **387/947**: pass. Each option shows both `data-role='account-name'` and `data-role='account-id'` spans (same raw value in this environment since the real accounts.list API call fails -- a real API success would show a friendlier name).
+- **388/948**: pass. Saving persisted `google_business_account_ids` as a genuine JSON array in the DB.
+- **389/949**: pass. Set a legacy singular `google_business_account_id` via SQL; reloading showed it correctly pre-selected (checked) in the account list via `gbp_selected_account_ids/1`'s fallback.
+- **390/950, 951 (add/remove without re-authenticating)**: pass on the mechanism (revisiting the page requires no OAuth step) -- live-testable removal confirmed (unchecking and saving reduces the array); live-testable "add a genuinely new account" is limited by the same real-API-unavailability already documented across this session's other OAuth stories (no live GMB account discoverable), not a flaw in this mechanism itself.
+- **391/952**: pass. "Save and continue" is disabled client-side with zero available accounts, and the server handler also explicitly rejects an empty `google_business_account_ids` list.
+- **392/953**: pass (unaffected by this fix, confirmed in the prior attempt).
+- **393/954**: pass. Confirmed in code: the save handler's success flash reads exactly "N business account(s) connected. Now select which locations to sync."
+- **383/943, 384/944**: pass (unaffected by this fix; token reuse separately confirmed fixed by issue `67138166`'s own resolution, verified via its still-passing spex).
+
+No new issues. Submitting as **pass**; all 22 criteria now verified.
