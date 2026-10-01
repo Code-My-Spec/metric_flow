@@ -1,11 +1,11 @@
-defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpex do
+defmodule MetricFlowSpex.ConfirmationPromptWarnsTheActionIsIrreversibleSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can revoke their own access from client account settings", criterion: 60 do
-    scenario "a non-owner member revokes their own access from account settings" do
+  spex "Confirmation prompt warns the action is irreversible", criterion: 908 do
+    scenario "the leave-account confirmation prompt warns the action cannot be undone" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_member_with_access
 
@@ -24,26 +24,19 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
         {:ok, Map.put(context, :settings_view, settings_view)}
       end
 
-      then_ "a revoke-own-access option is present", context do
-        assert has_element?(context.settings_view, "[data-role='revoke-own-access']")
-        {:ok, context}
-      end
-
-      when_ "the member revokes their own access and confirms", context do
-        context.settings_view
-        |> element("[data-role='revoke-own-access']")
-        |> render_click()
-
+      when_ "the member is about to revoke their own access and the confirmation prompt appears",
+            context do
         html =
           context.settings_view
-          |> element("[data-role='confirm-leave']")
+          |> element("[data-role='revoke-own-access']")
           |> render_click()
 
         {:ok, Map.put(context, :result_html, html)}
       end
 
-      then_ "their access to the client account is revoked", context do
-        assert context.result_html =~ "Your access has been revoked"
+      then_ "it warns that the action cannot be undone before they can proceed", context do
+        assert context.result_html =~ "cannot be undone"
+        assert has_element?(context.settings_view, "[data-role='confirm-leave']")
         {:ok, context}
       end
     end

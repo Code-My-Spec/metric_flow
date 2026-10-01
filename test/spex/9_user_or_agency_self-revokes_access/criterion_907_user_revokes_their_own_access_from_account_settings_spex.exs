@@ -1,11 +1,11 @@
-defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpex do
+defmodule MetricFlowSpex.UserRevokesTheirOwnAccessFromAccountSettingsSpex do
   use MetricFlowSpex.Case
   import Phoenix.LiveViewTest
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can revoke their own access from client account settings", criterion: 60 do
-    scenario "a non-owner member revokes their own access from account settings" do
+  spex "User revokes their own access from account settings", criterion: 907 do
+    scenario "a non-owner member leaves the client account from account settings" do
       given_ :user_logged_in_as_owner
       given_ :owner_has_member_with_access
 
@@ -24,12 +24,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
         {:ok, Map.put(context, :settings_view, settings_view)}
       end
 
-      then_ "a revoke-own-access option is present", context do
-        assert has_element?(context.settings_view, "[data-role='revoke-own-access']")
-        {:ok, context}
-      end
-
-      when_ "the member revokes their own access and confirms", context do
+      when_ "the member chooses to revoke their own access and confirms", context do
         context.settings_view
         |> element("[data-role='revoke-own-access']")
         |> render_click()
@@ -42,7 +37,7 @@ defmodule MetricFlowSpex.UserCanRevokeTheirOwnAccessFromClientAccountSettingsSpe
         {:ok, Map.put(context, :result_html, html)}
       end
 
-      then_ "their access to the client account is revoked", context do
+      then_ "their access is revoked", context do
         assert context.result_html =~ "Your access has been revoked"
         {:ok, context}
       end
