@@ -24,7 +24,11 @@ defmodule MetricFlowTest.ReviewsFixtures do
 
     merged = Map.merge(defaults, Map.new(attrs))
 
-    {:ok, [review]} = Reviews.create_reviews(scope, [merged])
-    review
+    {:ok, _count} = Reviews.create_reviews(scope, [merged])
+
+    MetricFlow.Repo.get_by!(MetricFlow.Reviews.Review,
+      user_id: scope.user.id,
+      external_review_id: merged.external_review_id
+    )
   end
 end

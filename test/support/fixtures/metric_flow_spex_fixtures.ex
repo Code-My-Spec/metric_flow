@@ -178,6 +178,41 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  Inserts a review row for the user registered with `email`.
+
+  Reviews originate from a provider's sync run, not any UI flow -- there is
+  no "add a review" form. Creates a google_business integration for the
+  review to belong to unless the caller supplies `:integration_id`. Attrs
+  is passed through to MetricFlowTest.ReviewsFixtures.review_fixture/2
+  (star_rating, review_date, location_id, etc).
+  """
+  @spec create_review_for(String.t(), map()) :: MetricFlow.Reviews.Review.t()
+  def create_review_for(email, attrs \\ %{}) do
+    user = Users.get_user_by_email(email)
+    scope = Scope.for_user(user)
+
+    integration_id =
+      case Map.get(attrs, :integration_id) do
+        nil ->
+          case Repo.get_by(Integration, user_id: user.id, provider: :google_business) do
+            nil ->
+              create_integration_for(email, :google_business, provider_metadata: %{"email" => email}).id
+
+            existing ->
+              existing.id
+          end
+
+        id ->
+          id
+      end
+
+    MetricFlowTest.ReviewsFixtures.review_fixture(
+      scope,
+      Map.put(Map.new(attrs), :integration_id, integration_id)
+    )
+  end
+
+  @doc """
   Inserts a Visualization row directly, optionally bound to metric names via
   the join table.
 
