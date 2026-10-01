@@ -108,8 +108,10 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
         {:ok, Map.put(context, :transfer_result_html, html)}
       end
 
-      then_ "ownership is transferred successfully", context do
-        assert render(context.settings_view) =~ "Ownership transferred successfully"
+      then_ "the transfer is initiated pending the new owner's confirmation", context do
+        # Criteria 68/898 require the new owner to accept via email
+        # confirmation before anything actually transfers.
+        assert render(context.settings_view) =~ "pending confirmation"
         {:ok, context}
       end
     end
