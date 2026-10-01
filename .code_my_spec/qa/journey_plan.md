@@ -170,9 +170,3 @@ Correlation analysis requires overlapping date ranges between the goal metric an
 
 Journeys can be run independently. Journey 1 creates a fresh user and should not depend on existing state. Journeys 2-5 use `qa@example.com` and the existing data. Re-run seeds before Journey 2 if role state has drifted.
 
-
-## Corrections from journey execution (2026-10-01)
-
-- The settings route is `/app/users/settings`, not `/users/settings`.
-- The canned dashboards are named "Marketing Overview", "Platform Comparison", and "Revenue Analysis" — there is no dashboard literally named "All Metrics" in the list (the dashboard detail page's H1 does still read "All Metrics" for all three, a known low-severity cosmetic issue, separate from the list names).
-- Account names referenced in Journey 5 (e.g. "QA Agency 454") drift as the shared QA database accumulates test data from other sessions; treat them as illustrative, not fixed identifiers.
