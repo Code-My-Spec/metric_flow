@@ -1,0 +1,24 @@
+# Story 26 QA Result
+
+## Summary: partial
+
+Tested against this worktree's dev server (http://127.0.0.1:59302) after fixing a pending-migration 503 (issue 9fe7db34, accepted).
+
+Fixture: correlation_jobs.id=49 (16 results, see brief). Discovered during this pass that the critical, previously-filed issue 26388c55 ("Correlation feature ignores the account switcher -- uses an arbitrary 'first account membership' instead of the active account") is still unresolved (status: accepted). Confirmed live: with "Client Alpha" (account 14) selected as the active account via the switcher, /app/correlations showed "No Correlations Yet" even though job 49 was seeded on account 14 -- because `Correlations.Correlations_Repository.get_account_id/1` calls `Accounts.get_personal_account_id/1`, which runs `SELECT account_id FROM account_members WHERE user_id=? LIMIT 1` with no ORDER BY, returning an arbitrary account (resolved to account_id=17, "Client Account Manager", for qa@example.com on this DB) regardless of which account is actively switched to in the UI.
+
+To test story 26's own criteria despite this, I moved the job 49 fixture (and its correlation_results rows -- note correlation_results.account_id is a separate column from correlation_jobs.account_id, both must match for list_correlation_results/2 to return rows) to account_id=17, matching what the arbitrary resolution actually returns for qa@example.com on this DB. This is a workaround for the critical bug, not a fix. **The fixture now lives on account_id=17, not 14 as originally documented** -- future QA passes on this story/this worktree should check which account_id get_account_id(scope) actually resolves to for qa@example.com before assuming job 49 is reachable.
+
+### Criteria results (all tested against the workaround-relocated fixture)
+
+- **203/858 (mode persistence)**: PASS. Default mode confirmed "raw" in DB. Switching to Smart and reloading persisted (DB updated_at confirmed); switching back to Raw and reloading persisted too. (One earlier flaky read showed mode reverting after a script that threw a mid-script Lua error on an unrelated line -- re-tested cleanly twice with isolated scripts and persistence is correct.)
+- **198/852 (top 5 pos/neg)**: PASS. qa26_pos_1 through _5 shown descending (0.95/0.90/0.85/0.80/0.75), excluding _6/_7. Symmetric for negatives.
+- **199/853 (threshold enforcement)**: PASS. qa26_below_pos (0.25) and qa26_below_neg (-0.20) never appear in Smart mode's top lists; both appear in Raw mode's full table (confirmed 16/16 rows present, see 202/857).
+- **854 (fewer-than-5 case)**: PASS. Actually tested (not skipped) using the account's real pre-existing job 48 data (3 positives above threshold, 0 negatives) by temporarily relocating job 48 to account_id=17 and marking job 49 non-completed for the duration of this check (both reverted to original state -- job 48 back to account_id=14, job 49 back to status=completed, both still on account_id=17). Smart mode showed exactly 3 positive rows (ctr, impressions, conversions) with no padding, and "No negative correlations found." for the negative section.
+- **200/855 (explanations)**: PASS. Each row has correct strength/direction/lag wording, e.g. "qa26_pos_1_google_ads shows a strong positive correlation with your goal metric at a 3-day lag." qa26_pos_3_ga (lag=0) correctly reads "...with your goal metric with same-day impact."
+- **201/856 (AI highlighting)**: PARTIAL. The underlying data-ai-highlighted computation is exactly correct (true only for qa26_pos_1/2 and qa26_neg_1/2, the google_ads/facebook_ads rows; false for the rest) -- confirmed via browser_evaluate reading the attribute on all 10 rendered rows. But the attribute has no visible effect: every row's CSS class is identical regardless of the attribute's value, and no CSS/JS anywhere references data-ai-highlighted for styling. A user cannot see which correlations the AI considers most meaningful, which is the actual intent of criterion 856 ("it highlights which of them are most meaningful"). Filed as issue 25596ea3 (medium) since the underlying logic is right and this is a presentation-layer gap. The spex passes because it only asserts the DOM attribute exists, not any visual treatment.
+- **202/857 (full ranked list accessible)**: PASS. Raw mode's table shows all 16 rows (confirmed via tbody row count and content), including both below-threshold rows and the excluded 6th/7th-ranked rows on each side.
+
+## Issues
+
+- 26388c55 (critical, pre-existing, status=accepted/unresolved): correlation feature ignores account switcher. Blocks real per-account use of this entire feature; confirmed still reproducible this pass. Linked here as the reason overall result is "partial" rather than "pass" despite all of story 26's own criteria passing on the workaround-relocated fixture.
+- 25596ea3 (medium, new, this pass): AI highlighting has no visible effect (see above).
