@@ -23,7 +23,8 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   and fetches locations for each account, handling pagination automatically.
 
   Returns `{:ok, locations}` where each location is a map with `:id`, `:name`,
-  `:account`, `:store_code`, `:address`, `:website`, and `:category` keys.
+  `:account`, `:store_code`, `:address`, `:website`, `:category`, and `:hours`
+  keys.
   """
   @spec list_locations(Integration.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
@@ -158,7 +159,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
 
   defp build_url(account_id, nil) do
     # account_id is like "accounts/123"
-    "#{@api_base}/#{account_id}/locations?readMask=name,title,storeCode,storefrontAddress,websiteUri"
+    "#{@api_base}/#{account_id}/locations?readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,primaryCategory"
   end
 
   defp build_url(account_id, page_token) do
@@ -223,7 +224,8 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         store_code: Map.get(loc, "storeCode"),
         address: format_address(Map.get(loc, "storefrontAddress")),
         website: Map.get(loc, "websiteUri"),
-        category: get_in(loc, ["primaryCategory", "displayName"])
+        category: get_in(loc, ["primaryCategory", "displayName"]),
+        hours: get_in(loc, ["regularHours", "periods"])
       }
     end)
   end
