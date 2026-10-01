@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Criterion846CorrelationsRecalculateDailyAfterSyncComple
         |> element("select[name='goal_metric_name']")
         |> render_change(%{"goal_metric_name" => "revenue"})
 
-        goals_view |> form("form") |> render_submit()
+        goals_view |> form("#goal-metric-form") |> render_submit()
         assert_redirect(goals_view, "/app/correlations")
 
         MetricFlowSpex.Fixtures.broadcast_sync_completed(context.owner_email, :google_ads)
