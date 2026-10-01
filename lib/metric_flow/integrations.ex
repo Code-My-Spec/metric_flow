@@ -294,6 +294,7 @@ defmodule MetricFlow.Integrations do
     case fetch_provider(target_provider) do
       {:ok, mod} ->
         mod.config()
+        |> Keyword.get(:authorization_params, [])
         |> Keyword.get(:scope, "")
         |> parse_scopes()
         |> Enum.filter(&String.starts_with?(&1, "https://"))
