@@ -803,8 +803,6 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     |> assign(:account_has_originator_grants, account_has_originator_grants?(scope, account))
   end
 
-  defp account_has_originator_grants?(_scope, %{type: type}) when type != :agency, do: false
-
   defp account_has_originator_grants?(scope, account) do
     case Agencies.list_agency_client_accounts(scope, account.id) do
       grants when is_list(grants) -> Enum.any?(grants, &(&1.origination_status == :originator))

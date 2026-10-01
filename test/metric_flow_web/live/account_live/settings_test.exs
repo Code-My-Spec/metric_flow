@@ -355,6 +355,39 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
     end
   end
 
+  describe "shows transfer-originator checkbox for a client-typed account with a real origination grant" do
+    test "shows transfer-originator checkbox for a client-typed account with a real origination grant", %{
+      conn: conn
+    } do
+      owner = user_fixture()
+      # Genuinely a "client"-typed account, yet it originates another client
+      # account via a real agency_client_access_grants row -- origination is
+      # established by a grant, not by the account's own type column.
+      account = team_account_fixture(owner)
+      other_client = team_account_fixture(user_fixture())
+      scope = MetricFlow.Users.Scope.for_user(owner)
+
+      {:ok, _grant} =
+        MetricFlow.Agencies.grant_client_account_access(
+          scope,
+          account.id,
+          other_client.id,
+          :read_only,
+          true
+        )
+
+      conn = log_in_user(conn, owner)
+
+      # granting access propagates account's own team (just owner) onto
+      # other_client, so owner now belongs to two accounts -- target the
+      # originating account explicitly rather than relying on whichever one
+      # resolves as "primary" by default.
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/settings?account_id=#{account.id}")
+
+      assert has_element?(lv, "[data-role='transfer-originator-checkbox']")
+    end
+  end
+
   describe "confirms and processes leave account action" do
     test "confirms and processes leave account action", %{conn: conn} do
       owner = user_fixture()

@@ -354,24 +354,37 @@ defmodule MetricFlow.Accounts do
 
   defp notify_transfer_completed(%AccountOwnershipTransfer{} = transfer) do
     account = Repo.get!(Account, transfer.account_id)
+    primary_recipients = [transfer.initiated_by_email, transfer.target_email]
 
-    _ =
-      AccountOwnershipTransferNotifier.deliver_transfer_completed(
-        transfer.initiated_by_email,
-        account.name,
-        transfer.initiated_by_email,
-        transfer.target_email
-      )
+    # The previous and new owner are emailed first, in that order, matching
+    # established behavior (and the spex asserting on it); any other account
+    # member is notified afterward to satisfy criterion 74/905's "all users".
+    other_recipients =
+      transfer.account_id
+      |> list_member_emails()
+      |> Enum.reject(&(&1 in primary_recipients))
 
-    _ =
-      AccountOwnershipTransferNotifier.deliver_transfer_completed(
-        transfer.target_email,
-        account.name,
-        transfer.initiated_by_email,
-        transfer.target_email
-      )
+    (primary_recipients ++ other_recipients)
+    |> Enum.each(fn email ->
+      _ =
+        AccountOwnershipTransferNotifier.deliver_transfer_completed(
+          email,
+          account.name,
+          transfer.initiated_by_email,
+          transfer.target_email
+        )
+    end)
 
     :ok
+  end
+
+  defp list_member_emails(account_id) do
+    from(m in AccountMember,
+      join: u in assoc(m, :user),
+      where: m.account_id == ^account_id,
+      select: u.email
+    )
+    |> Repo.all()
   end
 
   defp build_transfer_url(encoded_token) do
