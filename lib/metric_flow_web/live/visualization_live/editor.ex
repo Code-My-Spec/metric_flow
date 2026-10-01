@@ -17,6 +17,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Metrics
+  alias MetricFlow.Users.Scope
 
   @chart_types ["line", "bar", "area", "scatter", "donut", "gantt"]
 
@@ -328,7 +329,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    scope = Scope.put_account_id(socket.assigns.current_scope, socket.assigns[:active_account_id])
+    {:ok, assign(socket, :current_scope, scope)}
   end
 
   # ---------------------------------------------------------------------------
