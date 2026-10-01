@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Ai
+  alias MetricFlow.Correlations
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Metrics
@@ -109,6 +110,13 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
                 <li :for={metric <- @available_metrics}>
                   <button type="button" phx-click="select_metric" phx-value-metric={metric}>
                     {metric}
+                    <span
+                      :if={metric == @goal_metric_name}
+                      data-role="goal-metric-badge"
+                      class="badge badge-accent badge-xs ml-1"
+                    >
+                      Goal
+                    </span>
                   </button>
                 </li>
               </ul>
@@ -416,6 +424,7 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:name_error, nil)
     |> assign(:spec_error, nil)
     |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
+    |> assign(:goal_metric_name, Correlations.get_latest_correlation_summary(scope).goal_metric_name)
     |> assign(:chart_types, @chart_types)
     |> assign(:left_panel_open, false)
     |> assign(:right_panel_open, true)

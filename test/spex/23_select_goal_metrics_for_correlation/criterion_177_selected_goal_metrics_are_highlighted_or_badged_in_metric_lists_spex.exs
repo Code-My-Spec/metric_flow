@@ -16,13 +16,12 @@ defmodule MetricFlowSpex.Criterion177SelectedGoalMetricsAreHighlightedOrBadgedIn
       end
 
       when_ "a user views metric lists elsewhere in the application", context do
-        {:ok, view, html} = live(context.owner_conn, "/app/dashboards")
+        {:ok, view, html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.merge(context, %{view: view, html: html})}
       end
 
       then_ "that metric is highlighted or badged to indicate it is a goal", context do
-        assert has_element?(context.view, "[data-role='goal-metric-badge']") or
-                 context.html =~ "Goal",
+        assert has_element?(context.view, "[data-role='goal-metric-badge']"),
                "Expected the goal metric to be highlighted or badged in the metric list"
 
         {:ok, context}

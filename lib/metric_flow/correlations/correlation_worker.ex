@@ -33,7 +33,8 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   def perform(%Oban.Job{args: args}) do
     job_id = Map.get(args, "job_id")
     user_id = Map.get(args, "user_id")
-    scope = build_scope(user_id)
+    account_id = Map.get(args, "account_id")
+    scope = build_scope(user_id, account_id)
 
     Logger.info("CorrelationWorker starting job_id=#{job_id} user_id=#{user_id}")
 
@@ -58,8 +59,10 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   # Private — orchestration
   # ---------------------------------------------------------------------------
 
-  defp build_scope(user_id) do
-    Scope.for_user(%User{id: user_id})
+  defp build_scope(user_id, account_id) do
+    %User{id: user_id}
+    |> Scope.for_user()
+    |> Scope.put_account_id(account_id)
   end
 
   defp mark_running(scope, job) do
@@ -217,7 +220,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
 
         case CorrelationsRepository.create_correlation_job(queued_scope, job_attrs) do
           {:ok, new_job} ->
-            %{job_id: new_job.id, user_id: scope.user.id}
+            %{job_id: new_job.id, user_id: scope.user.id, account_id: account_id}
             |> __MODULE__.new()
             |> Oban.insert()
 

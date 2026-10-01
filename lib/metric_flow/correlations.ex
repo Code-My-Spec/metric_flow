@@ -199,7 +199,7 @@ defmodule MetricFlow.Correlations do
 
     case CorrelationsRepository.create_correlation_job(scope, job_attrs) do
       {:ok, job} ->
-        %{job_id: job.id, user_id: user.id}
+        %{job_id: job.id, user_id: user.id, account_id: job.account_id}
         |> CorrelationWorker.new()
         |> Oban.insert()
 
