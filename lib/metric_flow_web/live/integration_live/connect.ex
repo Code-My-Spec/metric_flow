@@ -573,8 +573,30 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
 
   @impl true
+  @google_family_providers [:google_ads, :google_analytics, :google_search_console, :google_business]
+
   def handle_event("connect", %{"provider" => provider_str}, socket) do
-    {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/#{provider_str}")}
+    provider_atom = String.to_existing_atom(provider_str)
+    scope = socket.assigns.current_scope
+
+    reuse_result =
+      if provider_atom in @google_family_providers,
+        do: Integrations.reuse_google_token(scope, provider_atom),
+        else: {:error, :not_applicable}
+
+    case reuse_result do
+      {:ok, _integration} ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :info,
+           "Connected using your existing Google sign-in — no separate authorization needed."
+         )
+         |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+      {:error, _reason} ->
+        {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/#{provider_str}")}
+    end
   end
 
   def handle_event("save_account_selection", params, socket) do
@@ -793,6 +815,25 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       get_in(provider_metadata || %{}, [meta_key])
   end
 
+  # Before location-level multi-select existed, a connection stored only the
+  # single legacy "google_business_account_id" it was authorized against --
+  # with no selection concept, every location under that one account was
+  # implicitly in scope. Falling back to it here surfaces that account as
+  # pre-selected on first revisit, carrying the old behavior forward instead
+  # of silently dropping to "nothing selected".
+  defp fetch_raw_selection(:google_business, provider_metadata, meta_key) do
+    case get_in(provider_metadata || %{}, [meta_key]) do
+      nil ->
+        case get_in(provider_metadata || %{}, ["google_business_account_id"]) do
+          nil -> nil
+          legacy_id -> [legacy_id]
+        end
+
+      included ->
+        included
+    end
+  end
+
   defp fetch_raw_selection(_provider_atom, provider_metadata, meta_key) do
     get_in(provider_metadata || %{}, [meta_key])
   end
@@ -814,10 +855,14 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp multi_select_param_name(_provider_str), do: "location_ids"
 
   # QuickBooks income accounts can only be verified via a live API fetch
-  # (requires a realm_id), which often isn't available in this flow -- a
-  # previously-saved selection must still render as a checkbox even when the
-  # current fetch came back empty, so it can be unchecked/changed.
-  defp display_accounts(:quickbooks, accounts, selected_ids) do
+  # (requires a realm_id), and a legacy GBP connection's implied account may
+  # not resolve from a live fetch either (e.g. the Account Management API
+  # call that would discover it isn't stubbed/available here) -- in both
+  # cases a previously-saved selection must still render as a checkbox so it
+  # can be seen and changed, not silently disappear because the live fetch
+  # didn't happen to include it.
+  defp display_accounts(provider_atom, accounts, selected_ids)
+       when provider_atom in [:quickbooks, :google_business] do
     existing_ids = MapSet.new(accounts, & &1.id)
 
     synthetic =

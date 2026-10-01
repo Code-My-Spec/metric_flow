@@ -235,6 +235,52 @@ defmodule MetricFlow.Integrations do
     end
   end
 
+  @google_family_providers [:google_ads, :google_analytics, :google_search_console, :google_business]
+
+  @doc """
+  Connects `target_provider` by reusing an existing Google-family
+  integration's token, instead of a fresh OAuth authorization.
+
+  `google_ads`, `google_analytics`, `google_search_console` and
+  `google_business` are all authorized under the same Google OAuth app and
+  consent screen, so a user who already granted access via one of them does
+  not need to grant it again for another -- Google issues one token per
+  app-user pair, not one per MetricFlow provider.
+
+  Returns `{:error, :no_existing_google_token}` when no other usable
+  Google-family integration exists, so the caller can fall back to a fresh
+  OAuth authorization.
+  """
+  @spec reuse_google_token(Scope.t(), atom()) ::
+          {:ok, Integration.t()} | {:error, :no_existing_google_token | Ecto.Changeset.t()}
+  def reuse_google_token(%Scope{} = scope, target_provider)
+      when target_provider in @google_family_providers do
+    case find_reusable_google_integration(scope, target_provider) do
+      nil ->
+        {:error, :no_existing_google_token}
+
+      source ->
+        attrs = %{
+          access_token: source.access_token,
+          refresh_token: source.refresh_token,
+          expires_at: source.expires_at,
+          granted_scopes: source.granted_scopes
+        }
+
+        IntegrationRepository.upsert_integration(scope, target_provider, attrs)
+    end
+  end
+
+  defp find_reusable_google_integration(scope, target_provider) do
+    scope
+    |> list_integrations()
+    |> Enum.find(fn integration ->
+      integration.provider in @google_family_providers and
+        integration.provider != target_provider and
+        (not Integration.expired?(integration) or Integration.has_refresh_token?(integration))
+    end)
+  end
+
   @doc """
   Attempts to refresh the OAuth access token for an integration using the
   stored refresh token.
