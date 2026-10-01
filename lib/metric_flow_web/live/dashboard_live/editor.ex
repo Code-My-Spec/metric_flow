@@ -225,7 +225,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       </div>
 
       <%!-- Visualization canvas --%>
-      <div data-role="visualization-canvas" class="space-y-4 mb-6">
+      <div
+        id="visualization-canvas"
+        data-role="visualization-canvas"
+        phx-hook="SortableList"
+        class="space-y-4 mb-6"
+      >
         <div :if={@visualizations == []} data-role="empty-canvas" class="mf-card p-8 text-center">
           <p class="text-base-content/60">Add a visualization to get started</p>
         </div>
@@ -233,10 +238,14 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         <div
           :for={{viz, idx} <- Enum.with_index(@visualizations)}
           data-role="visualization-card"
+          draggable="true"
           class="mf-card p-4"
         >
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
+              <span data-role="drag-handle" class="cursor-grab text-base-content/40" aria-label="Drag to reorder">
+                ⠿
+              </span>
               <span class="font-semibold">{viz.metric_name}</span>
               <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
             </div>
@@ -479,6 +488,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   def handle_event("move_visualization_down", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
     visualizations = swap_at(socket.assigns.visualizations, index, index + 1)
+    {:noreply, assign_visualizations(socket, visualizations)}
+  end
+
+  def handle_event("reorder_visualizations", %{"from" => from_str, "to" => to_str}, socket) do
+    from_index = String.to_integer(to_string(from_str))
+    to_index = String.to_integer(to_string(to_str))
+    visualizations = move_at(socket.assigns.visualizations, from_index, to_index)
     {:noreply, assign_visualizations(socket, visualizations)}
   end
 
@@ -735,4 +751,16 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   end
 
   defp swap_at(list, _i, _j), do: list
+
+  defp move_at(list, from, to)
+       when from >= 0 and to >= 0 and from < length(list) and to < length(list) and from != to do
+    elem = Enum.at(list, from)
+
+    list
+    |> List.delete_at(from)
+    |> List.insert_at(to, elem)
+    |> renumber_positions()
+  end
+
+  defp move_at(list, _from, _to), do: list
 end
