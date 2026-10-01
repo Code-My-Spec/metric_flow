@@ -17,6 +17,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
 
   alias MetricFlow.Correlations
   alias MetricFlow.Correlations.CorrelationResult
+  alias MetricFlow.Users
+
+  @smart_mode_threshold 0.3
+  @actionable_providers [:google_ads, :facebook_ads]
 
   @provider_display_names %{
     google_analytics: "Google Analytics",
@@ -355,11 +359,13 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               :for={result <- top_positive_correlations(@summary.results)}
               data-role="correlation-row"
               data-metric={result.metric_name}
+              data-ai-highlighted={to_string(ai_highlighted?(result))}
               class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
             >
               <div>
                 <span class="font-medium">{result.metric_name}</span>
                 <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
               </div>
               <div class="flex items-center gap-3">
                 <span class="mf-metric text-sm text-success">{format_coefficient(result.coefficient)}</span>
@@ -380,11 +386,13 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               :for={result <- top_negative_correlations(@summary.results)}
               data-role="correlation-row"
               data-metric={result.metric_name}
+              data-ai-highlighted={to_string(ai_highlighted?(result))}
               class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
             >
               <div>
                 <span class="font-medium">{result.metric_name}</span>
                 <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
               </div>
               <div class="flex items-center gap-3">
                 <span class="mf-metric text-sm text-error">{format_coefficient(result.coefficient)}</span>
@@ -495,7 +503,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
     socket =
       socket
       |> assign(:summary, summary)
-      |> assign(:mode, :raw)
+      |> assign(:mode, String.to_existing_atom(scope.user.correlation_view_mode || "raw"))
       |> assign(:time_window, :days_90)
       |> assign(:sort_by, :coefficient)
       |> assign(:sort_dir, :desc)
@@ -516,6 +524,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   @impl true
   def handle_event("set_mode", %{"mode" => mode_string}, socket) do
     mode = String.to_existing_atom(mode_string)
+    Users.update_correlation_view_mode(socket.assigns.current_scope.user, mode_string)
     {:noreply, assign(socket, :mode, mode)}
   end
 
@@ -723,17 +732,34 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
 
   defp top_positive_correlations(results) do
     results
-    |> Enum.filter(fn r -> r.coefficient > 0 end)
+    |> Enum.filter(fn r -> r.coefficient > @smart_mode_threshold end)
     |> Enum.sort_by(fn r -> r.coefficient end, :desc)
     |> Enum.take(5)
   end
 
   defp top_negative_correlations(results) do
     results
-    |> Enum.filter(fn r -> r.coefficient < 0 end)
+    |> Enum.filter(fn r -> r.coefficient < -@smart_mode_threshold end)
     |> Enum.sort_by(fn r -> r.coefficient end, :asc)
     |> Enum.take(5)
   end
+
+  # An AI-highlighted correlation is one on a platform the user can directly
+  # act on (ad spend is a lever they control), as distinct from a platform
+  # that only reports outcomes -- so this is a business-context judgement,
+  # not simply the top raw coefficient.
+  defp ai_highlighted?(result), do: result.provider in @actionable_providers
+
+  defp correlation_explanation(result) do
+    strength = result |> CorrelationResult.strength_label() |> String.downcase()
+    direction = if result.coefficient > 0, do: "positive", else: "negative"
+
+    "#{result.metric_name} shows a #{strength} #{direction} correlation with your goal metric " <>
+      lag_phrase(result.optimal_lag) <> "."
+  end
+
+  defp lag_phrase(0), do: "with same-day impact"
+  defp lag_phrase(lag), do: "at a #{lag}-day lag"
 
   defp coefficient_color_class(coefficient) when coefficient > 0, do: "text-success"
   defp coefficient_color_class(coefficient) when coefficient < 0, do: "text-error"

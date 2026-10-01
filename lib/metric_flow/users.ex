@@ -29,6 +29,15 @@ defmodule MetricFlow.Users do
   end
 
   @doc """
+  Persists the user's Raw/Smart correlations view preference ("raw" or "smart").
+  """
+  def update_correlation_view_mode(%User{} = user, mode) when mode in ["raw", "smart"] do
+    user
+    |> User.correlation_view_mode_changeset(%{correlation_view_mode: mode})
+    |> Repo.update()
+  end
+
+  @doc """
   Gets a user by email and password.
 
   ## Examples

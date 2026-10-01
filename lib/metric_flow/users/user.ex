@@ -10,8 +10,18 @@ defmodule MetricFlow.Users.User do
     field :authenticated_at, :utc_datetime, virtual: true
     field :account_name, :string
     field :account_type, :string
+    field :correlation_view_mode, :string, default: "raw"
 
     timestamps(type: :utc_datetime)
+  end
+
+  @doc """
+  A user changeset for persisting the correlations page's Raw/Smart mode preference.
+  """
+  def correlation_view_mode_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:correlation_view_mode])
+    |> validate_inclusion(:correlation_view_mode, ["raw", "smart"])
   end
 
   @doc """
