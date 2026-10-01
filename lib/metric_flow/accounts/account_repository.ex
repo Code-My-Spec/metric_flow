@@ -14,6 +14,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
   alias Ecto.Multi
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
+  alias MetricFlow.Accounts.AccountNotifier
   alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Dashboards
   alias MetricFlow.Integrations
@@ -293,10 +294,39 @@ defmodule MetricFlow.Accounts.AccountRepository do
          %AccountMember{} = member <- fetch_member!(user.id, account_id),
          {:ok, deleted} <- Repo.delete(member) do
       broadcast("account_members:user:#{user.id}", {:deleted, deleted})
+      notify_self_revoke(account_id, user)
       {:ok, deleted}
     else
       false -> {:error, :unauthorized}
     end
+  end
+
+  defp notify_self_revoke(account_id, leaving_user) do
+    case fetch_owner_email(account_id) do
+      nil ->
+        :ok
+
+      owner_email ->
+        account = Repo.get!(Account, account_id)
+
+        _ =
+          AccountNotifier.deliver_self_revoke_notification(
+            owner_email,
+            account.name,
+            leaving_user.email
+          )
+
+        :ok
+    end
+  end
+
+  defp fetch_owner_email(account_id) do
+    from(m in AccountMember,
+      join: u in assoc(m, :user),
+      where: m.account_id == ^account_id and m.role == :owner,
+      select: u.email
+    )
+    |> Repo.one()
   end
 
   @doc """
