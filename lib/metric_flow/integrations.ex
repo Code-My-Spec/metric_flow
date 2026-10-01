@@ -272,13 +272,35 @@ defmodule MetricFlow.Integrations do
   end
 
   defp find_reusable_google_integration(scope, target_provider) do
+    required_scopes = required_api_scopes(target_provider)
+
     scope
     |> list_integrations()
     |> Enum.find(fn integration ->
       integration.provider in @google_family_providers and
         integration.provider != target_provider and
-        (not Integration.expired?(integration) or Integration.has_refresh_token?(integration))
+        (not Integration.expired?(integration) or Integration.has_refresh_token?(integration)) and
+        required_scopes != [] and
+        Enum.all?(required_scopes, &(&1 in (integration.granted_scopes || [])))
     end)
+  end
+
+  # Each Google-family provider is authorized under its own distinct API
+  # scope (adwords, analytics.readonly, webmasters.readonly, business.manage)
+  # -- Google only grants API access to scopes actually consented to, so a
+  # token is only safely reusable for another provider when it already
+  # carries that provider's required scope.
+  defp required_api_scopes(target_provider) do
+    case fetch_provider(target_provider) do
+      {:ok, mod} ->
+        mod.config()
+        |> Keyword.get(:scope, "")
+        |> parse_scopes()
+        |> Enum.filter(&String.starts_with?(&1, "https://"))
+
+      {:error, _} ->
+        []
+    end
   end
 
   @doc """
