@@ -65,3 +65,9 @@ Findings are filed via `create_issue` as discovered; final result via `submit_qa
 ## Setup Notes
 
 App was returning `Phoenix.Ecto.PendingMigrationError` on every route at session start -- migration `20260930130000_add_favorite_and_date_range_to_visualizations` (this story's own feature) had never been run against this worktree's DB. Fixed by running `DATABASE_NAME=metric_flow_dev_wc_bd0baac8 mix ecto.migrate`. Filed as issue `76326e06` (qa scope) since the same class of blocker (wrong/stale worktree DB) has hit multiple stories this session.
+
+## Retest 2026-10-01
+
+Both issues confirmed resolved. `mix test test/spex/22_.../*.exs` now passes 15/15. The search input is now wrapped in `<form id="report-search-form" phx-change="search">`, matching the idiomatic pattern used elsewhere in the codebase. Live-confirmed: typing "QA" into `[data-role='report-search-input']` correctly filtered 38 report cards down to 10, and typing a nonexistent name correctly dropped the count to 0 with the "no reports" empty-result text shown.
+
+170/817 and 818 now: **pass**. All other criteria were already verified passing in the prior attempt and are unaffected by this fix. Submitting as pass.
