@@ -14,6 +14,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Ai
+  alias MetricFlow.Users.Scope
 
   @context_labels %{
     general: "General",
@@ -350,11 +351,12 @@ defmodule MetricFlowWeb.AiLive.Chat do
   end
 
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope = Scope.put_account_id(socket.assigns.current_scope, socket.assigns[:active_account_id])
     sessions = Ai.list_chat_sessions(scope)
 
     socket =
       socket
+      |> assign(:current_scope, scope)
       |> assign(:sessions, sessions)
       |> assign(:active_session, nil)
       |> assign(:messages, [])
@@ -405,7 +407,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
     id = String.to_integer(id_string)
 
     with {:error, :not_found} <- Ai.get_chat_session(scope, id),
-         {:error, :not_found} <- Ai.get_shared_chat_session(id) do
+         {:error, :not_found} <- Ai.get_shared_chat_session(scope, id) do
       socket
       |> put_flash(:error, "Chat session not found.")
       |> push_patch(to: ~p"/app/chat")

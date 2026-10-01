@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
       given_ :user_logged_in_as_owner
       given_ :owner_has_active_subscription
       given_ :owner_has_metrics
-      given_ :second_user_registered
+      given_ :owner_has_member_with_access
 
       given_ "a user has received a useful insight from AI chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -59,8 +59,8 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
         login_form =
           form(second_login_view, "#login_form_password",
             user: %{
-              email: context.second_user_email,
-              password: context.second_user_password,
+              email: context.member_email,
+              password: context.member_password,
               remember_me: true
             }
           )

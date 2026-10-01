@@ -11,7 +11,7 @@ defmodule MetricFlow.Ai do
   """
 
   use Boundary,
-    deps: [MetricFlow, MetricFlow.Metrics, MetricFlow.Correlations],
+    deps: [MetricFlow, MetricFlow.Metrics, MetricFlow.Correlations, MetricFlow.Dashboards],
     exports: [
       Insight,
       SuggestionFeedback,
@@ -32,6 +32,7 @@ defmodule MetricFlow.Ai do
   alias MetricFlow.Ai.ReportGenerator
   alias MetricFlow.Ai.VizChat
   alias MetricFlow.Correlations
+  alias MetricFlow.Dashboards
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
 
@@ -46,7 +47,7 @@ defmodule MetricFlow.Ai do
   defdelegate delete_all_insights(scope), to: AiRepository
   defdelegate list_chat_sessions(scope), to: AiRepository
   defdelegate get_chat_session(scope, id), to: AiRepository
-  defdelegate get_shared_chat_session(id), to: AiRepository
+  defdelegate get_shared_chat_session(scope, id), to: AiRepository
   defdelegate get_chat_session_by_context(scope, context_type, context_id), to: AiRepository
   defdelegate update_chat_session(scope, session, attrs), to: AiRepository
   defdelegate create_chat_message(scope, attrs), to: AiRepository
@@ -275,8 +276,8 @@ defmodule MetricFlow.Ai do
   end
 
   defp stream_assistant_response(scope, session, caller, opts) do
-    system_prompt = LlmClient.base_system_prompt()
     {:ok, loaded_session} = AiRepository.get_chat_session(scope, session.id)
+    system_prompt = LlmClient.base_system_prompt() <> "\n\n" <> build_data_context(scope, loaded_session)
 
     messages =
       Enum.map(loaded_session.chat_messages, fn msg ->
@@ -311,4 +312,82 @@ defmodule MetricFlow.Ai do
   defp default_title(%{context_type: type}) when is_atom(type), do: "#{type} chat"
   defp default_title(%{"context_type" => type}), do: "#{type} chat"
   defp default_title(_), do: "Chat"
+
+  # ---------------------------------------------------------------------------
+  # Private: chat data context
+  # ---------------------------------------------------------------------------
+
+  # Gives the assistant real access to the account's metrics and correlation
+  # data (criteria 214/882), plus a summary of whatever the session's own
+  # context_type/context_id points at (criteria 212/879), instead of just a
+  # generic system prompt with no account-specific content.
+  defp build_data_context(scope, session) do
+    [
+      metrics_summary(Metrics.list_metric_names(scope)),
+      correlations_summary(Correlations.list_correlation_results(scope, limit: 10)),
+      current_view_summary(scope, session)
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+  end
+
+  defp metrics_summary([]), do: "The account has no metrics connected yet."
+
+  defp metrics_summary(names) do
+    "Available metrics across all connected platforms: " <> Enum.join(names, ", ")
+  end
+
+  defp correlations_summary([]), do: nil
+
+  defp correlations_summary(results) do
+    lines =
+      Enum.map(results, fn r ->
+        "- #{r.metric_name} vs #{r.goal_metric_name}: coefficient #{r.coefficient}, lag #{r.optimal_lag}"
+      end)
+
+    "Known correlation results:\n" <> Enum.join(lines, "\n")
+  end
+
+  defp current_view_summary(_scope, %{context_type: :general}), do: nil
+  defp current_view_summary(_scope, %{context_id: nil}), do: nil
+
+  defp current_view_summary(scope, %{context_type: :visualization, context_id: id}) do
+    case Dashboards.get_visualization(scope, id) do
+      {:ok, viz} ->
+        names = Dashboards.get_visualization_metric_names(viz)
+
+        "The user is currently viewing the visualization \"#{viz.name || "Untitled"}\", " <>
+          "which charts: #{Enum.join(names, ", ")}."
+
+      {:error, :not_found} ->
+        nil
+    end
+  end
+
+  defp current_view_summary(scope, %{context_type: :dashboard, context_id: id}) do
+    case Dashboards.get_dashboard(scope, id) do
+      {:ok, dashboard} -> "The user is currently viewing the dashboard \"#{dashboard.name}\"."
+      {:error, :not_found} -> nil
+    end
+  end
+
+  defp current_view_summary(scope, %{context_type: :metric, context_id: id}) do
+    case Metrics.get_metric(scope, id) do
+      {:ok, metric} -> "The user is currently focused on the metric \"#{metric.metric_name}\"."
+      {:error, :not_found} -> nil
+    end
+  end
+
+  defp current_view_summary(scope, %{context_type: :correlation, context_id: id}) do
+    case Correlations.get_correlation_result(scope, id) do
+      {:ok, result} ->
+        "The user is currently viewing a correlation between #{result.metric_name} and " <>
+          "#{result.goal_metric_name} (coefficient #{result.coefficient}, lag #{result.optimal_lag})."
+
+      {:error, :not_found} ->
+        nil
+    end
+  end
+
+  defp current_view_summary(_scope, _session), do: nil
 end

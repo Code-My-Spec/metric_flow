@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
       has_active_subscription?(account_id) ->
         {:cont, socket}
 
-      viewing_shared_chat_session?(params) ->
+      viewing_shared_chat_session?(scope, params) ->
         {:cont, socket}
 
       true ->
@@ -77,14 +77,14 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
     end
   end
 
-  defp viewing_shared_chat_session?(%{"id" => id_string}) do
+  defp viewing_shared_chat_session?(scope, %{"id" => id_string}) do
     case Integer.parse(id_string) do
-      {id, ""} -> match?({:ok, _}, Ai.get_shared_chat_session(id))
+      {id, ""} -> match?({:ok, _}, Ai.get_shared_chat_session(scope, id))
       _ -> false
     end
   end
 
-  defp viewing_shared_chat_session?(_params), do: false
+  defp viewing_shared_chat_session?(_scope, _params), do: false
 
   defp paywall_info do
     case BillingRepository.list_plans(nil) do

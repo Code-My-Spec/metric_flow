@@ -147,14 +147,23 @@ defmodule MetricFlow.Ai.AiRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Lists all chat sessions for the user from Scope, ordered by most recently updated.
+  Lists all chat sessions for the user from Scope, scoped to the active
+  account, ordered by most recently updated.
+
+  Returns an empty list when the user has no resolvable account.
   """
   @spec list_chat_sessions(Scope.t()) :: list(ChatSession.t())
-  def list_chat_sessions(%Scope{user: user}) do
-    ChatSession
-    |> where(user_id: ^user.id)
-    |> order_by([s], desc: s.updated_at)
-    |> Repo.all()
+  def list_chat_sessions(%Scope{user: user} = scope) do
+    case get_account_id(scope) do
+      nil ->
+        []
+
+      account_id ->
+        ChatSession
+        |> where(user_id: ^user.id, account_id: ^account_id)
+        |> order_by([s], desc: s.updated_at)
+        |> Repo.all()
+    end
   end
 
   @doc """
@@ -166,15 +175,21 @@ defmodule MetricFlow.Ai.AiRepository do
   """
   @spec get_chat_session(Scope.t(), integer()) ::
           {:ok, ChatSession.t()} | {:error, :not_found}
-  def get_chat_session(%Scope{user: user}, id) do
-    case Repo.get_by(ChatSession, id: id, user_id: user.id) do
+  def get_chat_session(%Scope{user: user} = scope, id) do
+    case get_account_id(scope) do
       nil ->
         {:error, :not_found}
 
-      session ->
-        messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
-        loaded = Repo.preload(session, chat_messages: messages_query)
-        {:ok, loaded}
+      account_id ->
+        case Repo.get_by(ChatSession, id: id, user_id: user.id, account_id: account_id) do
+          nil ->
+            {:error, :not_found}
+
+          session ->
+            messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
+            loaded = Repo.preload(session, chat_messages: messages_query)
+            {:ok, loaded}
+        end
     end
   end
 
@@ -187,40 +202,51 @@ defmodule MetricFlow.Ai.AiRepository do
   """
   @spec get_chat_session_by_context(Scope.t(), atom(), integer()) ::
           {:ok, ChatSession.t()} | {:error, :not_found}
-  def get_chat_session_by_context(%Scope{user: user}, context_type, context_id) do
-    case Repo.get_by(ChatSession,
-           user_id: user.id,
-           context_type: context_type,
-           context_id: context_id
-         ) do
+  def get_chat_session_by_context(%Scope{user: user} = scope, context_type, context_id) do
+    case get_account_id(scope) do
       nil ->
         {:error, :not_found}
 
-      session ->
-        messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
-        loaded = Repo.preload(session, chat_messages: messages_query)
-        {:ok, loaded}
+      account_id ->
+        case Repo.get_by(ChatSession,
+               user_id: user.id,
+               account_id: account_id,
+               context_type: context_type,
+               context_id: context_id
+             ) do
+          nil ->
+            {:error, :not_found}
+
+          session ->
+            messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
+            loaded = Repo.preload(session, chat_messages: messages_query)
+            {:ok, loaded}
+        end
     end
   end
 
   @doc """
-  Retrieves a chat session by id that has been marked shared, regardless of
-  who owns it -- this is the lookup behind a copyable share link, so any
-  authenticated user holding the link can view it.
+  Retrieves a chat session by id that has been marked shared, scoped to
+  viewers who are actual members of the owning account -- this is the
+  lookup behind a copyable share link, so a team member holding the link
+  can view it, but no one else.
 
-  Returns {:ok, session} when found and shared, or {:error, :not_found}
-  otherwise.
+  Returns {:ok, session} when found, shared, and the scope's user belongs
+  to the session's account; {:error, :not_found} otherwise.
   """
-  @spec get_shared_chat_session(integer()) :: {:ok, ChatSession.t()} | {:error, :not_found}
-  def get_shared_chat_session(id) do
+  @spec get_shared_chat_session(Scope.t(), integer()) :: {:ok, ChatSession.t()} | {:error, :not_found}
+  def get_shared_chat_session(%Scope{user: user} = scope, id) do
     case Repo.get_by(ChatSession, id: id, shared: true) do
       nil ->
         {:error, :not_found}
 
       session ->
-        messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
-        loaded = Repo.preload(session, chat_messages: messages_query)
-        {:ok, loaded}
+        if Accounts.get_user_role(scope, user.id, session.account_id) do
+          messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
+          {:ok, Repo.preload(session, chat_messages: messages_query)}
+        else
+          {:error, :not_found}
+        end
     end
   end
 
@@ -307,6 +333,10 @@ defmodule MetricFlow.Ai.AiRepository do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp get_account_id(%Scope{account_id: account_id}) when not is_nil(account_id) do
+    account_id
+  end
 
   defp get_account_id(%Scope{} = scope) do
     Accounts.get_personal_account_id(scope)

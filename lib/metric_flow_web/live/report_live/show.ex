@@ -40,13 +40,22 @@ defmodule MetricFlowWeb.ReportLive.Show do
           </.link>
           <h1 class="text-2xl font-bold" data-role="report-name">{@report.name}</h1>
         </div>
-        <button
-          phx-click="share"
-          class="btn btn-primary btn-sm"
-          data-role="share-button"
-        >
-          Share
-        </button>
+        <div class="flex items-center gap-2">
+          <.link
+            navigate={ai_chat_path(@report)}
+            data-role="open-ai-chat"
+            class="btn btn-ghost btn-sm"
+          >
+            AI Chat
+          </.link>
+          <button
+            phx-click="share"
+            class="btn btn-primary btn-sm"
+            data-role="share-button"
+          >
+            Share
+          </button>
+        </div>
       </div>
 
       <%!-- Date range filter --%>
@@ -204,6 +213,10 @@ defmodule MetricFlowWeb.ReportLive.Show do
   defp metric_unavailable?(scope, metric_names) do
     known = MapSet.new(Metrics.list_metric_names(scope))
     Enum.all?(metric_names, fn name -> not MapSet.member?(known, name) end)
+  end
+
+  defp ai_chat_path(report) do
+    ~p"/app/chat?context_type=visualization&context_id=#{report.id}"
   end
 
   # ---------------------------------------------------------------------------
