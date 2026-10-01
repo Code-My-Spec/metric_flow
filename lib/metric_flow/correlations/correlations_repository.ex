@@ -135,6 +135,13 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
   # Private helpers
   # ---------------------------------------------------------------------------
 
+  # Prefers the scope's own account_id, set by callers with an account
+  # switcher via `Scope.put_account_id/2`, since `get_personal_account_id/1`
+  # resolves an arbitrary account unrelated to one the user has switched to.
+  defp get_account_id(%Scope{account_id: account_id}) when not is_nil(account_id) do
+    account_id
+  end
+
   defp get_account_id(%Scope{} = scope) do
     MetricFlow.Accounts.get_personal_account_id(scope)
   end

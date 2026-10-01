@@ -18,7 +18,7 @@ defmodule MetricFlow.Users.Scope do
 
   alias MetricFlow.Users.User
 
-  defstruct user: nil
+  defstruct user: nil, account_id: nil
 
   @doc """
   Creates a scope for the given user.
@@ -30,4 +30,19 @@ defmodule MetricFlow.Users.Scope do
   end
 
   def for_user(nil), do: nil
+
+  @doc """
+  Returns a copy of `scope` with `account_id` set to the given value.
+
+  For multi-account users, a scope on its own does not know which account
+  the caller has switched to via the account switcher (`active_account_id`
+  in socket assigns) -- without this, account-scoped queries fall back to
+  resolving some arbitrary account for the user instead. LiveViews with an
+  account switcher should call this once at mount and re-assign
+  `:current_scope`, so every later read of `socket.assigns.current_scope`
+  already carries the active account.
+  """
+  def put_account_id(%__MODULE__{} = scope, account_id) do
+    %{scope | account_id: account_id}
+  end
 end

@@ -11,6 +11,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
 
   alias MetricFlow.Correlations
   alias MetricFlow.Metrics
+  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Render
@@ -109,7 +110,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   end
 
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope = Scope.put_account_id(socket.assigns.current_scope, socket.assigns[:active_account_id])
 
     metric_names = Metrics.list_metric_names(scope)
     summary = Correlations.get_latest_correlation_summary(scope)
@@ -118,6 +119,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
 
     socket =
       socket
+      |> assign(:current_scope, scope)
       |> assign(:metric_names, metric_names)
       |> assign(:selected_goal, selected_goal)
       |> assign(:page_title, "Goal Metric")

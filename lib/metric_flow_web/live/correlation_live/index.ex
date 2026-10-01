@@ -18,6 +18,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   alias MetricFlow.Correlations
   alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Users
+  alias MetricFlow.Users.Scope
 
   @smart_mode_threshold 0.3
   @actionable_providers [:google_ads, :facebook_ads]
@@ -360,11 +361,17 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               data-role="correlation-row"
               data-metric={result.metric_name}
               data-ai-highlighted={to_string(ai_highlighted?(result))}
-              class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+              class={[
+                "flex items-center justify-between py-2 border-b border-base-200 last:border-b-0 pl-2 -ml-2",
+                ai_highlighted?(result) && "border-l-4 border-l-primary bg-primary/5"
+              ]}
             >
               <div>
                 <span class="font-medium">{result.metric_name}</span>
                 <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                <span :if={ai_highlighted?(result)} data-role="ai-pick-badge" class="badge badge-primary badge-sm ml-2">
+                  ✨ AI Pick
+                </span>
                 <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
               </div>
               <div class="flex items-center gap-3">
@@ -387,11 +394,17 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               data-role="correlation-row"
               data-metric={result.metric_name}
               data-ai-highlighted={to_string(ai_highlighted?(result))}
-              class="flex items-center justify-between py-2 border-b border-base-200 last:border-b-0"
+              class={[
+                "flex items-center justify-between py-2 border-b border-base-200 last:border-b-0 pl-2 -ml-2",
+                ai_highlighted?(result) && "border-l-4 border-l-primary bg-primary/5"
+              ]}
             >
               <div>
                 <span class="font-medium">{result.metric_name}</span>
                 <span class="text-xs text-base-content/50 ml-2">{provider_display_name(result.provider)}</span>
+                <span :if={ai_highlighted?(result)} data-role="ai-pick-badge" class="badge badge-primary badge-sm ml-2">
+                  ✨ AI Pick
+                </span>
                 <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
               </div>
               <div class="flex items-center gap-3">
@@ -484,7 +497,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   end
 
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope = Scope.put_account_id(socket.assigns.current_scope, socket.assigns[:active_account_id])
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:correlations")
@@ -502,6 +515,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
 
     socket =
       socket
+      |> assign(:current_scope, scope)
       |> assign(:summary, summary)
       |> assign(:mode, String.to_existing_atom(scope.user.correlation_view_mode || "raw"))
       |> assign(:time_window, :days_90)
