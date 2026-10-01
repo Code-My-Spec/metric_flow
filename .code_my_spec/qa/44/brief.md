@@ -60,3 +60,13 @@ The only existing GBP integration has exactly one real account/location configur
 Six of this story's own spex (935-940) currently crash on a broken `capture_log/1 |> elem(1)` test fixture pattern, unrelated to any of the above -- filed as qa-scope issue `1a6a1af7` with the fix needed. None of the six affected criteria's real behavior is actually broken.
 
 Submitting as **partial** with issue `9c865621` linked (the readMask gap); the qa-scope spex-fixture issue `1a6a1af7` is informational.
+
+## Retest 2026-10-01
+
+Both issues confirmed resolved:
+
+- `9c865621` (commit `d8ad1e1`): `build_url/2`'s readMask now includes `regularHours,primaryCategory`, and `extract_locations/2` exposes `hours: get_in(loc, ["regularHours", "periods"])` alongside the already-correct `category` field. Confirmed by code read.
+- `1a6a1af7`: confirmed correct per the coder's note -- the capture_log fixture bug had already been fixed before this QA report was filed; the earlier failing run was a stale snapshot.
+- `mix test test/spex/44_.../*.exs` now shows **20/20 passing** (up from 14/20).
+
+395 now: **pass**. All other criteria (394/934 through 404/942) were already verified passing in the prior attempt and are unaffected. No live re-verification needed beyond the spex run since the fix is a pure request/extraction parameter addition and the real API call for this provider is already known to be unreachable in this environment (revoked token, confirmed in the first pass). Submitting as pass.
