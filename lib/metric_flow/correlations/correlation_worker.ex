@@ -135,7 +135,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
           coefficient: coefficient,
           optimal_lag: optimal_lag,
           data_points: length(metric_values),
-          provider: detect_provider(metric_name)
+          provider: detect_provider(scope, metric_name, date_range)
         }
     end
   end
@@ -227,11 +227,14 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     {Enum.min(dates, Date), Enum.max(dates, Date)}
   end
 
-  defp detect_provider("ga4_" <> _), do: :google_analytics
-  defp detect_provider("gads_" <> _), do: :google_ads
-  defp detect_provider("fb_" <> _), do: :facebook_ads
-  defp detect_provider("qb_" <> _), do: :quickbooks
-  defp detect_provider(_), do: nil
+  # Real metric rows store provider as its own column, not a name prefix --
+  # look it up directly rather than guessing from metric_name.
+  defp detect_provider(scope, metric_name, date_range) do
+    case Metrics.list_providers_for_metric(scope, metric_name, date_range: date_range) do
+      [provider | _] -> provider
+      [] -> nil
+    end
+  end
 
   defp broadcast_job_update(%Scope{user: user}, job) do
     Phoenix.PubSub.broadcast(

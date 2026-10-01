@@ -133,8 +133,14 @@ defmodule MetricFlowWeb.AccountLive.Index do
 
     if connected?(socket), do: Accounts.subscribe_account(scope)
 
-    # Default to the user's own account, falling back to the most recent.
-    primary = ActiveAccountHook.primary_account(accounts, scope.user)
+    # Use the same resolution every other page uses (ActiveAccountHook.on_mount),
+    # so the account shown as "Active" here always matches the account other
+    # pages actually operate on. primary_account/2's "prefer the user's own
+    # account" override was specific to this mount and could silently revert
+    # the display away from an account the user had just explicitly switched
+    # to via touch_membership, even though every other page kept honoring
+    # the switch.
+    primary = ActiveAccountHook.primary_account(accounts)
     active_account_id = if primary, do: primary.id
 
     {account_roles, agency_grants} = load_account_metadata(scope, accounts)
