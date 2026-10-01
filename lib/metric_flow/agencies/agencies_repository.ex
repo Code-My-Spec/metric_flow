@@ -125,6 +125,24 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
   end
 
   @doc """
+  Lists the ids of all agency-type accounts a user belongs to.
+
+  Used to find which agency team(s), if any, an individual is a member of --
+  so that access granted to them directly can be propagated to their whole
+  agency team the same way an agency-initiated grant would be.
+  """
+  @spec list_agency_accounts_for_user(integer()) :: list(integer())
+  def list_agency_accounts_for_user(user_id) do
+    from(a in Account,
+      join: m in AccountMember,
+      on: m.account_id == a.id and m.user_id == ^user_id,
+      where: a.type == :agency,
+      select: a.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Adds a user to an agency team with the :member role by default.
 
   Returns {:ok, member} on success or {:error, changeset} on failure.

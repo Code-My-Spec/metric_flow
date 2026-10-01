@@ -23,6 +23,7 @@ defmodule MetricFlow.Invitations do
   alias MetricFlow.Accounts
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
+  alias MetricFlow.Agencies
   alias MetricFlow.Invitations.Invitation
   alias MetricFlow.Invitations.InvitationNotifier
   alias MetricFlow.Invitations.InvitationRepository
@@ -158,6 +159,12 @@ defmodule MetricFlow.Invitations do
 
     case Repo.transaction(multi) do
       {:ok, %{member: member}} ->
+        Agencies.propagate_client_access_via_user_agencies(
+          user.id,
+          invitation.account_id,
+          invitation.role
+        )
+
         Phoenix.PubSub.broadcast(@pubsub, "accounts:user:#{user.id}", {:member_added, member})
         {:ok, member}
 

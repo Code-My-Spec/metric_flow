@@ -509,6 +509,33 @@ defmodule MetricFlow.InvitationsTest do
 
       assert {:error, :already_member} = Invitations.accept_invitation(invitee_scope, encoded_token)
     end
+
+    test "propagates access to the rest of the invitee's agency team" do
+      {owner, scope} = user_fixture_with_scope()
+      client_account = account_fixture(scope)
+
+      invitee = user_fixture()
+      teammate = user_fixture()
+      agency_account = insert_account!(invitee, %{type: "agency"})
+      insert_member!(agency_account, invitee, :admin)
+      insert_member!(agency_account, teammate, :read_only)
+
+      invitee_scope = Scope.for_user(invitee)
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(client_account.id, owner.id, %{
+          email: invitee.email,
+          role: :account_manager
+        })
+
+      {:ok, _member} = Invitations.accept_invitation(invitee_scope, encoded_token)
+
+      teammate_membership =
+        Repo.get_by(AccountMember, account_id: client_account.id, user_id: teammate.id)
+
+      assert teammate_membership != nil
+      assert teammate_membership.role == :account_manager
+    end
   end
 
   # ---------------------------------------------------------------------------

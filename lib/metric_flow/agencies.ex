@@ -148,6 +148,28 @@ defmodule MetricFlow.Agencies do
   end
 
   @doc """
+  Propagates client account access to every agency team the given user
+  belongs to, at the given access level.
+
+  Called after an individual gains direct access to a client account (e.g.
+  by accepting an email invitation) so that, if they turn out to be a
+  member of one or more agencies, the whole agency team structure gets the
+  same access -- mirroring the propagation `grant_client_account_access/4`
+  already does when an agency admin grants access from the agency side.
+  A no-op when the user belongs to no agency account.
+  """
+  @spec propagate_client_access_via_user_agencies(integer(), integer(), atom()) :: :ok
+  def propagate_client_access_via_user_agencies(user_id, client_account_id, access_level) do
+    user_id
+    |> AgenciesRepository.list_agency_accounts_for_user()
+    |> Enum.each(fn agency_id ->
+      propagate_client_access_to_team(agency_id, client_account_id, access_level)
+    end)
+
+    :ok
+  end
+
+  @doc """
   Finds the agency account that a client account belongs to, if any.
 
   Used to route a client's checkout to its agency's plans. Returns the first
