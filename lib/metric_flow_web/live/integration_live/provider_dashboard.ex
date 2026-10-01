@@ -14,7 +14,6 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
-  alias MetricFlow.Reviews
 
   @valid_providers ~w(google_business google_analytics google_ads facebook_ads quickbooks google_search_console)
 
@@ -426,7 +425,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   defp load_rolling_review_metrics(scope, date_range) do
     date_range_tuple = date_range_to_tuple(date_range)
-    rolling = Reviews.query_rolling_review_metrics(scope, date_range: date_range_tuple)
+    rolling = Metrics.query_rolling_review_metrics(scope, date_range: date_range_tuple)
 
     [rolling.review_count, rolling.review_total_count, rolling.review_average_rating]
     |> Enum.zip()

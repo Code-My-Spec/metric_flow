@@ -178,38 +178,53 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
-  Inserts a review row for the user registered with `email`.
+  Simulates a synced review arriving for the user registered with `email`.
 
-  Reviews originate from a provider's sync run, not any UI flow -- there is
-  no "add a review" form. Creates a google_business integration for the
-  review to belong to unless the caller supplies `:integration_id`. Attrs
-  is passed through to MetricFlowTest.ReviewsFixtures.review_fixture/2
-  (star_rating, review_date, location_id, etc).
+  There is no dedicated review table read in production -- the real GBP
+  review sync (DataSync.DataProviders.GoogleBusiness) writes a pair of
+  metric_type: "reviews" rows per review (review_rating + review_count) into
+  the metrics table, which is the only source Metrics.ReviewMetrics ever
+  reads from. This inserts that same pair, matching the real shape, and
+  ensures a connected google_business integration exists (the dashboard's
+  "connected" check needs one even though the metric rows carry no FK to it).
+
+  Attrs: `:review_date` (Date, defaults to today), `:star_rating` (defaults
+  to 5), `:location_id` (defaults to "default-location").
   """
-  @spec create_review_for(String.t(), map()) :: MetricFlow.Reviews.Review.t()
+  @spec create_review_for(String.t(), map()) :: [MetricFlow.Metrics.Metric.t()]
   def create_review_for(email, attrs \\ %{}) do
     user = Users.get_user_by_email(email)
-    scope = Scope.for_user(user)
+    attrs = Map.new(attrs)
 
-    integration_id =
-      case Map.get(attrs, :integration_id) do
-        nil ->
-          case Repo.get_by(Integration, user_id: user.id, provider: :google_business) do
-            nil ->
-              create_integration_for(email, :google_business, provider_metadata: %{"email" => email}).id
+    unless Repo.get_by(Integration, user_id: user.id, provider: :google_business) do
+      create_integration_for(email, :google_business, provider_metadata: %{"email" => email})
+    end
 
-            existing ->
-              existing.id
-          end
+    review_date = Map.get(attrs, :review_date, Date.utc_today())
+    star_rating = Map.get(attrs, :star_rating, 5)
+    location_id = Map.get(attrs, :location_id, "default-location")
+    recorded_at = DateTime.new!(review_date, ~T[12:00:00], "Etc/UTC")
 
-        id ->
-          id
-      end
-
-    MetricFlowTest.ReviewsFixtures.review_fixture(
-      scope,
-      Map.put(Map.new(attrs), :integration_id, integration_id)
-    )
+    [
+      MetricFlowTest.MetricsFixtures.insert_metric!(user, %{
+        metric_type: "reviews",
+        metric_name: "review_rating",
+        normalized_metric_name: "reviews",
+        value: star_rating * 1.0,
+        recorded_at: recorded_at,
+        provider: :google_business_reviews,
+        dimensions: %{location_id: location_id}
+      }),
+      MetricFlowTest.MetricsFixtures.insert_metric!(user, %{
+        metric_type: "reviews",
+        metric_name: "review_count",
+        normalized_metric_name: "reviews",
+        value: 1.0,
+        recorded_at: recorded_at,
+        provider: :google_business_reviews,
+        dimensions: %{location_id: location_id}
+      })
+    ]
   end
 
   @doc """
