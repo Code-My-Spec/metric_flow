@@ -2,16 +2,10 @@ defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   spex "Chat history is saved per user", criterion: 216 do
     scenario "a user returns to the chat in a later session" do
@@ -22,20 +16,25 @@ defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
       given_ "a user has previously chatted with the AI", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
-        with_cassette "chat_history_seed_message", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
+        Application.put_env(
+          :metric_flow,
+          :test_llm_options,
+          command_runner:
+            ClaudeCodeStub.text(
+              "Your metrics are trending steadily this month, with revenue up modestly week over week."
+            )
+        )
 
-          capture_log(fn ->
-            view
-            |> form("form[phx-submit='send_message']", %{"content" => "How are my metrics trending?"})
-            |> render_submit()
+        capture_log(fn ->
+          view
+          |> form("form[phx-submit='send_message']", %{"content" => "How are my metrics trending?"})
+          |> render_submit()
 
-            Process.sleep(100)
-            render(view)
-          end)
+          Process.sleep(100)
+          render(view)
+        end)
 
-          Application.delete_env(:metric_flow, :test_llm_options)
-        end
+        Application.delete_env(:metric_flow, :test_llm_options)
 
         {:ok, context}
       end

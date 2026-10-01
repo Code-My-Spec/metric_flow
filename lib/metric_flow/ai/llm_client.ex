@@ -3,24 +3,28 @@ defmodule MetricFlow.Ai.LlmClient do
   Thin wrapper centralising model selection, system prompts, and error
   handling for all three AI features.
 
+  All three run through `Alloy` now, resolved via `MetricFlow.Ai.LlmProvider`
+  (Claude Code CLI in dev/test, the real Anthropic Messages API in prod);
+  pass `command_runner:` in opts to inject a `MetricFlowTest.ClaudeCodeStub`
+  in tests.
+
   - `generate_insights/3` and `generate_vega_spec/3` run through `Alloy.run/2`
     with a single forced tool (`until_tool:`) whose `input_schema` is the
-    structured shape each feature needs — see `MetricFlow.Ai.LlmTools`. The
-    provider is resolved by `MetricFlow.Ai.LlmProvider` (Claude Code CLI in
-    dev/test, the real Anthropic Messages API in prod); pass `command_runner:`
-    in opts to inject a `MetricFlowTest.ClaudeCodeStub` in tests.
-  - `stream_chat/3` is unchanged: it still calls `ReqLLM.stream_text/3`
-    directly. Pass `req_http_options: [plug: plug]` (from ReqCassette) in
-    opts for test recording, as before.
+    structured shape each feature needs — see `MetricFlow.Ai.LlmTools`.
+  - `stream_chat/4` runs through `Alloy.stream/3`, Alloy's token-streaming
+    entry point: it blocks for the whole turn, invoking the given `on_chunk`
+    callback with each text delta as it arrives, and returns the fully
+    assembled text once the turn completes. There is no fixed output schema
+    to force here (`until_tool:` does not apply to free-form chat replies),
+    so this is the one LlmClient function that does not go through `Alloy.run/2`.
 
-  Defines module constants for the two Anthropic Claude model tiers used
-  across the Ai context:
+  Defines a module constant for historical reference:
 
-  - `@chat_model` — Claude Sonnet 4.5, used by `stream_chat/3`
   - `@insights_model` — Claude Haiku 4.5 (kept for reference; `generate_insights/3`
     now runs on the shared chat provider's configured model)
   """
 
+  alias Alloy.Message
   alias MetricFlow.Ai.LlmProvider
   alias MetricFlow.Ai.LlmTools.{EmitInsights, EmitVegaSpec}
 
@@ -42,7 +46,9 @@ defmodule MetricFlow.Ai.LlmClient do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns the model string used for interactive chat (`stream_chat/3`).
+  Returns the model string historically used for interactive chat.
+  Kept for reference; `stream_chat/4` now runs on the Alloy chat provider's
+  configured model rather than selecting a model per call.
   """
   @spec chat_model() :: String.t()
   def chat_model, do: @chat_model
@@ -93,22 +99,38 @@ defmodule MetricFlow.Ai.LlmClient do
   end
 
   @doc """
-  Streams a chat response using the interactive chat model.
+  Streams a chat response using the interactive chat provider.
 
-  Calls `ReqLLM.stream_text/3` with `@chat_model`. The caller receives a
-  `ReqLLM.StreamResponse` containing a lazy token stream and a concurrent
-  metadata handle.
+  Runs `Alloy.stream/3`, which blocks for the whole turn and invokes
+  `on_chunk` with each text delta as it arrives. Returns the fully
+  assembled reply text once the turn completes.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  `messages` is a list of `%{role: "user" | "assistant", content: String.t()}`
+  maps (the shape `MetricFlow.Ai`'s chat history already builds).
+
+  Pass `command_runner:` in opts to inject a `MetricFlowTest.ClaudeCodeStub`
+  for test recording.
   """
-  @spec stream_chat(String.t(), list(), keyword()) ::
-          {:ok, ReqLLM.StreamResponse.t()} | {:error, term()}
-  def stream_chat(system_prompt, messages, opts \\ []) do
-    ReqLLM.stream_text(
-      @chat_model,
-      messages,
-      Keyword.merge(opts, system_prompt: system_prompt)
-    )
+  @spec stream_chat(String.t(), [map()], (String.t() -> any()), keyword()) ::
+          {:ok, String.t()} | {:error, term()}
+  def stream_chat(system_prompt, messages, on_chunk, opts \\ []) do
+    run_opts = [
+      provider: LlmProvider.chat_provider(opts),
+      system_prompt: system_prompt,
+      messages: to_alloy_messages(messages)
+    ]
+
+    case Alloy.stream(nil, on_chunk, run_opts) do
+      {:ok, result} -> {:ok, result.text || ""}
+      {:error, result} -> {:error, result.error}
+    end
+  end
+
+  defp to_alloy_messages(messages) do
+    Enum.map(messages, fn
+      %{role: role, content: content} when role in [:user, "user"] -> Message.user(content)
+      %{role: role, content: content} when role in [:assistant, "assistant"] -> Message.assistant(content)
+    end)
   end
 
   @doc """

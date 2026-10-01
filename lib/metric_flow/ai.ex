@@ -282,12 +282,11 @@ defmodule MetricFlow.Ai do
         %{role: to_string(msg.role), content: msg.content}
       end)
 
-    stream_fn = Keyword.get(opts, :stream_chat_fn, &LlmClient.stream_chat/3)
+    on_chunk = fn text -> send(caller, {:chat_token, text}) end
+    stream_fn = Keyword.get(opts, :stream_chat_fn, &LlmClient.stream_chat/4)
 
-    case stream_fn.(system_prompt, messages, opts) do
-      {:ok, stream_response} ->
-        content = collect_stream(stream_response, caller)
-
+    case stream_fn.(system_prompt, messages, on_chunk, opts) do
+      {:ok, content} ->
         content =
           if content == "",
             do: "I wasn't able to generate a response. Please try again.",
@@ -306,15 +305,6 @@ defmodule MetricFlow.Ai do
       {:error, reason} ->
         send(caller, {:chat_error, reason})
     end
-  end
-
-  defp collect_stream(stream_response, caller) do
-    stream_response.stream
-    |> Stream.filter(&match?(%{type: :content, text: _}, &1))
-    |> Enum.reduce("", fn %{text: text}, acc ->
-      send(caller, {:chat_token, text})
-      acc <> text
-    end)
   end
 
   defp default_title(%{context_type: type}) when is_atom(type), do: "#{type} chat"

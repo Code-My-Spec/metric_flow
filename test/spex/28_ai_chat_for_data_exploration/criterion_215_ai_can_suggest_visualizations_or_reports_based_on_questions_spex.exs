@@ -2,16 +2,10 @@ defmodule MetricFlowSpex.Criterion215AiCanSuggestVisualizationsOrReportsBasedOnQ
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   spex "AI can suggest visualizations or reports based on questions", criterion: 215 do
     scenario "a user asks a question best answered visually" do
@@ -25,22 +19,28 @@ defmodule MetricFlowSpex.Criterion215AiCanSuggestVisualizationsOrReportsBasedOnQ
       end
 
       when_ "the AI responds to a question best answered visually", context do
-        with_cassette "chat_visual_question", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
+        Application.put_env(
+          :metric_flow,
+          :test_llm_options,
+          command_runner:
+            ClaudeCodeStub.text(
+              "Here's how your clicks have trended over the last month: a steady upward trend with " <>
+                "a brief dip mid-month."
+            )
+        )
 
-          capture_log(fn ->
-            context.view
-            |> form("form[phx-submit='send_message']", %{
-              "content" => "Show me how my clicks have trended over the last month"
-            })
-            |> render_submit()
+        capture_log(fn ->
+          context.view
+          |> form("form[phx-submit='send_message']", %{
+            "content" => "Show me how my clicks have trended over the last month"
+          })
+          |> render_submit()
 
-            Process.sleep(100)
-            render(context.view)
-          end)
+          Process.sleep(100)
+          render(context.view)
+        end)
 
-          Application.delete_env(:metric_flow, :test_llm_options)
-        end
+        Application.delete_env(:metric_flow, :test_llm_options)
 
         {:ok, context}
       end

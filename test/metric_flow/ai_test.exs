@@ -685,15 +685,14 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   defp success_stream_fn(tokens) do
-    chunks = Enum.map(tokens, fn text -> %{type: :content, text: text} end)
-
-    fn _system_prompt, _messages, _opts ->
-      {:ok, %{stream: chunks}}
+    fn _system_prompt, _messages, on_chunk, _opts ->
+      Enum.each(tokens, &on_chunk.(&1))
+      {:ok, Enum.join(tokens)}
     end
   end
 
   defp error_stream_fn(reason) do
-    fn _system_prompt, _messages, _opts ->
+    fn _system_prompt, _messages, _on_chunk, _opts ->
       {:error, reason}
     end
   end

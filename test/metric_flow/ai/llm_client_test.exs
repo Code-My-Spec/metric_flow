@@ -1,34 +1,8 @@
 defmodule MetricFlow.Ai.LlmClientTest do
   use ExUnit.Case, async: true
 
-  import ReqCassette
-
   alias MetricFlow.Ai.LlmClient
   alias MetricFlowTest.ClaudeCodeStub
-
-  @cassette_dir "test/cassettes/ai"
-  # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
-  # same two reasons.
-  #
-  # `mode: :replay` because ReqCassette's default is `:record` — "record if the
-  # cassette or the interaction is missing, otherwise replay" — so a miss reaches
-  # api.anthropic.com for real and writes whatever it answers into the cassette.
-  # Measured: these tests failed with "Your credit balance is too low to access
-  # the Anthropic API", which is a unit test reporting a billing problem, and a
-  # `mix test` run appended 714 lines across five cassettes.
-  #
-  # `match_requests_on: [:method, :uri]` because the default includes `:body`,
-  # and the body carries the system prompt. Both prompts have been edited since
-  # these were recorded (report 829 → 1354 characters, insights 909 → 1497), so
-  # every prompt refinement silently invalidated every recording. The prompts are
-  # asserted directly by the `build_system_prompt/0` tests in these same files,
-  # so matching on them here adds no coverage — it only couples an editable
-  # string to a paid re-recording.
-  @filter_headers [
-    mode: :replay,
-    match_requests_on: [:method, :uri],
-    filter_request_headers: ["x-api-key", "authorization"]
-  ]
 
   # ---------------------------------------------------------------------------
   # chat_model/0
@@ -138,22 +112,51 @@ defmodule MetricFlow.Ai.LlmClientTest do
   end
 
   # ---------------------------------------------------------------------------
-  # stream_chat/3
+  # stream_chat/4
   # ---------------------------------------------------------------------------
 
-  describe "stream_chat/3" do
-    test "returns ok tuple with StreamResponse on success" do
-      with_cassette "stream_chat", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result =
-          LlmClient.stream_chat(
-            LlmClient.base_system_prompt(),
-            "What metrics are driving revenue growth?",
-            req_http_options: [plug: plug]
-          )
+  describe "stream_chat/4" do
+    test "returns ok tuple with the full assembled reply text on success" do
+      runner = ClaudeCodeStub.text("Revenue growth is mainly driven by Google Ads conversions.")
 
-        assert {:ok, response} = result
-        assert is_struct(response, ReqLLM.StreamResponse)
-      end
+      result =
+        LlmClient.stream_chat(
+          LlmClient.base_system_prompt(),
+          [%{role: "user", content: "What metrics are driving revenue growth?"}],
+          fn _chunk -> :ok end,
+          command_runner: runner
+        )
+
+      assert {:ok, "Revenue growth is mainly driven by Google Ads conversions."} = result
+    end
+
+    test "invokes on_chunk with the streamed text" do
+      runner = ClaudeCodeStub.text("Hello world")
+      test_pid = self()
+
+      {:ok, _text} =
+        LlmClient.stream_chat(
+          LlmClient.base_system_prompt(),
+          [%{role: "user", content: "Hi"}],
+          fn chunk -> send(test_pid, {:chunk, chunk}) end,
+          command_runner: runner
+        )
+
+      assert_receive {:chunk, "Hello world"}
+    end
+
+    test "returns an error tuple when the provider fails" do
+      runner = ClaudeCodeStub.error("simulated provider failure")
+
+      result =
+        LlmClient.stream_chat(
+          LlmClient.base_system_prompt(),
+          [%{role: "user", content: "Hi"}],
+          fn _chunk -> :ok end,
+          command_runner: runner
+        )
+
+      assert {:error, _reason} = result
     end
   end
 

@@ -2,16 +2,10 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   spex "User can ask questions like 'Why did my revenue drop last week?'", criterion: 213 do
     scenario "a user with a revenue drop asks why revenue dropped last week" do
@@ -25,20 +19,26 @@ defmodule MetricFlowSpex.Criterion213UserCanAskQuestionsLikeWhyDidMyRevenueDropL
       end
 
       when_ "they ask why revenue dropped last week", context do
-        with_cassette "chat_revenue_drop_question", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
+        Application.put_env(
+          :metric_flow,
+          :test_llm_options,
+          command_runner:
+            ClaudeCodeStub.text(
+              "Revenue dropped last week mainly due to a decline in ad spend and lower conversion " <>
+                "rates across your campaigns."
+            )
+        )
 
-          capture_log(fn ->
-            context.view
-            |> form("form[phx-submit='send_message']", %{"content" => "Why did my revenue drop last week?"})
-            |> render_submit()
+        capture_log(fn ->
+          context.view
+          |> form("form[phx-submit='send_message']", %{"content" => "Why did my revenue drop last week?"})
+          |> render_submit()
 
-            Process.sleep(100)
-            render(context.view)
-          end)
+          Process.sleep(100)
+          render(context.view)
+        end)
 
-          Application.delete_env(:metric_flow, :test_llm_options)
-        end
+        Application.delete_env(:metric_flow, :test_llm_options)
 
         {:ok, context}
       end

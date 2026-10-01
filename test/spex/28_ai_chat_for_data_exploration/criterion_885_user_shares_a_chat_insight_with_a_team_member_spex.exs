@@ -2,16 +2,10 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   spex "User shares a chat insight with a team member", criterion: 885 do
     scenario "a user shares an AI insight and a team member opens the link" do
@@ -23,20 +17,26 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
       given_ "a user has received a useful insight from AI chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
 
-        with_cassette "chat_shareable_insight", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
+        Application.put_env(
+          :metric_flow,
+          :test_llm_options,
+          command_runner:
+            ClaudeCodeStub.text(
+              "Your best-performing channel this month is Google Ads, with the highest conversion " <>
+                "rate among your connected platforms."
+            )
+        )
 
-          capture_log(fn ->
-            view
-            |> form("form[phx-submit='send_message']", %{"content" => "What is my best-performing channel?"})
-            |> render_submit()
+        capture_log(fn ->
+          view
+          |> form("form[phx-submit='send_message']", %{"content" => "What is my best-performing channel?"})
+          |> render_submit()
 
-            Process.sleep(100)
-            render(view)
-          end)
+          Process.sleep(100)
+          render(view)
+        end)
 
-          Application.delete_env(:metric_flow, :test_llm_options)
-        end
+        Application.delete_env(:metric_flow, :test_llm_options)
 
         {:ok, Map.put(context, :view, view)}
       end

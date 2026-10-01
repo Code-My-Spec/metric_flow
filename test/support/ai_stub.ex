@@ -2,9 +2,9 @@ defmodule MetricFlowTest.AiStub do
   @moduledoc """
   Stub for AI/LLM calls in BDD spec tests.
 
-  Provides a fake `stream_chat/3` that returns a `ReqLLM.StreamResponse`
-  with canned content, avoiding real Anthropic API calls. The stream emits
-  content chunks that the Ai context's `collect_stream/2` can consume.
+  Provides a fake `stream_chat/4` that invokes the given `on_chunk` callback
+  with canned content word-by-word and returns the assembled text, avoiding
+  real Anthropic/Claude Code CLI calls.
 
   ## Usage in shared givens
 
@@ -32,7 +32,7 @@ defmodule MetricFlowTest.AiStub do
     original = Application.get_env(:metric_flow, :test_llm_options)
 
     Application.put_env(:metric_flow, :test_llm_options, [
-      stream_chat_fn: &fake_stream_chat/3
+      stream_chat_fn: &fake_stream_chat/4
     ])
 
     ExUnit.Callbacks.on_exit(fn ->
@@ -47,30 +47,15 @@ defmodule MetricFlowTest.AiStub do
   end
 
   @doc """
-  Fake `stream_chat/3` that returns a `ReqLLM.StreamResponse` with canned
-  content chunks. No HTTP calls are made.
+  Fake `stream_chat/4` that calls `on_chunk` with canned content word-by-word
+  and returns the assembled text. No subprocess or HTTP calls are made.
   """
-  def fake_stream_chat(_system_prompt, _messages, _opts) do
-    # Build content chunks matching what ReqLLM streams
-    chunks =
-      @canned_response
-      |> String.split(" ")
-      |> Enum.map(fn word -> %{type: :content, text: word <> " "} end)
+  def fake_stream_chat(_system_prompt, _messages, on_chunk, _opts) do
+    @canned_response
+    |> String.split(" ")
+    |> Enum.map(&(&1 <> " "))
+    |> Enum.each(&on_chunk.(&1))
 
-    # Fake metadata handle — returns immediately with stubbed usage
-    metadata_task =
-      Task.async(fn ->
-        %{input_tokens: 50, output_tokens: String.length(@canned_response)}
-      end)
-
-    stream_response = %ReqLLM.StreamResponse{
-      stream: Stream.concat(chunks, [%{type: :done}]),
-      metadata_handle: metadata_task,
-      cancel: fn -> :ok end,
-      model: %{provider: :anthropic, name: "stub-model", id: "stub"},
-      context: %ReqLLM.Context{messages: []}
-    }
-
-    {:ok, stream_response}
+    {:ok, @canned_response}
   end
 end

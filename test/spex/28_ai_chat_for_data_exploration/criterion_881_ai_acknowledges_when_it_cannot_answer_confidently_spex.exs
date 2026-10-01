@@ -2,16 +2,10 @@ defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidently
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   spex "AI acknowledges when it cannot answer confidently", criterion: 881 do
     scenario "a user asks a question the available data cannot support a confident answer to" do
@@ -24,22 +18,27 @@ defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidently
       end
 
       when_ "the AI responds to a question it cannot confidently answer", context do
-        with_cassette "chat_unanswerable_question", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :test_llm_options, req_http_options: [plug: plug])
+        Application.put_env(
+          :metric_flow,
+          :test_llm_options,
+          command_runner:
+            ClaudeCodeStub.text(
+              "I don't have enough historical data yet to confidently forecast next quarter's revenue."
+            )
+        )
 
-          capture_log(fn ->
-            context.view
-            |> form("form[phx-submit='send_message']", %{
-              "content" => "What will my revenue be next quarter?"
-            })
-            |> render_submit()
+        capture_log(fn ->
+          context.view
+          |> form("form[phx-submit='send_message']", %{
+            "content" => "What will my revenue be next quarter?"
+          })
+          |> render_submit()
 
-            Process.sleep(100)
-            render(context.view)
-          end)
+          Process.sleep(100)
+          render(context.view)
+        end)
 
-          Application.delete_env(:metric_flow, :test_llm_options)
-        end
+        Application.delete_env(:metric_flow, :test_llm_options)
 
         {:ok, context}
       end
