@@ -9,6 +9,7 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.Correlations.CorrelationGoalQueue
   alias MetricFlow.Correlations.CorrelationJob
   alias MetricFlow.Correlations.CorrelationResult
   alias MetricFlow.Repo
@@ -128,6 +129,51 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
         |> where(account_id: ^account_id)
         |> where([j], j.status in [:pending, :running])
         |> Repo.exists?()
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Goal queue
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Persists `goal_metric_names` as queued goals for `account_id`, in order.
+  """
+  @spec enqueue_goal_metrics(integer(), [String.t()], atom()) :: :ok
+  def enqueue_goal_metrics(account_id, goal_metric_names, time_window) do
+    Enum.each(goal_metric_names, fn goal_metric_name ->
+      %CorrelationGoalQueue{}
+      |> CorrelationGoalQueue.changeset(%{
+        account_id: account_id,
+        goal_metric_name: goal_metric_name,
+        time_window: time_window
+      })
+      |> Repo.insert()
+    end)
+
+    :ok
+  end
+
+  @doc """
+  Removes and returns the oldest queued goal for `account_id`, or `nil` when
+  the queue is empty.
+  """
+  @spec pop_next_queued_goal(integer()) :: {String.t(), atom()} | nil
+  def pop_next_queued_goal(account_id) do
+    next =
+      CorrelationGoalQueue
+      |> where(account_id: ^account_id)
+      |> order_by(asc: :inserted_at)
+      |> limit(1)
+      |> Repo.one()
+
+    case next do
+      nil ->
+        nil
+
+      entry ->
+        Repo.delete(entry)
+        {entry.goal_metric_name, entry.time_window}
     end
   end
 

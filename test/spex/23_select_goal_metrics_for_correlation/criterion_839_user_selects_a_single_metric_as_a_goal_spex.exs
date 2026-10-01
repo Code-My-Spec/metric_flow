@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.Criterion839UserSelectsASingleMetricAsAGoalSpex do
         |> element("select[name='goal_metric_name']")
         |> render_change(%{"goal_metric_name" => "revenue"})
 
-        context.view |> form("form") |> render_submit()
+        context.view |> form("#goal-metric-form") |> render_submit()
         flash = assert_redirect(context.view, "/app/correlations")
 
         {:ok, Map.put(context, :flash, flash)}

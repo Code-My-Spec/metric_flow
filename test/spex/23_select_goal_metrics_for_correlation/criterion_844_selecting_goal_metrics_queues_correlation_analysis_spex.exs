@@ -40,7 +40,7 @@ defmodule MetricFlowSpex.Criterion844SelectingGoalMetricsQueuesCorrelationAnalys
       end
 
       when_ "the selection is saved", context do
-        context.view |> form("form") |> render_submit()
+        context.view |> form("#goal-metric-form") |> render_submit()
         flash = assert_redirect(context.view, "/app/correlations")
         {:ok, Map.put(context, :flash, flash)}
       end

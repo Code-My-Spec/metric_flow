@@ -85,6 +85,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     case persist_results(scope, job, results, goal_metric_name, data_window) do
       {:ok, updated_job} ->
         broadcast_job_update(scope, updated_job)
+        advance_queue(scope, updated_job)
         :ok
 
       {:error, reason} ->
@@ -189,11 +190,43 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
            completed_at: DateTime.utc_now(),
            error_message: error_message
          }) do
-      {:ok, updated_job} -> broadcast_job_update(scope, updated_job)
-      _ -> :ok
+      {:ok, updated_job} ->
+        broadcast_job_update(scope, updated_job)
+        advance_queue(scope, updated_job)
+
+      _ ->
+        :ok
     end
 
     {:error, reason}
+  end
+
+  # Starts the next queued goal (if any) once the current job finishes,
+  # whether it completed or failed -- only one job runs per account at a
+  # time, so a multi-goal submission enqueues the rest via
+  # Correlations.run_correlations_for_multiple_goals/3 and this is what
+  # actually works through them one by one.
+  defp advance_queue(scope, %{account_id: account_id}) do
+    case CorrelationsRepository.pop_next_queued_goal(account_id) do
+      nil ->
+        :ok
+
+      {goal_metric_name, time_window} ->
+        queued_scope = Scope.put_account_id(scope, account_id)
+        job_attrs = %{goal_metric_name: goal_metric_name, time_window: time_window}
+
+        case CorrelationsRepository.create_correlation_job(queued_scope, job_attrs) do
+          {:ok, new_job} ->
+            %{job_id: new_job.id, user_id: scope.user.id}
+            |> __MODULE__.new()
+            |> Oban.insert()
+
+            :ok
+
+          {:error, _changeset} ->
+            :ok
+        end
+    end
   end
 
   # ---------------------------------------------------------------------------

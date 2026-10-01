@@ -179,7 +179,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
         {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         render_change(lv, "select_goal", %{"goal_metric_name" => "revenue"})
-        lv |> form("form") |> render_submit()
+        lv |> form("#goal-metric-form") |> render_submit()
 
         flash = assert_redirect(lv, ~p"/app/correlations")
         assert flash["info"] =~ "Goal metric saved. Correlation analysis started."
@@ -213,7 +213,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
         {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
 
         render_change(lv, "select_goal", %{"goal_metric_name" => "revenue"})
-        html = lv |> form("form") |> render_submit()
+        html = lv |> form("#goal-metric-form") |> render_submit()
 
         assert html =~ "Not enough data"
         assert html =~ "at least 30 days of metrics required"

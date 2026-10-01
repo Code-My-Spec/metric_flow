@@ -32,6 +32,7 @@ defmodule MetricFlow.Correlations do
   defdelegate get_correlation_job(scope, id), to: CorrelationsRepository
   defdelegate list_correlation_jobs(scope), to: CorrelationsRepository
   defdelegate get_latest_completed_job(scope), to: CorrelationsRepository
+  defdelegate pop_next_queued_goal(account_id), to: CorrelationsRepository
 
   # ---------------------------------------------------------------------------
   # Correlation orchestration
@@ -50,6 +51,30 @@ defmodule MetricFlow.Correlations do
     with :ok <- check_no_running_job(scope),
          :ok <- check_sufficient_data(scope) do
       create_and_enqueue(scope, attrs)
+    end
+  end
+
+  @doc """
+  Runs the first of `goal_metric_names` immediately and queues the rest to
+  run automatically, one after another, as each prior job finishes.
+
+  Only one correlation job can be in flight per account at a time
+  (`run_correlations/2`'s `:already_running` guard), so a multi-select
+  goal-metric submission cannot simply start several jobs at once.
+  `CorrelationWorker` pops the next queued goal and starts it itself once
+  the current job completes or fails.
+  """
+  @spec run_correlations_for_multiple_goals(Scope.t(), [String.t()], atom()) ::
+          {:ok, CorrelationJob.t()} | {:error, :insufficient_data} | {:error, :already_running}
+  def run_correlations_for_multiple_goals(%Scope{} = scope, [first_goal | rest_goals], time_window) do
+    case run_correlations(scope, %{goal_metric_name: first_goal, time_window: time_window}) do
+      {:ok, job} = result ->
+        account_id = job.account_id
+        CorrelationsRepository.enqueue_goal_metrics(account_id, rest_goals, time_window)
+        result
+
+      error ->
+        error
     end
   end
 

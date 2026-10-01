@@ -49,7 +49,7 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
       </div>
 
       <%!-- Goal metric form --%>
-      <.form for={%{}} phx-submit="save_goal">
+      <.form for={%{}} id="goal-metric-form" phx-submit="save_goal">
         <div class="mf-card p-6">
           <div class="form-control">
             <label class="label">
@@ -94,6 +94,33 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
           </div>
         </div>
       </.form>
+
+      <%!-- Queue multiple goals: runs the first immediately, queues the rest
+           to run automatically as each prior analysis finishes, since only
+           one correlation job can be in flight per account at a time. --%>
+      <div :if={@metric_names != []} class="mf-card p-6 mt-6">
+        <h2 class="text-lg font-semibold mb-1">Queue Multiple Goals</h2>
+        <p class="text-sm text-base-content/60 mb-4">
+          Select several metrics to analyze one after another. The first starts
+          immediately; the rest run automatically once each prior analysis finishes.
+        </p>
+        <.form for={%{}} phx-submit="queue_goals">
+          <div class="flex flex-col gap-2 mb-4">
+            <label :for={name <- @metric_names} class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="goal_metric_names[]"
+                value={name}
+                class="checkbox checkbox-sm"
+              />
+              <span>{name}</span>
+            </label>
+          </div>
+          <button type="submit" data-role="queue-goals" class="btn btn-secondary">
+            Queue Selected Goals
+          </button>
+        </.form>
+      </div>
     </div>
     </Layouts.app>
     """
@@ -154,6 +181,24 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
     {:noreply, push_navigate(socket, to: ~p"/app/correlations")}
   end
 
+  def handle_event("queue_goals", params, socket) do
+    metric_names = socket.assigns.metric_names
+    scope = socket.assigns.current_scope
+
+    selected_goals =
+      params
+      |> Map.get("goal_metric_names", [])
+      |> Enum.filter(&(&1 in metric_names))
+
+    case selected_goals do
+      [] ->
+        {:noreply, put_flash(socket, :error, "Please select at least one goal metric.")}
+
+      goals ->
+        handle_run_correlations_for_goals(scope, goals, socket)
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
@@ -185,6 +230,41 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
         socket =
           socket
           |> put_flash(:info, "Goal metric saved. Correlation analysis started.")
+          |> push_navigate(to: ~p"/app/correlations")
+
+        {:noreply, socket}
+
+      {:error, :already_running} ->
+        socket =
+          socket
+          |> put_flash(:info, "A correlation run is already in progress.")
+          |> push_navigate(to: ~p"/app/correlations")
+
+        {:noreply, socket}
+
+      {:error, :insufficient_data} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Not enough data — at least 30 days of metrics required."
+         )}
+    end
+  end
+
+  defp handle_run_correlations_for_goals(scope, goals, socket) do
+    case Correlations.run_correlations_for_multiple_goals(scope, goals, :days_90) do
+      {:ok, _job} ->
+        message =
+          if length(goals) > 1 do
+            "Goal metrics saved. Correlation analysis started for the first metric; the rest are queued."
+          else
+            "Goal metric saved. Correlation analysis started."
+          end
+
+        socket =
+          socket
+          |> put_flash(:info, message)
           |> push_navigate(to: ~p"/app/correlations")
 
         {:noreply, socket}

@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.Criterion178UserCanModifyGoalMetricsAtAnyTimeSpex do
         |> element("select[name='goal_metric_name']")
         |> render_change(%{"goal_metric_name" => "clicks"})
 
-        view |> form("form") |> render_submit()
+        view |> form("#goal-metric-form") |> render_submit()
         flash = assert_redirect(view, "/app/correlations")
 
         {:ok, Map.put(context, :flash, flash)}
