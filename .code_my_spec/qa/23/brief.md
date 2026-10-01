@@ -53,3 +53,13 @@ Two real findings:
 Also filed `f984bc70` (qa scope): this worktree's dev DB had not run story 23's own `CreateCorrelationGoalQueue` migration at session start, causing a total 503 outage until `mix ecto.migrate` was run.
 
 Given the critical worker bug directly undermines the story's core purpose (a queued analysis that can never complete isn't a working feature), this pass is submitted as **fail** despite most of the surrounding UI mechanics working correctly.
+
+## Results (retest, commit bdee81f)
+
+**6aa8841a (critical worker account-scoping) confirmed fixed.** Submitted two fresh goals on account 17 (the account that failed every time last pass); both completed successfully (correlation_jobs 54 and 55, status=completed) instead of being stuck at pending and discarded. Criterion 180/844 now genuinely works for a non-default/switched-to account.
+
+**ee742e94 (missing goal-metric badge) was fixed but the fix itself has the same root-cause bug it was meant to address.** `VisualizationLive.Editor` (where the badge now lives) never calls `Scope.put_account_id/2` anywhere in the file -- confirmed by grep and by `handle_params/3` reading `socket.assigns.current_scope` directly. Reproduced live: with account 14 (Client Alpha) active, the metric picker lists `qa_viz_test_a`/`qa_viz_test_b`, synthetic fixtures belonging to a *different* account (QA Test Account, id 21) from story 29's testing -- the picker's entire metric list is scoped to an arbitrary account, not the active one. The badge never renders for account 14's real, completed goal ("clicks", confirmed directly against `get_latest_correlation_summary(account_id: 14)` and present in the picker's own list) because the LiveView is comparing against the wrong account's goal metric. Filed as new high-severity issue `d4df9e43`.
+
+Also hit a repeated browser-automation quirk this pass: `browser_select` (and even a direct JS `value=`/`dispatchEvent('change')`) intermittently failed to change this specific `<select>`'s value before submission, silently submitting the previously-pre-selected option instead -- not an app bug (confirmed the server-side `phx-change` mechanism itself works correctly when verified step-by-step), but cost significant time triangulating; worth a note for future sessions testing this page.
+
+Submitting as **partial**: the critical blocker is resolved, but a new real finding (account-scoping gap in the editor's badge) replaces it.
