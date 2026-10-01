@@ -204,6 +204,27 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
+  Retrieves a chat session by id that has been marked shared, regardless of
+  who owns it -- this is the lookup behind a copyable share link, so any
+  authenticated user holding the link can view it.
+
+  Returns {:ok, session} when found and shared, or {:error, :not_found}
+  otherwise.
+  """
+  @spec get_shared_chat_session(integer()) :: {:ok, ChatSession.t()} | {:error, :not_found}
+  def get_shared_chat_session(id) do
+    case Repo.get_by(ChatSession, id: id, shared: true) do
+      nil ->
+        {:error, :not_found}
+
+      session ->
+        messages_query = from(m in ChatMessage, order_by: [asc: m.inserted_at])
+        loaded = Repo.preload(session, chat_messages: messages_query)
+        {:ok, loaded}
+    end
+  end
+
+  @doc """
   Creates a new ChatSession with user_id and account_id from Scope.
 
   Returns {:ok, session} on success or {:error, changeset} on validation failure.

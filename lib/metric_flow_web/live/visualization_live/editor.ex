@@ -150,6 +150,15 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
               Shareable
             </button>
 
+            <%!-- Open full AI chat with this visualization as context --%>
+            <.link
+              navigate={ai_chat_path(@visualization)}
+              data-role="open-ai-chat"
+              class="btn btn-ghost btn-xs"
+            >
+              AI Chat
+            </.link>
+
             <%!-- Preview --%>
             <button
               type="button"
@@ -817,6 +826,14 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       {:error, changeset} ->
         {:noreply, assign(socket, :name_error, name_error_from_changeset(changeset))}
     end
+  end
+
+  defp ai_chat_path(%Visualization{id: id}) do
+    ~p"/app/chat?context_type=visualization&context_id=#{id}"
+  end
+
+  defp ai_chat_path(nil) do
+    ~p"/app/chat?context_type=visualization"
   end
 
   defp name_error_from_changeset(%Ecto.Changeset{} = changeset) do

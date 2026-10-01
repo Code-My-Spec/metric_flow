@@ -40,6 +40,7 @@ defmodule MetricFlow.Ai.ChatSession do
           context_type: :general | :correlation | :metric | :dashboard | :visualization | nil,
           context_id: integer() | nil,
           status: :active | :archived,
+          shared: boolean(),
           user: User.t() | Ecto.Association.NotLoaded.t(),
           account: Account.t() | Ecto.Association.NotLoaded.t(),
           chat_messages: list(ChatMessage.t()) | Ecto.Association.NotLoaded.t(),
@@ -52,6 +53,7 @@ defmodule MetricFlow.Ai.ChatSession do
     field :context_type, Ecto.Enum, values: @context_types
     field :context_id, :integer
     field :status, Ecto.Enum, values: @statuses, default: :active
+    field :shared, :boolean, default: false
 
     belongs_to :user, User
     belongs_to :account, Account
@@ -69,7 +71,7 @@ defmodule MetricFlow.Ai.ChatSession do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(chat_session, attrs) do
     chat_session
-    |> cast(attrs, [:user_id, :account_id, :title, :context_type, :context_id, :status])
+    |> cast(attrs, [:user_id, :account_id, :title, :context_type, :context_id, :status, :shared])
     |> validate_required([:user_id, :account_id, :context_type])
     |> validate_length(:title, max: 255)
     |> assoc_constraint(:user)

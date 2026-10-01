@@ -19,7 +19,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
     general: "General",
     correlation: "Correlations",
     metric: "Metrics",
-    dashboard: "Dashboard"
+    dashboard: "Dashboard",
+    visualization: "Visualization"
   }
 
   # ---------------------------------------------------------------------------
@@ -224,6 +225,15 @@ defmodule MetricFlowWeb.AiLive.Chat do
                 >
                   {message.content}
                 </div>
+                <div
+                  :if={suggests_visualization?(message.content)}
+                  data-role="suggested-visualization"
+                  class="text-xs"
+                >
+                  <.link navigate={~p"/app/visualizations/new"} class="link link-primary">
+                    📊 View this as a visualization
+                  </.link>
+                </div>
                 <div class="flex items-center gap-1">
                   <button
                     phx-click="share_insight"
@@ -394,7 +404,12 @@ defmodule MetricFlowWeb.AiLive.Chat do
     scope = socket.assigns.current_scope
     id = String.to_integer(id_string)
 
-    case Ai.get_chat_session(scope, id) do
+    with {:error, :not_found} <- Ai.get_chat_session(scope, id),
+         {:error, :not_found} <- Ai.get_shared_chat_session(id) do
+      socket
+      |> put_flash(:error, "Chat session not found.")
+      |> push_patch(to: ~p"/app/chat")
+    else
       {:ok, session} ->
         socket
         |> assign(:active_session, session)
@@ -403,11 +418,6 @@ defmodule MetricFlowWeb.AiLive.Chat do
         |> assign(:streaming, false)
         |> assign(:pending_context_type, nil)
         |> assign(:pending_context_id, nil)
-
-      {:error, :not_found} ->
-        socket
-        |> put_flash(:error, "Chat session not found.")
-        |> push_patch(to: ~p"/app/chat")
     end
   end
 
@@ -462,10 +472,13 @@ defmodule MetricFlowWeb.AiLive.Chat do
         {:noreply, put_flash(socket, :info, "No active session to share.")}
 
       active_session ->
+        scope = socket.assigns.current_scope
+        {:ok, active_session} = Ai.update_chat_session(scope, active_session, %{shared: true})
         url = build_share_url(active_session.id, message_id)
 
         socket =
           socket
+          |> assign(:active_session, active_session)
           |> push_event("copy_to_clipboard", %{text: url})
           |> put_flash(:info, "Link copied to clipboard! Share with your team members.")
 
@@ -632,6 +645,20 @@ defmodule MetricFlowWeb.AiLive.Chat do
   @spec context_label(atom() | nil) :: String.t()
   defp context_label(nil), do: "General"
   defp context_label(type), do: Map.get(@context_labels, type, "General")
+
+  # Heuristic for whether a question is "best answered visually": the
+  # assistant's own response names a trend or chart-shaped pattern in the
+  # data rather than a single fact, so a visualization adds something a line
+  # of text didn't already cover.
+  @visual_keywords ~w(trend trended trending chart graph plot visualiz over-time)
+
+  @spec suggests_visualization?(String.t()) :: boolean()
+  defp suggests_visualization?(content) when is_binary(content) do
+    downcased = String.downcase(content)
+    Enum.any?(@visual_keywords, &String.contains?(downcased, &1))
+  end
+
+  defp suggests_visualization?(_content), do: false
 
   @spec format_updated_at(DateTime.t() | nil) :: String.t()
   defp format_updated_at(nil), do: ""

@@ -10,18 +10,23 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   with active or trialing subscriptions, agency admin accounts, and
   agency-customer subscriptions flagged for review (still paying,
   pending their agency's Stripe reconnect) pass through unrestricted.
+
+  A route whose `:id` resolves to a chat session its owner has marked
+  shared also passes through unrestricted — a shared insight's recipient
+  shouldn't need a subscription of their own just to view it.
   """
 
   import Phoenix.Component, only: [assign: 3]
   import Phoenix.LiveView, only: [attach_hook: 4, push_navigate: 2]
 
+  alias MetricFlow.Ai
   alias MetricFlow.Billing.BillingRepository
 
   @checkout_path "/app/subscriptions/checkout"
   @default_plan_name "Pro"
   @default_plan_price_cents 4900
 
-  def on_mount(:require_subscription, _params, _session, socket) do
+  def on_mount(:require_subscription, params, _session, socket) do
     scope = socket.assigns[:current_scope]
     account_id = socket.assigns[:active_account_id]
     account_type = socket.assigns[:active_account_type]
@@ -34,6 +39,9 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
         {:cont, socket}
 
       has_active_subscription?(account_id) ->
+        {:cont, socket}
+
+      viewing_shared_chat_session?(params) ->
         {:cont, socket}
 
       true ->
@@ -68,6 +76,15 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
         false
     end
   end
+
+  defp viewing_shared_chat_session?(%{"id" => id_string}) do
+    case Integer.parse(id_string) do
+      {id, ""} -> match?({:ok, _}, Ai.get_shared_chat_session(id))
+      _ -> false
+    end
+  end
+
+  defp viewing_shared_chat_session?(_params), do: false
 
   defp paywall_info do
     case BillingRepository.list_plans(nil) do
