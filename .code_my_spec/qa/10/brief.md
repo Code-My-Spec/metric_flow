@@ -46,3 +46,13 @@ Simpler: this story'\''s own component test fixtures (`client_account_fixture/1`
 ## Result Path
 
 `.code_my_spec/qa/10/result.md`
+
+## Retest 2026-10-01
+
+Both fixes from commit `45eedf0` confirmed, both via unit tests and live:
+
+- `mix test test/metric_flow_web/live/account_live/settings_test.exs test/metric_flow/accounts_test.exs` -- 76/76 passed, including the new regression test for a client-typed originator account.
+- **73/904** (issue `15ba831d`): live-confirmed on "QA Test Account" (id 21, client-typed, a real `agency_client_access_grants` row with `origination_status='originator'`). The "Also transfer white-label originator status" checkbox (`name="transfer_originator"`) now renders correctly for this client-typed originator account, where it previously never appeared.
+- **74/905** (issue `e5b06d20`): live-confirmed with a real transfer on "QA Test Account" (11 real members). Initiated a transfer from the current owner to an existing member, accepted it via the dev mailbox confirmation link, then inspected all 11 completion-notification emails in the mailbox individually: every one of the account's 11 distinct members (not just the two transfer parties) received "Ownership of QA Test Account has transferred". Previous owner and new owner are sent first (preserving spex-asserted order), consistent with the fix's implementation.
+
+Submitting as pass -- all 22 criteria now verified.
