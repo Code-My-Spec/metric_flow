@@ -52,10 +52,10 @@ This means the QA agent should expect to see real data in dashboards and integra
 4. Open dev mailbox at `http://localhost:4070/dev/mailbox`, find confirmation email, click magic link
 5. Log in with registered email and password via `/users/log-in` (scroll to password form, `#login_form_password`)
 6. Verify redirect to `/` or `/onboarding`
-7. Navigate to `/dashboards` — verify "All Metrics" canned dashboard exists
+7. Navigate to `/dashboards` — verify a canned dashboard (e.g. "Marketing Overview") exists — the canned set is Marketing Overview / Platform Comparison / Revenue Analysis, not "All Metrics"
 8. Click into All Metrics dashboard — verify onboarding prompt shown (new user has no integrations)
 9. Navigate to `/accounts` — verify account listed with owner role
-10. Navigate to `/users/settings` — verify email and password change forms render
+10. Navigate to `/app/users/settings` — verify email and password change forms render
 11. Log out via user dropdown — verify redirect to login page
 12. Attempt to access `/dashboards` while logged out — verify redirect to `/users/log-in`
 
@@ -169,3 +169,10 @@ The QA database contains real production-like data from actual OAuth integration
 Correlation analysis requires overlapping date ranges between the goal metric and other metrics. Google Ads data (2024-09-16 to 2026-03-20) overlaps well with QuickBooks daily credits (2024-09-18 to 2026-03-20) and Google Business metrics (2024-09-19 to 2026-03-22). Google Analytics has a narrower range (2026-02-14 to 2026-03-17). Facebook Ads has only one day of data (2024-09-16) and will not produce meaningful correlations.
 
 Journeys can be run independently. Journey 1 creates a fresh user and should not depend on existing state. Journeys 2-5 use `qa@example.com` and the existing data. Re-run seeds before Journey 2 if role state has drifted.
+
+
+## Corrections from journey execution (2026-10-01)
+
+- The settings route is `/app/users/settings`, not `/users/settings`.
+- The canned dashboards are named "Marketing Overview", "Platform Comparison", and "Revenue Analysis" — there is no dashboard literally named "All Metrics" in the list (the dashboard detail page's H1 does still read "All Metrics" for all three, a known low-severity cosmetic issue, separate from the list names).
+- Account names referenced in Journey 5 (e.g. "QA Agency 454") drift as the shared QA database accumulates test data from other sessions; treat them as illustrative, not fixed identifiers.
