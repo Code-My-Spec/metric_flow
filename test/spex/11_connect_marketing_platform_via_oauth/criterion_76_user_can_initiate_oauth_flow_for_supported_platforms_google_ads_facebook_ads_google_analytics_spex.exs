@@ -81,8 +81,8 @@ defmodule MetricFlowSpex.UserCanInitiateOAuthFlowForSupportedPlatformsSpex do
 
       then_ "the user is redirected away from the integrations connect page", context do
         case context.result do
-          {:error, {:redirect, _}} -> :ok
-          {:error, {:live_redirect, _}} -> :ok
+          {:error, {:redirect, _}} -> {:ok, context}
+          {:error, {:live_redirect, _}} -> {:ok, context}
           {:ok, view, _html} ->
             refute render(view) =~ "Google"
             {:ok, context}
