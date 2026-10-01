@@ -70,3 +70,12 @@ Commit f543f02 fixes both prior issues' stated gaps (a spec-editor panel and a l
 - **160/933 (insert from library)**: **fail, new regression**. `insert_library_visualization` sets `vega_spec: viz.vega_spec` directly from the saved `Visualization` record without running it through `custom_spec/1` first (unlike `load_visualizations_from_dashboard/1`, which correctly does). Since most of this account's library visualizations were saved via the plain ad-hoc metric+chart-type flow (never customized), their own `vega_spec` column is just `%{"metric_name" => _, "chart_type" => _}` -- not a real frozen spec. Confirmed live, side-by-side in one report: inserting visualization id=38 ("sessions", plain-shape DB record) rendered the literal broken spec `{"chart_type":"area","metric_name":"sessions"}` as `data-spec` (not valid Vega-Lite JSON, renders nothing useful), while inserting id=26 ("QA29 LLM Multi-Metric Chart", a real frozen spec) rendered correctly in the same session. Filed as issue `62de766f` (high).
 
 Submitting as **partial** again, with issue `62de766f` linked. `db11efd5` is now resolved; `c1d0854a` is effectively superseded by this more precise regression (the feature exists but is broken for the common case).
+
+## Retest 2 2026-10-01
+
+Fix for issue `62de766f` (commit `c35a0eb`) confirmed both at the unit level and live:
+
+- `mix test test/metric_flow_web/live/dashboard_live/editor_test.exs` -- 13/13 passed, including the new dedicated regression test reproducing the exact plain-shape scenario QA found live.
+- Live: inserted library visualization id=38 ("sessions", the same plain-shape record from the original repro) into a fresh blank dashboard. It now correctly renders a real, valid Vega-Lite v5 spec with actual real data values (29 real daily data points), instead of the previous broken literal `{"chart_type":...,"metric_name":...}`.
+
+160/933 now: **pass**. All other criteria were already verified passing. No issues remain open against this story. Submitting as pass.
