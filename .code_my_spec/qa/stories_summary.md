@@ -860,26 +860,6 @@ As an agency admin, I want to see and manage all my subscribed customers in one 
 - Agency admin searches the customer list by name or email
 - Status badge reflects the synced subscription state
 
-## Story 22 — View and Navigate Saved Reports
-
-As a client user, I want to access my saved reports easily so that I can review important metrics regularly.
-
-- User can view list of all saved reports
-- Reports are sorted by last modified date
-- User can search reports by name
-- Clicking report opens it in full view
-- User can set report as favorite for quick access
-- User can duplicate reports to create variations
-- Report maintains selected date range from last viewing
-- User views their list of saved reports
-- Reports list is sorted by last modified date
-- Searching by name filters the reports list
-- Search with no matching reports shows an empty result
-- Clicking a report opens its full view
-- User favorites a report for quick access
-- User duplicates a report to create a variation
-- Reopening a report restores its last-viewed date range
-
 ## Story 1 — User Registration and Account Creation
 
 As a new user, I want to register for an account so that I can access the reporting platform and manage my marketing data.
@@ -902,6 +882,26 @@ As a new user, I want to register for an account so that I can access the report
 - User lands in onboarding already logged in, immediately after completing email verification (not immediately after submitting the registration form)
 - Invalid email format or weak password blocks registration
 - Registering with an email already in use is rejected
+
+## Story 22 — View and Navigate Saved Reports
+
+As a client user, I want to access my saved reports easily so that I can review important metrics regularly.
+
+- User can view list of all saved reports
+- Reports are sorted by last modified date
+- User can search reports by name
+- Clicking report opens it in full view
+- User can set report as favorite for quick access
+- User can duplicate reports to create variations
+- Report maintains selected date range from last viewing
+- User views their list of saved reports
+- Reports list is sorted by last modified date
+- Searching by name filters the reports list
+- Search with no matching reports shows an empty result
+- Clicking a report opens its full view
+- User favorites a report for quick access
+- User duplicates a report to create a variation
+- Reopening a report restores its last-viewed date range
 
 ## Story 54 — Post-Registration Onboarding Welcome
 
