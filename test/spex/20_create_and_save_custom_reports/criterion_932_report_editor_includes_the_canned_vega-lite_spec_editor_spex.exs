@@ -20,12 +20,18 @@ defmodule MetricFlowSpex.ReportEditorIncludesTheCannedVegaLiteSpecEditorSpex do
       end
 
       when_ "they open the spec editor for a chart", context do
+        assert has_element?(context.view, "[data-role='open-spec-panel']")
+
+        context.view
+        |> element("[data-role='open-spec-panel'][phx-value-index='0']")
+        |> render_click()
+
         {:ok, context}
       end
 
       then_ "it is the canned Vega-Lite spec editor", context do
-        assert has_element?(context.view, "[data-role='open-spec-panel']") or
-                 has_element?(context.view, "[data-role='spec-panel']")
+        assert has_element?(context.view, "[data-role='spec-panel']")
+        assert has_element?(context.view, "[data-role='vega-spec-textarea']")
 
         {:ok, context}
       end

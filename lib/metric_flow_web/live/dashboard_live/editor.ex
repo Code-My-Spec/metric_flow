@@ -206,6 +206,22 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         >
           Add to Dashboard
         </button>
+
+        <%!-- Insert from the visualization library --%>
+        <div :if={@library_visualizations != []} class="mt-4 pt-4 border-t border-base-300">
+          <p class="text-sm font-medium mb-2">Or insert from your visualization library:</p>
+          <div data-role="library-visualization-list" class="flex flex-wrap gap-2">
+            <button
+              :for={viz <- @library_visualizations}
+              phx-click="insert_library_visualization"
+              phx-value-id={viz.id}
+              data-role="library-visualization-option"
+              class="btn btn-sm btn-ghost"
+            >
+              {viz.name}
+            </button>
+          </div>
+        </div>
       </div>
 
       <%!-- Visualization canvas --%>
@@ -249,6 +265,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               >
                 ✕
               </button>
+              <button
+                phx-click="toggle_card_spec_panel"
+                phx-value-index={idx}
+                data-role="open-spec-panel"
+                aria-label="Edit spec"
+                class="btn btn-ghost btn-xs"
+              >
+                Edit Spec
+              </button>
             </div>
           </div>
 
@@ -261,6 +286,20 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               class="w-full h-full"
             >
             </div>
+          </div>
+
+          <div :if={@spec_panel_open_index == idx} data-role="spec-panel" class="mt-2">
+            <textarea
+              name="vega_spec"
+              data-role="vega-spec-textarea"
+              phx-blur="update_card_spec"
+              phx-value-index={idx}
+              class={[
+                "textarea textarea-bordered w-full font-mono text-xs min-h-[150px]",
+                @spec_error && "textarea-error"
+              ]}
+            >{Jason.encode!(Enum.at(@chart_specs, idx))}</textarea>
+            <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
           </div>
         </div>
       </div>
@@ -306,6 +345,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:selected_template, nil)
           |> assign(:chart_types, @chart_types)
           |> assign(:viz_error, nil)
+          |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
+          |> assign(:spec_panel_open_index, nil)
+          |> assign(:spec_error, nil)
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -336,6 +378,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:selected_template, nil)
       |> assign(:chart_types, @chart_types)
       |> assign(:viz_error, nil)
+      |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
+      |> assign(:spec_panel_open_index, nil)
+      |> assign(:spec_error, nil)
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -462,6 +507,70 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     {:noreply, socket}
   end
 
+  def handle_event("insert_library_visualization", %{"id" => id_str}, socket) do
+    scope = socket.assigns.current_scope
+
+    case Dashboards.get_visualization(scope, String.to_integer(id_str)) do
+      {:ok, viz} ->
+        next_position = length(socket.assigns.visualizations)
+
+        new_viz = %{
+          metric_name: viz.name,
+          chart_type: extract_chart_type_from_spec(viz.vega_spec),
+          position: next_position,
+          vega_spec: viz.vega_spec
+        }
+
+        visualizations = socket.assigns.visualizations ++ [new_viz]
+
+        socket =
+          socket
+          |> assign(:visualizations, visualizations)
+          |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+          |> assign(:picker_open, false)
+          |> assign(:viz_error, nil)
+
+        {:noreply, socket}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "Visualization not found.")}
+    end
+  end
+
+  def handle_event("toggle_card_spec_panel", %{"index" => index_str}, socket) do
+    index = String.to_integer(index_str)
+    current = socket.assigns.spec_panel_open_index
+    new_index = if current == index, do: nil, else: index
+
+    {:noreply, assign(socket, spec_panel_open_index: new_index, spec_error: nil)}
+  end
+
+  def handle_event("update_card_spec", %{"index" => index_str, "value" => json}, socket) do
+    index = String.to_integer(index_str)
+
+    case Jason.decode(json) do
+      {:ok, spec} when is_map(spec) ->
+        visualizations =
+          List.update_at(socket.assigns.visualizations, index, &Map.put(&1, :vega_spec, spec))
+
+        chart_specs = List.replace_at(socket.assigns.chart_specs, index, spec)
+
+        socket =
+          socket
+          |> assign(:visualizations, visualizations)
+          |> assign(:chart_specs, chart_specs)
+          |> assign(:spec_error, nil)
+
+        {:noreply, socket}
+
+      {:ok, _} ->
+        {:noreply, assign(socket, :spec_error, "Spec must be a JSON object")}
+
+      {:error, _} ->
+        {:noreply, assign(socket, :spec_error, "Invalid JSON")}
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
@@ -513,7 +622,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       vega_spec = dv.visualization.vega_spec || %{}
       metric_name = Map.get(vega_spec, "metric_name") || dv.visualization.name
       chart_type = Map.get(vega_spec, "chart_type") || "line"
-      %{metric_name: metric_name, chart_type: chart_type, position: dv.position}
+
+      %{
+        metric_name: metric_name,
+        chart_type: chart_type,
+        position: dv.position,
+        vega_spec: custom_spec(vega_spec)
+      }
     end)
   end
 
@@ -555,8 +670,29 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   end
 
   defp resolve_chart_specs(visualizations, scope) do
-    Enum.map(visualizations, fn viz -> build_chart_spec(viz.metric_name, viz.chart_type, scope) end)
+    Enum.map(visualizations, fn viz ->
+      case Map.get(viz, :vega_spec) do
+        nil -> build_chart_spec(viz.metric_name, viz.chart_type, scope)
+        spec -> spec
+      end
+    end)
   end
+
+  # A stored vega_spec in the plain `%{"metric_name" => _, "chart_type" => _}` shape is an
+  # ad-hoc entry meant to be regenerated live from current metric data on every load, as it
+  # always has been. Anything with more keys is a real frozen Vega-Lite spec -- from the
+  # library-insert or manual-spec-edit paths -- and must be preserved verbatim.
+  defp custom_spec(vega_spec) do
+    if Map.keys(vega_spec) -- ["metric_name", "chart_type"] == [] do
+      nil
+    else
+      vega_spec
+    end
+  end
+
+  defp extract_chart_type_from_spec(%{"mark" => mark}) when is_binary(mark), do: mark
+  defp extract_chart_type_from_spec(%{"mark" => %{"type" => type}}) when is_binary(type), do: type
+  defp extract_chart_type_from_spec(_), do: "line"
 
   defp build_chart_spec(metric_name, chart_type, scope) do
     {start_date, end_date} = Dashboards.default_date_range()

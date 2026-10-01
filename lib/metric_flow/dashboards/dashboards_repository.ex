@@ -176,8 +176,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
                                      metric_name: metric_name,
                                      chart_type: chart_type,
                                      position: position
-                                   } ->
-        vega_spec = %{"metric_name" => metric_name, "chart_type" => chart_type}
+                                   } = viz ->
+        vega_spec =
+          Map.get(viz, :vega_spec) || %{"metric_name" => metric_name, "chart_type" => chart_type}
 
         {:ok, visualization} =
           %Visualization{}
