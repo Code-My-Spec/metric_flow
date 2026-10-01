@@ -111,19 +111,19 @@ Code read ahead of testing, to target the live checks precisely:
   server-side, so both the originator and admin/non-owner scenarios should
   be correctly blocked by construction — verify live rather than trust this
   reading alone.
-- `MetricFlow.Accounts.AccountRepository.delete_account/2` →
-  `run_delete_account_transaction/1` is exactly:
-  `Multi.delete_all(:members, ...) |> Multi.delete(:account, account)`.
-  Nothing else is touched by the app. `agency_client_access_grants` has
-  `on_delete: :delete_all` FKs on both `agency_account_id` and
-  `client_account_id`, so agency grants cascade correctly at the DB level.
-  `integrations`, `metrics`, and `dashboards` have no `account_id` column at
-  all (`user_id` only) — they cannot cascade on account deletion regardless
-  of app logic, since the schema doesn't relate them to the account.
+- **UPDATE (retest after fix for issue 1c6090ec, commit a777e06):**
+  `AccountRepository.delete_account/2` now also calls `delete_all_metrics/1`,
+  `delete_all_integrations/1`, `delete_all_dashboards/1` (+ `delete_all_visualizations/1`),
+  all scoped by the *owner's user_id*, inside the same transaction as the
+  member/account deletes. Known limitation (accepted): a user who owns more
+  than one account loses ALL their metrics/integrations/dashboards on
+  deleting any one of them, since these tables still have no `account_id`.
+  For this retest, use a brand-new disposable owner who owns only the one
+  throwaway account, so this limitation doesn't confound the result.
 - Criterion 270/548's own BDD spex (`criterion_270_...spex.exs`) never
   actually checks metrics/reports/integrations — it only asserts the
-  deleted account disappears from the accounts list and settings page. This
-  is why the spex can pass while the stated criterion isn't implemented.
+  deleted account disappears from the accounts list and settings page.
+  Verify the real fix live via direct DB rows, not just the spex passing.
 - `extract_delete_params/1` (settings.ex ~L724) reads `account_name` from
   either `delete_confirmation[account_name]` (BDD) or flat
   `account_name_confirmation` (unit tests). Use whichever matches the real
