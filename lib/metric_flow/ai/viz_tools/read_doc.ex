@@ -1,22 +1,33 @@
 defmodule MetricFlow.Ai.VizTools.ReadDoc do
-  @moduledoc """
-  Read a specific Vega-Lite documentation page. Returns the full markdown content.
-  """
+  @moduledoc "Alloy tool: read a single Vega-Lite documentation page by path."
 
-  use Anubis.Server.Component, type: :tool
+  @behaviour Alloy.Tool
 
-  alias Anubis.Server.Response
   alias MetricFlow.Ai.VegaDocsReference
 
-  schema do
-    field :path, :string,
-      required: true,
-      description:
-        "File path (e.g. 'data.md', 'mark/bar.md', 'encoding/scale.md')"
+  @impl true
+  def name, do: "read_doc"
+
+  @impl true
+  def description,
+    do: "Read a specific Vega-Lite documentation page. Returns the full markdown content."
+
+  @impl true
+  def input_schema do
+    %{
+      type: "object",
+      properties: %{
+        path: %{
+          type: "string",
+          description: "File path (e.g. 'data.md', 'mark/bar.md', 'encoding/scale.md')"
+        }
+      },
+      required: ["path"]
+    }
   end
 
   @impl true
-  def execute(%{path: path}, frame) do
-    {:reply, Response.text(Response.tool(), VegaDocsReference.read(path)), frame}
+  def execute(%{"path" => path}, _context) do
+    {:ok, VegaDocsReference.read(path)}
   end
 end

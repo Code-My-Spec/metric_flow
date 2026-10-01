@@ -36,8 +36,10 @@ defmodule MetricFlowSpex.Criterion802LlmFailureSurfacesErrorSpex do
 
         capture_log(fn ->
           render_submit(context.view, "send_chat", %{"prompt" => "Change the color to green"})
-          Process.sleep(500)
-          render(context.view)
+          # Alloy retries a 529 overloaded_error with exponential backoff (up to
+          # ~14s worst case across 3 attempts) before the error surfaces, so poll
+          # instead of guessing a fixed sleep.
+          wait_for_chat_error(context.view)
         end)
 
         Application.delete_env(:metric_flow, :req_http_options)
@@ -51,6 +53,21 @@ defmodule MetricFlowSpex.Criterion802LlmFailureSurfacesErrorSpex do
 
         {:ok, context}
       end
+    end
+  end
+
+  defp wait_for_chat_error(view, attempts \\ 60)
+
+  defp wait_for_chat_error(_view, 0), do: :ok
+
+  defp wait_for_chat_error(view, attempts) do
+    html = render(view)
+
+    if html =~ "data-role=\"chat-error\"" do
+      :ok
+    else
+      Process.sleep(250)
+      wait_for_chat_error(view, attempts - 1)
     end
   end
 end

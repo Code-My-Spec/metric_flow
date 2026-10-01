@@ -1,21 +1,16 @@
 defmodule MetricFlow.Ai.VizChat do
   @moduledoc """
-  Conversational visualization agent backed by Anubis MCP tool components.
+  Conversational visualization agent backed by Alloy's agent loop.
 
-  Bridges between ReqLLM (Anthropic API) and Anubis tool definitions. The model
-  can update the Vega-Lite spec, browse documentation, and query available metrics.
-
-  Multi-turn conversation context is maintained by passing a `ReqLLM.Context`
-  struct between calls — the full tool-call/tool-result exchanges are preserved
-  so the model has complete history.
+  The model can update the Vega-Lite spec, browse Vega-Lite documentation,
+  and query available metrics via the `Alloy.Tool` modules in
+  `MetricFlow.Ai.VizTools`. Multi-turn history is the `Alloy.Message` list
+  `Alloy.run/2` returns, threaded back in as `messages` on the next call.
   """
 
-  require Logger
-
-  alias Anubis.Server.Frame
+  alias MetricFlow.Ai.LlmProvider
+  alias MetricFlow.Ai.VizChat.UnresolvableMetricHalt
   alias MetricFlow.Ai.VizTools
-
-  @chat_model "anthropic:claude-sonnet-4-5"
 
   @tool_modules [
     VizTools.UpdateSpec,
@@ -25,251 +20,87 @@ defmodule MetricFlow.Ai.VizChat do
     VizTools.QueryMetrics
   ]
 
-  @max_tool_depth 5
+  @fallback_text "I've completed my research. Let me know if you'd like me to try again."
 
   @doc """
   Send a message in the visualization chat.
 
   ## Parameters
 
-    * `context` — a `ReqLLM.Context` struct (or nil for first message)
+    * `messages` — prior `Alloy.Message` history (or `nil` for the first message)
     * `user_message` — the new user message text
     * `opts` — keyword list:
       - `:metric_names` — list of metric name strings available to the account
       - `:current_spec` — current Vega-Lite spec map (or nil)
       - `:system_prompt` — override the default system prompt
-      - `:req_http_options` — forwarded to ReqLLM for test cassettes
+      - `:req_http_options` — forwarded to the Anthropic provider for test cassettes
 
   ## Returns
 
-    * `{:ok, %{text: String.t(), spec: map() | nil, context: ReqLLM.Context.t()}}`
+    * `{:ok, %{text: String.t(), spec: map() | nil, context: [Alloy.Message.t()]}}`
+    * `{:error, {:unresolvable_metric, [String.t()]}}` — the model referenced a
+      metric name that doesn't exist for this account
     * `{:error, term()}`
   """
-  @spec send_message(ReqLLM.Context.t() | nil, String.t(), keyword()) ::
-          {:ok, %{text: String.t(), spec: map() | nil, context: ReqLLM.Context.t()}}
+  @spec send_message([Alloy.Message.t()] | nil, String.t(), keyword()) ::
+          {:ok, %{text: String.t(), spec: map() | nil, context: [Alloy.Message.t()]}}
           | {:error, term()}
-  def send_message(context, user_message, opts \\ []) do
+  def send_message(messages, user_message, opts \\ []) do
     {metric_names, opts} = Keyword.pop(opts, :metric_names, [])
     {current_spec, opts} = Keyword.pop(opts, :current_spec)
     {system_prompt, opts} = Keyword.pop(opts, :system_prompt)
 
     system_prompt = system_prompt || build_system_prompt(current_spec)
-    frame = %Frame{assigns: %{metric_names: metric_names}}
 
-    # Build ReqLLM tools from Anubis component schemas
-    req_tools = build_req_tools()
+    run_opts = [
+      provider: LlmProvider.chat_provider(opts),
+      tools: @tool_modules,
+      system_prompt: system_prompt,
+      messages: messages || [],
+      context: %{metric_names: metric_names},
+      middleware: [UnresolvableMetricHalt]
+    ]
 
-    # Build or extend the context with the new user message
-    context = build_context(context, user_message, system_prompt)
+    case Alloy.run(user_message, run_opts) do
+      {:ok, result} ->
+        {:ok,
+         %{
+           text: result.text || @fallback_text,
+           spec: extract_spec(result),
+           context: result.messages
+         }}
 
-    merged_opts =
-      Keyword.merge(opts,
-        system_prompt: system_prompt,
-        tools: req_tools,
-        tool_choice: :auto
-      )
+      {:error, %{status: :halted, error: error}} ->
+        {:error, {:unresolvable_metric, parse_unresolvable_names(error)}}
 
-    run_tool_loop(context, frame, merged_opts, _depth = 0, _spec = nil)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Context management
-  # ---------------------------------------------------------------------------
-
-  defp build_context(nil, user_message, _system_prompt) do
-    ReqLLM.Context.new([ReqLLM.Context.user(user_message)])
-  end
-
-  defp build_context(%ReqLLM.Context{} = ctx, user_message, _system_prompt) do
-    ReqLLM.Context.append(ctx, ReqLLM.Context.user(user_message))
-  end
-
-  # ---------------------------------------------------------------------------
-  # Agentic tool loop
-  # ---------------------------------------------------------------------------
-
-  defp run_tool_loop(context, _frame, _opts, depth, spec) when depth >= @max_tool_depth do
-    {:ok,
-     %{
-       text: "I've completed my research. Let me know if you'd like me to try again.",
-       spec: spec,
-       context: context
-     }}
-  end
-
-  defp run_tool_loop(context, frame, opts, depth, accumulated_spec) do
-    case ReqLLM.generate_text(@chat_model, context, opts) do
-      {:ok, response} ->
-        classified = ReqLLM.Response.classify(response)
-        text = classified.text
-        tool_calls = classified.tool_calls
-
-        if tool_calls == [] do
-          finish_conversation_turn(context, text, accumulated_spec)
-        else
-          continue_tool_loop(context, frame, opts, depth, accumulated_spec, text, tool_calls)
-        end
-
-      {:error, reason} ->
-        Logger.error("VizChat error at depth #{depth}: #{inspect(reason)}")
-        {:error, reason}
-    end
-  end
-
-  # No tool calls — conversation turn complete
-  defp finish_conversation_turn(context, text, accumulated_spec) do
-    updated_context = ReqLLM.Context.append(context, ReqLLM.Context.assistant(text))
-    {:ok, %{text: text, spec: accumulated_spec, context: updated_context}}
-  end
-
-  defp continue_tool_loop(context, frame, opts, depth, accumulated_spec, text, tool_calls) do
-    # Build assistant message with tool calls
-    assistant_msg = ReqLLM.Context.assistant(text, tool_calls: tool_calls)
-    context = ReqLLM.Context.append(context, assistant_msg)
-
-    # Execute tools — frame.assigns.validated_spec is set by UpdateSpec
-    # on successful validation, cleared on failure
-    frame =
-      frame
-      |> put_in([Access.key(:assigns), :validated_spec], nil)
-      |> put_in([Access.key(:assigns), :unresolvable_metrics], nil)
-
-    {context, frame} = execute_tools(context, tool_calls, frame)
-
-    validated_spec = frame.assigns[:validated_spec]
-    unresolvable_metrics = frame.assigns[:unresolvable_metrics]
-
-    cond do
-      unresolvable_metrics ->
-        # A metric the model referenced doesn't exist for this account —
-        # surface it directly rather than letting the model keep guessing
-        {:error, {:unresolvable_metric, unresolvable_metrics}}
-
-      validated_spec ->
-        # Tool validated and accepted a new spec — show it to the user
-        {:ok, %{text: text, spec: validated_spec, context: context}}
-
-      true ->
-        # No valid spec yet (other tools, or validation failed and errors
-        # were sent back to the LLM) — continue so the model can fix it
-        run_tool_loop(context, frame, opts, depth + 1, accumulated_spec)
+      {:error, result} ->
+        {:error, result.error}
     end
   end
 
   # ---------------------------------------------------------------------------
-  # Tool execution via Anubis components
+  # Result extraction
   # ---------------------------------------------------------------------------
 
-  defp execute_tools(context, tool_calls, frame) do
-    Enum.reduce(tool_calls, {context, frame}, fn tool_call, {ctx, frm} ->
-      name = tool_call.name
-      id = tool_call.id
-      args = tool_call.arguments
-
-      {result_text, frm} = execute_anubis_tool(name, args, frm)
-      tool_result_msg = ReqLLM.Context.tool_result(id, name, result_text)
-      {ReqLLM.Context.append(ctx, tool_result_msg), frm}
+  defp extract_spec(%{tool_calls: tool_calls}) do
+    tool_calls
+    |> Enum.reverse()
+    |> Enum.find_value(fn
+      %{name: "update_spec", structured_data: %{spec: spec}} -> spec
+      _ -> nil
     end)
   end
 
-  defp execute_anubis_tool(name, args, frame) do
-    case find_tool_module(name) do
-      nil ->
-        {"Tool '#{name}' not found.", frame}
+  defp parse_unresolvable_names(error) when is_binary(error) do
+    prefix = VizTools.UpdateSpec.unresolvable_prefix()
 
-      module ->
-        validated_args = validate_tool_input(module, args)
-
-        case module.execute(validated_args, frame) do
-          {:reply, %{content: content}, updated_frame} ->
-            {extract_text_from_response(content), updated_frame}
-
-          {:error, _error, updated_frame} ->
-            {"Tool execution failed.", updated_frame}
-        end
-    end
+    error
+    |> String.replace_prefix("Halted by middleware: ", "")
+    |> String.replace_prefix(prefix, "")
+    |> String.split(", ", trim: true)
   end
 
-  defp validate_tool_input(module, args) when is_map(args) do
-    # Anubis components expect atom keys; API sends string keys
-    atom_args =
-      Map.new(args, fn {k, v} ->
-        key = if is_binary(k), do: String.to_existing_atom(k), else: k
-        {key, v}
-      end)
-
-    case module.mcp_schema(atom_args) do
-      {:ok, validated} -> validated
-      {:error, _} -> atom_args
-    end
-  end
-
-  defp extract_text_from_response(content) when is_list(content) do
-    content
-    |> Enum.filter(&(&1["type"] == "text"))
-    |> Enum.map_join("\n", & &1["text"])
-  end
-
-  defp extract_text_from_response(_), do: ""
-
-  defp find_tool_module(name) do
-    Enum.find(@tool_modules, fn mod ->
-      tool_name(mod) == name
-    end)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Tool schema conversion (Anubis → ReqLLM)
-  # ---------------------------------------------------------------------------
-
-  defp build_req_tools do
-    Enum.map(@tool_modules, fn mod ->
-      {:ok, tool} =
-        ReqLLM.Tool.new(
-          name: tool_name(mod),
-          description: mod.__description__() || "",
-          parameter_schema: convert_anubis_schema_to_nimble(mod.__mcp_raw_schema__()),
-          # Callback not used — we execute via Anubis components directly
-          callback: fn _args -> {:ok, "executed via anubis"} end
-        )
-
-      tool
-    end)
-  end
-
-  # Convert Anubis field DSL to NimbleOptions-compatible schema for ReqLLM.Tool
-  defp convert_anubis_schema_to_nimble(schema) when is_map(schema) do
-    Enum.map(schema, fn {field_name, {:mcp_field, type, opts}} ->
-      {required, base_type} =
-        case type do
-          {:required, t} -> {true, t}
-          t -> {false, t}
-        end
-
-      nimble_type =
-        case base_type do
-          :string -> :string
-          :integer -> :integer
-          :number -> :float
-          :boolean -> :boolean
-          _ -> :string
-        end
-
-      nimble_opts =
-        [type: nimble_type, required: required] ++
-          if(opts[:description], do: [doc: opts[:description]], else: [])
-
-      {field_name, nimble_opts}
-    end)
-  end
-
-  # Derive a tool name from the module (e.g. VizTools.UpdateSpec → "update_spec")
-  defp tool_name(mod) do
-    mod
-    |> Module.split()
-    |> List.last()
-    |> Macro.underscore()
-  end
+  defp parse_unresolvable_names(_error), do: []
 
   # ---------------------------------------------------------------------------
   # System prompt

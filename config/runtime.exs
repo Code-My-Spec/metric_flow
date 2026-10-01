@@ -214,6 +214,18 @@ end
 # LLM API key — available in all environments (ADR: llm_provider)
 if anthropic_key = env!("ANTHROPIC_API_KEY", :string, test_placeholder.("test-anthropic-api-key")) do
   config :req_llm, :anthropic_api_key, anthropic_key
+
+  # Alloy provider for the visualization chat tool loop. Dev runs through the
+  # Claude Code subscription CLI (no per-token API billing); test and prod use
+  # the real Anthropic Messages API, with :req_options left for callers to
+  # fill in per-request (ReqCassette plug stubs in tests).
+  ai_chat_provider =
+    case config_env() do
+      :dev -> {Alloy.Provider.ClaudeCode, model: "sonnet"}
+      _ -> {Alloy.Provider.Anthropic, api_key: anthropic_key, model: "claude-sonnet-4-5"}
+    end
+
+  config :metric_flow, :ai_chat_provider, ai_chat_provider
 end
 
 # The support widget's socket, and the key it authenticates with. Read at
