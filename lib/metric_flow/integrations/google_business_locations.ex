@@ -53,6 +53,33 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   """
   @spec fetch_accounts(Integration.t(), keyword()) :: {:ok, list(String.t())} | {:error, term()}
   def fetch_accounts(%Integration{} = integration, opts \\ []) do
+    with {:ok, raw_accounts} <- fetch_raw_accounts(integration, opts) do
+      {:ok, Enum.map(raw_accounts, &Map.get(&1, "name"))}
+    end
+  end
+
+  @doc """
+  Lists the user's GBP accounts with both their ID and display name.
+
+  Returns `{:ok, [%{id: "accounts/123", name: "My Business"}, ...]}` on
+  success -- this is what a user actually picks from when authorizing which
+  GMB accounts to grant MetricFlow access to, distinct from `list_locations/2`
+  which lists individual locations *within* already-authorized accounts.
+  """
+  @spec list_accounts(Integration.t(), keyword()) :: {:ok, list(map())} | {:error, term()}
+  def list_accounts(%Integration{} = integration, opts \\ []) do
+    with {:ok, raw_accounts} <- fetch_raw_accounts(integration, opts) do
+      accounts =
+        Enum.map(raw_accounts, fn account ->
+          id = Map.get(account, "name")
+          %{id: id, name: Map.get(account, "accountName", id)}
+        end)
+
+      {:ok, accounts}
+    end
+  end
+
+  defp fetch_raw_accounts(%Integration{} = integration, opts) do
     url = "#{@accounts_api_base}/accounts"
     headers = [{"authorization", "Bearer #{integration.access_token}"}]
 
@@ -65,8 +92,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
 
       case response do
         %Req.Response{status: 200, body: %{"accounts" => accounts}} when is_list(accounts) ->
-          ids = Enum.map(accounts, &Map.get(&1, "name"))
-          {:ok, ids}
+          {:ok, accounts}
 
         %Req.Response{status: 200, body: _} ->
           {:ok, []}

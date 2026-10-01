@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/locations")
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -138,7 +138,7 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
       end
 
       given_ "the user visits the location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/locations")
         {:ok, Map.put(context, :view, view)}
       end
 

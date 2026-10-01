@@ -37,7 +37,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
         {:ok, context}
       end
 
-      then_ "submitting with empty location_ids shows an error requiring at least one selection",
+      then_ "submitting with no accounts selected shows an error requiring at least one selection",
             context do
         with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
 
             view
             |> form("[data-role='account-selection']")
-            |> render_submit(%{"location_ids" => []})
+            |> render_submit(%{"google_business_account_ids" => []})
 
             html = render(view)
             assert html =~ "Please select at least one"
@@ -84,7 +84,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
         {:ok, context}
       end
 
-      then_ "submitting with a valid location ID saves and redirects to the detail page",
+      then_ "submitting with a valid account ID saves and advances to the locations step",
             context do
         with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
@@ -96,13 +96,11 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
             view
             |> form("[data-role='account-selection']")
             |> render_submit(%{
-              "location_ids" => [
-                "accounts/102071280510983396749/locations/10802898290516887436"
-              ]
+              "google_business_account_ids" => ["accounts/102071280510983396749"]
             })
 
             {path, _flash} = assert_redirect(view)
-            assert path =~ "/app/integrations/connect/google_business"
+            assert path =~ "/app/integrations/connect/google_business/locations"
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)

@@ -14,7 +14,15 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     showing the OAuth initiation anchor and connection status.
 
   - `:accounts` (`/integrations/connect/:provider/accounts`) — account
-    selection view for choosing which ad accounts or properties to sync.
+    selection view for choosing which ad accounts or properties to sync. For
+    `google_business` specifically, this is GMB *account*-level authorization
+    (which business entities to grant access to), distinct from location
+    selection within them.
+
+  - `:locations` (`/integrations/connect/:provider/locations`) — `google_business`
+    only: the per-location sync selection within the accounts already
+    authorized via `:accounts`. Every other provider redirects here back to
+    its own `:accounts` step, since they have no second selection level.
 
   OAuth callback handling is performed by `IntegrationOauthController`, which
   can write to the Phoenix session (required for Assent state verification).
@@ -101,6 +109,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {render_platform_detail(assigns)}
           <% :result -> %>
             {render_result(assigns)}
+          <% :gbp_accounts -> %>
+            {render_gbp_account_selection(assigns)}
           <% :accounts -> %>
             {render_account_selection(assigns)}
         <% end %>
@@ -291,6 +301,69 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           </div>
         </div>
       <% end %>
+    </div>
+    """
+  end
+
+  defp render_gbp_account_selection(assigns) do
+    ~H"""
+    <div class="mf-card max-w-lg p-6">
+      <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
+      <p class="text-sm text-base-content/60 mb-4">
+        Choose which Google Business Profile accounts to grant MetricFlow access to.
+        You'll select specific locations to sync in the next step.
+      </p>
+
+      <form phx-submit="save_account_selection" data-role="account-selection" class="space-y-4 mb-6">
+        <%= if @display_accounts != [] do %>
+          <div data-role="account-list" class="space-y-2">
+            <p class="text-sm font-medium mb-2">Available accounts:</p>
+            <div
+              :for={account <- @display_accounts}
+              class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+              data-role="account-option"
+            >
+              <input
+                type="checkbox"
+                name="google_business_account_ids[]"
+                value={account.id}
+                data-role="account-checkbox"
+                class="checkbox checkbox-sm checkbox-primary"
+                checked={account.id in @selected_location_ids}
+              />
+              <div>
+                <span data-role="account-name" class="text-sm font-medium">{account.name}</span>
+                <span data-role="account-id" class="text-xs text-base-content/60 block">
+                  {account.id}
+                </span>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <%= if @accounts_error == :api_disabled do %>
+            <div class="alert alert-warning text-sm">
+              <span>
+                Could not fetch your Google Business accounts automatically. Please try again later.
+              </span>
+            </div>
+          <% else %>
+            <p class="text-sm text-base-content/60">No Google Business Profile accounts found.</p>
+          <% end %>
+        <% end %>
+
+        <button
+          type="submit"
+          data-role="save-accounts-btn"
+          class="btn btn-primary btn-sm"
+          disabled={@display_accounts == []}
+        >
+          Save and continue
+        </button>
+      </form>
+
+      <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="text-sm link">
+        ← Back to {@platform.name}
+      </.link>
     </div>
     """
   end
@@ -559,6 +632,14 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   def handle_params(
         %{"provider" => provider},
         _uri,
+        %{assigns: %{live_action: :locations}} = socket
+      ) do
+    handle_locations_params(provider, socket)
+  end
+
+  def handle_params(
+        %{"provider" => provider},
+        _uri,
         %{assigns: %{live_action: :detail}} = socket
       ) do
     handle_provider_params(provider, socket)
@@ -609,6 +690,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         {:noreply,
          put_flash(socket, :error, "You are not authorized to edit integration accounts.")}
 
+      socket.assigns.view_mode == :gbp_accounts ->
+        save_gbp_account_selection(scope, provider_str, params, socket)
+
       provider_atom == :google_business ->
         save_google_business_selection(scope, provider_atom, provider_str, params, socket)
 
@@ -622,6 +706,31 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   def handle_event("select_property", %{"property_id" => property_id}, socket) do
     {:noreply, assign(socket, :selected_property_id, property_id)}
+  end
+
+  defp save_gbp_account_selection(scope, provider_str, params, socket) do
+    account_ids = Map.get(params, "google_business_account_ids", [])
+
+    if account_ids == [] do
+      {:noreply, put_flash(socket, :error, "Please select at least one business account.")}
+    else
+      attrs = %{"google_business_account_ids" => account_ids}
+
+      case Integrations.update_provider_metadata(scope, :google_business, attrs) do
+        {:ok, _integration} ->
+          {:noreply,
+           socket
+           |> put_flash(
+             :info,
+             "#{length(account_ids)} business account(s) connected. Now select which locations to sync."
+           )
+           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}/locations")}
+
+        {:error, reason} ->
+          {:noreply,
+           put_flash(socket, :error, "Failed to save account selection: #{inspect(reason)}")}
+      end
+    end
   end
 
   defp save_google_business_selection(scope, provider_atom, provider_str, params, socket) do
@@ -734,6 +843,26 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   end
 
   defp handle_accounts_params(provider_str, socket) do
+    with_valid_integration(provider_str, socket, fn
+      :google_business, integration ->
+        assign_gbp_account_state(socket, provider_str, integration)
+
+      provider_atom, integration ->
+        assign_accounts_state(socket, provider_atom, provider_str, integration)
+    end)
+  end
+
+  defp handle_locations_params(provider_str, socket) do
+    with_valid_integration(provider_str, socket, fn
+      :google_business, integration ->
+        assign_accounts_state(socket, :google_business, provider_str, integration)
+
+      _provider_atom, _integration ->
+        {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect/#{provider_str}/accounts")}
+    end)
+  end
+
+  defp with_valid_integration(provider_str, socket, fun) do
     case validate_provider(provider_str) do
       :error ->
         {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect")}
@@ -767,7 +896,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
              |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
           true ->
-            assign_accounts_state(socket, provider_atom, provider_str, integration)
+            fun.(provider_atom, integration)
         end
     end
   end
@@ -806,6 +935,56 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
      |> assign(:missing_locations, missing_locations)}
   end
 
+  # Step 1 of GBP's two-step connection: which GMB *accounts* (business
+  # entities) is MetricFlow authorized to see at all. This has to happen
+  # before any individual location can be selected, since every location
+  # belongs to exactly one of these accounts.
+  defp assign_gbp_account_state(socket, provider_str, integration) do
+    scope = socket.assigns.current_scope
+
+    {accounts, accounts_error} =
+      case Integrations.list_google_business_accounts(scope) do
+        {:ok, accounts} -> {accounts, nil}
+        {:error, :api_disabled} -> {[], :api_disabled}
+        {:error, reason} -> {[], reason}
+      end
+
+    selected_account_ids = gbp_selected_account_ids(integration.provider_metadata)
+
+    {:noreply,
+     socket
+     |> assign(:view_mode, :gbp_accounts)
+     |> assign(:platform, resolve_platform(:google_business, provider_str))
+     |> assign(:provider, provider_str)
+     |> assign(:integration, integration)
+     |> assign(:accounts, accounts)
+     |> assign(:accounts_error, accounts_error)
+     |> assign(:selected_location_ids, selected_account_ids)
+     |> assign(
+       :display_accounts,
+       display_accounts(:google_business, accounts, selected_account_ids)
+     )}
+  end
+
+  # Before account-level selection existed, a connection stored only the
+  # single legacy "google_business_account_id" it was authorized against --
+  # with no selection concept, that one account was implicitly the whole
+  # scope. Falling back to it here surfaces that account as pre-selected on
+  # first revisit, carrying the old behavior forward (and prompting the user
+  # to confirm it) instead of silently dropping to "nothing selected".
+  defp gbp_selected_account_ids(provider_metadata) do
+    case get_in(provider_metadata || %{}, ["google_business_account_ids"]) do
+      ids when is_list(ids) and ids != [] ->
+        ids
+
+      _ ->
+        case get_in(provider_metadata || %{}, ["google_business_account_id"]) do
+          nil -> []
+          legacy_id -> [legacy_id]
+        end
+    end
+  end
+
   # QuickBooks' multi-select writes a plural "income_account_ids" key, kept
   # separate from the legacy singular "income_account_id" key that sync code
   # still reads for a single-account connection -- prefer the plural key when
@@ -813,25 +992,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp fetch_raw_selection(:quickbooks, provider_metadata, meta_key) do
     get_in(provider_metadata || %{}, ["income_account_ids"]) ||
       get_in(provider_metadata || %{}, [meta_key])
-  end
-
-  # Before location-level multi-select existed, a connection stored only the
-  # single legacy "google_business_account_id" it was authorized against --
-  # with no selection concept, every location under that one account was
-  # implicitly in scope. Falling back to it here surfaces that account as
-  # pre-selected on first revisit, carrying the old behavior forward instead
-  # of silently dropping to "nothing selected".
-  defp fetch_raw_selection(:google_business, provider_metadata, meta_key) do
-    case get_in(provider_metadata || %{}, [meta_key]) do
-      nil ->
-        case get_in(provider_metadata || %{}, ["google_business_account_id"]) do
-          nil -> nil
-          legacy_id -> [legacy_id]
-        end
-
-      included ->
-        included
-    end
   end
 
   defp fetch_raw_selection(_provider_atom, provider_metadata, meta_key) do

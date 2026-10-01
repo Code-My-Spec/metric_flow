@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.LocationsFromMultipleAccountsMergeIntoOneListSpex do
 
       when_ "the user views the location list", context do
         {:ok, view, html} =
-          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+          live(context.owner_conn, "/app/integrations/connect/google_business/locations")
 
         {:ok, Map.merge(context, %{view: view, html: html})}
       end

@@ -39,27 +39,35 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
         {:ok, context}
       end
 
-      then_ "the accounts page shows real locations with checkboxes", context do
+      then_ "the user first selects which GMB accounts to authorize, then sees real locations with checkboxes",
+            context do
         with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
-            {:ok, view, html} =
+            {:ok, accounts_view, accounts_html} =
               live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-            # Real account list rendered (not manual entry fallback)
-            assert html =~ "data-role=\"account-list\""
-            assert html =~ "data-role=\"location-title\""
-            assert html =~ "data-role=\"location-account-name\""
+            assert accounts_html =~ "data-role=\"account-list\""
+            assert has_element?(accounts_view, "input[type='checkbox'][name='google_business_account_ids[]']")
+            assert accounts_html =~ "Select Accounts"
+
+            accounts_view
+            |> form("[data-role='account-selection']")
+            |> render_submit(%{"google_business_account_ids" => ["accounts/102071280510983396749"]})
+
+            {:ok, locations_view, locations_html} =
+              live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+
+            # Real location list rendered (not manual entry fallback)
+            assert locations_html =~ "data-role=\"location-title\""
+            assert locations_html =~ "data-role=\"location-account-name\""
 
             # Multi-select checkboxes
-            assert has_element?(view, "input[type='checkbox'][name='location_ids[]']")
-
-            # Heading
-            assert html =~ "Select Accounts"
+            assert has_element?(locations_view, "input[type='checkbox'][name='location_ids[]']")
 
             # Save button present
-            assert has_element?(view, "[data-role='save-selection']")
+            assert has_element?(locations_view, "[data-role='save-selection']")
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)

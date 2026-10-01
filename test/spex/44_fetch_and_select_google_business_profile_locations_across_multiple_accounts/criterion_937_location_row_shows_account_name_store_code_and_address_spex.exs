@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.LocationRowShowsAccountNameStoreCodeAndAddressSpex do
         )
 
         {:ok, view, _html} =
-          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+          live(context.owner_conn, "/app/integrations/connect/google_business/locations")
 
         {:ok, Map.put(context, :view, view)}
       end

@@ -55,7 +55,8 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
         {:ok, context}
       end
 
-      then_ "the save selection button is present so the user can confirm a selection", context do
+      then_ "the save button is present so the user can confirm a selection, with the legacy account pre-selected",
+            context do
         with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
@@ -63,7 +64,12 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
             {:ok, view, _html} =
               live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-            assert has_element?(view, "[data-role='save-selection']")
+            assert has_element?(view, "[data-role='save-accounts-btn']")
+
+            assert has_element?(
+                     view,
+                     "input[type='checkbox'][value='accounts/102071280510983396749'][checked]"
+                   )
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)

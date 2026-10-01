@@ -81,6 +81,7 @@ defmodule MetricFlowWeb.Router do
       live "/integrations/connect", IntegrationLive.Connect, :index
       live "/integrations/connect/:provider", IntegrationLive.Connect, :detail
       live "/integrations/connect/:provider/accounts", IntegrationLive.Connect, :accounts
+      live "/integrations/connect/:provider/locations", IntegrationLive.Connect, :locations
       live "/integrations/:provider/accounts/edit", IntegrationLive.AccountEdit, :edit
       live "/integrations/:provider/dashboard", IntegrationLive.ProviderDashboard, :index
       live "/integrations/sync-history", IntegrationLive.SyncHistory, :index

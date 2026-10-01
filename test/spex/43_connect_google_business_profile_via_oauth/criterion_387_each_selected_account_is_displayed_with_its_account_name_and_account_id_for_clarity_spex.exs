@@ -2,19 +2,12 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/integrations",
-    match_requests_on: [:method, :uri],
-    filter_request_headers: ["authorization"]
-  ]
-
   spex "Each selected account is displayed with its account name and account ID",
        fail_on_error_logs: false, criterion: 387 do
-    scenario "Google Business account selection page shows location titles and account names" do
+    scenario "Google Business account selection page shows account names and IDs" do
       given_ :user_logged_in_as_owner
 
       given_ "user has a connected google_business integration", context do
@@ -22,6 +15,10 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
         creds = Application.get_env(:metric_flow, :test_credentials, [])
         access_token = Keyword.get(creds, :google_access_token, "cassette-token")
         refresh_token = Keyword.get(creds, :google_refresh_token, "cassette-refresh")
+
+        Application.put_env(:metric_flow, :req_http_options,
+          plug: fn conn -> Plug.Conn.send_resp(conn, 404, "") end
+        )
 
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
           provider: :google_business,
@@ -37,37 +34,26 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
         {:ok, context}
       end
 
-      then_ "each location entry shows a location title via data-role attribute", context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+      then_ "each account entry shows its account name via data-role attribute", context do
+        capture_log(fn ->
+          {:ok, view, _html} =
+            live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-          capture_log(fn ->
-            {:ok, view, _html} =
-              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
-
-            assert has_element?(view, "[data-role='location-title']")
-          end)
-
-          Application.delete_env(:metric_flow, :req_http_options)
-        end
+          assert has_element?(view, "[data-role='account-name']")
+        end)
 
         {:ok, context}
       end
 
-      then_ "each location entry shows an account name via data-role attribute", context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+      then_ "each account entry shows its account ID via data-role attribute", context do
+        capture_log(fn ->
+          {:ok, view, _html} =
+            live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-          capture_log(fn ->
-            {:ok, view, _html} =
-              live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+          assert has_element?(view, "[data-role='account-id']")
+        end)
 
-            assert has_element?(view, "[data-role='location-account-name']")
-          end)
-
-          Application.delete_env(:metric_flow, :req_http_options)
-        end
-
+        Application.delete_env(:metric_flow, :req_http_options)
         {:ok, context}
       end
     end

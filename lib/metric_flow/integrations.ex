@@ -443,6 +443,20 @@ defmodule MetricFlow.Integrations do
     end
   end
 
+  @doc """
+  Lists the GBP *accounts* (not locations) the scoped user's Google token has
+  access to -- the step that must come before a location can be selected,
+  since a location always belongs to one of these accounts.
+  """
+  @spec list_google_business_accounts(Scope.t(), keyword()) ::
+          {:ok, list(map())} | {:error, term()}
+  def list_google_business_accounts(%Scope{} = scope, opts \\ []) do
+    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_business),
+         {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
+      GoogleBusinessLocations.list_accounts(fresh, opts)
+    end
+  end
+
   # Refreshes the token if expired, returns the integration as-is if still valid.
   defp ensure_fresh_integration(scope, %Integration{} = integration) do
     if Integration.expired?(integration) and is_binary(integration.refresh_token) do

@@ -58,16 +58,24 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
         {:ok, context}
       end
 
-      then_ "the accounts page shows checkboxes so the user can modify their selection",
+      then_ "the accounts page shows checkboxes so the user can modify their account selection, and the locations page shows checkboxes for their location selection",
             context do
         with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
-            {:ok, view, _html} =
+            {:ok, accounts_view, _html} =
               live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-            assert has_element?(view, "input[type='checkbox'][name='location_ids[]']")
+            assert has_element?(
+                     accounts_view,
+                     "input[type='checkbox'][name='google_business_account_ids[]']"
+                   )
+
+            {:ok, locations_view, _html} =
+              live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+
+            assert has_element?(locations_view, "input[type='checkbox'][name='location_ids[]']")
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)

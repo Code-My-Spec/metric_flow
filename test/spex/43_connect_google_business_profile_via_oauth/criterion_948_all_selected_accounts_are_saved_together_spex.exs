@@ -10,22 +10,18 @@ defmodule MetricFlowSpex.AllSelectedAccountsAreSavedTogetherSpex do
 
       given_ "a user selected multiple GMB accounts", context do
         plug = fn conn ->
-          case conn.request_path do
-            "/v1/accounts/111/locations" ->
-              Plug.Conn.send_resp(
-                conn,
-                200,
-                Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/loc-a", "title" => "Location A"}]
-                })
-              )
+  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
-            "/v1/accounts/222/locations" ->
+          case conn.request_path do
+            "/v1/accounts" ->
               Plug.Conn.send_resp(
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/loc-b", "title" => "Location B"}]
+                  "accounts" => [
+                    %{"name" => "accounts/111", "accountName" => "Account One"},
+                    %{"name" => "accounts/222", "accountName" => "Account Two"}
+                  ]
                 })
               )
 
@@ -37,9 +33,7 @@ defmodule MetricFlowSpex.AllSelectedAccountsAreSavedTogetherSpex do
         Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
-          provider_metadata: %{
-            "google_business_account_ids" => ["accounts/111", "accounts/222"]
-          }
+          provider_metadata: %{}
         )
 
         {:ok, view, _html} =
@@ -47,15 +41,13 @@ defmodule MetricFlowSpex.AllSelectedAccountsAreSavedTogetherSpex do
 
         view
         |> element("[data-role='account-selection']")
-        |> render_submit(%{
-          "location_ids" => ["accounts/111/locations/loc-a", "accounts/222/locations/loc-b"]
-        })
+        |> render_submit(%{"google_business_account_ids" => ["accounts/111", "accounts/222"]})
 
         {_path, _flash} = assert_redirect(view)
         {:ok, context}
       end
 
-      when_ "the integration is saved", context do
+      when_ "the integration is saved and the accounts page is revisited", context do
         {:ok, view, _html} =
           live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
@@ -65,12 +57,12 @@ defmodule MetricFlowSpex.AllSelectedAccountsAreSavedTogetherSpex do
       then_ "all selected accounts are saved together, not just the first one", context do
         assert has_element?(
                  context.view,
-                 "input[type='checkbox'][value='accounts/111/locations/loc-a'][checked]"
+                 "input[type='checkbox'][value='accounts/111'][checked]"
                )
 
         assert has_element?(
                  context.view,
-                 "input[type='checkbox'][value='accounts/222/locations/loc-b'][checked]"
+                 "input[type='checkbox'][value='accounts/222'][checked]"
                )
 
         Application.delete_env(:metric_flow, :req_http_options)

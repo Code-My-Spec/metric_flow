@@ -42,7 +42,7 @@ defmodule MetricFlowSpex.UserUpdatesLocationSelectionLaterWithoutReAuthenticatin
 
       when_ "they return later and change which locations are included", context do
         {:ok, view, html} =
-          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+          live(context.owner_conn, "/app/integrations/connect/google_business/locations")
 
         refute html =~ "/app/integrations/oauth/google_business"
 
