@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion808NamesAndSavesForReuseSpex do
 
   spex "User names and saves a visualization for reuse in reports", criterion: 808 do
     scenario "a user builds a visualization and names and saves it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user has built a visualization in the authoring workspace", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

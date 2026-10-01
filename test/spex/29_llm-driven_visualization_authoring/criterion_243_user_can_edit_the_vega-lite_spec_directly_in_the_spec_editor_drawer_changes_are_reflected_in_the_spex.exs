@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion243DirectSpecEditReflectsWithoutLlmSpex do
   spex "User can edit the Vega-Lite spec directly in the spec editor drawer; changes are reflected in the live preview without requiring an LLM round-trip",
     criterion: 243 do
     scenario "editing the spec textarea updates the preview without calling the LLM" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user opens the visualization editor and spec panel", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

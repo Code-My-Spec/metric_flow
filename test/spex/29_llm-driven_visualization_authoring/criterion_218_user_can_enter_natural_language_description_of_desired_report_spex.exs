@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
 
   spex "User can enter natural language description of desired report", criterion: 218 do
     scenario "report generator page has a prompt textarea" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       when_ "user navigates to the report generator", context do
         {:ok, view, html} = live(context.owner_conn, "/app/reports/generate")
@@ -22,8 +22,8 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
     end
 
     scenario "user can type a prompt and the form accepts it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user is on the report generator page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/reports/generate")
@@ -33,7 +33,9 @@ defmodule MetricFlowSpex.Criterion4145NaturalLanguagePromptSpex do
       when_ "user types a natural language description", context do
         html =
           context.view
-          |> render_change("update_prompt", %{"prompt" => "Show me weekly revenue over the last 90 days"})
+          |> render_change("update_prompt", %{
+            "prompt" => "Show me weekly revenue over the last 90 days"
+          })
 
         {:ok, Map.put(context, :html, html)}
       end

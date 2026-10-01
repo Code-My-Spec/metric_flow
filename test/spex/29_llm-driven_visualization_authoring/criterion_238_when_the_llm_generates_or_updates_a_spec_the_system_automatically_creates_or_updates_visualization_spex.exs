@@ -2,38 +2,35 @@ defmodule MetricFlowSpex.Criterion238AutoUpdatesJoinTableEntriesSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
-
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
 
   spex "When the LLM generates or updates a spec, the system automatically creates or updates visualization_metrics join table entries to bind every referenced metric name to the visualization",
     criterion: 238 do
     scenario "saving a chat-generated visualization binds its referenced metric via the join table" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the LLM generates a spec referencing a metric", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
 
-        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
 
-          capture_log(fn ->
-            render_submit(new_view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
-            Process.sleep(100)
-            render(new_view)
-          end)
+        capture_log(fn ->
+          render_submit(new_view, "send_chat", %{
+            "prompt" => "Show me impressions over time as a line chart"
+          })
 
-          Application.delete_env(:metric_flow, :req_http_options)
-        end
+          Process.sleep(100)
+          render(new_view)
+        end)
+
+        Application.delete_env(:metric_flow, :command_runner)
 
         new_view
         |> element("form[phx-change='validate_name']")
@@ -51,7 +48,9 @@ defmodule MetricFlowSpex.Criterion238AutoUpdatesJoinTableEntriesSpex do
       end
 
       when_ "the user reopens the visualization for editing", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/#{context.viz_id}/edit")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/visualizations/#{context.viz_id}/edit")
+
         {:ok, Map.put(context, :view, view)}
       end
 

@@ -2,51 +2,51 @@ defmodule MetricFlowSpex.Criterion5049SpecLoadedIntoEditorAndPreviewSpex do
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
-
-  spex "Generated spec is immediately loaded into the editor and rendered in preview", fail_on_error_logs: false, criterion: 227 do
+  spex "Generated spec is immediately loaded into the editor and rendered in preview",
+    fail_on_error_logs: false,
+    criterion: 227 do
     scenario "after LLM generation, both the chart and spec editor reflect the result" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user opens the visualization editor", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "user generates a chart and it appears in the preview with spec in the editor", context do
-        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+      then_ "user generates a chart and it appears in the preview with spec in the editor",
+            context do
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
 
-          capture_log(fn ->
-            render_submit(context.view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
-            Process.sleep(100)
-            render(context.view)
-          end)
+        capture_log(fn ->
+          render_submit(context.view, "send_chat", %{
+            "prompt" => "Show me impressions over time as a line chart"
+          })
 
-          # Chart renders in the preview area
-          assert has_element?(context.view, "[data-role='chart-preview-section']")
-          assert has_element?(context.view, "[data-role='vega-lite-chart'][phx-hook='VegaLite']")
-          refute has_element?(context.view, "[data-role='chart-placeholder']")
+          Process.sleep(100)
+          render(context.view)
+        end)
 
-          # Open spec editor and verify spec is populated
-          context.view |> element("[data-role='open-spec-panel']") |> render_click()
-          html = render(context.view)
-          assert html =~ "impressions"
-          assert html =~ "$schema"
+        # Chart renders in the preview area
+        assert has_element?(context.view, "[data-role='chart-preview-section']")
+        assert has_element?(context.view, "[data-role='vega-lite-chart'][phx-hook='VegaLite']")
+        refute has_element?(context.view, "[data-role='chart-placeholder']")
 
-          Application.delete_env(:metric_flow, :req_http_options)
-        end
+        # Open spec editor and verify spec is populated
+        context.view |> element("[data-role='open-spec-panel']") |> render_click()
+        html = render(context.view)
+        assert html =~ "impressions"
+        assert html =~ "$schema"
+
+        Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, context}
       end

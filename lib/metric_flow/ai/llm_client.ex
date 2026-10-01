@@ -1,43 +1,31 @@
 defmodule MetricFlow.Ai.LlmClient do
   @moduledoc """
-  Thin wrapper around ReqLLM that centralises model selection, system prompts,
-  and error handling for all three AI features.
+  Thin wrapper centralising model selection, system prompts, and error
+  handling for all three AI features.
 
-  Defines module constants for the two Anthropic Claude model tiers used across
-  the Ai context:
+  - `generate_insights/3` and `generate_vega_spec/3` run through `Alloy.run/2`
+    with a single forced tool (`until_tool:`) whose `input_schema` is the
+    structured shape each feature needs — see `MetricFlow.Ai.LlmTools`. The
+    provider is resolved by `MetricFlow.Ai.LlmProvider` (Claude Code CLI in
+    dev/test, the real Anthropic Messages API in prod); pass `command_runner:`
+    in opts to inject a `MetricFlowTest.ClaudeCodeStub` in tests.
+  - `stream_chat/3` is unchanged: it still calls `ReqLLM.stream_text/3`
+    directly. Pass `req_http_options: [plug: plug]` (from ReqCassette) in
+    opts for test recording, as before.
 
-  - `@chat_model` — Claude Sonnet 4.5 for interactive chat and Vega-Lite report generation
-  - `@insights_model` — Claude Haiku 4.5 for cost-efficient batch insights generation
+  Defines module constants for the two Anthropic Claude model tiers used
+  across the Ai context:
 
-  All API functions accept an optional `opts` keyword list that is forwarded to
-  ReqLLM. In tests, pass `req_http_options: [plug: plug]` (from ReqCassette) to
-  intercept HTTP calls without hitting the real Anthropic API.
+  - `@chat_model` — Claude Sonnet 4.5, used by `stream_chat/3`
+  - `@insights_model` — Claude Haiku 4.5 (kept for reference; `generate_insights/3`
+    now runs on the shared chat provider's configured model)
   """
+
+  alias MetricFlow.Ai.LlmProvider
+  alias MetricFlow.Ai.LlmTools.{EmitInsights, EmitVegaSpec}
 
   @chat_model "anthropic:claude-sonnet-4-5"
   @insights_model "anthropic:claude-haiku-4-5"
-
-  @insight_schema [
-    insights: [
-      type:
-        {:list,
-         {:map,
-          [
-            summary: [type: :string, required: true],
-            content: [type: :string, required: true],
-            suggestion_type: [type: :string, required: true],
-            confidence: [type: :float, required: true]
-          ]}},
-      required: true
-    ]
-  ]
-
-  # Anthropic structured output rejects `additionalProperties: true` on objects.
-  # Vega-Lite specs are inherently open-ended, so we wrap the entire spec as a
-  # JSON string and decode it ourselves.
-  @vega_wrapper_schema [
-    vega_lite_json: [type: :string, required: true]
-  ]
 
   @base_system_prompt """
   You are a marketing analytics assistant specialising in multi-platform
@@ -54,13 +42,15 @@ defmodule MetricFlow.Ai.LlmClient do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns the model string used for interactive chat and Vega-Lite report generation.
+  Returns the model string used for interactive chat (`stream_chat/3`).
   """
   @spec chat_model() :: String.t()
   def chat_model, do: @chat_model
 
   @doc """
-  Returns the model string used for batch insights generation.
+  Returns the model string historically used for batch insights generation.
+  Kept for reference; `generate_insights/3` now runs on the Alloy chat
+  provider's configured model rather than selecting a model per call.
   """
   @spec insights_model() :: String.t()
   def insights_model, do: @insights_model
@@ -82,21 +72,23 @@ defmodule MetricFlow.Ai.LlmClient do
   @doc """
   Generates structured AI insights from correlation data.
 
-  Calls `ReqLLM.generate_object/4` with `@insights_model` and the NimbleOptions
-  insight schema.
+  Runs `Alloy.run/2` with the `emit_insights` tool forced via `until_tool:`.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a `MetricFlowTest.ClaudeCodeStub`
+  for test recording.
   """
   @spec generate_insights(String.t(), String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def generate_insights(system_prompt, user_content, opts \\ []) do
-    case ReqLLM.generate_object(
-           @insights_model,
-           user_content,
-           @insight_schema,
-           Keyword.merge(opts, system_prompt: system_prompt)
-         ) do
-      {:ok, %{object: data}} -> {:ok, data}
-      {:error, reason} -> {:error, reason}
+    run_opts = [
+      provider: LlmProvider.chat_provider(opts),
+      tools: [EmitInsights],
+      until_tool: "emit_insights",
+      system_prompt: system_prompt
+    ]
+
+    case Alloy.run(user_content, run_opts) do
+      {:ok, result} -> extract_tool_input(result, "emit_insights")
+      {:error, result} -> {:error, result.error}
     end
   end
 
@@ -122,34 +114,42 @@ defmodule MetricFlow.Ai.LlmClient do
   @doc """
   Generates a Vega-Lite v5 JSON specification from a natural language description.
 
-  Uses a NimbleOptions wrapper schema that asks the LLM to return the Vega-Lite
-  spec as a JSON string, which is then decoded. This avoids Anthropic's restriction
-  on `additionalProperties: true` in structured output schemas.
+  Runs `Alloy.run/2` with the `emit_vega_spec` tool forced via `until_tool:`.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a `MetricFlowTest.ClaudeCodeStub`
+  for test recording.
   """
   @spec generate_vega_spec(String.t(), String.t(), keyword()) :: {:ok, map()} | {:error, term()}
   def generate_vega_spec(system_prompt, user_content, opts \\ []) do
-    enhanced_content =
-      user_content <>
-        "\n\nReturn the COMPLETE Vega-Lite v5 specification as a valid JSON string " <>
-        "in the vega_lite_json field. The JSON must include $schema, mark, and encoding keys."
+    run_opts = [
+      provider: LlmProvider.chat_provider(opts),
+      tools: [EmitVegaSpec],
+      until_tool: "emit_vega_spec",
+      system_prompt: system_prompt
+    ]
 
-    case ReqLLM.generate_object(
-           @chat_model,
-           enhanced_content,
-           @vega_wrapper_schema,
-           Keyword.merge(opts, system_prompt: system_prompt)
-         ) do
-      {:ok, %{object: %{"vega_lite_json" => json_str}}} ->
-        case Jason.decode(json_str) do
-          {:ok, spec} -> {:ok, spec}
-          {:error, _} -> {:error, :invalid_vega_spec}
-        end
-
-      {:error, reason} ->
-        {:error, reason}
+    case Alloy.run(user_content, run_opts) do
+      {:ok, result} -> extract_vega_spec(result)
+      {:error, result} -> {:error, result.error}
     end
   end
 
+  # ---------------------------------------------------------------------------
+  # Private: tool-result extraction
+  # ---------------------------------------------------------------------------
+
+  defp extract_tool_input(%{tool_calls: tool_calls}, tool_name) do
+    case Enum.find(tool_calls, &(&1[:name] == tool_name)) do
+      %{structured_data: data} -> {:ok, data}
+      _ -> {:error, :tool_not_called}
+    end
+  end
+
+  defp extract_vega_spec(result) do
+    case extract_tool_input(result, "emit_vega_spec") do
+      {:ok, %{"spec" => spec}} -> {:ok, spec}
+      {:ok, _other} -> {:error, :invalid_vega_spec}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 end

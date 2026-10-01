@@ -97,7 +97,7 @@ defmodule MetricFlow.Ai do
   Loads correlation results, delegates to InsightsGenerator for LLM processing,
   and persists the returned Insight records.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a MetricFlowTest.ClaudeCodeStub for test recording.
   """
   @spec generate_insights(Scope.t(), integer(), keyword()) ::
           {:ok, list(Insight.t())} | {:error, term()}
@@ -121,7 +121,7 @@ defmodule MetricFlow.Ai do
   Generates a Vega-Lite v5 visualization specification from a natural language
   prompt.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a MetricFlowTest.ClaudeCodeStub for test recording.
   """
   @spec generate_vega_spec(Scope.t(), String.t(), keyword()) ::
           {:ok, map()} | {:error, term()}

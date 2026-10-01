@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion234AuthoringWorkspaceThreePanelsAtEditRouteSpe
   spex "User can open a visualization authoring workspace at /app/visualizations/:id/edit that shows three panels: a chat panel on the left, a live chart preview in the center, and a slide-out Vega-Lite JSON spec editor on the right",
     criterion: 234 do
     scenario "opening a saved visualization for editing shows the chat, preview, and spec editor panels" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved visualization", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -34,7 +34,9 @@ defmodule MetricFlowSpex.Criterion234AuthoringWorkspaceThreePanelsAtEditRouteSpe
       end
 
       when_ "the user navigates to /app/visualizations/:id/edit", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/#{context.viz_id}/edit")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/visualizations/#{context.viz_id}/edit")
+
         {:ok, Map.put(context, :view, view)}
       end
 

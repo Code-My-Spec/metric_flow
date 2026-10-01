@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion239MultiMetricUsesLayerPerMetricSpex do
   spex "Multi-metric visualizations use a Vega-Lite layer with a separate named data source per metric",
     criterion: 239 do
     scenario "a spec referencing two metrics renders with one layer entry per metric" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user opens the visualization editor and spec panel", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

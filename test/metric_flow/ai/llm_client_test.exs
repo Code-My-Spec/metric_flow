@@ -4,6 +4,7 @@ defmodule MetricFlow.Ai.LlmClientTest do
   import ReqCassette
 
   alias MetricFlow.Ai.LlmClient
+  alias MetricFlowTest.ClaudeCodeStub
 
   @cassette_dir "test/cassettes/ai"
   # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
@@ -97,18 +98,25 @@ defmodule MetricFlow.Ai.LlmClientTest do
   # ---------------------------------------------------------------------------
 
   describe "generate_insights/3" do
-    test "returns ok tuple with structured insight data on success" do
-      with_cassette "generate_insights", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result =
-          LlmClient.generate_insights(
-            LlmClient.base_system_prompt(),
-            "Analyze these correlations: sessions→revenue coefficient=0.85, optimal_lag=3 days",
-            req_http_options: [plug: plug]
-          )
+    @insight %{
+      "summary" => "Sessions strongly predict revenue",
+      "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+      "suggestion_type" => "budget_increase",
+      "confidence" => 0.85
+    }
 
-        assert {:ok, data} = result
-        assert is_map(data)
-      end
+    test "returns ok tuple with structured insight data on success" do
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [@insight]})
+
+      result =
+        LlmClient.generate_insights(
+          LlmClient.base_system_prompt(),
+          "Analyze these correlations: sessions→revenue coefficient=0.85, optimal_lag=3 days",
+          command_runner: runner
+        )
+
+      assert {:ok, data} = result
+      assert is_map(data)
     end
 
     # Was "contains suggestions field". `@insight_schema` requires a top-level
@@ -116,16 +124,16 @@ defmodule MetricFlow.Ai.LlmClientTest do
     # — and `InsightsGenerator` reads `"insights"`. `suggestions` was the key the
     # first schema used; nothing has produced it since.
     test "returned data contains insights field" do
-      with_cassette "generate_insights", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, data} =
-          LlmClient.generate_insights(
-            LlmClient.base_system_prompt(),
-            "Analyze these correlations: sessions→revenue coefficient=0.85, optimal_lag=3 days",
-            req_http_options: [plug: plug]
-          )
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [@insight]})
 
-        assert Map.has_key?(data, "insights") or Map.has_key?(data, :insights)
-      end
+      {:ok, data} =
+        LlmClient.generate_insights(
+          LlmClient.base_system_prompt(),
+          "Analyze these correlations: sessions→revenue coefficient=0.85, optimal_lag=3 days",
+          command_runner: runner
+        )
+
+      assert Map.has_key?(data, "insights") or Map.has_key?(data, :insights)
     end
   end
 
@@ -154,47 +162,56 @@ defmodule MetricFlow.Ai.LlmClientTest do
   # ---------------------------------------------------------------------------
 
   describe "generate_vega_spec/3" do
-    test "returns ok tuple with a Vega-Lite spec map on success" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result =
-          LlmClient.generate_vega_spec(
-            LlmClient.base_system_prompt(),
-            "Create a bar chart showing revenue by month",
-            req_http_options: [plug: plug]
-          )
+    @vega_spec %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "mark" => "bar",
+      "encoding" => %{
+        "x" => %{"field" => "month", "type" => "temporal"},
+        "y" => %{"field" => "revenue", "type" => "quantitative"}
+      }
+    }
 
-        assert {:ok, spec} = result
-        assert is_map(spec)
-      end
+    test "returns ok tuple with a Vega-Lite spec map on success" do
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => @vega_spec})
+
+      result =
+        LlmClient.generate_vega_spec(
+          LlmClient.base_system_prompt(),
+          "Create a bar chart showing revenue by month",
+          command_runner: runner
+        )
+
+      assert {:ok, spec} = result
+      assert is_map(spec)
     end
 
     test "returned map contains required Vega-Lite fields" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} =
-          LlmClient.generate_vega_spec(
-            LlmClient.base_system_prompt(),
-            "Create a bar chart showing revenue by month",
-            req_http_options: [plug: plug]
-          )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => @vega_spec})
 
-        assert Map.has_key?(spec, "$schema")
-        assert Map.has_key?(spec, "mark")
-        assert Map.has_key?(spec, "encoding")
-      end
+      {:ok, spec} =
+        LlmClient.generate_vega_spec(
+          LlmClient.base_system_prompt(),
+          "Create a bar chart showing revenue by month",
+          command_runner: runner
+        )
+
+      assert Map.has_key?(spec, "$schema")
+      assert Map.has_key?(spec, "mark")
+      assert Map.has_key?(spec, "encoding")
     end
 
     test "dollar-schema field points to a Vega-Lite v5 URL" do
-      with_cassette "generate_vega_spec", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} =
-          LlmClient.generate_vega_spec(
-            LlmClient.base_system_prompt(),
-            "Create a bar chart showing revenue by month",
-            req_http_options: [plug: plug]
-          )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => @vega_spec})
 
-        assert String.contains?(spec["$schema"], "vega-lite")
-        assert String.contains?(spec["$schema"], "v5")
-      end
+      {:ok, spec} =
+        LlmClient.generate_vega_spec(
+          LlmClient.base_system_prompt(),
+          "Create a bar chart showing revenue by month",
+          command_runner: runner
+        )
+
+      assert String.contains?(spec["$schema"], "vega-lite")
+      assert String.contains?(spec["$schema"], "v5")
     end
   end
 end

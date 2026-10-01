@@ -1,33 +1,8 @@
 defmodule MetricFlow.Ai.InsightsGeneratorTest do
   use ExUnit.Case, async: true
 
-  import ReqCassette
-
   alias MetricFlow.Ai.InsightsGenerator
-
-  @cassette_dir "test/cassettes/ai"
-  # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
-  # same two reasons.
-  #
-  # `mode: :replay` because ReqCassette's default is `:record` — "record if the
-  # cassette or the interaction is missing, otherwise replay" — so a miss reaches
-  # api.anthropic.com for real and writes whatever it answers into the cassette.
-  # Measured: these tests failed with "Your credit balance is too low to access
-  # the Anthropic API", which is a unit test reporting a billing problem, and a
-  # `mix test` run appended 714 lines across five cassettes.
-  #
-  # `match_requests_on: [:method, :uri]` because the default includes `:body`,
-  # and the body carries the system prompt. Both prompts have been edited since
-  # these were recorded (report 829 → 1354 characters, insights 909 → 1497), so
-  # every prompt refinement silently invalidated every recording. The prompts are
-  # asserted directly by the `build_system_prompt/0` tests in these same files,
-  # so matching on them here adds no coverage — it only couples an editable
-  # string to a paid re-recording.
-  @filter_headers [
-    mode: :replay,
-    match_requests_on: [:method, :uri],
-    filter_request_headers: ["x-api-key", "authorization"]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -75,6 +50,18 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
 
   defp available_metric_names do
     ["sessions", "ad_spend", "pageviews", "revenue", "conversions"]
+  end
+
+  defp insight(overrides \\ %{}) do
+    Map.merge(
+      %{
+        "summary" => "Sessions strongly predict revenue",
+        "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+        "suggestion_type" => "budget_increase",
+        "confidence" => 0.85
+      },
+      overrides
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -170,132 +157,126 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
   end
 
   # ---------------------------------------------------------------------------
-  # generate/3 — integration via ReqCassette
+  # generate/3 — integration via Alloy's ClaudeCode command_runner stub
   # ---------------------------------------------------------------------------
 
   describe "generate/3" do
-    # `insights_generator_success.json` and `insights_generator_single.json` hold
-    # `{"confidence": 0.88, "suggestions": [...]}` — the response schema this
-    # generator asked for before it moved to `{"insights": [{summary, content,
-    # suggestion_type, confidence}]}`. The parser therefore returns `[]`, and four
-    # of the tests below were passing on it: `Enum.all?([], _)` is true, so they
-    # proved nothing while reading green. The non-empty guard is now on every one
-    # of them, which is what makes the staleness visible.
-    #
-    # Not repairable here. Rewriting a recorded response records something the
-    # provider never said, and the two cassettes that do hold the current schema
-    # (`generate_insights.json`, `ai_context_generate_insights.json`) were recorded
-    # for other callers. This needs a re-record, which needs a funded Anthropic
-    # account — and the provider is being replaced with alloy and local Claude
-    # Code, so the recording should be made against whatever replaces it.
-    @describetag :needs_cassette
-
     test "returns ok tuple with list of insight attribute maps on success" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
+
+      result =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert {:ok, insights} = result
-        assert is_list(insights)
-        assert insights != []
-      end
+      assert {:ok, insights} = result
+      assert is_list(insights)
+      assert insights != []
     end
 
     test "each map in the list contains required insight field: content" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, insights} = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
+
+      {:ok, insights} =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert insights != []
-        assert Enum.all?(insights, fn insight ->
-          Map.has_key?(insight, :content) and is_binary(insight.content) and
-            String.length(insight.content) > 0
-        end)
-      end
+      assert insights != []
+
+      assert Enum.all?(insights, fn insight ->
+               Map.has_key?(insight, :content) and is_binary(insight.content) and
+                 String.length(insight.content) > 0
+             end)
     end
 
     test "each map in the list contains required insight field: summary" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, insights} = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
+
+      {:ok, insights} =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert insights != []
-        assert Enum.all?(insights, &Map.has_key?(&1, :summary))
-      end
+      assert insights != []
+      assert Enum.all?(insights, &Map.has_key?(&1, :summary))
     end
 
     test "each map in the list contains required insight field: suggestion_type" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, insights} = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
+
+      {:ok, insights} =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert insights != []
-        assert Enum.all?(insights, &Map.has_key?(&1, :suggestion_type))
-      end
+      assert insights != []
+      assert Enum.all?(insights, &Map.has_key?(&1, :suggestion_type))
     end
 
     test "each map in the list contains required insight field: confidence" do
-      with_cassette "insights_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, insights} = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
+
+      {:ok, insights} =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert insights != []
-        assert Enum.all?(insights, fn insight ->
-          Map.has_key?(insight, :confidence) and is_float(insight.confidence)
-        end)
-      end
+      assert insights != []
+
+      assert Enum.all?(insights, fn insight ->
+               Map.has_key?(insight, :confidence) and is_float(insight.confidence)
+             end)
     end
 
     test "handles single correlation result" do
-      with_cassette "insights_generator_single", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight(%{"summary" => "Sessions predict revenue"})]})
+
+      result =
+        InsightsGenerator.generate(
           correlation_data_with_single_result(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert {:ok, insights} = result
-        assert is_list(insights)
-      end
+      assert {:ok, insights} = result
+      assert is_list(insights)
     end
 
     test "returns empty list when LLM returns empty suggestions" do
-      with_cassette "insights_generator_empty", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
-        {:ok, insights} = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => []})
+
+      {:ok, insights} =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert insights == []
-      end
+      assert insights == []
     end
 
     test "returns error tuple when API call fails" do
-      with_cassette "insights_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
-        result = InsightsGenerator.generate(
+      runner = ClaudeCodeStub.error("simulated provider failure")
+
+      result =
+        InsightsGenerator.generate(
           correlation_data_with_multiple_results(),
           available_metric_names(),
-          req_http_options: [plug: plug]
+          command_runner: runner
         )
 
-        assert {:error, _reason} = result
-      end
+      assert {:error, _reason} = result
     end
   end
 end

@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion809SavedVisualizationAppearsInLibrarySpex do
 
   spex "Saved visualization appears in the visualization library", criterion: 809 do
     scenario "a user browses the visualization library from the report builder and finds the saved visualization" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization has been saved", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")

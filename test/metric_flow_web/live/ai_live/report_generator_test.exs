@@ -4,44 +4,21 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
-  import ReqCassette
 
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
-
-  @cassette_dir "test/cassettes/ai"
-  # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
-  # same two reasons.
-  #
-  # `mode: :replay` because ReqCassette's default is `:record` — "record if the
-  # cassette or the interaction is missing, otherwise replay" — so a miss reaches
-  # api.anthropic.com for real and writes whatever it answers into the cassette.
-  # Measured: these tests failed with "Your credit balance is too low to access
-  # the Anthropic API", which is a unit test reporting a billing problem, and a
-  # `mix test` run appended 714 lines across five cassettes.
-  #
-  # `match_requests_on: [:method, :uri]` because the default includes `:body`,
-  # and the body carries the system prompt. Both prompts have been edited since
-  # these were recorded (report 829 → 1354 characters, insights 909 → 1497), so
-  # every prompt refinement silently invalidated every recording. The prompts are
-  # asserted directly by the `build_system_prompt/0` tests in these same files,
-  # so matching on them here adds no coverage — it only couples an editable
-  # string to a paid re-recording.
-  @filter_headers [
-    mode: :replay,
-    match_requests_on: [:method, :uri],
-    filter_request_headers: ["x-api-key", "authorization"]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
+  alias MetricFlowTest.ReportGeneratorStub
 
   # ---------------------------------------------------------------------------
-  # ReqCassette helpers
+  # command_runner helpers
   # ---------------------------------------------------------------------------
 
-  defp setup_cassette_plug(plug) do
-    Application.put_env(:metric_flow, :req_http_options, plug: plug)
+  defp setup_command_runner(runner) do
+    Application.put_env(:metric_flow, :command_runner, runner)
 
     ExUnit.Callbacks.on_exit(fn ->
-      Application.delete_env(:metric_flow, :req_http_options)
+      Application.delete_env(:metric_flow, :command_runner)
     end)
   end
 
@@ -112,105 +89,90 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   describe "shows chart preview section with Vega-Lite container after successful generation" do
     test "shows chart preview section with Vega-Lite container after successful generation", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
-
-          assert has_element?(lv, "[data-role='chart-preview-section']")
-          assert render(lv) =~ "vega-lite"
-          refute has_element?(lv, "[data-role='empty-state']")
-        end)
-      end
+        assert has_element?(lv, "[data-role='chart-preview-section']")
+        assert render(lv) =~ "vega-lite"
+        refute has_element?(lv, "[data-role='empty-state']")
+      end)
     end
   end
 
   describe "shows error message when generation fails" do
     test "shows error message when generation fails", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ClaudeCodeStub.error("generation failed"))
 
-      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show revenue"})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show revenue"})
-
-          assert has_element?(lv, "[data-role='generate-error']")
-          refute has_element?(lv, "[data-role='chart-preview-section']")
-        end)
-      end
+        assert has_element?(lv, "[data-role='generate-error']")
+        refute has_element?(lv, "[data-role='chart-preview-section']")
+      end)
     end
   end
 
   describe "shows save section with name input after chart is generated" do
     test "shows save section with name input after chart is generated", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
-
-          assert has_element?(lv, "[data-role='save-section']")
-          assert has_element?(lv, "[data-role='save-name-input']")
-        end)
-      end
+        assert has_element?(lv, "[data-role='save-section']")
+        assert has_element?(lv, "[data-role='save-name-input']")
+      end)
     end
   end
 
   describe "saves visualization and shows confirmation with link to visualizations" do
     test "saves visualization and shows confirmation with link to visualizations", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
+        render_change(lv, "update_save_name", %{"save_name" => "Weekly Revenue"})
+        render_click(lv, "save_visualization", %{})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
-          render_change(lv, "update_save_name", %{"save_name" => "Weekly Revenue"})
-          render_click(lv, "save_visualization", %{})
-
-          assert has_element?(lv, "[data-role='save-confirmation']")
-          refute has_element?(lv, "[data-role='save-section']")
-          assert Repo.get_by(Visualization, name: "Weekly Revenue") != nil
-        end)
-      end
+        assert has_element?(lv, "[data-role='save-confirmation']")
+        refute has_element?(lv, "[data-role='save-section']")
+        assert Repo.get_by(Visualization, name: "Weekly Revenue") != nil
+      end)
     end
   end
 
   describe "shows save error when save name is blank" do
     test "shows save error when save name is blank", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
+        render_click(lv, "save_visualization", %{})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
-          render_click(lv, "save_visualization", %{})
-
-          assert has_element?(lv, "[data-role='save-error']")
-          refute has_element?(lv, "[data-role='save-confirmation']")
-        end)
-      end
+        assert has_element?(lv, "[data-role='save-error']")
+        refute has_element?(lv, "[data-role='save-confirmation']")
+      end)
     end
   end
 
@@ -229,27 +191,24 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   describe "resets state when Generate Another is clicked after saving" do
     test "resets state when Generate Another is clicked after saving", %{conn: conn} do
       user = user_fixture()
+      setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        setup_cassette_plug(plug)
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_report_generator(conn, user)
 
-        capture_log(fn ->
-          {:ok, lv, _html} = mount_report_generator(conn, user)
+        render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
+        render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
+        render_change(lv, "update_save_name", %{"save_name" => "Weekly Revenue"})
+        render_click(lv, "save_visualization", %{})
 
-          render_change(lv, "update_prompt", %{"prompt" => "Show weekly revenue"})
-          render_submit(lv, "generate", %{"prompt" => "Show weekly revenue"})
-          render_change(lv, "update_save_name", %{"save_name" => "Weekly Revenue"})
-          render_click(lv, "save_visualization", %{})
+        lv
+        |> element("[data-role='save-confirmation'] button", "Generate Another")
+        |> render_click()
 
-          lv
-          |> element("[data-role='save-confirmation'] button", "Generate Another")
-          |> render_click()
-
-          assert has_element?(lv, "[data-role='empty-state']")
-          refute has_element?(lv, "[data-role='chart-preview-section']")
-          refute has_element?(lv, "[data-role='save-confirmation']")
-        end)
-      end
+        assert has_element?(lv, "[data-role='empty-state']")
+        refute has_element?(lv, "[data-role='chart-preview-section']")
+        refute has_element?(lv, "[data-role='save-confirmation']")
+      end)
     end
   end
 end

@@ -1,33 +1,8 @@
 defmodule MetricFlow.Ai.ReportGeneratorTest do
   use ExUnit.Case, async: true
 
-  import ReqCassette
-
   alias MetricFlow.Ai.ReportGenerator
-
-  @cassette_dir "test/cassettes/ai"
-  # Same options `ai_test.exs` already uses for its LLM cassettes, and for the
-  # same two reasons.
-  #
-  # `mode: :replay` because ReqCassette's default is `:record` — "record if the
-  # cassette or the interaction is missing, otherwise replay" — so a miss reaches
-  # api.anthropic.com for real and writes whatever it answers into the cassette.
-  # Measured: these tests failed with "Your credit balance is too low to access
-  # the Anthropic API", which is a unit test reporting a billing problem, and a
-  # `mix test` run appended 714 lines across five cassettes.
-  #
-  # `match_requests_on: [:method, :uri]` because the default includes `:body`,
-  # and the body carries the system prompt. Both prompts have been edited since
-  # these were recorded (report 829 → 1354 characters, insights 909 → 1497), so
-  # every prompt refinement silently invalidated every recording. The prompts are
-  # asserted directly by the `build_system_prompt/0` tests in these same files,
-  # so matching on them here adds no coverage — it only couples an editable
-  # string to a paid re-recording.
-  @filter_headers [
-    mode: :replay,
-    match_requests_on: [:method, :uri],
-    filter_request_headers: ["x-api-key", "authorization"]
-  ]
+  alias MetricFlowTest.ClaudeCodeStub
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -36,6 +11,21 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
   defp user_prompt, do: "Show me a bar chart of revenue over time"
 
   defp metric_names, do: ["revenue", "sessions", "ad_spend"]
+
+  defp vega_spec(overrides \\ %{}) do
+    Map.merge(
+      %{
+        "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+        "mark" => "bar",
+        "encoding" => %{
+          "x" => %{"field" => "date", "type" => "temporal", "title" => "Date"},
+          "y" => %{"field" => "revenue", "type" => "quantitative", "title" => "Revenue"}
+        },
+        "title" => "Revenue Over Time"
+      },
+      overrides
+    )
+  end
 
   # ---------------------------------------------------------------------------
   # build_system_prompt/0 — pure function
@@ -90,82 +80,58 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
   end
 
   # ---------------------------------------------------------------------------
-  # generate/3 — integration via ReqCassette
+  # generate/3 — integration via Alloy's ClaudeCode command_runner stub
   # ---------------------------------------------------------------------------
 
   describe "generate/3" do
     test "returns ok tuple with Vega-Lite spec map on success" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        result = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-        assert {:ok, spec} = result
-        assert is_map(spec)
-      end
+      result = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert {:ok, spec} = result
+      assert is_map(spec)
     end
 
     test "returned map contains dollar-schema key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-        assert Map.has_key?(spec, "$schema")
-      end
+      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert Map.has_key?(spec, "$schema")
     end
 
     test "returned map contains mark key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-        assert Map.has_key?(spec, "mark")
-      end
+      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert Map.has_key?(spec, "mark")
     end
 
     test "returned map contains encoding key" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-        assert Map.has_key?(spec, "encoding")
-      end
+      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert Map.has_key?(spec, "encoding")
     end
 
     test "dollar-schema field points to a Vega-Lite v5 URL" do
-      with_cassette "report_generator_success", [cassette_dir: @cassette_dir] ++ @filter_headers, fn plug ->
-        {:ok, spec} = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-        assert String.contains?(spec["$schema"], "vega-lite")
-        assert String.contains?(spec["$schema"], "v5")
-      end
+      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert String.contains?(spec["$schema"], "vega-lite")
+      assert String.contains?(spec["$schema"], "v5")
     end
 
     test "returns error tuple when API call fails" do
-      with_cassette "report_generator_error", [cassette_dir: @cassette_dir, match_requests_on: [:method, :uri]] ++ @filter_headers, fn plug ->
-        result = ReportGenerator.generate(
-          user_prompt(),
-          metric_names(),
-          req_http_options: [plug: plug]
-        )
+      runner = ClaudeCodeStub.error("simulated provider failure")
 
-        assert {:error, _reason} = result
-      end
+      result = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+
+      assert {:error, _reason} = result
     end
   end
 end

@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4150EditVegaLiteSpecDirectlySpex do
 
   spex "User can edit Vega-Lite spec directly if desired (advanced mode)", criterion: 223 do
     scenario "visualization editor has a spec editor textarea for direct JSON editing" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user is on the visualization editor with a metric selected", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

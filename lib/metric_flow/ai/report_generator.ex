@@ -39,7 +39,7 @@ defmodule MetricFlow.Ai.ReportGenerator do
   Returns `{:ok, map()}` with the Vega-Lite spec on success, or
   `{:error, reason}` on failure.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a MetricFlowTest.ClaudeCodeStub for test recording.
   """
   @spec generate(String.t(), list(String.t()), keyword()) :: {:ok, map()} | {:error, term()}
   def generate(user_prompt, metric_names, opts \\ []) do

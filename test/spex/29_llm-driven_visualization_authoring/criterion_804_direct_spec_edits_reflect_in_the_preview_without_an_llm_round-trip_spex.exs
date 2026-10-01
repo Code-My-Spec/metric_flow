@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion804DirectSpecEditsReflectWithoutLlmSpex do
 
   spex "Direct spec edits reflect in the preview without an LLM round-trip", criterion: 804 do
     scenario "editing the Vega-Lite JSON spec directly updates the preview without calling the LLM" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user viewing the spec editor in advanced mode", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

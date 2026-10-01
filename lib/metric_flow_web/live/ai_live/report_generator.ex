@@ -228,10 +228,10 @@ defmodule MetricFlowWeb.AiLive.ReportGenerator do
 
         scope = socket.assigns.current_scope
 
-        req_opts = Application.get_env(:metric_flow, :req_http_options, [])
+        runner = Application.get_env(:metric_flow, :command_runner)
 
         socket =
-          case Ai.generate_vega_spec(scope, trimmed, req_http_options: req_opts) do
+          case Ai.generate_vega_spec(scope, trimmed, command_runner: runner) do
             {:ok, spec} ->
               socket
               |> assign(:vega_spec, spec)

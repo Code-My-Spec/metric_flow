@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion803SavesLikeAnyOtherCustomReportSpex do
 
   spex "Generated visualization saves like any other custom report", criterion: 803 do
     scenario "saving a visualization built through the authoring workspace uses the standard save mechanism" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization built through the authoring workspace", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

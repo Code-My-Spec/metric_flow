@@ -2,22 +2,14 @@ defmodule MetricFlowSpex.Criterion811SpecUsesNamedSourcesAndBindsJoinTableSpex d
   use MetricFlowSpex.Case, async: false
   import Phoenix.LiveViewTest
   import ExUnit.CaptureLog
-  import ReqCassette
 
   import MetricFlowSpex.SharedGivens
 
-  @cassette_opts [
-    cassette_dir: "test/cassettes/ai",
-    filter_request_headers: ["x-api-key", "authorization"],
-    mode: :replay,
-    match_requests_on: [:method, :uri]
-  ]
-
   spex "Spec uses named data sources and binds metrics via the join table", criterion: 811 do
     scenario "a spec generated for a metric is saved with a named data source and the metric binding persists" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the LLM generates a spec referencing an account metric", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -26,17 +18,22 @@ defmodule MetricFlowSpex.Criterion811SpecUsesNamedSourcesAndBindsJoinTableSpex d
         |> element("[data-role='open-spec-panel']")
         |> render_click()
 
-        with_cassette "visualization_chat_generate", @cassette_opts, fn plug ->
-          Application.put_env(:metric_flow, :req_http_options, plug: plug)
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
 
-          capture_log(fn ->
-            render_submit(new_view, "send_chat", %{"prompt" => "Show me impressions over time as a line chart"})
-            Process.sleep(100)
-            render(new_view)
-          end)
+        capture_log(fn ->
+          render_submit(new_view, "send_chat", %{
+            "prompt" => "Show me impressions over time as a line chart"
+          })
 
-          Application.delete_env(:metric_flow, :req_http_options)
-        end
+          Process.sleep(100)
+          render(new_view)
+        end)
+
+        Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, Map.put(context, :view, new_view)}
       end
@@ -62,7 +59,8 @@ defmodule MetricFlowSpex.Criterion811SpecUsesNamedSourcesAndBindsJoinTableSpex d
         {:ok, Map.merge(context, %{spec_text: spec_text, viz_id: viz_id})}
       end
 
-      then_ "it references the metric by name using Vega-Lite named data sources, and the visualization_metrics join table binds the metric", context do
+      then_ "it references the metric by name using Vega-Lite named data sources, and the visualization_metrics join table binds the metric",
+            context do
         refute context.spec_text =~ "&quot;values&quot;"
         assert context.spec_text =~ "impressions"
 

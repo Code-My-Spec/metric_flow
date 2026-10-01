@@ -3,7 +3,6 @@ defmodule MetricFlow.AiTest do
 
   import Ecto.Query
   import ExUnit.CaptureLog
-  import ReqCassette
   import MetricFlowTest.AiFixtures
 
   alias MetricFlow.Accounts
@@ -14,9 +13,8 @@ defmodule MetricFlow.AiTest do
   alias MetricFlow.Ai.SuggestionFeedback
   alias MetricFlow.Correlations.CorrelationJob
   alias MetricFlow.Repo
-
-  @cassette_dir "test/cassettes/ai"
-  @llm_match_opts [mode: :replay, match_requests_on: [:method, :uri]]
+  alias MetricFlowTest.ClaudeCodeStub
+  alias MetricFlowTest.ReportGeneratorStub
 
   setup do
     {user, scope} = user_with_scope()
@@ -394,45 +392,36 @@ defmodule MetricFlow.AiTest do
     test "returns ok tuple with list of Insight structs on success", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
-          assert is_list(insights)
-          assert insights != []
-          assert Enum.all?(insights, &match?(%Insight{}, &1))
-        end
+        assert {:ok, insights} = Ai.generate_insights(scope, job.id, command_runner: runner)
+        assert is_list(insights)
+        assert insights != []
+        assert Enum.all?(insights, &match?(%Insight{}, &1))
       end)
     end
 
     test "persists one Insight per structured response item returned by InsightsGenerator", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
-          persisted_count = Repo.aggregate(Insight, :count, :id)
-          assert persisted_count == length(insights)
-        end
+        {:ok, insights} = Ai.generate_insights(scope, job.id, command_runner: runner)
+        persisted_count = Repo.aggregate(Insight, :count, :id)
+        assert persisted_count == length(insights)
       end)
     end
 
     test "links each insight to the account_id from the scope", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
+      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
 
       capture_log(fn ->
-        with_cassette "ai_context_generate_insights",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          {:ok, insights} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
-          assert Enum.all?(insights, &(&1.account_id == account_id))
-        end
+        {:ok, insights} = Ai.generate_insights(scope, job.id, command_runner: runner)
+        assert Enum.all?(insights, &(&1.account_id == account_id))
       end)
     end
 
@@ -478,15 +467,24 @@ defmodule MetricFlow.AiTest do
     test "propagates error tuple when InsightsGenerator returns an error", %{scope: scope, account_id: account_id} do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
+      runner = ClaudeCodeStub.error("simulated provider failure")
 
       capture_log(fn ->
-        with_cassette "insights_generator_error",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:error, _reason} = Ai.generate_insights(scope, job.id, req_http_options: [plug: plug])
-        end
+        assert {:error, _reason} = Ai.generate_insights(scope, job.id, command_runner: runner)
       end)
     end
+  end
+
+  defp insight(overrides \\ %{}) do
+    Map.merge(
+      %{
+        "summary" => "Sessions strongly predict revenue",
+        "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+        "suggestion_type" => "budget_increase",
+        "confidence" => 0.85
+      },
+      overrides
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -495,74 +493,64 @@ defmodule MetricFlow.AiTest do
 
   describe "generate_vega_spec/3" do
     test "returns ok tuple with Vega-Lite spec map on success", %{scope: scope} do
+      runner = ReportGeneratorStub.generate_revenue_bar_chart()
+
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
-          assert is_map(spec)
-        end
+        assert {:ok, spec} =
+                 Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+
+        assert is_map(spec)
       end)
     end
 
     test "returned spec map includes \"$schema\" pointing to the Vega-Lite v5 URL", %{scope: scope} do
+      runner = ReportGeneratorStub.generate_revenue_bar_chart()
+
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
-          assert spec["$schema"] == "https://vega.github.io/schema/vega-lite/v5.json"
-        end
+        {:ok, spec} =
+          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+
+        assert spec["$schema"] == "https://vega.github.io/schema/vega-lite/v5.json"
       end)
     end
 
     test "returned spec map includes mark and encoding keys", %{scope: scope} do
+      runner = ReportGeneratorStub.generate_revenue_bar_chart()
+
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          {:ok, spec} = Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", req_http_options: [plug: plug])
-          assert Map.has_key?(spec, "mark")
-          assert Map.has_key?(spec, "encoding")
-        end
+        {:ok, spec} =
+          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+
+        assert Map.has_key?(spec, "mark")
+        assert Map.has_key?(spec, "encoding")
       end)
     end
 
     test "passes available metric names from the scoped account to ReportGenerator", %{scope: scope} do
       # The function delegates to ReportGenerator which builds a prompt containing
-      # metric names. We verify the function succeeds with the cassette — the
+      # metric names. We verify the function succeeds with the stub — the
       # metric names list may be empty when no metrics are in the DB, but the call
       # should still complete.
+      runner = ReportGeneratorStub.generate_revenue_bar_chart()
+
       capture_log(fn ->
-        with_cassette "ai_context_generate_vega_spec",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:ok, _spec} = Ai.generate_vega_spec(scope, "Show me a revenue chart", req_http_options: [plug: plug])
-        end
+        assert {:ok, _spec} = Ai.generate_vega_spec(scope, "Show me a revenue chart", command_runner: runner)
       end)
     end
 
     test "returns error :invalid_vega_spec when returned map is missing required Vega-Lite fields", %{scope: scope} do
-      # The report_generator_error cassette returns a 401 error from the API,
-      # causing ReportGenerator to propagate an error tuple. When the Ai context
-      # validates the spec structure, a missing required field results in
-      # {:error, :invalid_vega_spec}. We verify any error is returned here.
+      runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => %{"mark" => "bar"}})
+
       capture_log(fn ->
-        with_cassette "report_generator_error",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:error, _reason} = Ai.generate_vega_spec(scope, "Generate a chart", req_http_options: [plug: plug])
-        end
+        assert {:error, _reason} = Ai.generate_vega_spec(scope, "Generate a chart", command_runner: runner)
       end)
     end
 
     test "propagates error tuple when ReportGenerator returns an error", %{scope: scope} do
+      runner = ClaudeCodeStub.error("simulated provider failure")
+
       capture_log(fn ->
-        with_cassette "report_generator_error",
-                      [cassette_dir: @cassette_dir] ++ @llm_match_opts,
-                      fn plug ->
-          assert {:error, _reason} = Ai.generate_vega_spec(scope, "Show me revenue data", req_http_options: [plug: plug])
-        end
+        assert {:error, _reason} = Ai.generate_vega_spec(scope, "Show me revenue data", command_runner: runner)
       end)
     end
   end

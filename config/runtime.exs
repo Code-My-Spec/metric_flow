@@ -221,8 +221,8 @@ if anthropic_key = env!("ANTHROPIC_API_KEY", :string, test_placeholder.("test-an
   # fill in per-request (ReqCassette plug stubs in tests).
   ai_chat_provider =
     case config_env() do
-      :dev -> {Alloy.Provider.ClaudeCode, model: "sonnet"}
-      _ -> {Alloy.Provider.Anthropic, api_key: anthropic_key, model: "claude-sonnet-4-5"}
+      :prod -> {Alloy.Provider.Anthropic, api_key: anthropic_key, model: "claude-sonnet-4-5"}
+      _ -> {Alloy.Provider.ClaudeCode, model: "sonnet"}
     end
 
   config :metric_flow, :ai_chat_provider, ai_chat_provider

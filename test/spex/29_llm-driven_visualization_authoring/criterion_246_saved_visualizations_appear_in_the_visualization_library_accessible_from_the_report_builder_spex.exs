@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion246SavedVisualizationsAppearInLibrarySpex do
   spex "Saved visualizations appear in the visualization library accessible from the report builder",
     criterion: 246 do
     scenario "a saved visualization appears when browsing the visualization library from the report builder" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization has been saved", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -33,7 +33,10 @@ defmodule MetricFlowSpex.Criterion246SavedVisualizationsAppearInLibrarySpex do
         {:ok, report_view, _html} = live(context.owner_conn, "/app/reports")
 
         report_view
-        |> element("[data-role='manual-visualization-link'], a[href='/app/visualizations/new']", "Create a chart")
+        |> element(
+          "[data-role='manual-visualization-link'], a[href='/app/visualizations/new']",
+          "Create a chart"
+        )
         |> has_element?()
 
         {:ok, library_view, html} = live(context.owner_conn, "/app/visualizations")

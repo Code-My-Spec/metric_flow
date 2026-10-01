@@ -563,10 +563,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
           |> assign(:chat_generating, true)
           |> assign(:chat_error, nil)
 
-        req_opts = Application.get_env(:metric_flow, :req_http_options, [])
+        runner = Application.get_env(:metric_flow, :command_runner)
         chat_context = socket.assigns.chat_context
         current_spec = current_template_spec(socket)
-        opts = [req_http_options: req_opts, current_spec: current_spec]
+        opts = [command_runner: runner, current_spec: current_spec]
 
         # Async — don't block the LiveView process
         Task.async(fn ->

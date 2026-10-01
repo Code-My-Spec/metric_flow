@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion5052DirectSpecEditWithoutLlmSpex do
 
   spex "User can edit Vega-Lite spec directly without an LLM round-trip", criterion: 230 do
     scenario "the visualization editor allows direct spec editing with live preview" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user is on the visualization editor with a metric selected", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

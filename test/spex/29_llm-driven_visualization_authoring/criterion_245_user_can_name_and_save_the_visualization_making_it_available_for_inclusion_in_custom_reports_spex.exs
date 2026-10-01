@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion245NameAndSaveVisualizationSpex do
   spex "User can name and save the visualization, making it available for inclusion in custom reports",
     criterion: 245 do
     scenario "a user builds a visualization in the authoring workspace and names and saves it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user has built a visualization in the authoring workspace", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

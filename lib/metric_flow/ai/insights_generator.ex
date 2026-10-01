@@ -39,7 +39,7 @@ defmodule MetricFlow.Ai.InsightsGenerator do
   Returns `{:ok, list(map())}` where each map contains insight attributes
   suitable for `Insight.changeset/2`, or `{:error, reason}` on failure.
 
-  Pass `req_http_options: [plug: plug]` in opts for ReqCassette test recording.
+  Pass `command_runner:` in opts to inject a MetricFlowTest.ClaudeCodeStub for test recording.
   """
   @spec generate(map(), list(String.t()), keyword()) ::
           {:ok, list(map())} | {:error, term()}
