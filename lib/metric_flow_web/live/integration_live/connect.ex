@@ -302,6 +302,21 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     is_gbp = assigns.provider == "google_business"
     assigns = assign(assigns, :is_google_business, is_gbp)
 
+    is_multi_select = assigns.provider in ["google_business", "quickbooks"]
+
+    assigns =
+      assigns
+      |> assign(:is_multi_select, is_multi_select)
+      |> assign(:multi_select_param_name, multi_select_param_name(assigns.provider))
+      |> assign(
+        :display_accounts,
+        display_accounts(
+          String.to_existing_atom(assigns.provider),
+          assigns.accounts,
+          assigns.selected_location_ids
+        )
+      )
+
     ~H"""
     <div class="mf-card max-w-lg p-6">
       <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
@@ -310,18 +325,18 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       </p>
 
       <form phx-submit="save_account_selection" data-role="account-selection" class="space-y-4 mb-6">
-        <%= if @accounts != [] do %>
+        <%= if @display_accounts != [] do %>
           <div data-role="account-list" class="space-y-2">
             <p class="text-sm font-medium mb-2">{"Available #{@account_labels.list_heading}:"}</p>
-            <%= if @is_google_business do %>
+            <%= if @is_multi_select do %>
               <div
-                :for={property <- @accounts}
+                :for={property <- @display_accounts}
                 class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
                 data-role="account-option"
               >
                 <input
                   type="checkbox"
-                  name="location_ids[]"
+                  name={"#{@multi_select_param_name}[]"}
                   value={property.id}
                   data-role="account-checkbox"
                   class="checkbox checkbox-sm checkbox-primary"
@@ -575,6 +590,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       provider_atom == :google_business ->
         save_google_business_selection(scope, provider_atom, provider_str, params, socket)
 
+      provider_atom == :quickbooks and Map.has_key?(params, "income_account_ids") ->
+        save_quickbooks_multi_selection(scope, provider_atom, provider_str, params, socket)
+
       true ->
         save_single_account_selection(scope, provider_atom, provider_str, params, socket)
     end
@@ -597,6 +615,36 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           {:noreply,
            socket
            |> put_flash(:info, "#{length(location_ids)} location(s) saved successfully.")
+           |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Failed to save selection: #{inspect(reason)}")}
+      end
+    end
+  end
+
+  defp save_quickbooks_multi_selection(scope, provider_atom, provider_str, params, socket) do
+    income_account_ids = Map.get(params, "income_account_ids", [])
+
+    if income_account_ids == [] do
+      {:noreply, put_flash(socket, :error, "Please select at least one income account.")}
+    else
+      # Sync still only reads the legacy singular key (multi-account
+      # aggregation is a future story), so keep it pointed at the first
+      # selection rather than leaving it stale or unset.
+      attrs = %{
+        "income_account_ids" => income_account_ids,
+        "income_account_id" => List.first(income_account_ids)
+      }
+
+      case Integrations.update_provider_metadata(scope, provider_atom, attrs) do
+        {:ok, _integration} ->
+          {:noreply,
+           socket
+           |> put_flash(
+             :info,
+             "#{length(income_account_ids)} income account(s) saved successfully."
+           )
            |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
         {:error, reason} ->
@@ -707,7 +755,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
     meta_key = metadata_key_for_provider(provider_atom)
 
-    raw_selection = get_in(integration.provider_metadata || %{}, [meta_key])
+    raw_selection = fetch_raw_selection(provider_atom, integration.provider_metadata, meta_key)
 
     # Normalize the stored value for display. Google Business stores an
     # array; other providers store a plain string.
@@ -736,10 +784,51 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
      |> assign(:missing_locations, missing_locations)}
   end
 
+  # QuickBooks' multi-select writes a plural "income_account_ids" key, kept
+  # separate from the legacy singular "income_account_id" key that sync code
+  # still reads for a single-account connection -- prefer the plural key when
+  # present, falling back to whatever the single-select path stored.
+  defp fetch_raw_selection(:quickbooks, provider_metadata, meta_key) do
+    get_in(provider_metadata || %{}, ["income_account_ids"]) ||
+      get_in(provider_metadata || %{}, [meta_key])
+  end
+
+  defp fetch_raw_selection(_provider_atom, provider_metadata, meta_key) do
+    get_in(provider_metadata || %{}, [meta_key])
+  end
+
   defp selected_location_ids(:google_business, raw_selection) when is_list(raw_selection),
     do: raw_selection
 
+  defp selected_location_ids(:quickbooks, raw_selection) when is_list(raw_selection),
+    do: raw_selection
+
+  defp selected_location_ids(:quickbooks, raw_selection)
+       when is_binary(raw_selection) and raw_selection != "",
+       do: [raw_selection]
+
   defp selected_location_ids(_provider_atom, _raw_selection), do: []
+
+  defp multi_select_param_name("google_business"), do: "location_ids"
+  defp multi_select_param_name("quickbooks"), do: "income_account_ids"
+  defp multi_select_param_name(_provider_str), do: "location_ids"
+
+  # QuickBooks income accounts can only be verified via a live API fetch
+  # (requires a realm_id), which often isn't available in this flow -- a
+  # previously-saved selection must still render as a checkbox even when the
+  # current fetch came back empty, so it can be unchecked/changed.
+  defp display_accounts(:quickbooks, accounts, selected_ids) do
+    existing_ids = MapSet.new(accounts, & &1.id)
+
+    synthetic =
+      selected_ids
+      |> Enum.reject(&MapSet.member?(existing_ids, &1))
+      |> Enum.map(&%{id: &1, name: &1, account: nil})
+
+    accounts ++ synthetic
+  end
+
+  defp display_accounts(_provider_atom, accounts, _selected_ids), do: accounts
 
   defp validate_provider(provider_str) do
     provider_atom = String.to_existing_atom(provider_str)

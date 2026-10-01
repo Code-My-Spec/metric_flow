@@ -292,7 +292,7 @@ defmodule MetricFlowTest.OAuthStub do
     end
 
     @impl true
-    def strategy, do: Assent.Strategy.OAuth2
+    def strategy, do: MetricFlow.Integrations.Strategies.QuickBooksOAuth2
 
     @impl true
     def normalize_user(data) do
