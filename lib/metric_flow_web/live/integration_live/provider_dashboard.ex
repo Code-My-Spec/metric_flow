@@ -14,6 +14,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
+  alias MetricFlow.Reviews
 
   @valid_providers ~w(google_business google_analytics google_ads facebook_ads quickbooks google_search_console)
 
@@ -155,6 +156,41 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
             <div class="text-sm line-clamp-2">{Map.get(review, :comment, "")}</div>
           </div>
         </div>
+
+        <div data-role="rolling-review-metrics-section" class="mf-card p-5 mb-6">
+          <h2 class="text-lg font-semibold mb-4">Review Metrics</h2>
+          <div
+            :if={@rolling_review_rows == []}
+            data-role="no-review-data"
+            class="text-base-content/60 text-sm"
+          >
+            No review data for this period yet.
+          </div>
+          <table :if={@rolling_review_rows != []} class="table table-sm w-full">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reviews</th>
+                <th>Total</th>
+                <th>Avg Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                :for={row <- @rolling_review_rows}
+                data-role="rolling-review-metric-row"
+                data-date={row.date}
+              >
+                <td>{row.date}</td>
+                <td data-role="daily-review-count">{row.daily_count}</td>
+                <td data-role="running-review-total">{row.running_total}</td>
+                <td data-role="rolling-review-average-rating">
+                  {format_rolling_rating(row.average_rating)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       <% end %>
 
       <div data-role="sync-history-section" class="mf-card p-5">
@@ -218,11 +254,11 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
       connected = not is_nil(integration)
 
-      {metrics, sync_history, reviews} =
+      {metrics, sync_history, reviews, rolling_review_rows} =
         if connected do
           load_dashboard_data(scope, provider, provider_atom)
         else
-          {%{}, [], []}
+          {%{}, [], [], []}
         end
 
       last_synced_at =
@@ -247,6 +283,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         |> assign(:metrics, metrics)
         |> assign(:sync_history, sync_history)
         |> assign(:reviews, reviews)
+        |> assign(:rolling_review_rows, rolling_review_rows)
         |> assign(:syncing, false)
 
       {:ok, socket}
@@ -291,10 +328,16 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     if socket.assigns.connected do
       metrics = load_metrics(scope, provider_atom, date_range)
 
+      rolling_review_rows =
+        if provider == "google_business",
+          do: load_rolling_review_metrics(scope, date_range),
+          else: []
+
       {:noreply,
        socket
        |> assign(:date_range, date_range)
-       |> assign(:metrics, metrics)}
+       |> assign(:metrics, metrics)
+       |> assign(:rolling_review_rows, rolling_review_rows)}
     else
       {:noreply, assign(socket, :date_range, date_range)}
     end
@@ -307,7 +350,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     date_range = socket.assigns.date_range
 
     if socket.assigns.connected do
-      {metrics, sync_history, reviews} =
+      {metrics, sync_history, reviews, rolling_review_rows} =
         load_dashboard_data(scope, provider, provider_atom, date_range)
 
       last_synced_at =
@@ -321,6 +364,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
        |> assign(:metrics, metrics)
        |> assign(:sync_history, sync_history)
        |> assign(:reviews, reviews)
+       |> assign(:rolling_review_rows, rolling_review_rows)
        |> assign(:last_synced_at, last_synced_at)
        |> assign(:syncing, false)}
     else
@@ -336,7 +380,13 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     metrics = load_metrics(scope, provider_atom, date_range)
     sync_history = load_sync_history(scope)
     reviews = if provider == "google_business", do: load_reviews(scope), else: []
-    {metrics, sync_history, reviews}
+
+    rolling_review_rows =
+      if provider == "google_business",
+        do: load_rolling_review_metrics(scope, date_range),
+        else: []
+
+    {metrics, sync_history, reviews, rolling_review_rows}
   end
 
   defp load_metrics(scope, provider_atom, date_range) do
@@ -370,6 +420,22 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         rating: get_in(metric.dimensions, ["rating"]) || metric.value,
         recorded_at: metric.recorded_at,
         comment: get_in(metric.dimensions, ["comment"]) || ""
+      }
+    end)
+  end
+
+  defp load_rolling_review_metrics(scope, date_range) do
+    date_range_tuple = date_range_to_tuple(date_range)
+    rolling = Reviews.query_rolling_review_metrics(scope, date_range: date_range_tuple)
+
+    [rolling.review_count, rolling.review_total_count, rolling.review_average_rating]
+    |> Enum.zip()
+    |> Enum.map(fn {count_row, total_row, avg_row} ->
+      %{
+        date: Date.to_string(count_row.date),
+        daily_count: trunc(count_row.value),
+        running_total: trunc(total_row.value),
+        average_rating: avg_row.value
       }
     end)
   end
@@ -488,6 +554,10 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
   end
 
   defp format_date(_), do: "—"
+
+  defp format_rolling_rating(value) do
+    :erlang.float_to_binary(value * 1.0, decimals: 1)
+  end
 
   defp format_duration(%{started_at: nil}), do: "—"
   defp format_duration(%{completed_at: nil}), do: "—"
