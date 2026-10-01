@@ -69,3 +69,12 @@ Emails/tokens consumed this pass: `qa6invitee1-20260930@example.com` (accepted, 
 - 41/835: pass. A backdated (expired) invitation shows "This invitation has expired." when opened.
 - 42/836: pass. Revisiting an already-accepted invitation's link shows "This invitation link is invalid or has already been used." -- no second grant, confirmed by the flash text alone (no DB re-check needed since the message itself proves the `do_accept`/`already_member` guard fired).
 - 43/837: **fail**. Confirmed live: added a fresh user as a member of an agency-type account, then had that agency's owner accept a fresh client invitation. The owner correctly gained the specified role (account_manager) on the client account, but the agency's other team member gained nothing at all -- `account_members` for "QA Test Account" has no row for them. `Invitations.accept_invitation/2` has no agency-propagation logic anywhere (confirmed via source read), unlike the separate `Agencies.grant_client_account_access/4` path which does propagate to the whole team (verified working in story 8's pass). Filed high issue 90a57ccf.
+
+## Retest 2026-10-01
+
+Fix for issue `90a57ccf` (commit 32b4af5, `Agencies.propagate_client_access_via_user_agencies/3`) confirmed both at the unit level and live:
+
+- `mix test test/metric_flow/invitations_test.exs` -- 43/43 passed, including the new dedicated regression test "propagates access to the rest of the invitee's agency team".
+- Live repro with fresh fixtures (not reused from the prior attempt, since the prior attempt's emails/accounts are spent): agency account 69 ("QA6 Retest Agency", invitee user 64 as admin, teammate user 65 as read_only) and client account 70 ("QA6 Retest Client", owned by qa@example.com). Sent a fresh invitation to the invitee at `account_manager`, accepted it as the invitee via the browser, then confirmed via DB: both user 64 and user 65 hold `account_manager` on account 70. The invitee's own account switcher also correctly shows the new client account.
+
+43/837 now: **pass**. All other criteria (37-42, 831-836) were already verified passing in the prior attempt and are unaffected by this fix. Submitting as pass.
