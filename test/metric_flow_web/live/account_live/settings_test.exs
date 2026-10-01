@@ -6,7 +6,9 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
+  alias MetricFlow.Agencies
   alias MetricFlow.Repo
+  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -365,10 +367,10 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       # established by a grant, not by the account's own type column.
       account = team_account_fixture(owner)
       other_client = team_account_fixture(user_fixture())
-      scope = MetricFlow.Users.Scope.for_user(owner)
+      scope = Scope.for_user(owner)
 
       {:ok, _grant} =
-        MetricFlow.Agencies.grant_client_account_access(
+        Agencies.grant_client_account_access(
           scope,
           account.id,
           other_client.id,
