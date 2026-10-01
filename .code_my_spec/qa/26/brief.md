@@ -62,3 +62,13 @@ All at `/app/correlations` after switching to Client Alpha:
 The `@smart_mode_threshold` in `CorrelationLive.Index` is a strict absolute-value comparison (`r.coefficient > 0.3` / `r.coefficient < -0.3`), confirmed by code read before writing this brief -- a coefficient of exactly 0.3 would NOT qualify. The fixture avoids testing that exact boundary since it's a straightforward `>`/`<` and not worth a dedicated row.
 
 Don't delete job 49 or its results after testing -- leave them as a reusable fixture, consistent with how story 24's synthetic data was left in place and reused by later sessions.
+
+## Results (retest, commit fc39a9b)
+
+Corrected a documentation error from the prior pass while retesting: job 49's fixture data actually lives on account **17** ("Client Account Manager"), not account 14 ("Client Alpha") as this brief originally stated -- confirmed via `select account_id from correlation_jobs where id=49`. Account 17 had no active subscription either, so one was inserted (`qa26_sub_acct17`) to make its correlations page reachable, matching the existing `qa26_sub_acct14` pattern.
+
+Both fixes confirmed live:
+- **26388c55** (account-switcher): switching the active account to 17 shows job 49's qa26 data; switching back to 14 ("Client Alpha") shows that account's own real data with zero qa26 rows. Confirms correlations now scope to the actually-active account rather than an arbitrary membership.
+- **25596ea3** (AI-highlight visual treatment): `qa26_pos_1/2` and `qa26_neg_1/2` (google_ads/facebook_ads) now render a visible "✨ AI Pick" badge; the google_analytics/quickbooks rows do not.
+
+Also re-confirmed on this pass: exact top-5/top-5 truncation with correct descending order and correct exclusion of the 6th/7th ranked rows on each side; explanation wording per row including the same-day-lag ("with same-day impact") case; threshold enforcement (below-0.3 rows absent from Smart mode, present in Raw); mode toggle persists across reload and to the DB (`correlation_view_mode`); full ranked list (16 rows including below-threshold and 6th/7th-ranked) accessible from Raw mode. No new issues filed.
