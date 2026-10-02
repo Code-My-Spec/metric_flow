@@ -15,6 +15,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
   alias MetricFlow.Integrations.Integration
 
+  require Logger
+
   @base_url "https://googleads.googleapis.com/v23/customers"
   @default_date_range_days 548
   @max_pages 100
@@ -199,9 +201,20 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
     parse_streaming_response(response_body)
   end
 
-  defp handle_http_result({:ok, %{status: 401}}), do: {:error, :unauthorized}
-  defp handle_http_result({:ok, %{status: 403}}), do: {:error, :insufficient_permissions}
-  defp handle_http_result({:ok, %{status: 404}}), do: {:error, :customer_not_found}
+  defp handle_http_result({:ok, %{status: 401, body: body}}) do
+    Logger.warning("Google Ads API returned 401: #{extract_error_message(body)}")
+    {:error, :unauthorized}
+  end
+
+  defp handle_http_result({:ok, %{status: 403, body: body}}) do
+    Logger.warning("Google Ads API returned 403: #{extract_error_message(body)}")
+    {:error, :insufficient_permissions}
+  end
+
+  defp handle_http_result({:ok, %{status: 404, body: body}}) do
+    Logger.warning("Google Ads API returned 404: #{extract_error_message(body)}")
+    {:error, :customer_not_found}
+  end
 
   defp handle_http_result({:ok, %{status: 400, body: body}}) do
     message = extract_error_message(body)
