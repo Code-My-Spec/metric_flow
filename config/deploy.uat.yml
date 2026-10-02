@@ -43,7 +43,7 @@ env:
     CODEMYSPEC_WIDGET_URL: wss://dev.codemyspec.com/widget
     # Traces to the OTel collector on db_net, which writes to ClickHouse.
     # service.version comes from KAMAL_VERSION (config/runtime.exs).
-    OTEL_EXPORTER_OTLP_ENDPOINT: http://obs-otel-collector-1:4318
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://cms-otel-collector:4318
     OTEL_SERVICE_NAME: metric_flow
     OTEL_RESOURCE_ATTRIBUTES: deployment.environment=uat
   secret:
