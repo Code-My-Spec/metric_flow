@@ -9,6 +9,8 @@ defmodule MetricFlowWeb.Application do
 
   @impl true
   def start(_type, _args) do
+    setup_opentelemetry()
+
     children =
       [
         MetricFlowWeb.Telemetry,
@@ -42,6 +44,14 @@ defmodule MetricFlowWeb.Application do
 
     opts = [strategy: :one_for_one, name: MetricFlow.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp setup_opentelemetry do
+    OpentelemetryLoggerMetadata.setup()
+    OpentelemetryBandit.setup()
+    OpentelemetryPhoenix.setup(adapter: :bandit, liveview: true)
+    OpentelemetryEcto.setup([:metric_flow, :repo])
+    OpentelemetryOban.setup()
   end
 
   if Mix.env() == :dev do
@@ -78,7 +88,8 @@ defmodule MetricFlowWeb.Application do
     config = Application.get_env(otp_app, :preview, [])
 
     [
-      enabled: config[:tunnel_id] not in [nil, ""] and main_copy?() and not tunnel_held_by_harness?(),
+      enabled:
+        config[:tunnel_id] not in [nil, ""] and main_copy?() and not tunnel_held_by_harness?(),
       mode: :named,
       hostname: config[:hostname],
       tunnel_id: config[:tunnel_id],

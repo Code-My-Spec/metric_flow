@@ -68,7 +68,11 @@ config :tailwind,
 # Configures Elixir's Logger
 config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:request_id, :trace_id, :span_id]
+
+# Spans are created everywhere but only exported where config/runtime.exs
+# finds OTEL_EXPORTER_OTLP_ENDPOINT (the UAT box's OTel collector).
+config :opentelemetry, traces_exporter: :none
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

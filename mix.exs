@@ -99,6 +99,15 @@ defmodule MetricFlow.MixProject do
       {:dotenvy, "~> 1.1"},
       # Background jobs (ADR: background_job_processing)
       {:oban, "~> 2.17"},
+      # Tracing over OTLP — exporter stays off unless OTEL_EXPORTER_OTLP_ENDPOINT is set
+      {:opentelemetry, "~> 1.5"},
+      {:opentelemetry_api, "~> 1.4"},
+      {:opentelemetry_exporter, "~> 1.8"},
+      {:opentelemetry_phoenix, "~> 2.0"},
+      {:opentelemetry_bandit, "~> 0.2"},
+      {:opentelemetry_ecto, "~> 1.2"},
+      {:opentelemetry_oban, "~> 1.1"},
+      {:opentelemetry_logger_metadata, "~> 0.2"},
       # HTML parsing
       {:floki, "~> 0.38.0"},
       # Testing (ADR: e2e_testing)
@@ -109,7 +118,9 @@ defmodule MetricFlow.MixProject do
       {:client_utils, "~> 0.1"},
       {:code_my_spec_generators, "~> 0.2", only: :dev},
       {:sexy_spex,
-       git: "https://github.com/Code-My-Spec/spex.git", branch: "feature/reusable-givens", only: [:dev, :test]},
+       git: "https://github.com/Code-My-Spec/spex.git",
+       branch: "feature/reusable-givens",
+       only: [:dev, :test]},
       {:boundary, "~> 0.10.4", runtime: false}
     ]
   end

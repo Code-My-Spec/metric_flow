@@ -40,18 +40,19 @@ end
 tunnel_config = Application.get_env(:metric_flow, :cloudflare_tunnel, [])
 
 if tunnel_config[:mode] == :named do
-  config :metric_flow, :cloudflare_tunnel,
-    Keyword.put(tunnel_config, :tunnel_secret, env!("CLOUDFLARE_TUNNEL_SECRET", :string, ""))
+  config :metric_flow,
+         :cloudflare_tunnel,
+         Keyword.put(tunnel_config, :tunnel_secret, env!("CLOUDFLARE_TUNNEL_SECRET", :string, ""))
 end
 
 # CodeMySpec preview tunnel — reads this checkout's .cms_harness.json (main
 # working copy only; every other worktree gets an empty config, which leaves
 # the tunnel disabled) so the CodeMySpec preview pane can reach this app.
 config :metric_flow,
-  :preview,
-  ClientUtils.Harness.Preview.config(File.cwd!(),
-    origin_url: "http://127.0.0.1:#{System.get_env("PORT", "4070")}"
-  )
+       :preview,
+       ClientUtils.Harness.Preview.config(File.cwd!(),
+         origin_url: "http://127.0.0.1:#{System.get_env("PORT", "4070")}"
+       )
 
 # Cassette-replay tests validate request parameters (e.g. ReqLLM rejects a nil
 # api_key) before a plug ever gets to replay the recording, so :test needs a
@@ -62,15 +63,31 @@ test_placeholder = fn value -> if config_env() == :test, do: value end
 # OAuth provider credentials — available in all environments
 config :metric_flow,
   github_client_id: env!("GITHUB_CLIENT_ID", :string, test_placeholder.("test-github-client-id")),
-  github_client_secret: env!("GITHUB_CLIENT_SECRET", :string, test_placeholder.("test-github-client-secret")),
-  google_client_id: env!("GOOGLE_CLIENT_ID", :string, test_placeholder.("test-google-client-id.apps.googleusercontent.com")),
-  google_client_secret: env!("GOOGLE_CLIENT_SECRET", :string, test_placeholder.("test-google-client-secret")),
-  google_ads_developer_token: env!("GOOGLE_ADS_DEVELOPER_TOKEN", :string, test_placeholder.("test-google-ads-developer-token")),
-  google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, test_placeholder.("1234567890")),
-  quickbooks_client_id: env!("QUICKBOOKS_CLIENT_ID", :string, test_placeholder.("test-quickbooks-client-id")),
-  quickbooks_client_secret: env!("QUICKBOOKS_CLIENT_SECRET", :string, test_placeholder.("test-quickbooks-client-secret")),
+  github_client_secret:
+    env!("GITHUB_CLIENT_SECRET", :string, test_placeholder.("test-github-client-secret")),
+  google_client_id:
+    env!(
+      "GOOGLE_CLIENT_ID",
+      :string,
+      test_placeholder.("test-google-client-id.apps.googleusercontent.com")
+    ),
+  google_client_secret:
+    env!("GOOGLE_CLIENT_SECRET", :string, test_placeholder.("test-google-client-secret")),
+  google_ads_developer_token:
+    env!(
+      "GOOGLE_ADS_DEVELOPER_TOKEN",
+      :string,
+      test_placeholder.("test-google-ads-developer-token")
+    ),
+  google_ads_login_customer_id:
+    env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, test_placeholder.("1234567890")),
+  quickbooks_client_id:
+    env!("QUICKBOOKS_CLIENT_ID", :string, test_placeholder.("test-quickbooks-client-id")),
+  quickbooks_client_secret:
+    env!("QUICKBOOKS_CLIENT_SECRET", :string, test_placeholder.("test-quickbooks-client-secret")),
   facebook_app_id: env!("FACEBOOK_APP_ID", :string, test_placeholder.("test-facebook-app-id")),
-  facebook_app_secret: env!("FACEBOOK_APP_SECRET", :string, test_placeholder.("test-facebook-app-secret")),
+  facebook_app_secret:
+    env!("FACEBOOK_APP_SECRET", :string, test_placeholder.("test-facebook-app-secret")),
   # The recorded cassette used the production host, not sandbox, so :test
   # must default to match — ReqCassette matches full URI including host.
   quickbooks_api_url:
@@ -133,7 +150,8 @@ end
 # against PORT. A no-op when PHX_HOST isn't set, which is every checkout the
 # harness isn't holding a tunnel for.
 if preview_host = System.get_env("PHX_HOST") do
-  config :metric_flow, MetricFlowWeb.Endpoint, url: [host: preview_host, port: 443, scheme: "https"]
+  config :metric_flow, MetricFlowWeb.Endpoint,
+    url: [host: preview_host, port: 443, scheme: "https"]
 end
 
 if config_env() == :prod do
@@ -225,6 +243,20 @@ if config_env() == :prod do
     ]
 end
 
+# OTLP trace export — on only where OTEL_EXPORTER_OTLP_ENDPOINT is set (UAT's
+# collector on db_net). opentelemetry_exporter reads the endpoint, and the SDK
+# reads OTEL_SERVICE_NAME / OTEL_RESOURCE_ATTRIBUTES, straight from the env.
+# Kamal sets KAMAL_VERSION on every container it runs.
+if config_env() != :test and System.get_env("OTEL_EXPORTER_OTLP_ENDPOINT") do
+  config :opentelemetry, traces_exporter: :otlp
+
+  config :opentelemetry_exporter, otlp_protocol: :http_protobuf
+
+  if version = System.get_env("KAMAL_VERSION") do
+    config :opentelemetry, resource: %{service: %{version: version}}
+  end
+end
+
 # LLM API key — available in all environments (ADR: llm_provider)
 if anthropic_key = env!("ANTHROPIC_API_KEY", :string, test_placeholder.("test-anthropic-api-key")) do
   config :req_llm, :anthropic_api_key, anthropic_key
@@ -245,7 +277,6 @@ end
 # The support widget's socket, and the key it authenticates with. Read at
 # runtime so one image serves every environment.
 config :metric_flow,
-  codemyspec_widget_url:
-    System.get_env("CODEMYSPEC_WIDGET_URL") || "wss://codemyspec.com/widget"
+  codemyspec_widget_url: System.get_env("CODEMYSPEC_WIDGET_URL") || "wss://codemyspec.com/widget"
 
 config :metric_flow, :deploy_key, System.get_env("DEPLOY_KEY")
