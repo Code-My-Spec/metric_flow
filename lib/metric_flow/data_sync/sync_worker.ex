@@ -727,14 +727,43 @@ defmodule MetricFlow.DataSync.SyncWorker do
       "It may have been removed or the URL changed."
   end
 
-  defp format_error(:insufficient_permissions, integration, date_range) do
+  defp format_error(:insufficient_permissions, %Integration{provider: :google_search_console} = integration, date_range) do
     site = site_url_from(integration) || "the configured site"
 
     "Insufficient permissions to access Search Console site #{site}#{format_date_range(date_range)}. " <>
       "Reconnect with an account that has access."
   end
 
+  defp format_error(:insufficient_permissions, %Integration{} = integration, date_range) do
+    "Insufficient permissions to access #{provider_display_name(integration.provider)}" <>
+      "#{format_date_range(date_range)}. Reconnect with an account that has access."
+  end
+
   defp format_error(reason, _integration, _date_range), do: format_error(reason)
+
+  @provider_display_names %{
+    google_business: "Google Business Profile",
+    google_analytics: "Google Analytics",
+    google_ads: "Google Ads",
+    facebook_ads: "Facebook Ads",
+    quickbooks: "QuickBooks",
+    google_search_console: "Google Search Console"
+  }
+
+  defp provider_display_name(provider) when is_atom(provider) do
+    Map.get(
+      @provider_display_names,
+      provider,
+      provider |> Atom.to_string() |> humanize_provider()
+    )
+  end
+
+  defp humanize_provider(provider_str) do
+    provider_str
+    |> String.replace("_", " ")
+    |> String.split()
+    |> Enum.map_join(" ", &String.capitalize/1)
+  end
 
   defp site_url_from(%Integration{provider_metadata: meta}) do
     case Map.get(meta || %{}, "site_url") do
