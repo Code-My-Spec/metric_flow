@@ -26,7 +26,7 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
         <:subtitle>Client accounts managed by your agency</:subtitle>
         <:actions>
           <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
-            How does origination work?
+            How Account Connections Work
           </.link>
           <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
             Add Client
