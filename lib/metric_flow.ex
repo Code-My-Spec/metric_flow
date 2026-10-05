@@ -12,6 +12,7 @@ defmodule MetricFlow do
     deps: [],
     exports: [
       Repo,
+      Storage,
       Mailer,
       Vault,
       Encrypted.Binary,
