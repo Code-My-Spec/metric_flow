@@ -29,7 +29,7 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
             How does origination work?
           </.link>
           <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
-            Originate a Client
+            Add Client
           </button>
         </:actions>
       </.header>
