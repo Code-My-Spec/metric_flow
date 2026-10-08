@@ -70,7 +70,16 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   def fetch_metrics(%Integration{} = integration, opts) do
     with :ok <- check_not_expired(integration),
          {:ok, property_id} <- resolve_property_id(integration, opts) do
-      fetch_all_pages(integration, property_id, opts, nil, [], @max_pages)
+      @metric_names
+      |> Enum.chunk_every(10)
+      |> Enum.reduce_while({:ok, []}, fn metric_names, {:ok, accumulated} ->
+        batch_opts = Keyword.put(opts, :metric_names, metric_names)
+
+        case fetch_all_pages(integration, property_id, batch_opts, 0, [], @max_pages) do
+          {:ok, metrics} -> {:cont, {:ok, accumulated ++ metrics}}
+          {:error, _} = error -> {:halt, error}
+        end
+      end)
     end
   end
 
@@ -112,27 +121,29 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   # Private helpers — pagination
   # ---------------------------------------------------------------------------
 
-  defp fetch_all_pages(_integration, _property_id, _opts, _page_token, accumulated, 0) do
-    {:ok, accumulated}
+  defp fetch_all_pages(_integration, _property_id, _opts, _offset, _accumulated, 0) do
+    {:error, :pagination_limit_exceeded}
   end
 
-  defp fetch_all_pages(integration, property_id, opts, page_token, accumulated, pages_remaining) do
-    case execute_request(integration, property_id, opts, page_token) do
-      {:ok, %{"rows" => rows, "nextPageToken" => next_token}} when is_list(rows) ->
+  defp fetch_all_pages(integration, property_id, opts, offset, accumulated, pages_remaining) do
+    case execute_request(integration, property_id, opts, offset) do
+      {:ok, %{"rows" => rows} = body} when is_list(rows) ->
         metrics = transform_rows(rows, opts)
+        next_offset = offset + length(rows)
+        accumulated = accumulated ++ metrics
 
-        fetch_all_pages(
-          integration,
-          property_id,
-          opts,
-          next_token,
-          accumulated ++ metrics,
-          pages_remaining - 1
-        )
-
-      {:ok, %{"rows" => rows}} when is_list(rows) ->
-        metrics = transform_rows(rows, opts)
-        {:ok, accumulated ++ metrics}
+        if rows != [] and next_offset < Map.get(body, "rowCount", next_offset) do
+          fetch_all_pages(
+            integration,
+            property_id,
+            opts,
+            next_offset,
+            accumulated,
+            pages_remaining - 1
+          )
+        else
+          {:ok, accumulated}
+        end
 
       {:ok, _body} ->
         {:ok, accumulated}
@@ -146,9 +157,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   # Private helpers — HTTP
   # ---------------------------------------------------------------------------
 
-  defp execute_request(integration, property_id, opts, page_token) do
+  defp execute_request(integration, property_id, opts, offset) do
     url = "#{@ga4_base_url}/#{property_id}:runReport"
-    body = build_request_body(opts, page_token)
+    body = build_request_body(opts, offset)
     headers = [{"authorization", "Bearer #{integration.access_token}"}]
 
     req_opts =
@@ -192,15 +203,32 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
   defp handle_response(%Req.Response{status: 404}), do: {:error, :property_not_found}
 
   defp handle_response(%Req.Response{status: status, body: body}) do
-    Logger.warning("GA4 API returned #{status}: #{inspect(body)}")
-    {:error, :bad_request}
+    details = api_error_details(body)
+    Logger.warning("GA4 API returned #{status}: #{inspect(details)}")
+    {:error, {:ga4_api_error, status, details}}
   end
+
+  defp api_error_details(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> api_error_details(decoded)
+      {:error, _} -> %{"message" => String.slice(body, 0, 2000)}
+    end
+  end
+
+  defp api_error_details(%{"error" => error}) when is_map(error) do
+    Map.take(error, ["code", "status", "message", "details"])
+  end
+
+  defp api_error_details(%{"error" => message}) when is_binary(message),
+    do: %{"message" => message}
+
+  defp api_error_details(_body), do: %{"message" => "Unexpected Google Analytics API response"}
 
   # ---------------------------------------------------------------------------
   # Private helpers — request building
   # ---------------------------------------------------------------------------
 
-  defp build_request_body(opts, page_token) do
+  defp build_request_body(opts, offset) do
     {start_date, end_date} = resolve_date_range(opts)
 
     body = %{
@@ -210,15 +238,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
           "endDate" => Date.to_iso8601(end_date)
         }
       ],
-      "metrics" => Enum.map(@metric_names, &%{"name" => &1}),
+      "metrics" => Enum.map(Keyword.fetch!(opts, :metric_names), &%{"name" => &1}),
       "dimensions" => build_dimensions(opts)
     }
 
-    if page_token do
-      Map.put(body, "pageToken", page_token)
-    else
-      body
-    end
+    body
+    |> Map.put("offset", Integer.to_string(offset))
+    |> Map.put("limit", "10000")
+    |> Map.put("keepEmptyRows", true)
   end
 
   defp resolve_date_range(opts) do
@@ -263,7 +290,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
 
       alias MetricFlow.Metrics.NormalizedMetric
 
-      Enum.zip(@metric_names, metric_values)
+      Enum.zip(Keyword.fetch!(opts, :metric_names), metric_values)
       |> Enum.map(fn {metric_name, raw_value} ->
         %{
           metric_type: "traffic",

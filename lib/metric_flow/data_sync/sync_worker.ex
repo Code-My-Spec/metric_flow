@@ -333,7 +333,15 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp run_all_providers(scope, integration, sync_job_id, sync_type, provider_mods, opts, started_at) do
+  defp run_all_providers(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         provider_mods,
+         opts,
+         started_at
+       ) do
     date_range = Keyword.get(opts, :date_range)
     results = Enum.map(provider_mods, &fetch_provider_metrics(&1, integration, opts))
 
@@ -549,7 +557,15 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end)
   end
 
-  defp record_success_history(scope, integration, sync_job_id, sync_type, started_at, mod, mod_metrics) do
+  defp record_success_history(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         started_at,
+         mod,
+         mod_metrics
+       ) do
     default_provider = provider_name(mod, integration)
     groups = Enum.group_by(mod_metrics, &Map.get(&1, :provider, default_provider))
 
@@ -667,7 +683,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
   # declared provider is the correct label except for the :google fan-out
   # case, where a single integration produces per-service history entries
   # and the module's own identity is what distinguishes them.
-  defp provider_name(_mod, %Integration{provider: provider}) when provider != :google, do: provider
+  defp provider_name(_mod, %Integration{provider: provider}) when provider != :google,
+    do: provider
 
   defp provider_name(mod, %Integration{provider: :google}) do
     if function_exported?(mod, :provider, 0), do: mod.provider(), else: :google
@@ -799,6 +816,12 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
   defp format_error({:exception, _message}),
     do: "An unexpected error occurred during sync. Please try again."
+
+  defp format_error({:ga4_api_error, status, details}) do
+    api_status = Map.get(details, "status", "UNKNOWN")
+    message = Map.get(details, "message", "Request failed")
+    "Google Analytics API HTTP #{status} (#{api_status}): #{message}"
+  end
 
   defp format_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error(reason) when is_binary(reason), do: reason
