@@ -32,6 +32,9 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
     account_type = socket.assigns[:active_account_type]
 
     cond do
+      not paywall_enabled?() ->
+        {:cont, socket}
+
       is_nil(scope) or is_nil(account_id) ->
         {:cont, socket}
 
@@ -59,6 +62,8 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   end
 
   defp handle_paywall_event(_event, _params, socket), do: {:cont, socket}
+
+  defp paywall_enabled?, do: Application.get_env(:metric_flow, :paywall_enabled, true)
 
   # An agency's Stripe account disconnecting flags its customers' subscriptions
   # `:past_due` for admin review, but those customers are still paying — only a

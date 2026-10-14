@@ -119,5 +119,17 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
 
       {:ok, _lv, _html} = live(conn, "/app/correlations")
     end
+
+    test "bypasses the paywall for free users when :paywall_enabled is false", %{conn: conn} do
+      Application.put_env(:metric_flow, :paywall_enabled, false)
+      on_exit(fn -> Application.put_env(:metric_flow, :paywall_enabled, true) end)
+
+      user = user_fixture()
+      _account = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      refute has_element?(view, "[data-role='paywall']")
+    end
   end
 end
