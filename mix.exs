@@ -145,7 +145,6 @@ defmodule MetricFlow.MixProject do
       ],
       "assets.build": ["compile", "tailwind metric_flow", "esbuild metric_flow"],
       "assets.deploy": [
-        "cmd --cd assets npm ci",
         "tailwind metric_flow --minify",
         "esbuild metric_flow --minify",
         "phx.digest"
