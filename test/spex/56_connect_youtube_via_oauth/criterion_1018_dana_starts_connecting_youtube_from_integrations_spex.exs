@@ -61,7 +61,7 @@ defmodule MetricFlowSpex.Story56.Criterion1018Spex do
       end
 
       then_ "Google sign-in opens for YouTube", context do
-        oauth_path = assert_redirect(context.selection)
+        {oauth_path, _flash} = assert_redirect(context.selection)
         assert oauth_path == ~p"/app/integrations/oauth/youtube"
 
         response = get(context.conn, oauth_path)

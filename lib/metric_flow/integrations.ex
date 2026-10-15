@@ -32,6 +32,7 @@ defmodule MetricFlow.Integrations do
   alias MetricFlow.Users.Scope
 
   @default_providers %{
+    youtube: MetricFlow.Integrations.Providers.YouTube,
     google: MetricFlow.Integrations.Providers.Google,
     google_analytics: MetricFlow.Integrations.Providers.GoogleAnalytics,
     google_ads: MetricFlow.Integrations.Providers.GoogleAds,
@@ -64,7 +65,8 @@ defmodule MetricFlow.Integrations do
   """
   @spec disconnect(Scope.t(), atom()) :: {:ok, Integration.t()} | {:error, term()}
   def disconnect(%Scope{} = scope, provider) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
+    with :ok <- IntegrationRepository.authorize_write(scope, provider),
+         {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
       revoke_provider_token(provider, integration)
       IntegrationRepository.delete_integration(scope, provider)
     end
@@ -159,6 +161,138 @@ defmodule MetricFlow.Integrations do
     end
   end
 
+  def authorize_youtube_connection(%Scope{} = scope),
+    do: IntegrationRepository.authorize_write(scope, :youtube)
+
+  @doc "Exchanges YouTube consent for a short-lived channel-selection authorization."
+  def prepare_youtube_connection(%Scope{} = scope, session_params, callback_params) do
+    with :ok <- IntegrationRepository.authorize_write(scope, :youtube),
+         true <-
+           session_params[:youtube_user_id] == scope.user.id and
+             session_params[:youtube_account_id] == scope.account_id,
+         {:ok, provider_mod} <- fetch_provider(:youtube),
+         config = build_callback_config(provider_mod, session_params),
+         {:ok, result} <-
+           exchange_and_normalize(provider_mod.strategy(), config, callback_params, provider_mod),
+         attrs = build_integration_attrs(result.token, result.normalized),
+         true <- youtube_scopes_granted?(attrs.granted_scopes),
+         {:ok, channels} <-
+           MetricFlow.Integrations.YouTubeChannels.list_channels(attrs.access_token) do
+      case channels do
+        [] ->
+          {:error, :no_youtube_channels}
+
+        _ ->
+          token =
+            MetricFlow.Integrations.PendingYouTubeAuthorizations.put(
+              scope.user.id,
+              scope.account_id,
+              %{attrs: attrs, channels: channels}
+            )
+
+          {:ok, token}
+      end
+    else
+      false -> {:error, :invalid_youtube_authorization}
+      {:error, _} = error -> error
+    end
+  end
+
+  def youtube_selection(%Scope{} = scope, pending_token) do
+    with :ok <- authorize_youtube_connection(scope) do
+      case MetricFlow.Integrations.PendingYouTubeAuthorizations.get(
+             pending_token,
+             scope.user.id,
+             scope.account_id
+           ) do
+        {:ok, %{attrs: attrs, channels: channels}} ->
+          integration =
+            struct(
+              Integration,
+              Map.merge(attrs, %{
+                provider: :youtube,
+                user_id: scope.user.id,
+                account_id: scope.account_id
+              })
+            )
+
+          if Integration.expired?(integration) do
+            {:error, :token_expired}
+          else
+            {:ok, %{integration: integration, channels: channels, pending?: true}}
+          end
+
+        {:error, _} ->
+          with {:ok, integration} <- get_integration(scope, :youtube),
+               {:ok, integration} <- ensure_fresh_token(scope, integration),
+               true <- youtube_scopes_granted?(integration.granted_scopes),
+               {:ok, channels} <-
+                 MetricFlow.Integrations.YouTubeChannels.list_channels(integration.access_token) do
+            {:ok, %{integration: integration, channels: channels, pending?: false}}
+          else
+            false -> {:error, :missing_youtube_scopes}
+            {:error, _} = error -> error
+          end
+      end
+    end
+  end
+
+  def save_youtube_channels(%Scope{} = scope, pending_token, channel_ids)
+      when is_list(channel_ids) and channel_ids != [] do
+    with {:ok, selection} <- youtube_selection(scope, pending_token),
+         true <- Enum.all?(channel_ids, &is_binary/1),
+         selected = Enum.uniq(channel_ids),
+         available = MapSet.new(selection.channels, & &1.id),
+         true <- Enum.all?(selected, &MapSet.member?(available, &1)) do
+      integration = selection.integration
+      metadata = Map.put(integration.provider_metadata || %{}, "channel_ids", selected)
+
+      result =
+        if selection.pending? do
+          attrs = %{
+            access_token: integration.access_token,
+            refresh_token: integration.refresh_token,
+            expires_at: integration.expires_at,
+            granted_scopes: integration.granted_scopes,
+            provider_metadata: metadata
+          }
+
+          IntegrationRepository.upsert_integration(scope, :youtube, attrs)
+        else
+          IntegrationRepository.update_integration(scope, :youtube, %{provider_metadata: metadata})
+        end
+
+      case result do
+        {:ok, saved} ->
+          MetricFlow.Integrations.PendingYouTubeAuthorizations.delete(
+            pending_token,
+            scope.user.id,
+            scope.account_id
+          )
+
+          {:ok, saved}
+
+        {:error, _} = error ->
+          error
+      end
+    else
+      false -> {:error, :invalid_channel_selection}
+      {:error, _} = error -> error
+    end
+  end
+
+  def save_youtube_channels(%Scope{}, _pending_token, _channel_ids),
+    do: {:error, :empty_channel_selection}
+
+  def youtube_scopes_granted?(scopes) when is_list(scopes) do
+    Enum.all?(MetricFlow.Integrations.Providers.YouTube.required_scopes(), &(&1 in scopes))
+  end
+
+  def youtube_scopes_granted?(_), do: false
+
+  def youtube_revenue_granted?(%Integration{granted_scopes: scopes}),
+    do: MetricFlow.Integrations.Providers.YouTube.revenue_scope() in (scopes || [])
+
   defp maybe_attach_realm_id(attrs, %{"realmId" => realm_id}) do
     put_in(attrs, [:provider_metadata, :realm_id], realm_id)
   end
@@ -235,7 +369,12 @@ defmodule MetricFlow.Integrations do
     end
   end
 
-  @google_family_providers [:google_ads, :google_analytics, :google_search_console, :google_business]
+  @google_family_providers [
+    :google_ads,
+    :google_analytics,
+    :google_search_console,
+    :google_business
+  ]
 
   @doc """
   Connects `target_provider` by reusing an existing Google-family

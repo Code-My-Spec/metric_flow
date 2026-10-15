@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.Story56.Criterion1019Spex do
 
       then_ "Google asks for read-only YouTube and Analytics access without write permissions",
             context do
-        oauth_path = assert_redirect(context.view)
+        {oauth_path, _flash} = assert_redirect(context.view)
         assert oauth_path == ~p"/app/integrations/oauth/youtube"
 
         response = get(context.owner_conn, oauth_path)

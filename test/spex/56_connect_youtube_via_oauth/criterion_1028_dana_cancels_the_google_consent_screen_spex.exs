@@ -18,7 +18,8 @@ defmodule MetricFlowSpex.Story56.Criterion1028Spex do
         |> element("[data-platform='youtube'] [data-role='connect-button']")
         |> render_click()
 
-        request = get(context.owner_conn, assert_redirect(view))
+        {oauth_path, _flash} = assert_redirect(view)
+        request = get(context.owner_conn, oauth_path)
 
         params =
           request |> redirected_to() |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
@@ -59,7 +60,7 @@ defmodule MetricFlowSpex.Story56.Criterion1028Spex do
 
         refute has_element?(
                  integrations,
-                 "[data-role='integration-card'][data-platform='youtube']"
+                 "[data-role='integrations-list'] [data-role='integration-card'][data-platform='youtube']"
                )
 
         {:ok, platforms, _html} = live(conn, ~p"/app/integrations/connect")

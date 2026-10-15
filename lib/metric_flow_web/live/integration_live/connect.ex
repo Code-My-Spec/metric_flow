@@ -36,6 +36,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   # Each platform has its own OAuth connection and integration record.
   @canonical_providers [
+    %{key: :youtube, name: "YouTube", description: "Channel, video, and revenue analytics"},
     %{
       key: :google_analytics,
       name: "Google Analytics",
@@ -58,6 +59,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   # Display metadata for providers, keyed by provider atom.
   @provider_metadata %{
+    youtube: %{name: "YouTube", description: "Channel, video, and revenue analytics"},
     google_analytics: %{
       name: "Google Analytics",
       description: "Website traffic and user behavior analytics"
@@ -109,6 +111,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             {render_platform_detail(assigns)}
           <% :result -> %>
             {render_result(assigns)}
+          <% :youtube_channels -> %>
+            {render_youtube_selection(assigns)}
           <% :gbp_accounts -> %>
             {render_gbp_account_selection(assigns)}
           <% :accounts -> %>
@@ -116,6 +120,75 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <% end %>
       </div>
     </Layouts.app>
+    """
+  end
+
+  defp render_youtube_selection(assigns) do
+    ~H"""
+    <section
+      id="youtube-channel-selection"
+      class="mx-auto max-w-2xl rounded-xl border border-base-content/15 p-6 sm:p-8"
+    >
+      <h2 class="text-xl font-semibold">Choose your YouTube channels</h2>
+      <p class="mt-2 text-sm text-base-content/70">
+        Select the channels to include in reporting for {@active_account_name}.
+      </p>
+      <p
+        :if={!@youtube_revenue_granted}
+        id="youtube-revenue-warning"
+        role="alert"
+        class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+      >
+        Revenue will not sync until you grant revenue permission. You can still connect your channels.
+      </p>
+      <p
+        :if={@youtube_error}
+        id="youtube-selection-error"
+        role="alert"
+        class="mt-4 text-sm text-red-600"
+      >
+        {@youtube_error}
+      </p>
+      <.form
+        for={@youtube_form}
+        id="youtube-channels-form"
+        data-role="account-selection"
+        phx-submit="save_youtube_channels"
+        class="mt-6 space-y-5"
+      >
+        <div id="youtube-channels" phx-update="stream" class="space-y-3">
+          <div
+            :for={{dom_id, channel} <- @streams.youtube_channels}
+            id={dom_id}
+            data-role="account-option"
+            class="rounded-lg border border-base-content/15 p-4 transition-colors hover:bg-base-200/50"
+          >
+            <.input
+              field={@youtube_form[:channel_ids]}
+              id={"youtube-channel-#{channel.id}"}
+              type="checkbox"
+              multiple={true}
+              value={channel.id}
+              checked={channel.selected?}
+              label={channel.name}
+              data-role="account-checkbox"
+            />
+          </div>
+        </div>
+        <button
+          id="save-youtube-channels"
+          type="submit"
+          data-role="save-selection"
+          phx-disable-with="Saving…"
+          class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2"
+        >
+          Save channels
+        </button>
+        <.link navigate={~p"/app/integrations"} class="block text-center text-sm underline">
+          Back to integrations
+        </.link>
+      </.form>
+    </section>
     """
   end
 
@@ -629,8 +702,22 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+  def mount(_params, session, socket) do
+    scope =
+      MetricFlow.Users.Scope.put_account_id(
+        socket.assigns.current_scope,
+        socket.assigns.active_account_id
+      )
+
+    socket =
+      socket
+      |> assign(:current_scope, scope)
+      |> assign(:youtube_pending_token, session["youtube_pending_authorization"])
+      |> assign(:youtube_error, nil)
+      |> assign(:youtube_revenue_granted, false)
+      |> assign(:youtube_form, to_form(%{"channel_ids" => []}))
+      |> stream(:youtube_channels, [])
+
     integrations = Integrations.list_integrations(scope)
     providers = build_provider_list(integrations)
 
@@ -709,6 +796,52 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     :google_search_console,
     :google_business
   ]
+
+  def handle_event("connect", %{"provider" => "youtube"}, socket) do
+    scope = socket.assigns.current_scope
+
+    with :ok <- Integrations.authorize_youtube_connection(scope),
+         {:ok, integration} <- Integrations.get_integration(scope, :youtube),
+         true <- Integrations.youtube_scopes_granted?(integration.granted_scopes),
+         {:ok, _fresh} <- Integrations.ensure_fresh_token(scope, integration) do
+      {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect/youtube/accounts")}
+    else
+      {:error, :unauthorized} ->
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to connect YouTube for this account.")}
+
+      _ ->
+        {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/youtube")}
+    end
+  end
+
+  def handle_event("save_youtube_channels", params, socket) do
+    channel_ids = Map.get(params, "channel_ids", [])
+
+    case Integrations.save_youtube_channels(
+           socket.assigns.current_scope,
+           socket.assigns.youtube_pending_token,
+           channel_ids
+         ) do
+      {:ok, _integration} ->
+        {:noreply,
+         socket
+         |> assign(:youtube_pending_token, nil)
+         |> put_flash(:info, "YouTube channels saved successfully.")
+         |> push_navigate(to: ~p"/app/integrations")}
+
+      {:error, reason} ->
+        message =
+          case reason do
+            :empty_channel_selection -> "Please select at least one channel."
+            :invalid_channel_selection -> "Choose channels from the available list."
+            :unauthorized -> "You are not authorized to change these channels."
+            _ -> "Could not save your channels. Please reconnect and try again."
+          end
+
+        {:noreply, assign(socket, :youtube_error, message)}
+    end
+  end
 
   def handle_event("connect", %{"provider" => provider_str}, socket) do
     provider_atom = String.to_existing_atom(provider_str)
@@ -893,6 +1026,38 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
          |> assign(:provider, provider_str)
          |> assign(:authorize_url, fetch_authorize_url(provider_atom))
          |> assign(extra_assigns)}
+    end
+  end
+
+  defp handle_accounts_params("youtube", socket) do
+    case Integrations.youtube_selection(
+           socket.assigns.current_scope,
+           socket.assigns.youtube_pending_token
+         ) do
+      {:ok, selection} ->
+        selected = Map.get(selection.integration.provider_metadata || %{}, "channel_ids", [])
+        channels = Enum.map(selection.channels, &Map.put(&1, :selected?, &1.id in selected))
+
+        {:noreply,
+         socket
+         |> assign(:view_mode, :youtube_channels)
+         |> assign(:provider, "youtube")
+         |> assign(:youtube_error, nil)
+         |> assign(
+           :youtube_revenue_granted,
+           Integrations.youtube_revenue_granted?(selection.integration)
+         )
+         |> assign(:youtube_form, to_form(%{"channel_ids" => selected}))
+         |> stream(:youtube_channels, channels, reset: true)}
+
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           "Could not load your YouTube channels. Reconnect YouTube and try again."
+         )
+         |> push_navigate(to: ~p"/app/integrations/connect/youtube")}
     end
   end
 

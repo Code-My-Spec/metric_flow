@@ -37,7 +37,7 @@ defmodule MetricFlow.Accounts.AccountRepository do
     from(a in Account,
       join: m in AccountMember,
       on: m.account_id == a.id and m.user_id == ^user.id,
-      order_by: [desc: m.updated_at, desc: m.id]
+      order_by: [desc_nulls_last: m.last_active_at, desc: m.updated_at, desc: m.id]
     )
     |> Repo.all()
   end
@@ -414,12 +414,23 @@ defmodule MetricFlow.Accounts.AccountRepository do
   """
   @spec touch_membership(Scope.t(), integer()) :: :ok
   def touch_membership(%Scope{user: user}, account_id) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    Repo.transaction(fn ->
+      # Serialize switches for this user, including simultaneous browser tabs.
+      from(u in MetricFlow.Users.User, where: u.id == ^user.id, lock: "FOR UPDATE")
+      |> Repo.one!()
 
-    from(m in AccountMember,
-      where: m.user_id == ^user.id and m.account_id == ^account_id
-    )
-    |> Repo.update_all(set: [updated_at: now, last_active_at: now])
+      membership =
+        from(m in AccountMember, where: m.user_id == ^user.id and m.account_id == ^account_id)
+
+      if Repo.exists?(membership) do
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        from(m in AccountMember, where: m.user_id == ^user.id and not is_nil(m.last_active_at))
+        |> Repo.update_all(set: [last_active_at: nil])
+
+        Repo.update_all(membership, set: [updated_at: now, last_active_at: now])
+      end
+    end)
 
     :ok
   end

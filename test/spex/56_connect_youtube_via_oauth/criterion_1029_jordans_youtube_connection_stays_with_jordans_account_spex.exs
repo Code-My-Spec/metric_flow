@@ -116,7 +116,7 @@ defmodule MetricFlowSpex.Story56.Criterion1029Spex do
 
         {:ok, agency, _html} = live(context.owner_conn, ~p"/app/integrations")
         assert has_element?(agency, "[data-role='integrations-index']")
-        refute has_element?(agency, card)
+        refute has_element?(agency, "[data-role='integrations-list'] " <> card)
 
         {:ok, client, _html} = live(context.client_conn, ~p"/app/integrations")
         assert has_element?(client, card <> "[data-status='connected']")

@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.Story56.Criterion1020Spex do
                  "[data-role='integration-card'][data-platform='youtube'][data-status='connected']"
                )
 
-        path = assert_redirect(context.selection)
+        {path, _flash} = assert_redirect(context.selection)
         assert path == ~p"/app/integrations/oauth/youtube"
         response = get(context.conn, path)
         uri = response |> redirected_to() |> URI.parse()

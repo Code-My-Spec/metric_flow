@@ -29,11 +29,11 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   Cloak automatically decrypts access_token and refresh_token on load.
   """
   @spec get_integration(Scope.t(), atom()) :: {:ok, Integration.t()} | {:error, :not_found}
-  def get_integration(%Scope{user: user}, provider) do
+  def get_integration(%Scope{} = scope, provider) do
     result =
-      from(i in Integration,
-        where: i.user_id == ^user.id and i.provider == ^provider
-      )
+      scope
+      |> scoped_integrations()
+      |> where([i], i.provider == ^provider)
       |> Repo.one()
 
     case result do
@@ -64,13 +64,48 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   Returns an empty list when no integrations exist for the user.
   """
   @spec list_integrations(Scope.t()) :: list(Integration.t())
-  def list_integrations(%Scope{user: user}) do
-    from(i in Integration,
-      where: i.user_id == ^user.id,
-      order_by: [desc: i.inserted_at, desc: i.id]
-    )
+  def list_integrations(%Scope{} = scope) do
+    scope
+    |> scoped_integrations()
+    |> order_by([i], desc: i.inserted_at, desc: i.id)
     |> Repo.all()
   end
+
+  defp scoped_integrations(%Scope{user: user, account_id: account_id})
+       when is_integer(account_id) do
+    memberships =
+      from(m in MetricFlow.Accounts.AccountMember,
+        where: m.user_id == ^user.id and m.account_id == ^account_id,
+        select: m.account_id
+      )
+
+    from(i in Integration,
+      where:
+        (i.provider != :youtube and i.user_id == ^user.id) or
+          (i.provider == :youtube and i.account_id == ^account_id and
+             i.account_id in subquery(memberships))
+    )
+  end
+
+  defp scoped_integrations(%Scope{user: user}) do
+    from(i in Integration, where: i.user_id == ^user.id and i.provider != :youtube)
+  end
+
+  def authorize_write(%Scope{user: user, account_id: account_id}, :youtube)
+      when is_integer(account_id) do
+    allowed =
+      from(m in MetricFlow.Accounts.AccountMember,
+        where:
+          m.user_id == ^user.id and m.account_id == ^account_id and
+            m.role in [:owner, :admin, :account_manager]
+      )
+      |> Repo.exists?()
+
+    if allowed, do: :ok, else: {:error, :unauthorized}
+  end
+
+  def authorize_write(%Scope{}, :youtube), do: {:error, :unauthorized}
+  def authorize_write(%Scope{}, _provider), do: :ok
 
   @doc """
   Creates a new integration with encrypted tokens.
@@ -98,9 +133,14 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   @spec update_integration(Scope.t(), atom(), map()) ::
           {:ok, Integration.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def update_integration(%Scope{} = scope, provider, attrs) do
-    with {:ok, integration} <- get_integration(scope, provider) do
+    with :ok <- authorize_write(scope, provider),
+         {:ok, integration} <- get_integration(scope, provider) do
+      attrs = Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
+
       integration
       |> Integration.changeset(attrs)
+      # Validate supplied provider values while keeping the stored identity immutable.
+      |> Ecto.Changeset.delete_change(:provider)
       |> Repo.update()
     end
   end
@@ -115,7 +155,8 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   @spec delete_integration(Scope.t(), atom()) ::
           {:ok, Integration.t()} | {:error, :not_found}
   def delete_integration(%Scope{} = scope, provider) do
-    with {:ok, integration} <- get_integration(scope, provider) do
+    with :ok <- authorize_write(scope, provider),
+         {:ok, integration} <- get_integration(scope, provider) do
       Repo.delete(integration)
     end
   end
@@ -129,7 +170,9 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   """
   @spec delete_all_integrations(Scope.t()) :: :ok
   def delete_all_integrations(%Scope{user: user}) do
-    from(i in Integration, where: i.user_id == ^user.id) |> Repo.delete_all()
+    from(i in Integration, where: i.user_id == ^user.id and i.provider != :youtube)
+    |> Repo.delete_all()
+
     :ok
   end
 
@@ -168,6 +211,31 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   """
   @spec upsert_integration(Scope.t(), atom(), map()) ::
           {:ok, Integration.t()} | {:error, Ecto.Changeset.t()}
+  def upsert_integration(%Scope{user: user, account_id: account_id} = scope, :youtube, attrs) do
+    with :ok <- authorize_write(scope, :youtube) do
+      attrs =
+        Map.drop(attrs, [:user_id, :account_id, :provider, "user_id", "account_id", "provider"])
+
+      %Integration{user_id: user.id, account_id: account_id, provider: :youtube}
+      |> Integration.changeset(attrs)
+      |> Repo.insert(
+        on_conflict:
+          {:replace,
+           [
+             :access_token,
+             :refresh_token,
+             :expires_at,
+             :granted_scopes,
+             :provider_metadata,
+             :reconnection_notified_at,
+             :updated_at
+           ]},
+        conflict_target: [:account_id, :provider],
+        returning: true
+      )
+    end
+  end
+
   def upsert_integration(%Scope{user: user}, provider, attrs) do
     attrs_with_user_and_provider =
       attrs
@@ -178,7 +246,7 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
 
     Repo.insert(changeset,
       on_conflict: {:replace_all_except, [:id, :inserted_at]},
-      conflict_target: [:user_id, :provider]
+      conflict_target: {:unsafe_fragment, "(user_id, provider) WHERE provider <> 'youtube'"}
     )
   end
 
@@ -189,10 +257,10 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   Performs an efficient existence check without loading the full record.
   """
   @spec connected?(Scope.t(), atom()) :: boolean()
-  def connected?(%Scope{user: user}, provider) do
-    from(i in Integration,
-      where: i.user_id == ^user.id and i.provider == ^provider
-    )
+  def connected?(%Scope{} = scope, provider) do
+    scope
+    |> scoped_integrations()
+    |> where([i], i.provider == ^provider)
     |> Repo.exists?()
   end
 

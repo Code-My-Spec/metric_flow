@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.Story56.Criterion1042Spex do
 
       then_ "Google consent requests all three read-only permissions and no video write access",
             context do
-        path = assert_redirect(context.view)
+        {path, _flash} = assert_redirect(context.view)
         assert path == ~p"/app/integrations/oauth/youtube"
         response = get(context.owner_conn, path)
         uri = response |> redirected_to() |> URI.parse()

@@ -72,7 +72,7 @@ defmodule MetricFlowSpex.Story56.Criterion1025Spex do
 
         refute has_element?(
                  integrations,
-                 "[data-role='integration-card'][data-platform='youtube']"
+                 "[data-role='integrations-list'] [data-role='integration-card'][data-platform='youtube']"
                )
 
         {:ok, platforms, _html} = live(context.conn, ~p"/app/integrations/connect")
