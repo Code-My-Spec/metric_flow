@@ -100,8 +100,11 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         %Req.Response{status: 401} ->
           {:error, :unauthorized}
 
-        %Req.Response{status: 403} ->
-          Logger.warning("GBP Account Management API returned 403 — API may not be enabled")
+        %Req.Response{status: 403, body: body} ->
+          Logger.warning(
+            "GBP Account Management API returned 403 — API may not be enabled or scope insufficient: #{inspect(body)}"
+          )
+
           {:error, :api_disabled}
 
         %Req.Response{status: status} ->
@@ -223,8 +226,11 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   defp handle_response(%Req.Response{status: 401}, _int, _aid, _acc, _opts),
     do: {:error, :unauthorized}
 
-  defp handle_response(%Req.Response{status: 403}, _int, _aid, _acc, _opts) do
-    Logger.warning("GBP API returned 403 — API may not be enabled or access revoked")
+  defp handle_response(%Req.Response{status: 403, body: body}, _int, aid, _acc, _opts) do
+    Logger.warning(
+      "GBP API returned 403 for #{aid} — API may not be enabled or access revoked: #{inspect(body)}"
+    )
+
     {:error, :api_disabled}
   end
 

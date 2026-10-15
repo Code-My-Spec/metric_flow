@@ -349,6 +349,27 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
       end)
     end
 
+    test "logs the actual Google error body on 403 instead of discarding it" do
+      plug =
+        build_stub_plug(
+          403,
+          Jason.encode!(%{
+            "error" => %{"code" => 403, "status" => "PERMISSION_DENIED", "message" => "insufficient scope"}
+          })
+        )
+
+      log =
+        capture_log(fn ->
+          assert {:error, :api_disabled} =
+                   GoogleBusinessLocations.list_locations(integration_with_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+
+      assert log =~ "PERMISSION_DENIED"
+      assert log =~ "insufficient scope"
+    end
+
     test "accepts :http_plug option for test injection" do
       plug = build_stub_plug(200, empty_locations_api_response())
 
@@ -435,6 +456,27 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
                    http_plug: plug
                  )
       end)
+    end
+
+    test "logs the actual Google error body on 403 instead of discarding it" do
+      plug =
+        build_stub_plug(
+          403,
+          Jason.encode!(%{
+            "error" => %{"code" => 403, "status" => "PERMISSION_DENIED", "message" => "insufficient scope"}
+          })
+        )
+
+      log =
+        capture_log(fn ->
+          assert {:error, :api_disabled} =
+                   GoogleBusinessLocations.fetch_accounts(integration_without_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+
+      assert log =~ "PERMISSION_DENIED"
+      assert log =~ "insufficient scope"
     end
 
     test "returns {:error, :bad_request} on unexpected status" do
