@@ -31,18 +31,7 @@ defmodule MetricFlow.Integrations.YouTubeChannels do
     case Req.request(request) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         with {:ok, channels, next} <- parse_page(body) do
-          pages = [channels | pages]
-
-          cond do
-            is_nil(next) or next == "" ->
-              {:ok, pages |> Enum.reverse() |> List.flatten() |> Enum.uniq_by(& &1.id)}
-
-            MapSet.member?(seen, next) ->
-              {:error, :invalid_pagination}
-
-            true ->
-              fetch_page(access_token, opts, next, MapSet.put(seen, next), pages)
-          end
+          continue_pages(access_token, opts, next, seen, [channels | pages])
         end
 
       {:ok, %Req.Response{status: 401}} ->
@@ -59,6 +48,18 @@ defmodule MetricFlow.Integrations.YouTubeChannels do
     end
   rescue
     Jason.DecodeError -> {:error, :malformed_response}
+  end
+
+  defp continue_pages(_access_token, _opts, next, _seen, pages) when next in [nil, ""] do
+    {:ok, pages |> Enum.reverse() |> List.flatten() |> Enum.uniq_by(& &1.id)}
+  end
+
+  defp continue_pages(access_token, opts, next, seen, pages) do
+    if MapSet.member?(seen, next) do
+      {:error, :invalid_pagination}
+    else
+      fetch_page(access_token, opts, next, MapSet.put(seen, next), pages)
+    end
   end
 
   defp parse_page(body) when is_binary(body) do
