@@ -51,7 +51,7 @@ COPY rel rel
 COPY envs rel/overlays/envs
 
 # Install npm dependencies for JS assets
-RUN cd assets && npm install && cd ..
+RUN cd assets && npm ci && cd ..
 
 # Compile and build assets
 RUN mix compile
