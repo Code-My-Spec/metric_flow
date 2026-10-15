@@ -33,7 +33,9 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   # falls back to the unfiltered "all metrics" view.
   @canned_template_metrics %{
     "marketing overview" =>
-      MapSet.new(~w(impressions clicks rate cost_rate conversions sessions users new_users views duration bounce_rate position orders reviews ctr cpc)),
+      MapSet.new(
+        ~w(impressions clicks rate cost_rate conversions sessions users new_users views duration bounce_rate position orders reviews ctr cpc)
+      ),
     "revenue analysis" =>
       MapSet.new(~w(revenue expenses total_cost conversions conversions_value roas)),
     "platform comparison" =>
@@ -317,7 +319,26 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           <%!-- Metric toggles --%>
           <div data-role="metric-toggles" class="flex items-center gap-1 flex-wrap mb-6">
             <button
+              id="select-all-metrics"
+              type="button"
+              phx-click="select_all_metrics"
+              class="rounded-md border border-base-content/20 px-3 py-1 text-xs font-medium transition-colors hover:bg-base-200 focus-visible:outline-2"
+            >
+              Select all
+            </button>
+            <button
+              id="deselect-all-metrics"
+              type="button"
+              phx-click="deselect_all_metrics"
+              class="mr-2 rounded-md border border-base-content/20 px-3 py-1 text-xs font-medium transition-colors hover:bg-base-200 focus-visible:outline-2"
+            >
+              Deselect all
+            </button>
+            <button
               :for={name <- @all_metric_names}
+              id={"metric-toggle-#{name}"}
+              type="button"
+              aria-pressed={to_string(MapSet.member?(@visible_metrics, name))}
               phx-click="toggle_metric"
               phx-value-metric={name}
               class={[
@@ -600,8 +621,10 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp filter_by_template(dashboard_data, %MapSet{} = allowed) do
     %{
       dashboard_data
-      | time_series: Enum.filter(dashboard_data.time_series, &MapSet.member?(allowed, &1.metric_name)),
-        summary_stats: Enum.filter(dashboard_data.summary_stats, &MapSet.member?(allowed, &1.metric_name)),
+      | time_series:
+          Enum.filter(dashboard_data.time_series, &MapSet.member?(allowed, &1.metric_name)),
+        summary_stats:
+          Enum.filter(dashboard_data.summary_stats, &MapSet.member?(allowed, &1.metric_name)),
         platform_breakdown: Map.take(dashboard_data.platform_breakdown, MapSet.to_list(allowed)),
         available_filters:
           Map.update!(dashboard_data.available_filters, :metric_names, fn names ->
@@ -679,6 +702,20 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       |> rebuild_chart_and_table()
 
     {:noreply, socket}
+  end
+
+  def handle_event("select_all_metrics", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:visible_metrics, MapSet.new(socket.assigns.all_metric_names))
+     |> rebuild_chart_and_table()}
+  end
+
+  def handle_event("deselect_all_metrics", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:visible_metrics, MapSet.new())
+     |> rebuild_chart_and_table()}
   end
 
   def handle_event("toggle_metric", %{"metric" => metric_name}, socket) do

@@ -9,7 +9,11 @@ defmodule MetricFlowWeb.UserLive.Registration do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.content
+      flash={@flash}
+      current_scope={@current_scope}
+      active_account_name={assigns[:active_account_name]}
+    >
       <div class="mx-auto max-w-sma">
         <div :if={@registered} class="text-center">
           <.header>
@@ -70,7 +74,18 @@ defmodule MetricFlowWeb.UserLive.Registration do
               label="Account type"
               options={[{"Client", "client"}, {"Agency", "agency"}]}
               prompt="Select account type"
+              aria-describedby="account-type-help"
             />
+            <div id="account-type-help" class="mb-5 space-y-2 text-sm text-base-content/70">
+              <p>
+                <strong class="text-base-content">Client:</strong>
+                Choose this to track marketing and business results for your own business.
+              </p>
+              <p>
+                <strong class="text-base-content">Agency:</strong>
+                Choose this if you manage reporting for multiple client businesses.
+              </p>
+            </div>
 
             <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
               Create an account

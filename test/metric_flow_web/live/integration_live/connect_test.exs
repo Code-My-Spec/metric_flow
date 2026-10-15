@@ -206,6 +206,70 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
                integration.provider_metadata
     end
 
+    for {reason, category, guidance} <- [
+          {"SERVICE_DISABLED", "service_disabled", "Contact support to enable the API"},
+          {"ACCESS_TOKEN_SCOPE_INSUFFICIENT", "insufficient_scope",
+           "Reconnect your Google account"}
+        ] do
+      @reason reason
+      @category category
+      @guidance guidance
+
+      test "shows specific recovery guidance for #{@reason}", %{
+        conn: conn,
+        integration: integration
+      } do
+        body = %{
+          "error" => %{
+            "status" => "PERMISSION_DENIED",
+            "details" => [
+              %{
+                "@type" => "type.googleapis.com/google.rpc.ErrorInfo",
+                "domain" => "googleapis.com",
+                "reason" => @reason
+              }
+            ]
+          }
+        }
+
+        Application.put_env(:metric_flow, :req_http_options,
+          plug: fn conn ->
+            conn
+            |> Plug.Conn.put_resp_content_type("application/json")
+            |> Plug.Conn.send_resp(403, Jason.encode!(body))
+          end
+        )
+
+        capture_log(fn ->
+          {:ok, view, _html} = live(conn, ~p"/app/integrations/connect/google_business/accounts")
+
+          assert has_element?(
+                   view,
+                   "#gbp-account-classified-error[data-reason='#{@category}']",
+                   @guidance
+                 )
+
+          refute has_element?(view, "#gbp-account-access-error")
+
+          refute has_element?(
+                   view,
+                   "[data-role='account-selection']",
+                   "No Google Business Profile accounts found."
+                 )
+
+          assert has_element?(view, "[data-role='save-accounts-btn'][disabled]")
+
+          if @category == "insufficient_scope" do
+            view |> element("#gbp-scope-reconnect") |> render_click()
+            assert_redirect(view, ~p"/app/integrations/connect/google_business")
+          end
+        end)
+
+        assert Repo.get!(Integration, integration.id).provider_metadata ==
+                 integration.provider_metadata
+      end
+    end
+
     test "successful empty account response remains distinct from denied access", %{conn: conn} do
       Application.put_env(:metric_flow, :req_http_options,
         plug: fn conn ->

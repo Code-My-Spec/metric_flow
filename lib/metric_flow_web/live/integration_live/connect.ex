@@ -340,6 +340,35 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             </div>
           </div>
         <% else %>
+          <%= if @accounts_error in [:service_disabled, :insufficient_scope] do %>
+            <div
+              id="gbp-account-classified-error"
+              role="alert"
+              data-reason={@accounts_error}
+              class="rounded-lg border border-amber-300 p-4 text-sm space-y-3"
+            >
+              <%= if @accounts_error == :service_disabled do %>
+                <p class="font-semibold">
+                  The Google Business Profile API is disabled for this connection.
+                </p>
+                <p>
+                  Contact support to enable the API for MetricFlow's Google project, then try again.
+                </p>
+              <% else %>
+                <p class="font-semibold">
+                  Google Business Profile permission is missing from this connection.
+                </p>
+                <p>Reconnect your Google account and grant Business Profile access.</p>
+                <.link
+                  id="gbp-scope-reconnect"
+                  navigate={~p"/app/integrations/connect/google_business"}
+                  class="inline-flex rounded-md px-3 py-2 font-medium underline transition-colors hover:bg-amber-100 focus-visible:outline-2"
+                >
+                  Reconnect Google Business Profile
+                </.link>
+              <% end %>
+            </div>
+          <% end %>
           <%= if @accounts_error == :api_disabled do %>
             <div
               id="gbp-account-access-error"
@@ -365,7 +394,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
               </.link>
             </div>
           <% else %>
-            <p class="text-sm text-base-content/60">No Google Business Profile accounts found.</p>
+            <p :if={is_nil(@accounts_error)} class="text-sm text-base-content/60">
+              No Google Business Profile accounts found.
+            </p>
           <% end %>
         <% end %>
 

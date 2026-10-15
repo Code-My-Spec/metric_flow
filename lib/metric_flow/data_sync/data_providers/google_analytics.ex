@@ -172,7 +172,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalytics do
       |> maybe_put_plug(opts)
 
     try do
-      response = Req.request!(req_opts)
+      response = MetricFlow.DataSync.ProviderHttp.request!(req_opts)
       handle_response(response)
     rescue
       e ->

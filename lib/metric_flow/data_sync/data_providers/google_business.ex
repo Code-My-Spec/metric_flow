@@ -119,7 +119,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
       |> maybe_put_plug(opts)
 
     try do
-      response = Req.request!(req_opts)
+      response = MetricFlow.DataSync.ProviderHttp.request!(req_opts)
       handle_performance_response(response, location_id)
     rescue
       e ->
@@ -268,7 +268,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
       |> maybe_put_plug(opts)
 
     try do
-      response = Req.request!(req_opts)
+      response = MetricFlow.DataSync.ProviderHttp.request!(req_opts)
       handle_review_response(response)
     rescue
       # A body that arrives with `content-type: application/json` and is not JSON

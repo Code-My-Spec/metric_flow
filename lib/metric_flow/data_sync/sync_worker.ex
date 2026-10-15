@@ -362,7 +362,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider,
           status: :failed,
           records_synced: 0,
-          error_message: error_msg
+          error_message: error_msg,
+          provider_error_detail: provider_error_detail(reason)
         })
       end)
 
@@ -395,7 +396,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp fetch_provider_metrics(provider_mod, integration, opts) do
-    case provider_mod.fetch_metrics(integration, opts) do
+    {result, detail} =
+      MetricFlow.DataSync.ProviderHttp.capture(
+        fn -> provider_mod.fetch_metrics(integration, opts) end,
+        [integration.access_token, integration.refresh_token]
+      )
+
+    case result do
       {:ok, metrics} ->
         {:ok, provider_mod, metrics}
 
@@ -405,6 +412,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
             "provider_mod=#{inspect(provider_mod)} reason=#{inspect(reason)}"
         )
 
+        reason = if detail, do: {:provider_http_error, reason, detail}, else: reason
         {:error, provider_mod, reason}
     end
   end
@@ -517,7 +525,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider_name(mod, integration),
           status: :failed,
           records_synced: 0,
-          error_message: format_error(reason, integration, date_range)
+          error_message: format_error(reason, integration, date_range),
+          provider_error_detail: provider_error_detail(reason)
         })
     end)
 
@@ -699,6 +708,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
       sync_type: sync_type,
       records_synced: outcome.records_synced,
       error_message: outcome.error_message,
+      provider_error_detail: Map.get(outcome, :provider_error_detail),
       started_at: started_at,
       completed_at: DateTime.utc_now()
     }
@@ -731,6 +741,12 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp broadcast_sync_event(user_id, message) do
     Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
   end
+
+  defp provider_error_detail({:provider_http_error, _reason, detail}), do: detail
+  defp provider_error_detail(_reason), do: nil
+
+  defp format_error({:provider_http_error, reason, _detail}, integration, date_range),
+    do: format_error(reason, integration, date_range)
 
   defp format_error(:missing_site_url, _integration, date_range) do
     "No Search Console site URL configured#{format_date_range(date_range)}. " <>
