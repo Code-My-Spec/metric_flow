@@ -403,7 +403,12 @@ defmodule MetricFlow.Accounts.AccountRepository do
   """
   @spec get_personal_account_id(Scope.t()) :: integer() | nil
   def get_personal_account_id(%Scope{user: user}) do
-    from(m in AccountMember, where: m.user_id == ^user.id, select: m.account_id, limit: 1)
+    from(m in AccountMember,
+      where: m.user_id == ^user.id,
+      order_by: [asc: m.inserted_at, asc: m.id],
+      select: m.account_id,
+      limit: 1
+    )
     |> Repo.one()
   end
 
