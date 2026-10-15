@@ -123,6 +123,111 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
+  describe "Google Business account access recovery" do
+    setup %{conn: conn} do
+      user = user_fixture()
+
+      account =
+        %MetricFlow.Accounts.Account{}
+        |> MetricFlow.Accounts.Account.creation_changeset(%{
+          name: "GBP Test Account",
+          slug: "gbp-recovery-#{System.unique_integer([:positive])}",
+          type: "client",
+          originator_user_id: user.id
+        })
+        |> Repo.insert!()
+
+      %MetricFlow.Accounts.AccountMember{}
+      |> MetricFlow.Accounts.AccountMember.changeset(%{
+        account_id: account.id,
+        user_id: user.id,
+        role: :owner
+      })
+      |> Repo.insert!()
+
+      integration = insert_integration!(user.id, :google_business)
+      original = Application.get_env(:metric_flow, :req_http_options)
+
+      on_exit(fn ->
+        if original do
+          Application.put_env(:metric_flow, :req_http_options, original)
+        else
+          Application.delete_env(:metric_flow, :req_http_options)
+        end
+      end)
+
+      %{conn: log_in_user(conn, user), integration: integration}
+    end
+
+    test "403 provides access guidance and a reconnect path without changing configuration", %{
+      conn: conn,
+      integration: integration
+    } do
+      Application.put_env(:metric_flow, :req_http_options,
+        plug: fn conn ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/json")
+          |> Plug.Conn.send_resp(
+            403,
+            Jason.encode!(%{"error" => %{"status" => "PERMISSION_DENIED"}})
+          )
+        end
+      )
+
+      capture_log(fn ->
+        {:ok, view, _html} = live(conn, ~p"/app/integrations/connect/google_business/accounts")
+
+        assert has_element?(
+                 view,
+                 "#gbp-account-access-error[role='alert']",
+                 "Google denied access"
+               )
+
+        assert has_element?(
+                 view,
+                 "#gbp-account-access-error",
+                 "owns or manages a Business Profile"
+               )
+
+        assert has_element?(view, "#gbp-account-access-error", "contact support")
+        assert has_element?(view, "#gbp-account-access-error", "does not confirm")
+        assert has_element?(view, "[data-role='save-accounts-btn'][disabled]")
+
+        assert has_element?(
+                 view,
+                 "#gbp-account-reconnect[href='/app/integrations/connect/google_business']"
+               )
+
+        view |> element("#gbp-account-reconnect") |> render_click()
+        assert_redirect(view, ~p"/app/integrations/connect/google_business")
+      end)
+
+      assert Repo.get!(Integration, integration.id).provider_metadata ==
+               integration.provider_metadata
+    end
+
+    test "successful empty account response remains distinct from denied access", %{conn: conn} do
+      Application.put_env(:metric_flow, :req_http_options,
+        plug: fn conn ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/json")
+          |> Plug.Conn.send_resp(200, Jason.encode!(%{"accounts" => []}))
+        end
+      )
+
+      {:ok, view, _html} = live(conn, ~p"/app/integrations/connect/google_business/accounts")
+      refute has_element?(view, "#gbp-account-access-error")
+
+      assert has_element?(
+               view,
+               "[data-role='account-selection']",
+               "No Google Business Profile accounts found."
+             )
+
+      assert has_element?(view, "[data-role='save-accounts-btn'][disabled]")
+    end
+  end
+
   describe "renders connect page with provider cards in a grid" do
     test "renders connect page with provider cards in a grid", %{conn: conn} do
       user = user_fixture()
@@ -192,7 +297,9 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   end
 
   describe "shows connected status and account email on per-provider view when connected" do
-    test "shows connected status and account email on per-provider view when connected", %{conn: conn} do
+    test "shows connected status and account email on per-provider view when connected", %{
+      conn: conn
+    } do
       user = user_fixture()
       insert_integration!(user.id, :stub)
       conn = log_in_user(conn, user)

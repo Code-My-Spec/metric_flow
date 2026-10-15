@@ -341,10 +341,28 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           </div>
         <% else %>
           <%= if @accounts_error == :api_disabled do %>
-            <div class="alert alert-warning text-sm">
-              <span>
-                Could not fetch your Google Business accounts automatically. Please try again later.
-              </span>
+            <div
+              id="gbp-account-access-error"
+              role="alert"
+              class="rounded-lg border border-amber-300 p-4 text-sm space-y-3"
+            >
+              <p class="font-semibold">Google denied access to your Business Profile accounts.</p>
+              <p>
+                Check that the Google account you connected owns or manages a Business Profile.
+                If your profile is managed by another Google account, reconnect with that account
+                and grant Business Profile access.
+              </p>
+              <p>
+                If you already have access, contact support so we can check MetricFlow's Google API
+                configuration. This response does not confirm whether you have a Business Profile.
+              </p>
+              <.link
+                id="gbp-account-reconnect"
+                navigate={~p"/app/integrations/connect/google_business"}
+                class="inline-flex rounded-md px-3 py-2 font-medium underline transition-colors hover:bg-amber-100 focus-visible:outline-2"
+              >
+                Reconnect Google Business Profile
+              </.link>
             </div>
           <% else %>
             <p class="text-sm text-base-content/60">No Google Business Profile accounts found.</p>
@@ -654,7 +672,12 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
 
   @impl true
-  @google_family_providers [:google_ads, :google_analytics, :google_search_console, :google_business]
+  @google_family_providers [
+    :google_ads,
+    :google_analytics,
+    :google_search_console,
+    :google_business
+  ]
 
   def handle_event("connect", %{"provider" => provider_str}, socket) do
     provider_atom = String.to_existing_atom(provider_str)
@@ -858,7 +881,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         assign_accounts_state(socket, :google_business, provider_str, integration)
 
       _provider_atom, _integration ->
-        {:noreply, push_navigate(socket, to: ~p"/app/integrations/connect/#{provider_str}/accounts")}
+        {:noreply,
+         push_navigate(socket, to: ~p"/app/integrations/connect/#{provider_str}/accounts")}
     end)
   end
 
