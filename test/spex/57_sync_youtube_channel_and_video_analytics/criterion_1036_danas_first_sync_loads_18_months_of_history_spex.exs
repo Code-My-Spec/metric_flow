@@ -105,13 +105,13 @@ defmodule MetricFlowSpex.Story57.Criterion1036Spex do
           dashboard
           |> render()
           |> LazyHTML.from_fragment()
-          |> LazyHTML.filter("[data-role='data-table'] tbody tr")
+          |> LazyHTML.query("[data-role='data-table'] tbody tr")
           |> Enum.map(fn row ->
-            date = row |> LazyHTML.filter("td:first-child") |> LazyHTML.text() |> String.trim()
+            date = row |> LazyHTML.query("td:first-child") |> LazyHTML.text() |> String.trim()
 
             value =
               row
-              |> LazyHTML.filter("td:nth-child(2)")
+              |> LazyHTML.query("td:nth-child(2)")
               |> LazyHTML.text()
               |> String.trim()
               |> String.replace(",", "")
@@ -195,13 +195,13 @@ defmodule MetricFlowSpex.Story57.Criterion1036Spex do
           dashboard
           |> render()
           |> LazyHTML.from_fragment()
-          |> LazyHTML.filter("[data-role='data-table'] tbody tr")
+          |> LazyHTML.query("[data-role='data-table'] tbody tr")
           |> Enum.map(fn row ->
-            date = row |> LazyHTML.filter("td:first-child") |> LazyHTML.text() |> String.trim()
+            date = row |> LazyHTML.query("td:first-child") |> LazyHTML.text() |> String.trim()
 
             value =
               row
-              |> LazyHTML.filter("td:nth-child(2)")
+              |> LazyHTML.query("td:nth-child(2)")
               |> LazyHTML.text()
               |> String.trim()
               |> String.replace(",", "")

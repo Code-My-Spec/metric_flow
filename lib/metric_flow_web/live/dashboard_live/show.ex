@@ -519,7 +519,13 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   @impl true
   def mount(params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope =
+      MetricFlow.Users.Scope.put_account_id(
+        socket.assigns.current_scope,
+        socket.assigns.active_account_id
+      )
+
+    socket = assign(socket, :current_scope, scope)
     requested_dashboard = lookup_requested_dashboard(scope, params["id"])
     page_title = (requested_dashboard && requested_dashboard.name) || "All Metrics"
     metric_filter = template_metric_filter(requested_dashboard)
@@ -959,12 +965,18 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp aggregate_time_series(time_series, :day), do: time_series
 
   defp aggregate_time_series(time_series, granularity) do
-    Enum.map(time_series, fn %{metric_name: metric_name, data: data} ->
+    Enum.map(time_series, fn %{metric_name: metric_name, data: data} = series ->
       aggregated_data =
         data
         |> Enum.group_by(fn %{date: date} -> period_start_date(date, granularity) end)
         |> Enum.map(fn {period_date, points} ->
-          %{date: period_date, value: Enum.reduce(points, 0.0, &(&1.value + &2))}
+          value =
+            case Map.fetch(series, :aggregation) do
+              {:ok, semantics} -> Metrics.aggregate_channel_points(points, semantics)
+              :error -> Enum.reduce(points, 0.0, &(&1.value + &2))
+            end
+
+          %{date: period_date, value: value}
         end)
         |> Enum.sort_by(& &1.date, Date)
 
@@ -989,6 +1001,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   defp build_table_rows(time_series, granularity) do
     time_series
+    |> aggregate_time_series(granularity)
     |> Enum.flat_map(fn %{metric_name: metric_name, data: data} ->
       Enum.map(data, fn %{date: date, value: value} ->
         period = date_to_period(date, granularity)
@@ -999,7 +1012,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     |> Enum.map(fn {period, entries} ->
       values =
         Enum.reduce(entries, %{}, fn {_period, name, val}, acc ->
-          Map.update(acc, name, val, &(&1 + val))
+          Map.put(acc, name, val)
         end)
 
       %{period: period, values: values}

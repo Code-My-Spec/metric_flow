@@ -18,6 +18,30 @@ defmodule MetricFlow.Metrics do
 
   alias MetricFlow.Metrics.MetricRepository
   alias MetricFlow.Metrics.ReviewMetrics
+  alias MetricFlow.Metrics.EntityMetricRepository
+
+  defdelegate channel_time_series(scope, opts),
+    to: MetricFlow.Metrics.ChannelProjection,
+    as: :series
+
+  defdelegate channel_summary(series), to: MetricFlow.Metrics.ChannelProjection, as: :summary
+
+  defdelegate aggregate_channel_points(points, semantics),
+    to: MetricFlow.Metrics.ChannelProjection,
+    as: :aggregate_points
+
+  defdelegate youtube_metric_names(family),
+    to: MetricFlow.Metrics.YouTubeMetricDefinitions,
+    as: :names
+
+  defdelegate upsert_channel(scope, external_id, attrs), to: EntityMetricRepository
+  defdelegate get_channel(scope, entity_id), to: EntityMetricRepository
+  defdelegate list_channels(scope), to: EntityMetricRepository
+  defdelegate list_observations(scope, entity_id), to: EntityMetricRepository
+  defdelegate get_cursor(scope, entity_id, family, timezone), to: EntityMetricRepository
+
+  defdelegate persist_report(scope, entity_id, family, range, observations, fetched_at),
+    to: EntityMetricRepository
 
   # ---------------------------------------------------------------------------
   # Delegated repository functions
@@ -39,7 +63,10 @@ defmodule MetricFlow.Metrics do
   defdelegate list_normalized_metric_names(scope, opts), to: MetricRepository
   defdelegate delete_metrics_by_provider(scope, provider), to: MetricRepository
   defdelegate delete_all_metrics(scope), to: MetricRepository
-  defdelegate delete_metrics_by_location_and_date(scope, provider, location_id, date), to: MetricRepository
+
+  defdelegate delete_metrics_by_location_and_date(scope, provider, location_id, date),
+    to: MetricRepository
+
   defdelegate list_metric_providers(scope), to: MetricRepository
   defdelegate list_metric_providers(scope, opts), to: MetricRepository
   defdelegate list_derived_metric_definitions(scope), to: MetricRepository

@@ -20,6 +20,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   # Provider display names for both marketing and financial platforms.
   @provider_names %{
+    youtube: "YouTube",
     google_ads: "Google Ads",
     facebook_ads: "Facebook Ads",
     google_analytics: "Google Analytics",
@@ -284,6 +285,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
     ~H"""
     <div class="flex items-center justify-between">
       <div>
+        <p
+          :if={@entry.provider == :youtube and @entry.error_message}
+          data-role="sync-error"
+          class="mt-1 text-sm text-amber-700"
+        >
+          {@entry.error_message}
+        </p>
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-semibold" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
@@ -411,7 +419,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   @impl true
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope =
+      MetricFlow.Users.Scope.put_account_id(
+        socket.assigns.current_scope,
+        socket.assigns.active_account_id
+      )
+
+    socket = assign(socket, :current_scope, scope)
     sync_history = DataSync.list_sync_history(scope)
 
     if connected?(socket) do
@@ -476,6 +490,12 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_info({event, %{provider: :youtube}}, socket)
+      when event in [:sync_completed, :sync_failed] do
+    history = DataSync.list_sync_history(socket.assigns.current_scope)
+    {:noreply, assign(socket, :sync_history, history)}
+  end
+
   def handle_info({:sync_completed, payload}, socket) do
     entry = Map.put(payload, :status, "success")
     {:noreply, update(socket, :sync_events, &[entry | &1])}

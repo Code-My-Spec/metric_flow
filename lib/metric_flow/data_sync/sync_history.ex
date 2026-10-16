@@ -45,6 +45,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
     :google_business,
     :google_business_reviews,
     :facebook_ads,
+    :youtube,
     :quickbooks
   ]
   @statuses [:success, :partial_success, :failed]

@@ -199,6 +199,9 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:error, :integration_not_found} ->
         {:error, :integration_not_found}
 
+      {:ok, %Integration{provider: :youtube} = integration} ->
+        run_youtube_sync(scope, integration, sync_job_id, http_plug, started_at)
+
       {:ok, integration} ->
         sync_type = determine_sync_type(integration_id)
         date_range = determine_date_range(scope, integration, sync_type)
@@ -213,6 +216,45 @@ defmodule MetricFlow.DataSync.SyncWorker do
           breakdown,
           started_at
         )
+    end
+  end
+
+  defp run_youtube_sync(scope, integration, sync_job_id, http_plug, started_at) do
+    scope = Scope.put_account_id(scope, integration.account_id)
+    sync_type = determine_sync_type(integration.id)
+
+    result =
+      with {:ok, job} <- SyncJobRepository.get_sync_job(scope, sync_job_id),
+           true <- job.integration_id == integration.id,
+           :ok <- Integrations.authorize_youtube_connection(scope),
+           {:ok, fresh} <- ensure_fresh_tokens(scope, integration) do
+        MetricFlow.DataSync.YouTubeSync.sync(scope, fresh, maybe_put([], :http_plug, http_plug))
+      else
+        false -> {:error, :unauthorized}
+        {:error, _} = error -> error
+      end
+
+    outcome = MetricFlow.DataSync.YouTubeSyncOutcome.summarize(result)
+    record_history(scope, integration, sync_job_id, sync_type, started_at, outcome)
+
+    if outcome.status == :failed do
+      {:error, :youtube_sync_failed}
+    else
+      broadcast_sync_event(
+        scope.user.id,
+        {:sync_completed,
+         %{
+           provider: :youtube,
+           records_synced: outcome.records_synced,
+           completed_at: DateTime.utc_now(),
+           sync_type: sync_type
+         }}
+      )
+
+      case update_job_status(scope, sync_job_id, :completed) do
+        {:ok, _} -> :ok
+        {:error, reason} -> {:error, reason}
+      end
     end
   end
 

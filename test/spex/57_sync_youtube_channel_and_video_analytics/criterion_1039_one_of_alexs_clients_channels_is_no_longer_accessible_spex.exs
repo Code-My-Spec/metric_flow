@@ -163,7 +163,7 @@ defmodule MetricFlowSpex.Story57.Criterion1039Spex do
             dashboard
             |> render()
             |> LazyHTML.from_fragment()
-            |> LazyHTML.filter("[data-role='data-table'] tbody tr td:nth-child(2)")
+            |> LazyHTML.query("[data-role='data-table'] tbody tr td:nth-child(2)")
             |> Enum.map(fn cell ->
               cell
               |> LazyHTML.text()
