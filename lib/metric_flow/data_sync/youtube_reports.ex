@@ -14,6 +14,15 @@ defmodule MetricFlow.DataSync.YouTubeReports do
     end
   end
 
+  def fetch_video(integration, channel_id, video_id, names, range, opts)
+      when is_binary(video_id) do
+    if Regex.match?(~r/\A[A-Za-z0-9_-]+\z/, video_id) do
+      fetch(integration, channel_id, names, range, Keyword.put(opts, :video_id, video_id))
+    else
+      {:error, :invalid_video_id}
+    end
+  end
+
   defp fetch_slices(integration, channel_id, names, first, last, opts, acc) do
     slice_last = Enum.min([Date.add(first, @slice_days - 1), last], Date)
 
@@ -32,6 +41,12 @@ defmodule MetricFlow.DataSync.YouTubeReports do
       if Keyword.get(opts, :currency),
         do: Keyword.put(params, :currency, Keyword.fetch!(opts, :currency)),
         else: params
+
+    params =
+      case Keyword.fetch(opts, :video_id) do
+        {:ok, video_id} -> Keyword.put(params, :filters, "video==#{video_id}")
+        :error -> params
+      end
 
     # With day as the only dimension, a 180-day slice has at most 180 rows.
     # Asking for 200 avoids truncation without relying on page-token support.

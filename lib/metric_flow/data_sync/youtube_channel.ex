@@ -15,7 +15,7 @@ defmodule MetricFlow.DataSync.YouTubeChannel do
          %{
            "snippet" => %{"title" => title, "publishedAt" => published},
            "statistics" => statistics
-         },
+         } = item,
          date
        )
        when is_binary(title) and is_binary(published) and is_map(statistics) do
@@ -25,7 +25,8 @@ defmodule MetricFlow.DataSync.YouTubeChannel do
        %{
          attrs: %{display_name: title, published_at: published_at},
          snapshots: snapshots,
-         created_on: DateTime.to_date(published_at)
+         created_on: DateTime.to_date(published_at),
+         uploads_playlist: get_in(item, ["contentDetails", "relatedPlaylists", "uploads"])
        }}
     else
       _ -> {:error, :malformed_channel}

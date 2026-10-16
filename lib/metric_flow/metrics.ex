@@ -34,6 +34,28 @@ defmodule MetricFlow.Metrics do
     to: MetricFlow.Metrics.YouTubeMetricDefinitions,
     as: :names
 
+  defdelegate persist_entity_report(
+                scope,
+                entity_id,
+                family,
+                breakdown,
+                range,
+                observations,
+                fetched_at
+              ),
+              to: EntityMetricRepository
+
+  defdelegate get_entity_cursor(scope, entity_id, family, timezone, breakdown),
+    to: EntityMetricRepository
+
+  defdelegate list_entity_observations(scope, entity_id), to: EntityMetricRepository
+
+  defdelegate upsert_video(scope, channel_id, external_id, attrs),
+    to: MetricFlow.Metrics.VideoEntityRepository
+
+  defdelegate get_video(scope, entity_id), to: MetricFlow.Metrics.VideoEntityRepository
+  defdelegate list_videos(scope, channel_id), to: MetricFlow.Metrics.VideoEntityRepository
+
   defdelegate upsert_channel(scope, external_id, attrs), to: EntityMetricRepository
   defdelegate get_channel(scope, entity_id), to: EntityMetricRepository
   defdelegate list_channels(scope), to: EntityMetricRepository

@@ -32,7 +32,7 @@ defmodule MetricFlow.DataSync.YouTubeSync do
 
   defp sync_channel(scope, integration, id, today, opts) do
     fetched_at = now()
-    params = [id: id, part: "snippet,statistics"]
+    params = [id: id, part: "snippet,statistics,contentDetails"]
 
     with {:ok, body} <- YouTubeHttp.get(integration, @channels_url, params, opts),
          {:ok, channel} <- YouTubeChannel.parse(body, id, today),
@@ -55,7 +55,29 @@ defmodule MetricFlow.DataSync.YouTubeSync do
           outcome(id, family, result)
         end)
 
-      [outcome(id, "snapshot", snapshot) | reports]
+      videos =
+        MetricFlow.DataSync.YouTubeVideoSync.sync(
+          scope,
+          integration,
+          entity,
+          channel.uploads_playlist,
+          today,
+          fetched_at,
+          opts
+        )
+
+      breakdowns =
+        MetricFlow.DataSync.YouTubeBreakdownSync.sync(
+          scope,
+          integration,
+          entity,
+          channel.created_on,
+          today,
+          fetched_at,
+          opts
+        )
+
+      [outcome(id, "snapshot", snapshot) | reports ++ videos ++ breakdowns]
     else
       {:error, reason} -> [outcome(id, "channel", {:error, reason})]
     end

@@ -6,6 +6,7 @@ defmodule MetricFlow.Metrics.EntityMetricCursor do
     field :account_id, :integer
     field :entity_id, :integer
     field :source_report, :string
+    field :breakdown_type, :string, default: "total"
     field :report_timezone, :string
     field :through_date, :date
     timestamps(type: :utc_datetime_usec)

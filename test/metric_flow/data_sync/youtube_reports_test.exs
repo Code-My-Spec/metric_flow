@@ -1,5 +1,5 @@
 defmodule MetricFlow.DataSync.YouTubeReportsTest do
-  use ExUnit.Case, async: true
+  use MetricFlowTest.DataCase, async: true
   alias MetricFlow.DataSync.YouTubeReports
 
   @first ~D[2025-01-01]
@@ -43,6 +43,32 @@ defmodule MetricFlow.DataSync.YouTubeReportsTest do
     assert result.observations |> Enum.map(& &1.report_date) |> Enum.uniq() |> length() == 548
   end
 
+  test "video reports retain the channel identity and filter exactly one video" do
+    plug = fn conn ->
+      conn = Plug.Conn.fetch_query_params(conn)
+      assert conn.query_params["ids"] == "channel==selected"
+      assert conn.query_params["filters"] == "video==video-one"
+      assert conn.query_params["dimensions"] == "day"
+      respond(conn, [@first])
+    end
+
+    assert {:ok, %{observations: [_]}} =
+             YouTubeReports.fetch_video(
+               integration(),
+               "selected",
+               "video-one",
+               ["views"],
+               {@first, @first}, http_plug: plug)
+
+    assert {:error, :invalid_video_id} =
+             YouTubeReports.fetch_video(
+               integration(),
+               "selected",
+               "one;country==US",
+               ["views"],
+               {@first, @first}, http_plug: plug)
+  end
+
   test "reports the available date instead of the requested end date" do
     last = Date.add(@first, 5)
     available = Date.add(@first, 2)
@@ -77,6 +103,8 @@ defmodule MetricFlow.DataSync.YouTubeReportsTest do
                integration(),
                "selected",
                ["views"],
-               {@first, Date.add(@first, 200)}, http_plug: plug)
+               {@first, Date.add(@first, 200)},
+               http_plug: plug
+             )
   end
 end

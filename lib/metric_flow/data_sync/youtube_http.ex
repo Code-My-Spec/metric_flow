@@ -4,6 +4,16 @@ defmodule MetricFlow.DataSync.YouTubeHttp do
   alias MetricFlow.DataSync.ProviderHttp
 
   def get(integration, url, params, opts \\ []) do
+    api =
+      if URI.parse(url).host == "youtubeanalytics.googleapis.com", do: "analytics", else: "data"
+
+    with {:ok, window} <- MetricFlow.DataSync.YouTubeRequestBudget.reserve(api, budget_now()) do
+      result = get_reserved(integration, url, params, opts)
+      finish_request(result, {integration, url, params, opts}, api, window)
+    end
+  end
+
+  defp get_reserved(integration, url, params, opts) do
     request =
       Application.get_env(:metric_flow, :req_http_options, [])
       |> Keyword.merge(
@@ -30,6 +40,60 @@ defmodule MetricFlow.DataSync.YouTubeHttp do
     case result do
       {:error, reason} when not is_nil(detail) -> {:error, {:provider_http_error, reason, detail}}
       other -> other
+    end
+  end
+
+  defp finish_request(result, request_args, api, window) do
+    if quota_error?(result) do
+      retry_quota_request(result, request_args, api, window)
+    else
+      result
+    end
+  end
+
+  defp retry_quota_request(original, {integration, url, params, opts}, api, window) do
+    case MetricFlow.DataSync.YouTubeRequestBudget.reserve(api, budget_now()) do
+      {:ok, retry_window} ->
+        integration
+        |> get_reserved(url, params, opts)
+        |> record_quota_result(api, retry_window)
+
+      {:error, :quota_exceeded} ->
+        record_quota_result(original, api, window)
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  defp quota_error?({:error, {:provider_http_error, :quota_exceeded, _}}), do: true
+  defp quota_error?({:error, :quota_exceeded}), do: true
+  defp quota_error?(_), do: false
+
+  defp record_quota_result(
+         {:error, {:provider_http_error, :quota_exceeded, _}} = result,
+         api,
+         window
+       ) do
+    case MetricFlow.DataSync.YouTubeRequestBudget.block(api, window) do
+      :ok -> result
+      {:error, _} = error -> error
+    end
+  end
+
+  defp record_quota_result({:error, :quota_exceeded} = result, api, window) do
+    case MetricFlow.DataSync.YouTubeRequestBudget.block(api, window) do
+      :ok -> result
+      {:error, _} = error -> error
+    end
+  end
+
+  defp record_quota_result(result, _api, _window), do: result
+
+  defp budget_now do
+    case Application.get_env(:metric_flow, :sync_clock) do
+      nil -> DateTime.utc_now()
+      clock -> clock.utc_now()
     end
   end
 
