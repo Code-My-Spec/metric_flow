@@ -93,7 +93,9 @@ defmodule MetricFlow.DataSync.YouTubeVideoSyncTest do
           context.channel,
           "uploads",
           @today,
-          @fetched, http_plug: &fixture(&1, failed, owner))
+          @fetched,
+          http_plug: &fixture(&1, failed, owner)
+        )
 
       assert Enum.any?(outcomes, &match?(%{result: {:error, _}}, &1))
       assert {:ok, [video]} = Metrics.list_videos(context.scope, context.channel.id)
@@ -138,7 +140,7 @@ defmodule MetricFlow.DataSync.YouTubeVideoSyncTest do
       context.channel,
       "uploads",
       Date.add(@today, 1),
-      DateTime.add(@fetched, 86400),
+      DateTime.add(@fetched, 86_400),
       opts
     )
 

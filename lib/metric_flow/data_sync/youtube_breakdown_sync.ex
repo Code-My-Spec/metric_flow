@@ -76,8 +76,7 @@ defmodule MetricFlow.DataSync.YouTubeBreakdownSync do
         channel,
         type,
         {Date.add(finish, 1), last},
-        fetched_at,
-        opts,
+        {fetched_at, opts},
         count
       )
     end
@@ -97,8 +96,7 @@ defmodule MetricFlow.DataSync.YouTubeBreakdownSync do
          channel,
          type,
          range,
-         fetched_at,
-         opts,
+         {fetched_at, opts},
          count
        ) do
     sync_slices(
@@ -120,8 +118,7 @@ defmodule MetricFlow.DataSync.YouTubeBreakdownSync do
          _channel,
          _type,
          _range,
-         _fetched_at,
-         _opts,
+         _request_options,
          _count
        ),
        do: error

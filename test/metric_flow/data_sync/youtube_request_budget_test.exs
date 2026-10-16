@@ -38,6 +38,6 @@ defmodule MetricFlow.DataSync.YouTubeRequestBudgetTest do
                "analytics"
              ])
 
-    assert {:error, :quota_exceeded} = Budget.reserve("analytics", DateTime.add(@now, -86400))
+    assert {:error, :quota_exceeded} = Budget.reserve("analytics", DateTime.add(@now, -86_400))
   end
 end
