@@ -111,79 +111,99 @@ defmodule MetricFlow.Metrics.EntityMetricRepository do
              fetched_at
            ) do
       Repo.transaction(fn ->
-        entity = scope |> channel_query(entity_id) |> lock("FOR UPDATE") |> Repo.one()
-        if is_nil(entity), do: Repo.rollback(:not_found)
-
-        case authorize(scope, :write) do
-          :ok -> :ok
-          {:error, reason} -> Repo.rollback(reason)
-        end
-
-        timezone = MetricFlow.Metrics.YouTubeMetricDefinitions.report_timezone()
-
-        cursor_query =
-          from(c in EntityMetricCursor,
-            where:
-              c.account_id == ^scope.account_id and c.entity_id == ^entity_id and
-                c.source_report == ^family and c.report_timezone == ^timezone
-          )
-
-        cursor = Repo.one(cursor_query)
-        {first, last} = range
-        validate_progress!(cursor, first, fetched_at)
-
-        slice =
-          from(o in EntityMetricObservation,
-            where:
-              o.account_id == ^scope.account_id and o.entity_id == ^entity_id and
-                o.source_report == ^family and o.report_timezone == ^timezone and
-                o.breakdown_type == "total" and o.breakdown_key == "all" and
-                o.report_date >= ^first and o.report_date <= ^last
-          )
-
-        if Repo.exists?(where(slice, [o], o.fetched_at > ^fetched_at)),
-          do: Repo.rollback(:stale_report)
-
-        Repo.delete_all(slice)
-        now = DateTime.utc_now()
-        fields = EntityMetricObservation.__schema__(:fields) -- [:id]
-
-        entries =
-          Enum.map(rows, fn row ->
-            row
-            |> Map.from_struct()
-            |> Map.take(fields)
-            |> Map.merge(%{inserted_at: now, updated_at: now})
-          end)
-
-        count =
-          entries
-          |> Enum.chunk_every(1000)
-          |> Enum.reduce(0, fn batch, total ->
-            {inserted, _} = Repo.insert_all(EntityMetricObservation, batch)
-            total + inserted
-          end)
-
-        through_date =
-          if cursor && Date.compare(cursor.through_date, last) == :gt,
-            do: cursor.through_date,
-            else: last
-
-        Repo.insert!(
-          %EntityMetricCursor{
-            account_id: scope.account_id,
-            entity_id: entity_id,
-            source_report: family,
-            report_timezone: timezone,
-            through_date: through_date
-          },
-          on_conflict: {:replace, [:through_date, :updated_at]},
-          conflict_target: [:account_id, :entity_id, :source_report, :report_timezone]
-        )
-
-        %{observations_written: count, through_date: through_date}
+        persist_validated_report(scope, entity_id, family, range, rows, fetched_at)
       end)
     end
+  end
+
+  defp persist_validated_report(scope, entity_id, family, range, rows, fetched_at) do
+    lock_channel!(scope, entity_id)
+
+    timezone = MetricFlow.Metrics.YouTubeMetricDefinitions.report_timezone()
+
+    cursor_query = cursor_query(scope, entity_id, family, timezone)
+
+    cursor = Repo.one(cursor_query)
+    {first, last} = range
+    validate_progress!(cursor, first, fetched_at)
+
+    slice = report_slice_query(scope, entity_id, family, timezone, first, last)
+
+    if Repo.exists?(where(slice, [o], o.fetched_at > ^fetched_at)),
+      do: Repo.rollback(:stale_report)
+
+    Repo.delete_all(slice)
+    count = insert_observations(rows)
+
+    through_date = latest_through_date(cursor, last)
+
+    Repo.insert!(
+      %EntityMetricCursor{
+        account_id: scope.account_id,
+        entity_id: entity_id,
+        source_report: family,
+        report_timezone: timezone,
+        through_date: through_date
+      },
+      on_conflict: {:replace, [:through_date, :updated_at]},
+      conflict_target: [:account_id, :entity_id, :source_report, :report_timezone]
+    )
+
+    %{observations_written: count, through_date: through_date}
+  end
+
+  defp lock_channel!(scope, entity_id) do
+    entity = scope |> channel_query(entity_id) |> lock("FOR UPDATE") |> Repo.one()
+    if is_nil(entity), do: Repo.rollback(:not_found)
+
+    case authorize(scope, :write) do
+      :ok -> :ok
+      {:error, reason} -> Repo.rollback(reason)
+    end
+  end
+
+  defp cursor_query(scope, entity_id, family, timezone) do
+    from(c in EntityMetricCursor,
+      where:
+        c.account_id == ^scope.account_id and c.entity_id == ^entity_id and
+          c.source_report == ^family and c.report_timezone == ^timezone
+    )
+  end
+
+  defp report_slice_query(scope, entity_id, family, timezone, first, last) do
+    from(o in EntityMetricObservation,
+      where:
+        o.account_id == ^scope.account_id and o.entity_id == ^entity_id and
+          o.source_report == ^family and o.report_timezone == ^timezone and
+          o.breakdown_type == "total" and o.breakdown_key == "all" and
+          o.report_date >= ^first and o.report_date <= ^last
+    )
+  end
+
+  defp insert_observations(rows) do
+    now = DateTime.utc_now()
+    fields = EntityMetricObservation.__schema__(:fields) -- [:id]
+
+    entries =
+      Enum.map(rows, fn row ->
+        row
+        |> Map.from_struct()
+        |> Map.take(fields)
+        |> Map.merge(%{inserted_at: now, updated_at: now})
+      end)
+
+    entries
+    |> Enum.chunk_every(1000)
+    |> Enum.reduce(0, fn batch, total ->
+      {inserted, _} = Repo.insert_all(EntityMetricObservation, batch)
+      total + inserted
+    end)
+  end
+
+  defp latest_through_date(cursor, last) do
+    if cursor && Date.compare(cursor.through_date, last) == :gt,
+      do: cursor.through_date,
+      else: last
   end
 
   defp validate_progress!(nil, _first, _fetched_at), do: :ok

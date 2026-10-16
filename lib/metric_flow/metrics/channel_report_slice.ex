@@ -21,13 +21,7 @@ defmodule MetricFlow.Metrics.ChannelReportSlice do
       Enum.reduce_while(observations, {:ok, [], MapSet.new()}, fn attrs, {:ok, rows, seen} ->
         case validate_row(account_id, entity_id, family, first, last, attrs, fetched_at) do
           {:ok, row} ->
-            key = {row.metric_name, row.report_date}
-
-            if MapSet.member?(seen, key) do
-              {:halt, {:error, :duplicate_observation}}
-            else
-              {:cont, {:ok, [row | rows], MapSet.put(seen, key)}}
-            end
+            accumulate_row(row, rows, seen)
 
           {:error, _} = error ->
             {:halt, error}
@@ -37,6 +31,16 @@ defmodule MetricFlow.Metrics.ChannelReportSlice do
     case result do
       {:ok, rows, _seen} -> {:ok, Enum.reverse(rows)}
       error -> error
+    end
+  end
+
+  defp accumulate_row(row, rows, seen) do
+    key = {row.metric_name, row.report_date}
+
+    if MapSet.member?(seen, key) do
+      {:halt, {:error, :duplicate_observation}}
+    else
+      {:cont, {:ok, [row | rows], MapSet.put(seen, key)}}
     end
   end
 
