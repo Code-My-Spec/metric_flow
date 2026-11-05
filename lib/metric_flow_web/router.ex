@@ -30,6 +30,14 @@ defmodule MetricFlowWeb.Router do
     get "/terms", PageController, :terms
   end
 
+  # Setup asks the app to exercise its integrations; behind the deploy key.
+  scope "/_cms", MetricFlowWeb do
+    pipe_through :api
+
+    post "/verify/widget", VerifyController, :widget
+    get "/verify/always-failing", VerifyController, :always_failing
+  end
+
   # Health check for Caddy reverse proxy and Docker healthcheck
   scope "/" do
     get "/health", MetricFlowWeb.HealthController, :index
