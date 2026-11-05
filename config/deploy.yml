@@ -10,7 +10,7 @@ image: metric-flow
 servers:
   web:
     hosts:
-      - metric-flow.app
+      - <%= ENV["CMS_DEPLOY_HOST_IP"] || "metric-flow.app" %>
     options:
       network: db_net           # reach cms-postgres at start
     proxy:
