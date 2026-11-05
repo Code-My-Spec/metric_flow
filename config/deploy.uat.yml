@@ -40,7 +40,7 @@ env:
     # against a host that was never this app's own.
     PHX_HOST: uat.metric-flow.app
     CODEMYSPEC_URL: https://dev.codemyspec.com
-    CODEMYSPEC_WIDGET_URL: wss://dev.codemyspec.com/widget
+    CODEMYSPEC_WIDGET_URL: wss://codemyspec.com/widget
     # Traces to the OTel collector on db_net, which writes to ClickHouse.
     # service.version comes from KAMAL_VERSION (config/runtime.exs).
     OTEL_EXPORTER_OTLP_ENDPOINT: http://cms-otel-collector:4318

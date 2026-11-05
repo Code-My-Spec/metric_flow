@@ -40,7 +40,7 @@ env:
     # against a host that was never this app's own.
     PHX_HOST: metric-flow.app
     CODEMYSPEC_URL: https://dev.codemyspec.com
-    CODEMYSPEC_WIDGET_URL: wss://dev.codemyspec.com/widget
+    CODEMYSPEC_WIDGET_URL: wss://codemyspec.com/widget
   secret:
     - SOPS_AGE_KEY
 
