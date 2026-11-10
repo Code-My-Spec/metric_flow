@@ -14,7 +14,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
-  @valid_providers [:google_analytics, :google_ads, :facebook_ads, :quickbooks]
+  @valid_providers [:google_analytics, :google_ads, :facebook_ads, :quickbooks, :youtube]
 
   # ---------------------------------------------------------------------------
   # list_sync_history/2
@@ -29,13 +29,13 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   records exist for the scoped user.
   """
   @spec list_sync_history(Scope.t(), keyword()) :: list(SyncHistory.t())
-  def list_sync_history(%Scope{user: user}, opts \\ []) do
+  def list_sync_history(%Scope{} = scope, opts \\ []) do
     case validate_provider_opt(opts) do
       :invalid ->
         []
 
       :ok ->
-        from(sh in SyncHistory, where: sh.user_id == ^user.id)
+        scoped_history(scope)
         |> apply_provider_filter(opts)
         |> order_by([sh], desc: sh.completed_at, desc: sh.id)
         |> apply_limit(opts)
@@ -55,11 +55,11 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   record does not exist or belongs to a different user.
   """
   @spec get_sync_history(Scope.t(), integer()) :: {:ok, SyncHistory.t()} | {:error, :not_found}
-  def get_sync_history(%Scope{user: user}, id) do
+  def get_sync_history(%Scope{} = scope, id) do
     result =
-      from(sh in SyncHistory,
-        where: sh.user_id == ^user.id and sh.id == ^id
-      )
+      scope
+      |> scoped_history()
+      |> where([sh], sh.id == ^id)
       |> Repo.one()
 
     case result do
@@ -111,9 +111,9 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   successfully.
   """
   @spec get_last_successful_sync_at(Scope.t(), atom()) :: DateTime.t() | nil
-  def get_last_successful_sync_at(%Scope{user: user}, provider) do
-    from(sh in SyncHistory,
-      where: sh.user_id == ^user.id and sh.provider == ^provider and sh.status == :success,
+  def get_last_successful_sync_at(%Scope{} = scope, provider) do
+    from(sh in scoped_history(scope),
+      where: sh.provider == ^provider and sh.status == :success,
       order_by: [desc: sh.completed_at, desc: sh.id],
       limit: 1,
       select: sh.completed_at
@@ -124,6 +124,26 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp scoped_history(%Scope{user: user, account_id: account_id}) when is_integer(account_id) do
+    integrations =
+      from(i in MetricFlow.Integrations.Integration,
+        join: m in MetricFlow.Accounts.AccountMember,
+        on: m.account_id == i.account_id,
+        where: i.provider == :youtube and i.account_id == ^account_id and m.user_id == ^user.id,
+        select: i.id
+      )
+
+    from(sh in SyncHistory,
+      where:
+        (sh.provider != :youtube and sh.user_id == ^user.id) or
+          (sh.provider == :youtube and sh.integration_id in subquery(integrations))
+    )
+  end
+
+  defp scoped_history(%Scope{user: user}) do
+    from(sh in SyncHistory, where: sh.provider != :youtube and sh.user_id == ^user.id)
+  end
 
   defp validate_provider_opt(opts) do
     case Keyword.get(opts, :provider) do

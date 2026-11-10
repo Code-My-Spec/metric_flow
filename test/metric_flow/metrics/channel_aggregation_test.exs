@@ -1,52 +1,38 @@
 defmodule MetricFlow.Metrics.ChannelAggregationTest do
   use ExUnit.Case, async: true
-
   alias MetricFlow.Metrics.ChannelAggregation
-  alias MetricFlow.Metrics.Metric
 
-  test "aggregates each day, metric, and location separately" do
-    date = ~D[2026-11-07]
-    recorded_at = DateTime.new!(date, ~T[00:00:00], "Etc/UTC")
+  defp sample(id, date, value, weight \\ nil, unit \\ "count"),
+    do: %{entity_id: id, date: date, value: value, weight: weight, unit: unit}
 
-    metrics = [
-      metric("locations/1", "call_clicks", 3.0, recorded_at),
-      metric("locations/1", "call_clicks", 4.0, recorded_at),
-      metric("locations/2", "call_clicks", 5.0, recorded_at),
-      metric("locations/1", "website_clicks", 6.0, recorded_at),
-      metric("locations/1", "call_clicks", 2.0, DateTime.add(recorded_at, 86_400))
+  test "snapshots select the latest date separately for each channel" do
+    rows = [
+      sample(1, ~D[2026-10-01], 100),
+      sample(1, ~D[2026-10-03], 120),
+      sample(2, ~D[2026-10-02], 50)
     ]
 
-    assert ChannelAggregation.aggregate_daily(metrics) == %{
-             {:google_business, "locations/1", date, "call_clicks"} => 7.0,
-             {:google_business, "locations/2", date, "call_clicks"} => 5.0,
-             {:google_business, "locations/1", date, "website_clicks"} => 6.0,
-             {:google_business, "locations/1", Date.add(date, 1), "call_clicks"} => 2.0
-           }
+    assert ChannelAggregation.value(rows, :latest) == 170
+    assert ChannelAggregation.value(rows, :sum) == 270
   end
 
-  test "treats a missing value as zero and accepts persisted string dimension keys" do
-    recorded_at = ~U[2026-11-07 00:00:00Z]
+  test "weighted ratios preserve denominators across channels and dates" do
+    rows = [sample(1, ~D[2026-10-01], 10, 100), sample(2, ~D[2026-10-02], 20, 300)]
+    assert ChannelAggregation.value(rows, {:weighted, "views"}) == 17.5
 
-    metric = %Metric{
-      provider: :google_business,
-      metric_name: "call_clicks",
-      value: nil,
-      recorded_at: recorded_at,
-      dimensions: %{"location_id" => "locations/1"}
-    }
+    assert ChannelAggregation.value([sample(1, ~D[2026-10-01], 10, 0)], {:weighted, "views"}) ==
+             nil
 
-    assert ChannelAggregation.aggregate_daily([metric]) == %{
-             {:google_business, "locations/1", ~D[2026-11-07], "call_clicks"} => 0.0
-           }
+    assert ChannelAggregation.value([sample(1, ~D[2026-10-01], 10)], {:weighted, "views"}) == nil
   end
 
-  defp metric(location_id, name, value, recorded_at) do
-    %Metric{
-      provider: :google_business,
-      metric_name: name,
-      value: value,
-      recorded_at: recorded_at,
-      dimensions: %{location_id: location_id}
-    }
+  test "unweighted percentages and incompatible currencies remain unavailable" do
+    first = sample(1, ~D[2026-10-01], 50)
+    second = sample(2, ~D[2026-10-01], 75)
+    assert ChannelAggregation.value([first], :per_entity) == 50
+    assert ChannelAggregation.value([first, second], :per_entity) == nil
+    money = [sample(1, ~D[2026-10-01], 10, nil, "USD"), sample(2, ~D[2026-10-01], 20, nil, "CAD")]
+    assert ChannelAggregation.value(money, :sum) == nil
+    assert ChannelAggregation.value([], :sum) == nil
   end
 end

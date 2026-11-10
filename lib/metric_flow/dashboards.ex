@@ -32,6 +32,7 @@ defmodule MetricFlow.Dashboards do
     :google_business,
     :google_business_reviews,
     :facebook_ads,
+    :youtube,
     :quickbooks
   ]
 
@@ -309,6 +310,72 @@ defmodule MetricFlow.Dashboards do
            }}
           | {:error, term()}
   def get_dashboard_data(%Scope{} = scope, opts) do
+    platform = Keyword.get(opts, :platform)
+
+    if platform in [nil, :youtube] do
+      range = Keyword.get(opts, :date_range, default_date_range())
+      channels = Metrics.channel_time_series(scope, date_range: range)
+
+      base =
+        if platform == :youtube do
+          platforms =
+            scope
+            |> Integrations.list_integrations()
+            |> Enum.map(& &1.provider)
+            |> Enum.filter(&data_platform?/1)
+            |> Enum.uniq()
+
+          %{
+            time_series: [],
+            summary_stats: [],
+            platform_breakdown: %{},
+            available_filters: %{platforms: platforms, metric_types: [], metric_names: []},
+            connected_platforms: platforms,
+            applied_filters: Keyword.put_new(opts, :date_range, range)
+          }
+        else
+          {:ok, data} = legacy_dashboard_data(scope, opts)
+          data
+        end
+
+      # Preserve legacy meanings when a provider uses the same raw name.
+      existing_names = MapSet.new(Enum.map(base.time_series, & &1.metric_name))
+
+      channels =
+        Enum.map(channels, fn series ->
+          if MapSet.member?(existing_names, series.metric_name),
+            do: %{series | metric_name: "youtube_" <> series.metric_name},
+            else: series
+        end)
+
+      stats =
+        Enum.map(channels, fn series ->
+          %{
+            metric_name: series.metric_name,
+            stats: Metrics.channel_summary(series),
+            provider: :youtube,
+            aggregation: series.aggregation
+          }
+        end)
+
+      names = Enum.map(channels, & &1.metric_name)
+
+      filters =
+        Map.update!(base.available_filters, :metric_names, &Enum.sort(Enum.uniq(&1 ++ names)))
+
+      {:ok,
+       %{
+         base
+         | time_series: base.time_series ++ channels,
+           summary_stats: base.summary_stats ++ stats,
+           available_filters: filters
+       }}
+    else
+      legacy_dashboard_data(scope, opts)
+    end
+  end
+
+  defp legacy_dashboard_data(%Scope{} = scope, opts) do
     # Keyword.get/3 can't tell "caller wants no date constraint" (explicit
     # nil, e.g. All Time) from "caller didn't say" (key absent) -- both read
     # as nil. Keyword.fetch/2 preserves that distinction.

@@ -33,6 +33,7 @@ defmodule MetricFlow.Integrations.Integration do
         }
 
   @providers [
+    :youtube,
     :github,
     :gitlab,
     :bitbucket,
@@ -60,6 +61,7 @@ defmodule MetricFlow.Integrations.Integration do
     field :provider_metadata, :map, default: %{}
     field :reconnection_notified_at, :utc_datetime_usec
 
+    field :account_id, :integer
     belongs_to :user, User
 
     timestamps(type: :utc_datetime_usec)
@@ -88,6 +90,9 @@ defmodule MetricFlow.Integrations.Integration do
     |> validate_required([:user_id, :provider, :access_token, :expires_at])
     |> validate_provider_metadata()
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
+    |> check_constraint(:account_id, name: :youtube_requires_account)
+    |> unique_constraint([:account_id, :provider], name: :integrations_account_id_provider_index)
     |> unique_constraint([:user_id, :provider],
       name: :integrations_user_id_provider_index,
       message: "has already been taken"

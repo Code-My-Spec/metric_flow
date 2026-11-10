@@ -1,55 +1,123 @@
 defmodule MetricFlow.Metrics.ChannelProjection do
-  @moduledoc """
-  Projects stored metrics into daily totals by provider, location, and metric name.
-
-  Reads are scoped to the current user. An optional `:provider` and inclusive
-  `:date_range` filter narrow the projection before aggregation.
-  """
-
+  @moduledoc "Explicit account-scoped channel totals for All Metrics."
   import Ecto.Query
 
-  alias MetricFlow.Metrics.ChannelAggregation
-  alias MetricFlow.Metrics.Metric
+  alias MetricFlow.Metrics.{
+    ChannelAggregation,
+    EntityMetricObservation,
+    EntityMetricRepository,
+    MetricEntity,
+    YouTubeMetricDefinitions
+  }
+
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
-  @type daily_metric :: %{
-          provider: atom(),
-          location_id: String.t() | nil,
-          date: Date.t(),
-          metric_name: String.t(),
-          value: float()
-        }
+  def series(scope, opts \\ []) do
+    with :ok <- EntityMetricRepository.authorize(scope, :read) do
+      rows = scope |> query() |> filter_dates(Keyword.get(opts, :date_range)) |> Repo.all()
+      weights = Map.new(rows, &{{&1.entity_id, &1.report_date, &1.metric_name}, &1.value})
 
-  @spec list_daily(Scope.t(), keyword()) :: [daily_metric()]
-  def list_daily(%Scope{user: user}, opts \\ []) do
-    from(m in Metric, where: m.user_id == ^user.id)
-    |> filter_provider(Keyword.get(opts, :provider))
-    |> filter_date_range(Keyword.get(opts, :date_range))
-    |> Repo.all()
-    |> ChannelAggregation.aggregate_daily()
-    |> Enum.map(fn {{provider, location_id, date, metric_name}, value} ->
-      %{
-        provider: provider,
-        location_id: location_id,
-        date: date,
-        metric_name: metric_name,
-        value: value
-      }
-    end)
-    |> Enum.sort_by(fn row ->
-      {row.date, row.provider, row.location_id || "", row.metric_name}
-    end)
+      rows
+      |> Enum.group_by(& &1.metric_name)
+      |> Enum.flat_map(fn {name, observations} ->
+        case YouTubeMetricDefinitions.fetch(name) do
+          {:ok, definition} ->
+            samples =
+              observations
+              |> Enum.filter(
+                &(&1.unit == definition.unit and &1.measurement_kind == definition.kind and
+                    &1.source_report == definition.family)
+              )
+              |> Enum.map(&sample(&1, definition, weights))
+
+            if samples == [], do: [], else: [build_series(name, samples, definition.aggregation)]
+
+          :error ->
+            []
+        end
+      end)
+      |> Enum.sort_by(& &1.metric_name)
+    else
+      {:error, :unauthorized} -> []
+    end
   end
 
-  defp filter_provider(query, nil), do: query
-  defp filter_provider(query, provider), do: where(query, [m], m.provider == ^provider)
+  def aggregate_points(points, semantics) do
+    points |> Enum.flat_map(& &1.samples) |> ChannelAggregation.value(semantics)
+  end
 
-  defp filter_date_range(query, nil), do: query
+  def summary(%{data: points, aggregation: semantics}) do
+    values = points |> Enum.map(& &1.value) |> Enum.filter(&is_number/1)
+    aggregate = aggregate_points(points, semantics)
 
-  defp filter_date_range(query, {%Date{} = first, %Date{} = last}) do
-    start_at = DateTime.new!(first, ~T[00:00:00], "Etc/UTC")
-    end_at = DateTime.new!(Date.add(last, 1), ~T[00:00:00], "Etc/UTC")
-    where(query, [m], m.recorded_at >= ^start_at and m.recorded_at < ^end_at)
+    average =
+      case {semantics, values} do
+        {:sum, [_ | _]} -> Enum.sum(values) / length(values)
+        _ -> aggregate
+      end
+
+    %{
+      sum: aggregate,
+      avg: average,
+      min: Enum.min(values, fn -> nil end),
+      max: Enum.max(values, fn -> nil end),
+      count: length(values)
+    }
+  end
+
+  defp query(scope) do
+    from(o in EntityMetricObservation,
+      join: e in MetricEntity,
+      on: e.id == o.entity_id and e.account_id == o.account_id,
+      where:
+        o.account_id == ^scope.account_id and e.provider == "youtube" and
+          e.entity_type == "channel" and o.breakdown_type == "total" and
+          o.breakdown_key == "all" and o.report_timezone == "America/Los_Angeles",
+      order_by: [asc: o.report_date, asc: o.entity_id]
+    )
+  end
+
+  defp filter_dates(query, nil), do: query
+
+  defp filter_dates(query, {first, last}),
+    do: where(query, [o], o.report_date >= ^first and o.report_date <= ^last)
+
+  defp sample(row, definition, weights) do
+    weight =
+      case definition.aggregation do
+        {:weighted, name} ->
+          case Map.get(weights, {row.entity_id, row.report_date, name}) do
+            nil -> nil
+            value -> Decimal.to_float(value)
+          end
+
+        _ ->
+          nil
+      end
+
+    %{
+      entity_id: row.entity_id,
+      date: row.report_date,
+      value: Decimal.to_float(row.value),
+      unit: row.unit,
+      weight: weight
+    }
+  end
+
+  defp build_series(name, samples, semantics) do
+    data =
+      samples
+      |> Enum.group_by(& &1.date)
+      |> Enum.map(fn {date, rows} ->
+        %{date: date, value: ChannelAggregation.value(rows, semantics), samples: rows}
+      end)
+      |> Enum.sort_by(& &1.date, Date)
+
+    %{
+      metric_name: YouTubeMetricDefinitions.normalized_name(name),
+      data: data,
+      aggregation: semantics,
+      provider: :youtube
+    }
   end
 end

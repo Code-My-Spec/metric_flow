@@ -79,6 +79,34 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     end
   end
 
+  # Classify only documented Google ErrorInfo reasons. Preserve the legacy
+  # fallback for unknown 403 responses; PERMISSION_DENIED alone says nothing
+  # about whether the user owns a Business Profile.
+  defp classify_forbidden(%{"error" => %{"details" => details}}) when is_list(details) do
+    reasons =
+      for %{
+            "@type" => "type.googleapis.com/google.rpc.ErrorInfo",
+            "domain" => "googleapis.com",
+            "reason" => reason
+          } <- details,
+          do: reason
+
+    cond do
+      "SERVICE_DISABLED" in reasons -> :service_disabled
+      "ACCESS_TOKEN_SCOPE_INSUFFICIENT" in reasons -> :insufficient_scope
+      true -> :api_disabled
+    end
+  end
+
+  defp classify_forbidden(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> classify_forbidden(decoded)
+      {:error, _} -> :api_disabled
+    end
+  end
+
+  defp classify_forbidden(_body), do: :api_disabled
+
   defp fetch_raw_accounts(%Integration{} = integration, opts) do
     url = "#{@accounts_api_base}/accounts"
     headers = [{"authorization", "Bearer #{integration.access_token}"}]
@@ -100,9 +128,12 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         %Req.Response{status: 401} ->
           {:error, :unauthorized}
 
-        %Req.Response{status: 403} ->
-          Logger.warning("GBP Account Management API returned 403 — API may not be enabled")
-          {:error, :api_disabled}
+        %Req.Response{status: 403, body: body} ->
+          Logger.warning(
+            "GBP Account Management API returned 403 — API may not be enabled or scope insufficient: #{inspect(body)}"
+          )
+
+          {:error, classify_forbidden(body)}
 
         %Req.Response{status: status} ->
           Logger.warning("GBP Account Management API returned unexpected status: #{status}")
@@ -223,8 +254,11 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   defp handle_response(%Req.Response{status: 401}, _int, _aid, _acc, _opts),
     do: {:error, :unauthorized}
 
-  defp handle_response(%Req.Response{status: 403}, _int, _aid, _acc, _opts) do
-    Logger.warning("GBP API returned 403 — API may not be enabled or access revoked")
+  defp handle_response(%Req.Response{status: 403, body: body}, _int, aid, _acc, _opts) do
+    Logger.warning(
+      "GBP API returned 403 for #{aid} — API may not be enabled or access revoked: #{inspect(body)}"
+    )
+
     {:error, :api_disabled}
   end
 

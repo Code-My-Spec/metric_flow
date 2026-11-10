@@ -1,9 +1,9 @@
-defmodule MetricFlow.Metrics.EntityMetricObservationTest do
+defmodule MetricFlow.Metrics.UserEntityMetricObservationTest do
   use MetricFlowTest.DataCase, async: true
 
   import MetricFlowTest.UsersFixtures
 
-  alias MetricFlow.Metrics.EntityMetricObservation
+  alias MetricFlow.Metrics.UserEntityMetricObservation
   alias MetricFlow.Repo
 
   @attrs %{
@@ -15,7 +15,7 @@ defmodule MetricFlow.Metrics.EntityMetricObservationTest do
   }
 
   test "requires owner, entity, metric, day, and value" do
-    changeset = EntityMetricObservation.changeset(%EntityMetricObservation{}, %{})
+    changeset = UserEntityMetricObservation.changeset(%UserEntityMetricObservation{}, %{})
 
     refute changeset.valid?
 
@@ -26,8 +26,8 @@ defmodule MetricFlow.Metrics.EntityMetricObservationTest do
 
   test "preserves a zero value and ignores a supplied owner override" do
     changeset =
-      EntityMetricObservation.changeset(
-        %EntityMetricObservation{user_id: 42},
+      UserEntityMetricObservation.changeset(
+        %UserEntityMetricObservation{user_id: 42},
         Map.put(@attrs, :user_id, 99)
       )
 
@@ -38,13 +38,13 @@ defmodule MetricFlow.Metrics.EntityMetricObservationTest do
 
   test "prevents two observations for the same owner, provider, entity, metric, and day" do
     user = user_fixture()
-    observation = %EntityMetricObservation{user_id: user.id}
+    observation = %UserEntityMetricObservation{user_id: user.id}
 
-    assert {:ok, _} = observation |> EntityMetricObservation.changeset(@attrs) |> Repo.insert()
+    assert {:ok, _} = observation |> UserEntityMetricObservation.changeset(@attrs) |> Repo.insert()
 
     assert {:error, changeset} =
              observation
-             |> EntityMetricObservation.changeset(%{@attrs | value: 11})
+             |> UserEntityMetricObservation.changeset(%{@attrs | value: 11})
              |> Repo.insert()
 
     assert Keyword.has_key?(changeset.errors, :user_id)

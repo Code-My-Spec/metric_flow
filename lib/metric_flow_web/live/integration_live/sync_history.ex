@@ -20,6 +20,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   # Provider display names for both marketing and financial platforms.
   @provider_names %{
+    youtube: "YouTube",
     google_ads: "Google Ads",
     facebook_ads: "Facebook Ads",
     google_analytics: "Google Analytics",
@@ -44,140 +45,140 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto">
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold">Sync History</h1>
-        <p class="mt-1 text-base-content/60">
-          View automated sync results and status
-        </p>
-      </div>
-
-      <%!-- Schedule section --%>
-      <div data-role="sync-schedule" class="mf-card p-5 mb-6">
-        <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
-        <p class="mt-1 text-sm text-base-content/60">
-          Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
-          Covers marketing providers (Google Ads, Facebook Ads, Google Analytics, Google Business Profile,
-          Google Search Console) and financial providers (QuickBooks). On first sync, all available historical data is backfilled.
-          Failed syncs are automatically retried up to 3 times with exponential backoff.
-        </p>
-        <div class="mt-3 flex items-center gap-2 flex-wrap">
-          <span class="badge badge-info">Daily</span>
-        </div>
-        <div class="mt-4">
-          <button
-            type="button"
-            phx-click="trigger_daily_sync"
-            data-role="trigger-daily-sync"
-            class="btn btn-sm btn-outline"
-          >
-            Trigger Sync Now (Dev)
-          </button>
-          <p class="mt-1 text-xs text-base-content/50">
-            Manually runs the same daily sync cycle, for testing without waiting for the 2:00 AM UTC schedule.
+      <div class="mx-auto">
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold">Sync History</h1>
+          <p class="mt-1 text-base-content/60">
+            View automated sync results and status
           </p>
         </div>
-        <div class="mt-3 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="facebook-adset-breakdown-toggle"
-            data-role="facebook-adset-breakdown-toggle"
-            phx-click="toggle_facebook_adset_breakdown"
-            checked={@facebook_adset_breakdown}
-            class="checkbox checkbox-sm"
-          />
-          <label for="facebook-adset-breakdown-toggle" class="text-sm text-base-content/70">
-            Sync Facebook Ads with ad-set-level breakdown (default: campaign-level)
-          </label>
-        </div>
-        <div class="mt-3 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="google-ads-adgroup-breakdown-toggle"
-            data-role="google-ads-adgroup-breakdown-toggle"
-            phx-click="toggle_google_ads_adgroup_breakdown"
-            checked={@google_ads_adgroup_breakdown}
-            class="checkbox checkbox-sm"
-          />
-          <label for="google-ads-adgroup-breakdown-toggle" class="text-sm text-base-content/70">
-            Sync Google Ads with ad-group-level breakdown (default: campaign-level)
-          </label>
-        </div>
-      </div>
 
-      <%!-- Date range section --%>
-      <div
-        data-role="date-range"
-        class="flex items-center gap-2 mb-6 text-sm text-base-content/60"
-      >
-        <span>
-          Showing data through {@date_range_end |> Date.to_iso8601()} (yesterday — today excluded, incomplete day)
-        </span>
-      </div>
-
-      <%!-- Filter tabs --%>
-      <div class="flex items-center gap-2 mb-4">
-        <button
-          phx-click="filter"
-          phx-value-status="all"
-          data-role="filter-all"
-          class={"btn btn-sm #{if @status_filter == "all", do: "btn-primary", else: "btn-ghost"}"}
-        >
-          All
-        </button>
-        <button
-          phx-click="filter"
-          phx-value-status="success"
-          data-role="filter-success"
-          class={"btn btn-sm #{if @status_filter == "success", do: "btn-primary", else: "btn-ghost"}"}
-        >
-          Success
-        </button>
-        <button
-          phx-click="filter"
-          phx-value-status="failed"
-          data-role="filter-failed"
-          class={"btn btn-sm #{if @status_filter == "failed", do: "btn-primary", else: "btn-ghost"}"}
-        >
-          Failed
-        </button>
-      </div>
-
-      <%!-- Sync history list --%>
-      <div data-role="sync-history" class="space-y-3">
-        <div :if={@sync_history == [] and @sync_events == []} class="mf-card p-8 text-center">
-          <p class="text-base-content/60">No sync history yet.</p>
-          <p class="mt-2 text-sm text-base-content/50">
-            Initial Sync entries will appear here once the first automated or manual sync runs.
-            Each provider sync entry shows the provider name, status, records synced, and date.
-            The system backfills all available historical data from each platform on first sync.
+        <%!-- Schedule section --%>
+        <div data-role="sync-schedule" class="mf-card p-5 mb-6">
+          <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
+          <p class="mt-1 text-sm text-base-content/60">
+            Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
+            Covers marketing providers (Google Ads, Facebook Ads, Google Analytics, Google Business Profile,
+            Google Search Console) and financial providers (QuickBooks). On first sync, all available historical data is backfilled.
+            Failed syncs are automatically retried up to 3 times with exponential backoff.
           </p>
-          <div class="mt-3 flex justify-center gap-2 flex-wrap">
-            <span data-sync-type="initial" class="badge badge-ghost">Initial Sync</span>
+          <div class="mt-3 flex items-center gap-2 flex-wrap">
+            <span class="badge badge-info">Daily</span>
+          </div>
+          <div class="mt-4">
+            <button
+              type="button"
+              phx-click="trigger_daily_sync"
+              data-role="trigger-daily-sync"
+              class="btn btn-sm btn-outline"
+            >
+              Trigger Sync Now (Dev)
+            </button>
+            <p class="mt-1 text-xs text-base-content/50">
+              Manually runs the same daily sync cycle, for testing without waiting for the 2:00 AM UTC schedule.
+            </p>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="facebook-adset-breakdown-toggle"
+              data-role="facebook-adset-breakdown-toggle"
+              phx-click="toggle_facebook_adset_breakdown"
+              checked={@facebook_adset_breakdown}
+              class="checkbox checkbox-sm"
+            />
+            <label for="facebook-adset-breakdown-toggle" class="text-sm text-base-content/70">
+              Sync Facebook Ads with ad-set-level breakdown (default: campaign-level)
+            </label>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="google-ads-adgroup-breakdown-toggle"
+              data-role="google-ads-adgroup-breakdown-toggle"
+              phx-click="toggle_google_ads_adgroup_breakdown"
+              checked={@google_ads_adgroup_breakdown}
+              class="checkbox checkbox-sm"
+            />
+            <label for="google-ads-adgroup-breakdown-toggle" class="text-sm text-base-content/70">
+              Sync Google Ads with ad-group-level breakdown (default: campaign-level)
+            </label>
           </div>
         </div>
 
-        <%!-- Live sync events (prepended first) --%>
+        <%!-- Date range section --%>
         <div
-          :for={entry <- filter_events(@sync_events, @status_filter)}
-          data-role="sync-history-entry"
-          data-status={entry.status}
-          class="mf-card p-4"
+          data-role="date-range"
+          class="flex items-center gap-2 mb-6 text-sm text-base-content/60"
         >
-          <.sync_entry entry={entry} />
+          <span>
+            Showing data through {@date_range_end |> Date.to_iso8601()} (yesterday — today excluded, incomplete day)
+          </span>
         </div>
 
-        <%!-- Persisted history entries --%>
-        <div
-          :for={entry <- filter_history(@sync_history, @status_filter)}
-          data-role="sync-history-entry"
-          data-status={to_string(entry.status)}
-          class="mf-card p-4"
-        >
-          <.persisted_entry entry={entry} />
+        <%!-- Filter tabs --%>
+        <div class="flex items-center gap-2 mb-4">
+          <button
+            phx-click="filter"
+            phx-value-status="all"
+            data-role="filter-all"
+            class={"btn btn-sm #{if @status_filter == "all", do: "btn-primary", else: "btn-ghost"}"}
+          >
+            All
+          </button>
+          <button
+            phx-click="filter"
+            phx-value-status="success"
+            data-role="filter-success"
+            class={"btn btn-sm #{if @status_filter == "success", do: "btn-primary", else: "btn-ghost"}"}
+          >
+            Success
+          </button>
+          <button
+            phx-click="filter"
+            phx-value-status="failed"
+            data-role="filter-failed"
+            class={"btn btn-sm #{if @status_filter == "failed", do: "btn-primary", else: "btn-ghost"}"}
+          >
+            Failed
+          </button>
+        </div>
+
+        <%!-- Sync history list --%>
+        <div data-role="sync-history" class="space-y-3">
+          <div :if={@sync_history == [] and @sync_events == []} class="mf-card p-8 text-center">
+            <p class="text-base-content/60">No sync history yet.</p>
+            <p class="mt-2 text-sm text-base-content/50">
+              Initial Sync entries will appear here once the first automated or manual sync runs.
+              Each provider sync entry shows the provider name, status, records synced, and date.
+              The system backfills all available historical data from each platform on first sync.
+            </p>
+            <div class="mt-3 flex justify-center gap-2 flex-wrap">
+              <span data-sync-type="initial" class="badge badge-ghost">Initial Sync</span>
+            </div>
+          </div>
+
+          <%!-- Live sync events (prepended first) --%>
+          <div
+            :for={entry <- filter_events(@sync_events, @status_filter)}
+            data-role="sync-history-entry"
+            data-status={entry.status}
+            class="mf-card p-4"
+          >
+            <.sync_entry entry={entry} />
+          </div>
+
+          <%!-- Persisted history entries --%>
+          <div
+            :for={entry <- filter_history(@sync_history, @status_filter)}
+            data-role="sync-history-entry"
+            data-status={to_string(entry.status)}
+            class="mf-card p-4"
+          >
+            <.persisted_entry entry={entry} />
+          </div>
         </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -197,7 +198,11 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-success">Success</span>
-          <span :if={@entry[:sync_type] == :initial} data-sync-type="initial" class="badge badge-ghost">
+          <span
+            :if={@entry[:sync_type] == :initial}
+            data-sync-type="initial"
+            class="badge badge-ghost"
+          >
             Initial Sync
           </span>
         </div>
@@ -233,7 +238,11 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-error">Failed</span>
-          <span :if={@entry[:sync_type] == :initial} data-sync-type="initial" class="badge badge-ghost">
+          <span
+            :if={@entry[:sync_type] == :initial}
+            data-sync-type="initial"
+            class="badge badge-ghost"
+          >
             Initial Sync
           </span>
         </div>
@@ -276,6 +285,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
     ~H"""
     <div class="flex items-center justify-between">
       <div>
+        <p
+          :if={@entry.provider == :youtube and @entry.error_message}
+          data-role="sync-error"
+          class="mt-1 text-sm text-amber-700"
+        >
+          {@entry.error_message}
+        </p>
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-semibold" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
@@ -327,6 +343,18 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.error_message}
         </p>
+        <details
+          :if={@entry.provider_error_detail}
+          id={"provider-error-detail-#{@entry.id}"}
+          class="mt-3 rounded-lg border border-base-content/15 p-3 text-sm"
+        >
+          <summary class="cursor-pointer font-medium">Provider error details</summary>
+          <p class="mt-2">HTTP status: {@entry.provider_error_detail["status"]}</p>
+          <pre class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs">{@entry.provider_error_detail["body"]}</pre>
+          <p :if={@entry.provider_error_detail["truncated"]} class="mt-2 text-xs">
+            The provider response was truncated.
+          </p>
+        </details>
         <p
           :if={@entry.sync_type == :initial}
           data-role="backfill-limit-notice"
@@ -360,6 +388,18 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
           {@entry.error_message}
         </p>
+        <details
+          :if={@entry.provider_error_detail}
+          id={"provider-error-detail-#{@entry.id}"}
+          class="mt-3 rounded-lg border border-base-content/15 p-3 text-sm"
+        >
+          <summary class="cursor-pointer font-medium">Provider error details</summary>
+          <p class="mt-2">HTTP status: {@entry.provider_error_detail["status"]}</p>
+          <pre class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs">{@entry.provider_error_detail["body"]}</pre>
+          <p :if={@entry.provider_error_detail["truncated"]} class="mt-2 text-xs">
+            The provider response was truncated.
+          </p>
+        </details>
         <p :if={@entry.completed_at} class="text-xs text-base-content/50 mt-0.5">
           Completed at {format_datetime(@entry.completed_at)}
         </p>
@@ -379,7 +419,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   @impl true
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope =
+      MetricFlow.Users.Scope.put_account_id(
+        socket.assigns.current_scope,
+        socket.assigns.active_account_id
+      )
+
+    socket = assign(socket, :current_scope, scope)
     sync_history = DataSync.list_sync_history(scope)
 
     if connected?(socket) do
@@ -444,6 +490,12 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_info({event, %{provider: :youtube}}, socket)
+      when event in [:sync_completed, :sync_failed] do
+    history = DataSync.list_sync_history(socket.assigns.current_scope)
+    {:noreply, assign(socket, :sync_history, history)}
+  end
+
   def handle_info({:sync_completed, payload}, socket) do
     entry = Map.put(payload, :status, "success")
     {:noreply, update(socket, :sync_events, &[entry | &1])}
@@ -502,6 +554,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   defp filter_events(events, status), do: Enum.filter(events, &(&1.status == status))
 
   defp filter_history(history, "all"), do: history
+
   defp filter_history(history, status) do
     status_atom = String.to_existing_atom(status)
     Enum.filter(history, &(&1.status == status_atom))

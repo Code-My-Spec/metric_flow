@@ -1,8 +1,8 @@
-defmodule MetricFlow.Metrics.EntityReportSliceTest do
+defmodule MetricFlow.Metrics.UserEntityReportSliceTest do
   use ExUnit.Case, async: true
 
-  alias MetricFlow.Metrics.EntityMetricObservation
-  alias MetricFlow.Metrics.EntityReportSlice
+  alias MetricFlow.Metrics.UserEntityMetricObservation
+  alias MetricFlow.Metrics.UserEntityReportSlice
 
   @day ~D[2026-11-07]
 
@@ -14,7 +14,7 @@ defmodule MetricFlow.Metrics.EntityReportSliceTest do
       observation("locations/1", "review_count", 3.0, :google_business_reviews)
     ]
 
-    slice = EntityReportSlice.build(observations, :google_business)
+    slice = UserEntityReportSlice.build(observations, :google_business)
 
     assert slice.metric_names == ["call_clicks", "website_clicks"]
 
@@ -24,14 +24,14 @@ defmodule MetricFlow.Metrics.EntityReportSliceTest do
              {"locations/2", @day, "call_clicks", 7.0}
            ]
 
-    assert Enum.map(EntityReportSlice.for_entity(slice, "locations/1"), & &1.value) == [
+    assert Enum.map(UserEntityReportSlice.for_entity(slice, "locations/1"), & &1.value) == [
              0.0,
              12.0
            ]
   end
 
   test "returns an empty report when the provider has no observations" do
-    assert EntityReportSlice.build([], :google_business) == %{
+    assert UserEntityReportSlice.build([], :google_business) == %{
              provider: :google_business,
              metric_names: [],
              daily_rows: []
@@ -42,7 +42,7 @@ defmodule MetricFlow.Metrics.EntityReportSliceTest do
     do: observation(entity_id, metric_name, value, :google_business)
 
   defp observation(entity_id, metric_name, value, provider) do
-    %EntityMetricObservation{
+    %UserEntityMetricObservation{
       provider: provider,
       entity_id: entity_id,
       observed_on: @day,

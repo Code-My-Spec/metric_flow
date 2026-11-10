@@ -18,24 +18,26 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto">
-      <.header>
-        Agency Settings
-        <:subtitle>Configure branding and enrollment for your agency</:subtitle>
-      </.header>
+      <div class="mx-auto">
+        <.header>
+          Agency Settings
+          <:subtitle>Configure branding and enrollment for your agency</:subtitle>
+        </.header>
 
-      <div class="mt-8 space-y-8">
-        <AgencyLive.Settings.auto_enrollment_section
-          auto_enrollment_rule={@auto_enrollment_rule}
-          auto_enrollment_form={@auto_enrollment_form}
-        />
+        <div class="mt-8 space-y-8">
+          <AgencyLive.Settings.auto_enrollment_section
+            auto_enrollment_rule={@auto_enrollment_rule}
+            auto_enrollment_form={@auto_enrollment_form}
+          />
 
-        <AgencyLive.Settings.white_label_section
-          white_label_config={@agency_white_label_config}
-          white_label_form={@white_label_form}
-        />
+          <AgencyLive.Settings.white_label_section
+            white_label_config={@agency_white_label_config}
+            white_label_form={@white_label_form}
+            logo_upload={@uploads.logo}
+            pending_logo={@pending_logo}
+          />
+        </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -66,6 +68,7 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
       |> assign(:auto_enrollment_form, empty_form())
       |> assign(:agency_white_label_config, agency_white_label_config)
       |> assign(:white_label_form, empty_form())
+      |> AgencyLive.LogoUpload.configure()
 
     {:ok, socket}
   end
@@ -94,7 +97,8 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
         {:noreply, assign(socket, :auto_enrollment_form, %{params: params, errors: errors})}
 
       {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
     end
   end
 
@@ -110,7 +114,8 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
          |> put_flash(:info, "Auto-enrollment disabled")}
 
       {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to configure auto-enrollment")}
 
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to disable auto-enrollment")}
@@ -122,6 +127,7 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
   end
 
   def handle_event("save_white_label", %{"white_label" => params}, socket) do
+    params = AgencyLive.LogoUpload.merge_params(socket, params)
     scope = socket.assigns.current_scope
     account_id = socket.assigns.account_id
 
@@ -130,7 +136,8 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
       custom_domain: params["custom_domain"],
       logo_url: params["logo_url"],
       primary_color: params["primary_color"],
-      secondary_color: params["secondary_color"]
+      secondary_color: params["secondary_color"],
+      accent_color: params["accent_color"]
     }
 
     case Agencies.update_white_label_config(scope, account_id, attrs) do
@@ -139,6 +146,7 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
          socket
          |> assign(:agency_white_label_config, config)
          |> assign(:white_label_form, empty_form())
+         |> AgencyLive.LogoUpload.clear()
          |> put_flash(:info, "White-label settings saved")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -146,7 +154,8 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
         {:noreply, assign(socket, :white_label_form, %{params: params, errors: errors})}
 
       {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You are not authorized to configure white-label branding")}
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to configure white-label branding")}
     end
   end
 
@@ -160,10 +169,12 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
          socket
          |> assign(:agency_white_label_config, nil)
          |> assign(:white_label_form, empty_form())
+         |> AgencyLive.LogoUpload.clear()
          |> put_flash(:info, "Branding reset to default")}
 
       {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You are not authorized to reset white-label branding")}
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to reset white-label branding")}
     end
   end
 

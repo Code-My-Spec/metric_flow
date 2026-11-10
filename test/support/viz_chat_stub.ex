@@ -12,21 +12,25 @@ defmodule MetricFlowTest.VizChatStub do
 
   @doc "Initial chart generation: a line chart of impressions over time."
   def generate_initial do
-    ClaudeCodeStub.tool_call(
+    ClaudeCodeStub.completed_tool_call(
       "update_spec",
       %{"vega_lite_json" => Jason.encode!(line_chart_spec())},
-      text: "I'll create a line chart showing impressions over time."
+      text: "I'll create a line chart showing impressions over time.",
+      completion_text: "I've created the line chart showing impressions over time."
     )
+    |> ClaudeCodeStub.sequence()
   end
 
   @doc "Follow-up refinement: adds clicks as a second layered series."
   def generate_followup do
-    ClaudeCodeStub.tool_call(
+    ClaudeCodeStub.completed_tool_call(
       "update_spec",
       %{"vega_lite_json" => Jason.encode!(layered_chart_spec())},
       text: "I've added clicks as a second series in a layered chart.",
-      call_id: "call_2"
+      call_id: "call_2",
+      completion_text: "Done — clicks are now layered alongside impressions."
     )
+    |> ClaudeCodeStub.sequence()
   end
 
   @doc "A two-turn conversation: generate, then refine."

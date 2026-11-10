@@ -349,6 +349,31 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
       end)
     end
 
+    test "logs the actual Google error body on 403 instead of discarding it" do
+      plug =
+        build_stub_plug(
+          403,
+          Jason.encode!(%{
+            "error" => %{
+              "code" => 403,
+              "status" => "PERMISSION_DENIED",
+              "message" => "insufficient scope"
+            }
+          })
+        )
+
+      log =
+        capture_log(fn ->
+          assert {:error, :api_disabled} =
+                   GoogleBusinessLocations.list_locations(integration_with_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+
+      assert log =~ "PERMISSION_DENIED"
+      assert log =~ "insufficient scope"
+    end
+
     test "accepts :http_plug option for test injection" do
       plug = build_stub_plug(200, empty_locations_api_response())
 
@@ -371,6 +396,73 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
   # ---------------------------------------------------------------------------
   # fetch_accounts/2
   # ---------------------------------------------------------------------------
+
+  describe "account 403 classification" do
+    test "classifies documented reasons for both account APIs" do
+      for {reason, expected} <- [
+            {"SERVICE_DISABLED", :service_disabled},
+            {"ACCESS_TOKEN_SCOPE_INSUFFICIENT", :insufficient_scope},
+            {"PERMISSION_DENIED", :api_disabled},
+            {"UNKNOWN_REASON", :api_disabled}
+          ] do
+        body = %{
+          "error" => %{
+            "status" => "PERMISSION_DENIED",
+            "details" => [
+              %{
+                "@type" => "type.googleapis.com/google.rpc.ErrorInfo",
+                "domain" => "googleapis.com",
+                "reason" => reason
+              }
+            ]
+          }
+        }
+
+        plug = build_stub_plug(403, Jason.encode!(body))
+
+        capture_log(fn ->
+          assert {:error, ^expected} =
+                   GoogleBusinessLocations.list_accounts(
+                     integration_without_account_ids(),
+                     http_plug: plug
+                   )
+
+          assert {:error, ^expected} =
+                   GoogleBusinessLocations.fetch_accounts(
+                     integration_without_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+      end
+    end
+
+    test "unrecognized and malformed details preserve the generic fallback" do
+      for details <- [
+            nil,
+            "SERVICE_DISABLED",
+            %{},
+            [nil, "SERVICE_DISABLED"],
+            [%{"reason" => "SERVICE_DISABLED"}],
+            [
+              %{
+                "@type" => "type.googleapis.com/google.rpc.ErrorInfo",
+                "domain" => "unknown.example",
+                "reason" => "SERVICE_DISABLED"
+              }
+            ]
+          ] do
+        plug = build_stub_plug(403, Jason.encode!(%{"error" => %{"details" => details}}))
+
+        capture_log(fn ->
+          assert {:error, :api_disabled} =
+                   GoogleBusinessLocations.list_accounts(
+                     integration_without_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+      end
+    end
+  end
 
   describe "fetch_accounts/2" do
     test "returns {:ok, account_ids} with list of account name strings on success" do
@@ -435,6 +527,31 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
                    http_plug: plug
                  )
       end)
+    end
+
+    test "logs the actual Google error body on 403 instead of discarding it" do
+      plug =
+        build_stub_plug(
+          403,
+          Jason.encode!(%{
+            "error" => %{
+              "code" => 403,
+              "status" => "PERMISSION_DENIED",
+              "message" => "insufficient scope"
+            }
+          })
+        )
+
+      log =
+        capture_log(fn ->
+          assert {:error, :api_disabled} =
+                   GoogleBusinessLocations.fetch_accounts(integration_without_account_ids(),
+                     http_plug: plug
+                   )
+        end)
+
+      assert log =~ "PERMISSION_DENIED"
+      assert log =~ "insufficient scope"
     end
 
     test "returns {:error, :bad_request} on unexpected status" do

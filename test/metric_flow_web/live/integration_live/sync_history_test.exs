@@ -46,8 +46,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       provider: :google_analytics,
       status: :success,
       records_synced: 42,
-      started_at: DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond),
-      completed_at: DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+      started_at:
+        DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond),
+      completed_at:
+        DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
     }
 
     attrs = Map.merge(defaults, overrides)
@@ -83,6 +85,40 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   # ---------------------------------------------------------------------------
   # Test Assertions from spec
   # ---------------------------------------------------------------------------
+
+  test "shows persisted provider details only for the signed-in user", %{conn: conn} do
+    user = user_fixture()
+    other_user = user_fixture()
+    integration = insert_integration!(user.id, :google_analytics)
+    job = insert_sync_job!(user.id, integration.id, :google_analytics)
+
+    history =
+      insert_sync_history!(user.id, integration.id, job.id, %{
+        status: :failed,
+        error_message: "Permission denied",
+        provider_error_detail: %{
+          "status" => 403,
+          "body" => "DEVELOPER_TOKEN_NOT_APPROVED <script>alert(1)</script>",
+          "truncated" => false
+        }
+      })
+
+    {:ok, view, _html} = live(log_in_user(conn, user), ~p"/app/integrations/sync-history")
+
+    assert has_element?(
+             view,
+             "#provider-error-detail-#{history.id}",
+             "DEVELOPER_TOKEN_NOT_APPROVED"
+           )
+
+    assert has_element?(view, "#provider-error-detail-#{history.id}", "HTTP status: 403")
+    refute has_element?(view, "#provider-error-detail-#{history.id} script")
+
+    {:ok, other_view, _html} =
+      live(log_in_user(build_conn(), other_user), ~p"/app/integrations/sync-history")
+
+    refute has_element?(other_view, "#provider-error-detail-#{history.id}")
+  end
 
   describe "renders sync history page with header and schedule section" do
     test "renders sync history page with header and schedule section", %{conn: conn} do
@@ -133,15 +169,19 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "displays persisted success entries with provider name, badge, and records count" do
-    test "displays persisted success entries with provider name, badge, and records count", %{conn: conn} do
+    test "displays persisted success entries with provider name, badge, and records count", %{
+      conn: conn
+    } do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_ads)
       sync_job = insert_sync_job!(user.id, integration.id, :google_ads)
+
       insert_sync_history!(user.id, integration.id, sync_job.id, %{
         provider: :google_ads,
         status: :success,
         records_synced: 200
       })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -157,14 +197,18 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "displays persisted failed entries with provider name, badge, and error message" do
-    test "displays persisted failed entries with provider name, badge, and error message", %{conn: conn} do
+    test "displays persisted failed entries with provider name, badge, and error message", %{
+      conn: conn
+    } do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
+
       insert_sync_history!(user.id, integration.id, sync_job.id, %{
         status: :failed,
         error_message: "connection refused after retries"
       })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -182,13 +226,21 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
-      insert_sync_history!(user.id, integration.id, sync_job.id, %{status: :success, records_synced: 10})
+
+      insert_sync_history!(user.id, integration.id, sync_job.id, %{
+        status: :success,
+        records_synced: 10
+      })
+
       insert_sync_history!(user.id, integration.id, sync_job.id, %{
         status: :failed,
         error_message: "timeout",
-        started_at: DateTime.add(DateTime.utc_now(), -200, :second) |> DateTime.truncate(:microsecond),
-        completed_at: DateTime.add(DateTime.utc_now(), -180, :second) |> DateTime.truncate(:microsecond)
+        started_at:
+          DateTime.add(DateTime.utc_now(), -200, :second) |> DateTime.truncate(:microsecond),
+        completed_at:
+          DateTime.add(DateTime.utc_now(), -180, :second) |> DateTime.truncate(:microsecond)
       })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -222,16 +274,21 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       user = user_fixture()
       integration = insert_integration!(user.id, :google_analytics)
       sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
+
       insert_sync_history!(user.id, integration.id, sync_job.id, %{
         provider: :google_analytics,
         records_synced: 10
       })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
-        send(lv.pid, {:sync_completed, sync_completed_payload(%{provider: :google_ads, records_synced: 999})})
+        send(
+          lv.pid,
+          {:sync_completed, sync_completed_payload(%{provider: :google_ads, records_synced: 999})}
+        )
 
         html = render(lv)
         assert html =~ "999 records synced"
@@ -245,19 +302,25 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   end
 
   describe "prepends live sync_failed events with error reason and optional retry info" do
-    test "prepends live sync_failed events with error reason and optional retry info", %{conn: conn} do
+    test "prepends live sync_failed events with error reason and optional retry info", %{
+      conn: conn
+    } do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
 
-        send(lv.pid, {:sync_failed, sync_failed_payload(%{
-          provider: :facebook_ads,
-          reason: "API rate limit exceeded",
-          attempt: 2,
-          max_attempts: 3
-        })})
+        send(
+          lv.pid,
+          {:sync_failed,
+           sync_failed_payload(%{
+             provider: :facebook_ads,
+             reason: "API rate limit exceeded",
+             attempt: 2,
+             max_attempts: 3
+           })}
+        )
 
         assert has_element?(lv, "[data-role='sync-history-entry'][data-status='failed']")
         assert has_element?(lv, "[data-role='sync-provider']", "Facebook Ads")
