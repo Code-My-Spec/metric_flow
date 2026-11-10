@@ -123,8 +123,8 @@ defmodule MetricFlow.Integrations do
           | {:error, term()}
   def authorize_url(provider, opts \\ []) do
     with {:ok, provider_mod} <- fetch_provider(provider) do
-      config = provider_mod.config() ++ opts
       strategy = provider_mod.strategy()
+      config = with_static_discovery(provider_mod.config() ++ opts, strategy)
       strategy.authorize_url(config)
     end
   end
@@ -174,7 +174,7 @@ defmodule MetricFlow.Integrations do
           {:ok, %{url: String.t(), session_params: map()}} | {:error, term()}
   def authorize_login_url do
     mod = login_provider()
-    mod.strategy().authorize_url(mod.config())
+    mod.strategy().authorize_url(with_static_discovery(mod.config(), mod.strategy()))
   end
 
   @doc """
@@ -187,7 +187,10 @@ defmodule MetricFlow.Integrations do
   @spec handle_login_callback(map(), map()) :: {:ok, map()} | {:error, term()}
   def handle_login_callback(session_params, callback_params) do
     mod = login_provider()
-    config = Keyword.put(mod.config(), :session_params, session_params)
+    config =
+      mod.config()
+      |> with_static_discovery(mod.strategy())
+      |> Keyword.put(:session_params, session_params)
 
     with :ok <- require_state(session_params),
          :ok <- verify_state(config, callback_params),
@@ -200,6 +203,18 @@ defmodule MetricFlow.Integrations do
       end
     end
   end
+
+  # Google's strategy does OIDC discovery over HTTP before every flow. Tests set
+  # `:google_openid_configuration` so no request to accounts.google.com is made;
+  # unset (dev/prod), discovery runs as normal.
+  defp with_static_discovery(config, Assent.Strategy.Google) do
+    case Application.get_env(:metric_flow, :google_openid_configuration) do
+      nil -> config
+      oidc -> Keyword.put_new(config, :openid_configuration, oidc)
+    end
+  end
+
+  defp with_static_discovery(config, _strategy), do: config
 
   defp require_state(%{state: s}) when is_binary(s), do: :ok
   defp require_state(%{"state" => s}) when is_binary(s), do: :ok
@@ -712,6 +727,7 @@ defmodule MetricFlow.Integrations do
 
   defp build_callback_config(provider_mod, session_params) do
     provider_mod.config()
+    |> with_static_discovery(provider_mod.strategy())
     |> Keyword.put(:session_params, session_params)
   end
 

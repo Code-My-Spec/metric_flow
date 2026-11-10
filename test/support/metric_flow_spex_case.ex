@@ -39,6 +39,8 @@ defmodule MetricFlowSpex.Case do
   # from test support, and reaching into DataCase would force MetricFlowSpex to
   # depend on MetricFlowTest for one function.
   setup tags do
+    # `mix spex` does not load test_helper.exs.
+    MetricFlowTest.HermeticHttp.install()
     pid = Sandbox.start_owner!(MetricFlow.Repo, shared: not tags[:async])
     on_exit(fn -> Sandbox.stop_owner(pid) end)
     {:ok, conn: Phoenix.ConnTest.build_conn()}

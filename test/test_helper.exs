@@ -11,3 +11,5 @@
 # shows what is waiting on a recording. See .code_my_spec/TEST_FAILURES.md.
 ExUnit.start(exclude: [:needs_cassette])
 Ecto.Adapters.SQL.Sandbox.mode(MetricFlow.Repo, :manual)
+
+MetricFlowTest.HermeticHttp.install()
