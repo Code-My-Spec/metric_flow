@@ -161,6 +161,58 @@ defmodule MetricFlow.Integrations do
     end
   end
 
+  # ---------------------------------------------------------------------------
+  # Social login ("Continue with Google")
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Authorization URL for Google sign-in (identity scopes only). Same return
+  shape as `authorize_url/2`; the provider module can be overridden in tests
+  with `config :metric_flow, :google_login_provider`.
+  """
+  @spec authorize_login_url() ::
+          {:ok, %{url: String.t(), session_params: map()}} | {:error, term()}
+  def authorize_login_url do
+    mod = login_provider()
+    mod.strategy().authorize_url(mod.config())
+  end
+
+  @doc """
+  Completes Google sign-in: verifies the CSRF state, exchanges the code and
+  returns the normalized Google profile. Persists nothing.
+
+  Returns `{:error, :email_not_verified}` / `{:error, :missing_email}` when Google
+  does not vouch for an email address, since the email is how we match accounts.
+  """
+  @spec handle_login_callback(map(), map()) :: {:ok, map()} | {:error, term()}
+  def handle_login_callback(session_params, callback_params) do
+    mod = login_provider()
+    config = Keyword.put(mod.config(), :session_params, session_params)
+
+    with :ok <- require_state(session_params),
+         :ok <- verify_state(config, callback_params),
+         {:ok, result} <- mod.strategy().callback(config, callback_params),
+         {:ok, normalized} <- mod.normalize_user(Map.get(result, :user) || %{}) do
+      case normalized do
+        %{email: email} when not is_binary(email) or email == "" -> {:error, :missing_email}
+        %{email_verified: false} -> {:error, :email_not_verified}
+        _ -> {:ok, normalized}
+      end
+    end
+  end
+
+  defp require_state(%{state: s}) when is_binary(s), do: :ok
+  defp require_state(%{"state" => s}) when is_binary(s), do: :ok
+  defp require_state(_), do: {:error, :missing_stored_state}
+
+  defp login_provider,
+    do:
+      Application.get_env(
+        :metric_flow,
+        :google_login_provider,
+        MetricFlow.Integrations.Providers.GoogleLogin
+      )
+
   def authorize_youtube_connection(%Scope{} = scope),
     do: IntegrationRepository.authorize_write(scope, :youtube)
 
