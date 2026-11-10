@@ -9,8 +9,8 @@ defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidently
 
   spex "AI acknowledges when it cannot answer confidently", criterion: 881 do
     scenario "a user asks a question the available data cannot support a confident answer to" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing the AI chat with no metric data available", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -34,8 +34,7 @@ defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidently
           })
           |> render_submit()
 
-          Process.sleep(100)
-          render(context.view)
+          await_assistant_message(context.view)
         end)
 
         Application.delete_env(:metric_flow, :test_llm_options)
@@ -43,7 +42,8 @@ defmodule MetricFlowSpex.Criterion881AiAcknowledgesWhenItCannotAnswerConfidently
         {:ok, context}
       end
 
-      then_ "it states that limitation rather than guessing or fabricating an explanation", context do
+      then_ "it states that limitation rather than guessing or fabricating an explanation",
+            context do
         html = render(context.view)
         assert has_element?(context.view, "[data-role='assistant-message']")
 

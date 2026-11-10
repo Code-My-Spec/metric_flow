@@ -9,10 +9,10 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
 
   spex "User shares a chat insight with a team member", criterion: 885 do
     scenario "a user shares an AI insight and a team member opens the link" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
+      given_(:owner_has_member_with_access)
 
       given_ "a user has received a useful insight from AI chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -29,11 +29,12 @@ defmodule MetricFlowSpex.Criterion885UserSharesAChatInsightWithATeamMemberSpex d
 
         capture_log(fn ->
           view
-          |> form("form[phx-submit='send_message']", %{"content" => "What is my best-performing channel?"})
+          |> form("form[phx-submit='send_message']", %{
+            "content" => "What is my best-performing channel?"
+          })
           |> render_submit()
 
-          Process.sleep(100)
-          render(view)
+          await_assistant_message(view)
         end)
 
         Application.delete_env(:metric_flow, :test_llm_options)

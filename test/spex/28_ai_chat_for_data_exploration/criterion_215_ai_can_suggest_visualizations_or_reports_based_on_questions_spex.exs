@@ -9,9 +9,9 @@ defmodule MetricFlowSpex.Criterion215AiCanSuggestVisualizationsOrReportsBasedOnQ
 
   spex "AI can suggest visualizations or reports based on questions", criterion: 215 do
     scenario "a user asks a question best answered visually" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user viewing the AI chat", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -36,8 +36,7 @@ defmodule MetricFlowSpex.Criterion215AiCanSuggestVisualizationsOrReportsBasedOnQ
           })
           |> render_submit()
 
-          Process.sleep(100)
-          render(context.view)
+          await_assistant_message(context.view)
         end)
 
         Application.delete_env(:metric_flow, :test_llm_options)

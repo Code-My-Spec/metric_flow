@@ -54,6 +54,26 @@ defmodule MetricFlowSpex.Case do
     end
   end
 
+  @doc "Waits for the AI chat LiveView to render a successful assistant reply."
+  def await_assistant_message(view, timeout_ms \\ 5_000) do
+    deadline = System.monotonic_time(:millisecond) + timeout_ms
+    await_assistant_message_until(view, deadline)
+  end
+
+  defp await_assistant_message_until(view, deadline) do
+    cond do
+      Phoenix.LiveViewTest.has_element?(view, "[data-role='assistant-message']") ->
+        :ok
+
+      System.monotonic_time(:millisecond) >= deadline ->
+        ExUnit.Assertions.flunk("AI chat assistant message did not appear within the deadline")
+
+      true ->
+        Process.sleep(20)
+        await_assistant_message_until(view, deadline)
+    end
+  end
+
   @doc "Waits for an asynchronous chat reply to finish, including error replies."
   def await_chat_completion(view, timeout_ms \\ 5_000) do
     deadline = System.monotonic_time(:millisecond) + timeout_ms
