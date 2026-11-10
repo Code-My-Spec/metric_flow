@@ -34,7 +34,7 @@ defmodule MetricFlow.Metrics.EntityMetricCursor do
           updated_at: DateTime.t() | nil
         }
 
-  schema "entity_metric_cursors" do
+  schema "entity_metric_sync_cursors" do
     field :provider, Ecto.Enum, values: @providers, default: :google_business
     field :entity_id, :string
     field :metric_name, :string
@@ -53,7 +53,7 @@ defmodule MetricFlow.Metrics.EntityMetricCursor do
     |> validate_length(:metric_name, min: 1, max: 255)
     |> foreign_key_constraint(:user_id)
     |> unique_constraint([:user_id, :provider, :entity_id, :metric_name],
-      name: :entity_metric_cursors_identity_index
+      name: :entity_metric_sync_cursors_identity_index
     )
   end
 end

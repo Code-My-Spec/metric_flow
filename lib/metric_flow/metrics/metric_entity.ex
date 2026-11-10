@@ -34,7 +34,7 @@ defmodule MetricFlow.Metrics.MetricEntity do
           updated_at: DateTime.t() | nil
         }
 
-  schema "metric_entities" do
+  schema "user_metric_entities" do
     field :provider, Ecto.Enum, values: @providers, default: :google_business
     field :entity_id, :string
     field :display_name, :string, default: ""
@@ -53,7 +53,7 @@ defmodule MetricFlow.Metrics.MetricEntity do
     |> validate_length(:display_name, max: 255)
     |> foreign_key_constraint(:user_id)
     |> unique_constraint([:user_id, :provider, :entity_id],
-      name: :metric_entities_identity_index
+      name: :user_metric_entities_identity_index
     )
   end
 end

@@ -2,7 +2,7 @@ defmodule MetricFlow.Repo.Migrations.CreateEntityMetricObservations do
   use Ecto.Migration
 
   def change do
-    create table(:entity_metric_observations) do
+    create table(:entity_metric_daily_observations) do
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :provider, :string, null: false
       add :entity_id, :string, null: false
@@ -13,9 +13,9 @@ defmodule MetricFlow.Repo.Migrations.CreateEntityMetricObservations do
     end
 
     create unique_index(
-             :entity_metric_observations,
+             :entity_metric_daily_observations,
              [:user_id, :provider, :entity_id, :metric_name, :observed_on],
-             name: :entity_metric_observations_identity_index
+             name: :entity_metric_daily_observations_identity_index
            )
   end
 end
