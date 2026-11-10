@@ -1,4 +1,4 @@
-defmodule MetricFlow.Repo.Migrations.CreateEntityMetricObservations do
+defmodule MetricFlow.Repo.Migrations.CreateEntityMetricDailyObservations do
   use Ecto.Migration
 
   def change do
