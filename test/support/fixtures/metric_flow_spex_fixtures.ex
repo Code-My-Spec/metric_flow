@@ -258,6 +258,18 @@ defmodule MetricFlowSpex.Fixtures do
   end
 
   @doc """
+  Reads the saved join-table metric bindings for a visualization owned by `email`.
+  The editor shows the saved spec but does not expose every persisted binding.
+  """
+  @spec visualization_metric_names(String.t(), integer()) :: [String.t()]
+  def visualization_metric_names(email, visualization_id) do
+    {:ok, visualization} =
+      MetricFlow.Dashboards.get_visualization(scope_for(email), visualization_id)
+
+    MetricFlow.Dashboards.get_visualization_metric_names(visualization)
+  end
+
+  @doc """
   Inserts a completed CorrelationJob row directly, so specs can exercise a
   persisted "selected goal metric" without running a real correlation
   analysis end to end (which requires an Oban worker to actually execute).
@@ -305,19 +317,19 @@ defmodule MetricFlowSpex.Fixtures do
         goal_metric_name: goal_metric_name,
         status: :completed
       ) ||
-        (%CorrelationJob{}
-         |> CorrelationJob.changeset(%{
-           account_id: account_id,
-           status: :completed,
-           goal_metric_name: goal_metric_name,
-           data_window_start: Date.add(Date.utc_today(), -30),
-           data_window_end: Date.utc_today(),
-           data_points: 90,
-           results_count: 0,
-           started_at: DateTime.utc_now(),
-           completed_at: DateTime.utc_now()
-         })
-         |> Repo.insert!())
+        %CorrelationJob{}
+        |> CorrelationJob.changeset(%{
+          account_id: account_id,
+          status: :completed,
+          goal_metric_name: goal_metric_name,
+          data_window_start: Date.add(Date.utc_today(), -30),
+          data_window_end: Date.utc_today(),
+          data_points: 90,
+          results_count: 0,
+          started_at: DateTime.utc_now(),
+          completed_at: DateTime.utc_now()
+        })
+        |> Repo.insert!()
 
     defaults = %{
       account_id: account_id,

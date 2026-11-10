@@ -29,7 +29,8 @@ defmodule MetricFlowSpex.Criterion240LlmReceivesChartTypeScopedSchemaDocsSpex do
             "prompt" => "Show me a Gantt chart of my campaign schedule"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 

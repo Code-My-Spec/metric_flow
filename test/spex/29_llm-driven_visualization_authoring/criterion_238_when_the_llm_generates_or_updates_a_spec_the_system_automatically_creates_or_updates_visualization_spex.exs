@@ -18,7 +18,7 @@ defmodule MetricFlowSpex.Criterion238AutoUpdatesJoinTableEntriesSpex do
         Application.put_env(
           :metric_flow,
           :command_runner,
-          MetricFlowTest.VizChatStub.generate_initial()
+          MetricFlowTest.VizChatStub.generate_followup()
         )
 
         capture_log(fn ->
@@ -26,8 +26,7 @@ defmodule MetricFlowSpex.Criterion238AutoUpdatesJoinTableEntriesSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
-          render(new_view)
+          await_chart(new_view)
         end)
 
         Application.delete_env(:metric_flow, :command_runner)
@@ -56,6 +55,12 @@ defmodule MetricFlowSpex.Criterion238AutoUpdatesJoinTableEntriesSpex do
 
       then_ "the visualization's bound metric is restored from the join table", context do
         assert render(context.view) =~ "impressions"
+
+        assert MetricFlowSpex.Fixtures.visualization_metric_names(
+                 context.owner_email,
+                 String.to_integer(context.viz_id)
+               ) == ["impressions", "clicks"]
+
         {:ok, context}
       end
     end

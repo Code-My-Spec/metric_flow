@@ -33,7 +33,8 @@ defmodule MetricFlowSpex.Criterion814UnresolvableMetricSurfacesClearErrorSpex do
             "prompt" => "Show me a chart of the discontinued_metric field"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 
