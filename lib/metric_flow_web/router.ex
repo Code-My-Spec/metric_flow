@@ -9,10 +9,12 @@ defmodule MetricFlowWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {MetricFlowWeb.Layouts, :root}
     plug :protect_from_forgery
+
     plug :put_secure_browser_headers, %{
       "content-security-policy" =>
         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     }
+
     plug ClientUtils.PreviewFraming, otp_app: :metric_flow
     plug :fetch_current_scope_for_user
     plug MetricFlowWeb.Plugs.WhiteLabel
@@ -167,6 +169,8 @@ defmodule MetricFlowWeb.Router do
       on_mount: [{MetricFlowWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
+      live "/users/forgot-password", UserLive.ForgotPassword, :new
+      live "/users/reset-password/:token", UserLive.ResetPassword, :edit
       live "/users/log-in/:token", UserLive.Confirmation, :new
 
       # Invitation acceptance — accessible to both authenticated and unauthenticated users

@@ -55,6 +55,20 @@ defmodule MetricFlow.Users.UserNotifier do
     end
   end
 
+  @doc "Sends password reset instructions without exposing the account password."
+  def deliver_password_reset_instructions(user, url) do
+    deliver(user.email, "Reset your password", """
+
+    Hi #{user.email},
+
+    Use the link below to reset your MetricFlow password. It expires in 15 minutes.
+
+    #{url}
+
+    If you didn't request this, you can ignore this email.
+    """)
+  end
+
   defp deliver_magic_link_instructions(user, url) do
     deliver(user.email, "Log in instructions", """
 
