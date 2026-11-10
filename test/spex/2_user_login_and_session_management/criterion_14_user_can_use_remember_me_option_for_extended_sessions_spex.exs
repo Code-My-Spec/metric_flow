@@ -4,22 +4,31 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can use Remember me option for extended sessions", criterion: 14 do
-    scenario "login page shows remember me option" do
+  spex "Login persists by default without session-duration choices", criterion: 14 do
+    scenario "login page defaults to a persistent session" do
       given_ "the login page is loaded", context do
-        {:ok, _view, html} = live(context.conn, "/users/log-in")
-        {:ok, Map.put(context, :login_html, html)}
+        {:ok, view, _html} = live(context.conn, "/users/log-in")
+        {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the user sees both login options", context do
-        assert context.login_html =~ "Log in and stay logged in"
-        assert context.login_html =~ "Log in only this time"
+      then_ "the form carries the persistent default without visible duration choices", context do
+        assert has_element?(
+                 context.view,
+                 "#login_form_password input[type=hidden][name='user[remember_me]'][value=true]"
+               )
+
+        refute has_element?(
+                 context.view,
+                 "#login_form_password input[name='user[remember_me]']:not([type=hidden])"
+               )
+
+        refute has_element?(context.view, "#login_form_magic")
         {:ok, context}
       end
     end
 
-    scenario "user logs in with remember me enabled" do
-      given_ :user_registered_with_password
+    scenario "user logs in with persistent session by default" do
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
@@ -28,11 +37,13 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
 
       when_ "the user submits credentials with remember me", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :login_conn, conn)}
@@ -49,22 +60,18 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
       end
     end
 
-    scenario "user logs in without remember me" do
-      given_ :user_registered_with_password
+    scenario "backend login without the persistent flag uses a shorter session" do
+      given_(:user_registered_with_password)
 
-      given_ "the login page is loaded", context do
-        {:ok, view, _html} = live(context.conn, "/users/log-in")
-        {:ok, Map.put(context, :view, view)}
-      end
-
-      when_ "the user submits credentials without remember me", context do
-        form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password
+      when_ "the user submits credentials directly without remember me", context do
+        conn =
+          Phoenix.ConnTest.post(context.conn, "/users/log-in", %{
+            "user" => %{
+              "email" => context.registered_email,
+              "password" => context.registered_password
+            }
           })
 
-        conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :login_conn, conn)}
       end
 

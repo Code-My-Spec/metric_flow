@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
   spex "User can log in with email and password", criterion: 9 do
     scenario "registered user logs in with valid email and password" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
@@ -15,11 +15,13 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
       when_ "the user submits valid email and password", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :login_conn, conn)}
@@ -36,26 +38,23 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
       end
     end
 
-    scenario "registered user logs in via magic link" do
-      given_ :user_registered_with_password
-
+    scenario "login page offers one email and password form with recovery" do
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the user submits their email for a magic link", context do
-        {:ok, redirected_view, html} =
-          context.view
-          |> form("#login_form_magic", user: %{email: context.registered_email})
-          |> render_submit()
-          |> follow_redirect(context.conn, "/users/log-in")
-
-        {:ok, Map.merge(context, %{redirected_view: redirected_view, result_html: html})}
+      then_ "one primary email and password form is shown", context do
+        assert has_element?(context.view, "#login_form_password input[type=email]")
+        assert has_element?(context.view, "#login_form_password input[type=password]")
+        refute has_element?(context.view, "#login_form_magic")
+        refute has_element?(context.view, "form:not(#login_form_password) input[type=email]")
+        {:ok, context}
       end
 
-      then_ "the user sees a message that login instructions were sent", context do
-        assert context.result_html =~ "If your email is in our system"
+      then_ "password recovery and registration are available", context do
+        assert has_element?(context.view, "#forgot-password-link[href='/users/forgot-password']")
+        assert has_element?(context.view, "#register-link[href='/users/register']")
         {:ok, context}
       end
     end
