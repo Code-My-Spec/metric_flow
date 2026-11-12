@@ -84,7 +84,7 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
-  Retrieves a specific insight by ID, scoped to the account."""
+  Retrieves a specific insight by ID, scoped to the account.
 
   Returns {:ok, insight} when found or {:error, :not_found} when the insight
   does not exist, belongs to a different account, or the user has no personal account.
