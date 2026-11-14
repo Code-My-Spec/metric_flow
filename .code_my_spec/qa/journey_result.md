@@ -340,10 +340,28 @@ history if the detail is needed).
   prompt mentions a 30-day default; confirmed failing, then fixed at
   a5e660d. Confirmed passing.
 
+- **Live confirmation of the filter/refine/rename fixes (Story 74
+  rules 2, 4, 5, 8) -- pass, confirmed live by main (2026-11-14, this
+  copy's app at 521a542/8b62d9c).** Three checks, each matching what
+  the suite above already asserted: (1) choosing "Last 90 days" on a
+  real dashboard's filter control, then reopening it, still shows 90
+  days selected -- the filter persists on reopen. (2) Asking the agent
+  to refine an existing chart changes that same card in place rather
+  than adding a new one. (3) Asking for a rename-and-refine together
+  updates widget 0 in place to "Impressions Total by Day" (a bar
+  chart), with the card count unchanged -- the widget_id mechanism
+  (df2bd49) holding under a real model's rewording, not just the
+  stub's. Screenshots (main's own agent scratch, not copied into the
+  project): `fw_04_filter_90_reopen.png`, `fw_05_refine_inplace.png`,
+  `fw_06_rename_refine.png`, all under
+  `/Users/johndavenport/.codemyspec/agent_scratch/0521fa8d-76ea-41ee-97cc-ff698c2a5fb7/`.
+
 Not a regression anywhere tested: every previously-passing stage (1-5,
 plus this journey's earlier-passing stages) still passes. No new
 application issues filed this round -- every gap found became a failing
-test instead, each since fixed by the coder in the same session.
+test instead, each since fixed by the coder in the same session, and
+the final state is confirmed both by the committed suite (19/19 at
+521a542) and by main's live walk above.
 
 ## Issues
 
