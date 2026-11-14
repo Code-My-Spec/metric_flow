@@ -356,6 +356,68 @@ defmodule MetricFlowSpex.SharedGivens do
      })}
   end
 
+  register_given :owner_has_read_only_member, context do
+    email = "readonly#{System.unique_integer([:positive])}@example.com"
+    password = "SecurePassword123!"
+
+    reg_conn = build_conn()
+    {:ok, reg_view, _html} = live(reg_conn, "/users/register")
+
+    reg_view
+    |> form("#registration_form",
+      user: %{email: email, password: password, account_name: "Read Only Personal Account"}
+    )
+    |> render_submit()
+
+    Process.sleep(50)
+
+    drain = fn drain_fn ->
+      receive do
+        {:email, _} -> drain_fn.(drain_fn)
+      after
+        0 -> :ok
+      end
+    end
+
+    drain.(drain)
+
+    {:ok, invite_view, _html} = live(context.owner_conn, "/app/accounts/invitations")
+
+    invite_view
+    |> form("#invite_member_form", invitation: %{email: email, role: "read_only"})
+    |> render_submit()
+
+    token =
+      assert_email_sent(fn invite_email ->
+        [_, t] = Regex.run(~r|/invitations/([^\s/]+)|, invite_email.text_body)
+        t
+      end)
+
+    login_conn = build_conn()
+    {:ok, login_view, _html} = live(login_conn, "/users/log-in")
+
+    login_form =
+      form(login_view, "#login_form_password",
+        user: %{email: email, password: password, remember_me: true}
+      )
+
+    logged_in_conn = submit_form(login_form, login_conn)
+    authed_conn = recycle(logged_in_conn)
+
+    {:ok, accept_view, _html} = live(authed_conn, "/invitations/#{token}")
+
+    accept_view
+    |> element("[data-role=accept-btn]")
+    |> render_click()
+
+    {:ok,
+     Map.merge(context, %{
+       read_only_conn: authed_conn,
+       read_only_email: email,
+       read_only_password: password
+     })}
+  end
+
   register_given :agency_member_registered, context do
     email = "member#{System.unique_integer([:positive])}@example.com"
     password = "SecurePassword123!"
