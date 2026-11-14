@@ -756,6 +756,22 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       refute history.error_message =~ "{:bad_request"
       assert history.error_message =~ "Invalid customer ID 0000000000"
     end
+
+    test "humanizes the error message when QuickBooks has no realm_id configured" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :quickbooks)
+      sync_job = insert_sync_job!(user.id, integration.id, :quickbooks)
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message == "missing_realm_id"
+      assert history.error_message =~ "QuickBooks"
+    end
   end
 
   # ---------------------------------------------------------------------------
