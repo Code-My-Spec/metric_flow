@@ -29,7 +29,7 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
 
     Hi #{email},
 
-    You have been invited to join #{account_name} on MetricFlow as a #{role_label(role)}.
+    You have been invited to join #{account_name} on Anderson BI as a #{role_label(role)}.
 
     Click the link below to accept your invitation:
 
@@ -57,7 +57,7 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "noreply@metric-flow.app"})
+      |> from({"Anderson BI", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 

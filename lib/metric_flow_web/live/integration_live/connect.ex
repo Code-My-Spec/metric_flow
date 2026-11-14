@@ -383,7 +383,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     <div class="mf-card max-w-lg p-6">
       <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
       <p class="text-sm text-base-content/60 mb-4">
-        Choose which Google Business Profile accounts to grant MetricFlow access to.
+        Choose which Google Business Profile accounts to grant Anderson BI access to.
         You'll select specific locations to sync in the next step.
       </p>
 
@@ -425,7 +425,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                   The Google Business Profile API is disabled for this connection.
                 </p>
                 <p>
-                  Contact support to enable the API for MetricFlow's Google project, then try again.
+                  Contact support to enable the API for Anderson BI's Google project, then try again.
                 </p>
               <% else %>
                 <p class="font-semibold">
@@ -455,7 +455,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 and grant Business Profile access.
               </p>
               <p>
-                If you already have access, contact support so we can check MetricFlow's Google API
+                If you already have access, contact support so we can check Anderson BI's Google API
                 configuration. This response does not confirm whether you have a Business Profile.
               </p>
               <.link

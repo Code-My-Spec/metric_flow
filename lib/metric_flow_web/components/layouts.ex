@@ -89,7 +89,7 @@ defmodule MetricFlowWeb.Layouts do
                 class="btn btn-ghost text-lg font-bold tracking-tight"
                 data-role="default-logo"
               >
-                <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+                <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
               </a>
             <% end %>
           </div>
@@ -129,7 +129,7 @@ defmodule MetricFlowWeb.Layouts do
                 href="/app/dashboard"
                 class="flex items-center gap-2 text-lg font-bold tracking-tight"
               >
-                <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+                <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
               </a>
             <% end %>
             <%= if @active_account_name do %>
@@ -309,7 +309,7 @@ defmodule MetricFlowWeb.Layouts do
           </a>
         <% else %>
           <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight" data-role="default-logo">
-            <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
+            <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
           </a>
         <% end %>
       </div>
@@ -354,7 +354,7 @@ defmodule MetricFlowWeb.Layouts do
         <a href="/terms" class="link link-hover">Terms of Service</a>
         <a href="mailto:support@metric-flow.app" class="link link-hover">Contact</a>
       </div>
-      <p>&copy; {Date.utc_today().year} MetricFlow. All rights reserved.</p>
+      <p>&copy; {Date.utc_today().year} Anderson BI. All rights reserved.</p>
     </footer>
 
     <.flash_group flash={@flash} />

@@ -17,7 +17,7 @@ defmodule MetricFlowWeb.OnboardingLive.IndexTest do
       capture_log(fn ->
         {:ok, _lv, html} = live(conn, ~p"/onboarding")
 
-        assert html =~ "Welcome to MetricFlow"
+        assert html =~ "Welcome to Anderson BI"
         send(self(), :done)
       end)
 
@@ -52,14 +52,14 @@ defmodule MetricFlowWeb.OnboardingLive.IndexTest do
   # ---------------------------------------------------------------------------
 
   describe "render/1" do
-    test "displays \"Welcome to MetricFlow\" heading", %{conn: conn} do
+    test "displays \"Welcome to Anderson BI\" heading", %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, _lv, html} = live(conn, ~p"/onboarding")
 
-        assert html =~ "Welcome to MetricFlow"
+        assert html =~ "Welcome to Anderson BI"
         send(self(), :done)
       end)
 

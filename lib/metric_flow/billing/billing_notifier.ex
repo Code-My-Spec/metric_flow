@@ -11,7 +11,7 @@ defmodule MetricFlow.Billing.BillingNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "noreply@metric-flow.app"})
+      |> from({"Anderson BI", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 
@@ -25,7 +25,7 @@ defmodule MetricFlow.Billing.BillingNotifier do
   to update their payment method.
   """
   def deliver_payment_failed(email) do
-    deliver(email, "Payment failed on your MetricFlow subscription", """
+    deliver(email, "Payment failed on your Anderson BI subscription", """
 
     ==============================
 
