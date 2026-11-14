@@ -18,6 +18,15 @@ defmodule MetricFlowTest.VizChatStub do
   still lands on the line chart (the last `update_spec` call), so every
   single-widget caller of this preset keeps seeing exactly the same final
   spec and text as before.
+
+  Note (QA journey 6, 2026-11-14): this two-sequential-`update_spec`-calls
+  shape is not what the deployed model actually does for a multi-widget
+  request. Walked live, asked explicitly for "two separate widgets ...
+  not one combined chart," the model replied it has no tool to create or
+  manage separate dashboard elements, only `update_spec` for one spec --
+  see `generate_multi_widget_combined/0` for the shape confirmed live.
+  Kept as-is because the two single-widget tests below only care that the
+  final spec/text is the line chart, which this still produces.
   """
   def generate_initial do
     ClaudeCodeStub.sequence([
@@ -70,6 +79,29 @@ defmodule MetricFlowTest.VizChatStub do
       "update_spec",
       %{"vega_lite_json" => Jason.encode!(unresolvable_metric_spec())},
       text: "I'll create a chart for the discontinued_metric field."
+    )
+  end
+
+  @doc """
+  Multi-widget request as the deployed model actually answers it: one
+  `update_spec` call whose spec combines both requested views with a
+  Vega-Lite `vconcat`, not two separate `update_spec` calls. Confirmed live
+  (QA journey 6, 2026-11-14): sent "Add a headline stat of total clicks and
+  a line chart of impressions over time" and, on an explicit follow-up
+  asking for two independent widgets, the model said it has no tool for
+  that -- only `update_spec`, which writes one spec. This preset reproduces
+  that single combined-spec response so the journey test documents the
+  real surface instead of the two-separate-calls shape `generate_initial/0`
+  exercises on the backend path alone.
+  """
+  def generate_multi_widget_combined do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "update_spec",
+        %{"vega_lite_json" => Jason.encode!(combined_stat_and_line_spec())},
+        completion_text:
+          "The chart is created. It has two stacked views: a headline stat for total clicks and a line chart of impressions over time."
+      )
     )
   end
 
@@ -126,6 +158,46 @@ defmodule MetricFlowTest.VizChatStub do
             "y" => %{"field" => "value", "type" => "quantitative"},
             "color" => %{"datum" => "clicks"}
           }
+        }
+      ]
+    }
+  end
+
+  defp combined_stat_and_line_spec do
+    %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "vconcat" => [
+        %{
+          "data" => %{"name" => "clicks"},
+          "mark" => %{
+            "type" => "text",
+            "align" => "center",
+            "baseline" => "middle",
+            "fontSize" => 48,
+            "fontWeight" => "bold"
+          },
+          "encoding" => %{
+            "text" => %{
+              "field" => "value",
+              "type" => "quantitative",
+              "aggregate" => "sum",
+              "format" => ",.0f"
+            }
+          },
+          "title" => "Total Clicks",
+          "width" => "container",
+          "height" => 80
+        },
+        %{
+          "data" => %{"name" => "impressions"},
+          "mark" => %{"type" => "line", "point" => true, "tooltip" => true},
+          "encoding" => %{
+            "x" => %{"field" => "date", "type" => "temporal", "title" => "Date"},
+            "y" => %{"field" => "value", "type" => "quantitative", "title" => "Impressions"}
+          },
+          "title" => "Impressions Over Time",
+          "width" => "container",
+          "height" => 300
         }
       ]
     }

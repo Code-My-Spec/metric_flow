@@ -7,12 +7,31 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
   from natural language -- confirmed live in
   `.code_my_spec/qa/journey_result.md` Journey 6.
 
-  Next stage, not yet built: the dashboard is saved as a draft the first
-  time the agent builds something (Story 74's first rule), so a reload
-  shows the same dashboard. Remaining stages (multi-widget composition,
-  missing-metric redirect, agent-chat history, versioning/restore) are
-  not asserted here; see journey_result.md Journey 6 for what was
-  observed.
+  Draft autosave (950932f): the agent's first build saves a draft
+  dashboard with no explicit save, and reopening it shows the same
+  dashboard -- confirmed live in journey_result.md Journey 6.
+
+  Multi-widget (d4a75d8): the backend now supports creating more than one
+  dashboard element from a single chat turn when the model calls
+  `update_spec` more than once (see `VizChatStub.generate_initial/0`'s
+  moduledoc) -- but the deployed model doesn't know to do that. Walked
+  live (2026-11-14): asked for a stat tile and a line chart in one
+  message, the model called `update_spec` once with both views combined
+  into a single Vega-Lite `vconcat` spec, producing one card, not two. On
+  an explicit follow-up asking for "two separate widgets ... not one
+  combined chart," the model said it has no tool to create or manage
+  separate dashboard elements, only `update_spec` for one spec. So Story
+  74 rule 2 still isn't satisfied on the real surface -- the gap is now
+  narrower than "the backend can't do it" (it can) to "the model isn't
+  told it can call the tool again instead of overwriting." This test
+  uses `VizChatStub.generate_multi_widget_combined/0`, which reproduces
+  that observed single-combined-spec response, so the assertion below
+  documents the real gap rather than the backend-only mechanism
+  `generate_initial/0` exercises.
+
+  Missing-metric redirect, a named "Edit with agent" resume action, and
+  versioning/restore are not asserted here; see journey_result.md
+  Journey 6 for what was observed.
   """
 
   use MetricFlowTest.ConnCase, async: false
@@ -123,5 +142,43 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
     assert reopened_html =~ "Show me impressions over time as a line chart"
     assert reopened_html =~ ~s(data-role="vega-lite-chart")
+  end
+
+  test "a single chat message naming two distinct widget types produces two widgets", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 10.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.generate_multi_widget_combined()
+    )
+
+    render_submit(view, "send_dashboard_chat", %{
+      "message" => "Add a headline stat of total clicks and a line chart of impressions over time"
+    })
+
+    html = wait_for_chart(view)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    # Story 74, rule 2: "The agent can build charts ..., stat tiles,
+    # tables, headings, text, layout containers and interactive controls
+    # on a dashboard", scenario: "the dashboard shows a stat tile, a line
+    # chart and a table in a layout" from one request. Still fails live
+    # (2026-11-14): the model combines both views into one Vega-Lite
+    # `vconcat` spec rather than calling `update_spec` once per widget, so
+    # the canvas gets one card, not two.
+    cards = html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+        assert length(cards) == 2
   end
 end
