@@ -308,4 +308,28 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       end)
     end
   end
+
+  describe "shows the built-in canned dashboard's own name as the visible heading" do
+    test "shows the built-in canned dashboard's own name as the visible heading", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+
+      dashboard =
+        Repo.insert!(%MetricFlow.Dashboards.Dashboard{
+          name: "Marketing Overview",
+          description: "System-provided Marketing Overview dashboard",
+          built_in: true,
+          user_id: user.id
+        })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+        assert has_element?(lv, "h1", "Marketing Overview")
+        refute has_element?(lv, "h1", "All Metrics")
+      end)
+    end
+  end
 end
