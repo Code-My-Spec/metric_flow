@@ -9,18 +9,18 @@ Journeys 1-5 from the plan were walked live against the running app
 codified as a `Phoenix.LiveViewTest` module under `test/journeys/` (see
 Phase 3 notes below) — the prior attempt at this phase had pivoted to
 unrelated BDD-spec fixes without actually executing any journey; this run
-replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent") was added and first
-walked against commit 5d7b86d7 (fail -- no chat affordance existed at all),
-then re-walked outside the normal task loop against commit 4db2d04 after the
-coder landed the first stage: chat now builds a single visualization from
-natural language using real data (pass), but draft autosave, multi-widget
-composition, missing-metric guidance, agent-chat history, and
-versioning/restore remain unbuilt. The journey stays codified as a failing
-test (untouched by this re-walk) rather than a passing one, since most of
-Story 74's criteria still have no code to attach to. The re-walk itself was
+replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent") was added and walked
+across several coder stages: fail at commit 5d7b86d7 (no chat affordance at
+all), pass for chat-builds-one-visualization at 684d9a0/4db2d04, pass for
+draft autosave + reload persistence at 950932f -- and fail again at 950932f
+for mixed widget types in one chat message, which still collapses into a
+single Vega-Lite spec instead of separate dashboard elements. Missing-metric
+redirect, a named "Edit with agent" resume action, and versioning/restore
+remain untested/unbuilt. The journey test stays red (multi-widget stage)
+rather than green, since Story 74 isn't fully built. Some of this walking was
 done outside `start_task`/`evaluate_task` because of a graph deadlock
-(c2084903) that refused to re-offer `qa_journey` after the first stage
-landed; see Issues.
+(c2084903) that refused to re-offer `qa_journey` after a stage landed; see
+Issues.
 
 ## Journey Results
 
@@ -113,27 +113,53 @@ the coder landed the first stage. Logged in as `qa@example.com` and opened
   Time", plotting `total_cost` by date) to the canvas, with the agent's
   reply explaining the metric choice and offering follow-ups. Screenshot:
   `.code_my_spec/qa/journeys/screenshots/journey6_stage2_chat_built_chart.png`.
-- **Draft autosave on first build — fail / not built.** Reloading the page
-  after the chart was built returned to the blank "/new" state ("Add a
-  visualization to get started") with the chat history and chart gone; the
-  URL never moved off `/app/dashboards/new` to a persisted dashboard id. No
-  dashboard record is created until an explicit "Save Dashboard" click, so
-  Story 74's "saved as a draft the first time the agent builds something,
-  with no explicit save needed" rule does not hold yet.
+- **Draft autosave on first build — fail / not built (commit 4db2d04).**
+  Reloading the page after the chart was built returned to the blank
+  "/new" state with the chat history and chart gone; the URL never moved
+  off `/app/dashboards/new`. No dashboard record was created until an
+  explicit "Save Dashboard" click.
 - **Mixed widget types in one request, missing-metric redirect to
   integrations, "Edit with agent" resuming a saved dashboard's history, and
-  per-change versioning with restore — not built.** Not independently
-  re-tested this walk (per main's guidance, since only `dashboard_live/
-  editor.ex` changed in 684d9a0); recorded as not-built rather than
-  regressions, consistent with the Dashboard schema still having no
-  draft/version fields.
+  per-change versioning with restore — not independently re-tested at
+  4db2d04** (per main's guidance, since only `dashboard_live/editor.ex`
+  changed in 684d9a0).
+
+**Second re-walk (commit 950932f):** the coder landed draft autosave.
+
+- **Draft autosave on first build — pass.** Building the same line chart
+  via chat created a real `Dashboard` (id 8, "Untitled Dashboard",
+  visible under My Dashboards) with no explicit save. Visiting
+  `/app/dashboards/8/edit` directly (simulating a reload/reopen) showed
+  the same chart and the full chat history ("You: Show me a
+  spend-over-time line chart" / "Agent: ..."), satisfying Story 74 rule 1
+  and the "refreshing the page shows the same dashboard" scenario.
+  Screenshots:
+  `.code_my_spec/qa/journeys/screenshots/journey6_stage3_after_build_950932f.png`,
+  `.code_my_spec/qa/journeys/screenshots/journey6_stage3_reopened_edit8.png`.
+- **Mixed widget types in one message — fail / not built.** Asked (on the
+  same persisted dashboard) for "a line chart of revenue over time and a
+  headline stat of total conversions" in one message, after an earlier
+  turn had already added a stat tile. The agent's reply described adding
+  "three parts" (two headline stats side by side plus a line chart below
+  them), but the canvas gained exactly one new card, labeled "Custom" /
+  "line" -- the three parts are crammed into a single Vega-Lite spec
+  rather than created as separate stat-tile/chart dashboard elements.
+  `add_visualization_from_chat_spec/2` only ever appends one visualization
+  per chat turn, so a message asking for several distinct widget types
+  cannot produce several distinct widgets yet, contrary to Story 74 rule
+  2's scenario ("the dashboard shows a stat tile, a line chart and a
+  table in a layout"). Screenshot:
+  `.code_my_spec/qa/journeys/screenshots/journey6_stage4_multiwidget_gap.png`.
+- **Missing-metric redirect to integrations, "Edit with agent" as a named
+  resume action (distinct from just visiting `/edit`), and per-change
+  versioning with restore — still not independently tested/built.**
 
 Not a regression anywhere tested: everything that worked before still
-works, and the one new capability (single-visualization chat building)
-works as described. The remaining Story 74 criteria (draft persistence,
-multi-widget composition, missing-metric guidance, agent-chat history,
-versioning/restore) still have no code to attach to and remain open coder
-work, tracked via the still-committed failing test rather than a new issue.
+works, and both new capabilities (single-visualization chat building,
+draft autosave with reload persistence) work as described. Multi-widget
+composition, missing-metric guidance, and versioning/restore still have
+no code to attach to and remain open coder work, tracked via the
+still-committed failing test rather than a new issue.
 
 ## Issues
 
