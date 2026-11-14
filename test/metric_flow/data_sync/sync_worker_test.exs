@@ -743,7 +743,11 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       end
 
       capture_log(fn ->
-        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id, bad_request_plug), [])
+        perform_job(
+          SyncWorker,
+          job_args(integration.id, user.id, sync_job.id, bad_request_plug),
+          []
+        )
       end)
 
       [history] = SyncHistoryRepository.list_sync_history(scope)
