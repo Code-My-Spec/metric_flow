@@ -228,6 +228,24 @@ re-walked build / reload / multi-widget live as `qa@example.com`.
   independently tested/built; not re-attempted this walk since the
   multi-widget stage ahead of them is still red.**
 
+**Fourth re-walk attempt (commit de23c19, 2026-11-14): partial -- live check
+could not complete because of the browser tool, not the app.** After the
+converse-guidance test was committed and the suite confirmed green at
+de23c19 via `mix test`/`exunit` (run 9980, no blocking problems), tried to
+re-walk the multi-widget stage live to see whether the real model now
+produces two cards. The app instance itself was healthy (`ensure_app_running`
+confirmed it serving `de23c19`, the correct commit). Host load was elevated
+(~15 on 10 cores, 35 orphaned chromedrivers per issue `fdd98643`) but not at
+the earlier 600+ spike. A single packed script (navigate to `/users/log-in`,
+wait for "Log in", fill the password-login fields, press Enter) hit a 504
+twice in a row -- the stop condition main gave for this attempt. No login,
+so no multi-widget result was captured this walk. The backend/prompt fix
+itself is verified by the committed test suite (5/5 passing, including the
+capture-based assertions on the real system prompt and tool description);
+only the live confirmation that the deployed model behaves accordingly is
+still outstanding, blocked on the browser tool's reliability under current
+host load, not on anything in the application.
+
 Not a regression anywhere tested: everything that worked before still
 works, and all capabilities tested to date work as described except
 multi-widget composition. Multi-widget composition (now understood as a
