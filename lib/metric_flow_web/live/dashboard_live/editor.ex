@@ -22,30 +22,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Metrics
 
-  @chart_types ["line", "bar", "area"]
-
-  @templates %{
-    "marketing_overview" => %{
-      label: "Marketing Overview",
-      description: "Clicks, Spend, Impressions, and ROAS at a glance",
-      visualizations: [
-        %{metric_name: "Clicks", chart_type: "bar", position: 0},
-        %{metric_name: "Spend", chart_type: "line", position: 1},
-        %{metric_name: "Impressions", chart_type: "area", position: 2},
-        %{metric_name: "ROAS", chart_type: "line", position: 3}
-      ]
-    },
-    "financial_summary" => %{
-      label: "Financial Summary",
-      description: "Revenue, Conversions, and CPC trends",
-      visualizations: [
-        %{metric_name: "Revenue", chart_type: "line", position: 0},
-        %{metric_name: "Conversions", chart_type: "bar", position: 1},
-        %{metric_name: "CPC", chart_type: "line", position: 2}
-      ]
-    }
-  }
-
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -189,132 +165,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {@viz_error}
       </p>
 
-      <%!-- Template chooser (create route, empty canvas) --%>
-      <div
-        :if={@live_action == :new and @visualizations == []}
-        data-role="template-chooser"
-        class="mb-6"
-      >
-        <p class="text-base-content/60 mb-3">Start from a template or blank canvas</p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div
-            :for={{key, tpl} <- @templates}
-            phx-click="select_template"
-            phx-value-template={key}
-            data-role={"template-card-#{key}"}
-            class={[
-              "mf-card p-4 cursor-pointer",
-              @selected_template == key && "ring-2 ring-primary"
-            ]}
-          >
-            <p class="font-semibold text-sm">{tpl.label}</p>
-            <p class="text-xs text-base-content/60 mt-1">{tpl.description}</p>
-          </div>
-
-          <div
-            phx-click="clear_canvas"
-            phx-confirm="Clear the canvas? All visualizations will be removed."
-            data-role="template-card-blank"
-            class={[
-              "mf-card p-4 cursor-pointer",
-              @selected_template == "blank" && "ring-2 ring-primary"
-            ]}
-          >
-            <p class="font-semibold text-sm">Blank Canvas</p>
-            <p class="text-xs text-base-content/60 mt-1">Start with an empty dashboard</p>
-          </div>
-        </div>
-      </div>
-
-      <%!-- Add Visualization button --%>
-      <button
-        phx-click="open_metric_picker"
-        data-role="add-visualization-btn"
-        class="btn btn-outline btn-sm mb-4"
-      >
-        + Add Visualization
-      </button>
-
-      <%!-- Metric picker panel --%>
-      <div
-        :if={@picker_open}
-        data-role="metric-picker"
-        class="mf-card p-5 mb-6"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold">Add Visualization</h3>
-          <button
-            phx-click="close_metric_picker"
-            data-role="close-metric-picker"
-            aria-label="Close metric picker"
-            class="btn btn-ghost btn-xs"
-          >
-            ✕
-          </button>
-        </div>
-
-        <%!-- Metric list --%>
-        <div data-role="metric-list" class="flex flex-wrap gap-2 mb-4 max-h-40 overflow-y-auto">
-          <button
-            :for={metric <- @available_metrics}
-            phx-click="select_metric"
-            phx-value-metric={metric}
-            class={[
-              "btn btn-sm",
-              @picker_selected_metric == metric && "btn-primary",
-              @picker_selected_metric != metric && "btn-ghost"
-            ]}
-          >
-            {metric}
-          </button>
-          <p :if={@available_metrics == []} class="text-sm text-base-content/60">
-            No metrics available. Connect a platform to get started.
-          </p>
-        </div>
-
-        <%!-- Chart type selector --%>
-        <div data-role="chart-type-selector" class="flex items-center gap-2 mb-4">
-          <button
-            :for={type <- @chart_types}
-            phx-click="select_chart_type"
-            phx-value-chart_type={type}
-            class={[
-              "btn btn-sm",
-              @picker_selected_chart_type == type && "btn-primary",
-              @picker_selected_chart_type != type && "btn-ghost"
-            ]}
-          >
-            {String.capitalize(type)}
-          </button>
-        </div>
-
-        <%!-- Confirm add button --%>
-        <button
-          phx-click="add_visualization"
-          data-role="confirm-add-btn"
-          disabled={is_nil(@picker_selected_metric)}
-          class="btn btn-primary btn-sm"
-        >
-          Add to Dashboard
-        </button>
-
-        <%!-- Insert from the visualization library --%>
-        <div :if={@library_visualizations != []} class="mt-4 pt-4 border-t border-base-300">
-          <p class="text-sm font-medium mb-2">Or insert from your visualization library:</p>
-          <div data-role="library-visualization-list" class="flex flex-wrap gap-2">
-            <button
-              :for={viz <- @library_visualizations}
-              phx-click="insert_library_visualization"
-              phx-value-id={viz.id}
-              data-role="library-visualization-option"
-              class="btn btn-sm btn-ghost"
-            >
-              {viz.name}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <%!-- Story 74, rule 5: an interactive control that only re-runs
            metric queries and changes what is shown -- it never writes
            anywhere or calls any tool. --%>
@@ -337,7 +187,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       <div
         id="visualization-canvas"
         data-role="visualization-canvas"
-        phx-hook="SortableList"
         class="space-y-4 mb-6"
       >
         <div :if={@visualizations == []} data-role="empty-canvas" class="mf-card p-8 text-center">
@@ -347,43 +196,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         <div
           :for={{viz, idx} <- Enum.with_index(@visualizations)}
           data-role="visualization-card"
-          draggable="true"
           class="mf-card p-4"
         >
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span data-role="drag-handle" class="cursor-grab text-base-content/40" aria-label="Drag to reorder">
-                ⠿
-              </span>
-              <span class="font-semibold">{viz.metric_name}</span>
-              <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <button
-                phx-click="move_visualization_up"
-                phx-value-index={idx}
-                aria-label="Move up"
-                class="btn btn-ghost btn-xs"
-              >
-                ↑
-              </button>
-              <button
-                phx-click="move_visualization_down"
-                phx-value-index={idx}
-                aria-label="Move down"
-                class="btn btn-ghost btn-xs"
-              >
-                ↓
-              </button>
-              <button
-                phx-click="remove_visualization"
-                phx-value-index={idx}
-                aria-label="Remove"
-                class="btn btn-ghost btn-xs btn-error"
-              >
-                ✕
-              </button>
-            </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="font-semibold">{viz.metric_name}</span>
+            <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
           </div>
 
           <%!-- Story 74: "Charts are ECharts"; "Chat only: no hand-edit spec editor." --%>
@@ -459,7 +276,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     case Dashboards.get_dashboard_with_visualizations(scope, id_int) do
       {:ok, dashboard} ->
         changeset = Dashboards.dashboard_changeset(dashboard, %{})
-        visualizations = load_visualizations_from_dashboard(dashboard)
+        visualizations = visualizations_for_dashboard(dashboard)
         {chat_messages, chat_session_id} = load_dashboard_chat_history(scope, dashboard.id)
 
         socket =
@@ -467,20 +284,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard, dashboard)
           |> assign(:changeset, changeset)
           |> assign(:visualizations, visualizations)
-          |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
           |> assign(
             :chart_render,
             resolve_chart_render(visualizations, scope, date_range_for(dashboard.date_range || "30"))
           )
-          |> assign(:picker_open, false)
-          |> assign(:picker_selected_metric, nil)
-          |> assign(:picker_selected_chart_type, "line")
           |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-          |> assign(:templates, @templates)
-          |> assign(:selected_template, nil)
-          |> assign(:chart_types, @chart_types)
           |> assign(:viz_error, nil)
-          |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
           |> assign(:dashboard_chat_messages, chat_messages)
           |> assign(:dashboard_chat_generating, false)
           |> assign(:dashboard_chat_error, nil)
@@ -510,17 +319,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard, nil)
       |> assign(:changeset, changeset)
       |> assign(:visualizations, [])
-      |> assign(:chart_specs, [])
       |> assign(:chart_render, [])
-      |> assign(:picker_open, false)
-      |> assign(:picker_selected_metric, nil)
-      |> assign(:picker_selected_chart_type, "line")
       |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-      |> assign(:templates, @templates)
-      |> assign(:selected_template, nil)
-      |> assign(:chart_types, @chart_types)
       |> assign(:viz_error, nil)
-      |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
       |> assign(:dashboard_chat_messages, [])
       |> assign(:dashboard_chat_generating, false)
       |> assign(:dashboard_chat_error, nil)
@@ -557,147 +358,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
       _visualizations ->
         do_save(socket)
-    end
-  end
-
-  def handle_event("open_metric_picker", _params, socket) do
-    socket =
-      socket
-      |> assign(:picker_open, true)
-      |> assign(:picker_selected_metric, nil)
-      |> assign(:picker_selected_chart_type, "line")
-
-    {:noreply, socket}
-  end
-
-  def handle_event("close_metric_picker", _params, socket) do
-    {:noreply, assign(socket, :picker_open, false)}
-  end
-
-  def handle_event("select_metric", %{"metric" => metric}, socket) do
-    {:noreply, assign(socket, :picker_selected_metric, metric)}
-  end
-
-  def handle_event("select_chart_type", %{"chart_type" => type}, socket) do
-    {:noreply, assign(socket, :picker_selected_chart_type, type)}
-  end
-
-  def handle_event("add_visualization", _params, %{assigns: %{picker_selected_metric: nil}} = socket) do
-    {:noreply, socket}
-  end
-
-  def handle_event("add_visualization", _params, socket) do
-    metric = socket.assigns.picker_selected_metric
-    chart_type = socket.assigns.picker_selected_chart_type
-    next_position = length(socket.assigns.visualizations)
-
-    new_viz = %{metric_name: metric, chart_type: chart_type, position: next_position}
-    visualizations = socket.assigns.visualizations ++ [new_viz]
-    scope = socket.assigns.current_scope
-
-    socket =
-      socket
-      |> assign(:visualizations, visualizations)
-      |> assign(
-        :chart_render,
-        resolve_chart_render(visualizations, scope, date_range_for(socket.assigns.dashboard_date_range))
-      )
-      |> assign(:picker_open, false)
-      |> assign(:picker_selected_metric, nil)
-      |> assign(:picker_selected_chart_type, "line")
-      |> assign(:viz_error, nil)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("remove_visualization", %{"index" => index_str}, socket) do
-    index = String.to_integer(index_str)
-
-    visualizations =
-      socket.assigns.visualizations
-      |> List.delete_at(index)
-      |> renumber_positions()
-
-    {:noreply, assign_visualizations(socket, visualizations)}
-  end
-
-  def handle_event("move_visualization_up", %{"index" => index_str}, socket) do
-    index = String.to_integer(index_str)
-    visualizations = swap_at(socket.assigns.visualizations, index, index - 1)
-    {:noreply, assign_visualizations(socket, visualizations)}
-  end
-
-  def handle_event("move_visualization_down", %{"index" => index_str}, socket) do
-    index = String.to_integer(index_str)
-    visualizations = swap_at(socket.assigns.visualizations, index, index + 1)
-    {:noreply, assign_visualizations(socket, visualizations)}
-  end
-
-  def handle_event("reorder_visualizations", %{"from" => from_str, "to" => to_str}, socket) do
-    from_index = String.to_integer(to_string(from_str))
-    to_index = String.to_integer(to_string(to_str))
-    visualizations = move_at(socket.assigns.visualizations, from_index, to_index)
-    {:noreply, assign_visualizations(socket, visualizations)}
-  end
-
-  def handle_event("select_template", %{"template" => template_key}, socket) do
-    case Map.get(@templates, template_key) do
-      nil ->
-        {:noreply, socket}
-
-      template ->
-        socket =
-          socket
-          |> assign_visualizations(template.visualizations)
-          |> assign(:selected_template, template_key)
-          |> assign(:viz_error, nil)
-
-        {:noreply, socket}
-    end
-  end
-
-  def handle_event("clear_canvas", _params, socket) do
-    socket =
-      socket
-      |> assign_visualizations([])
-      |> assign(:selected_template, "blank")
-
-    {:noreply, socket}
-  end
-
-  def handle_event("insert_library_visualization", %{"id" => id_str}, socket) do
-    scope = socket.assigns.current_scope
-
-    case Dashboards.get_visualization(scope, String.to_integer(id_str)) do
-      {:ok, viz} ->
-        next_position = length(socket.assigns.visualizations)
-        raw_spec = viz.vega_spec || %{}
-        frozen_spec = custom_spec(raw_spec)
-
-        new_viz = %{
-          metric_name: Map.get(raw_spec, "metric_name") || viz.name,
-          chart_type: Map.get(raw_spec, "chart_type") || extract_chart_type_from_spec(raw_spec),
-          position: next_position,
-          vega_spec: frozen_spec
-        }
-
-        visualizations = socket.assigns.visualizations ++ [new_viz]
-
-        socket =
-          socket
-          |> assign(:visualizations, visualizations)
-          |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
-          |> assign(
-            :chart_render,
-            resolve_chart_render(visualizations, scope, date_range_for(socket.assigns.dashboard_date_range))
-          )
-          |> assign(:picker_open, false)
-          |> assign(:viz_error, nil)
-
-        {:noreply, socket}
-
-      {:error, :not_found} ->
-        {:noreply, put_flash(socket, :error, "Visualization not found.")}
     end
   end
 
@@ -901,15 +561,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     dashboard = socket.assigns.dashboard
     visualizations = visualizations_from_a2ui_spec(a2ui_spec)
 
-    with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
-         {:ok, dashboard} <-
-           Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => a2ui_spec}) do
-      socket
-      |> assign(:dashboard, dashboard)
-      |> assign_visualizations(visualizations)
-      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
-    else
-      _ -> socket
+    case Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => a2ui_spec}) do
+      {:ok, dashboard} ->
+        socket
+        |> assign(:dashboard, dashboard)
+        |> assign_visualizations(visualizations)
+        |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
+
+      {:error, _} ->
+        socket
     end
   end
 
@@ -941,14 +601,14 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations, _spec_title, _request_text) do
     scope = socket.assigns.current_scope
 
-    with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
-         {:ok, dashboard} <-
-           Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => build_a2ui_spec(visualizations)}) do
-      socket
-      |> assign(:dashboard, dashboard)
-      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
-    else
-      _ -> socket
+    case Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => build_a2ui_spec(visualizations)}) do
+      {:ok, dashboard} ->
+        socket
+        |> assign(:dashboard, dashboard)
+        |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
+
+      {:error, _} ->
+        socket
     end
   end
 
@@ -957,14 +617,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     name = draft_dashboard_name(socket.assigns.changeset, spec_title, request_text)
     a2ui_spec = build_a2ui_spec(visualizations)
 
-    with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name, "a2ui_spec" => a2ui_spec}),
-         :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
-      socket
-      |> assign(:dashboard, dashboard)
-      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
-      |> push_patch(to: ~p"/app/dashboards/#{dashboard.id}/edit")
-    else
-      _ -> socket
+    case Dashboards.save_dashboard(scope, %{"name" => name, "a2ui_spec" => a2ui_spec}) do
+      {:ok, dashboard} ->
+        socket
+        |> assign(:dashboard, dashboard)
+        |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
+        |> push_patch(to: ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      {:error, _} ->
+        socket
     end
   end
 
@@ -1091,21 +752,24 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp extract_chat_named_sources(_), do: []
 
+  # Story 74: chat already autosaves every agent-built change -- this button
+  # only persists a typed name. It stops short of touching visualizations
+  # or a2ui_spec at all, so it can never stuff a2ui-derived content back
+  # into the legacy Visualization/vega_spec rows.
   defp do_save(socket) do
     scope = socket.assigns.current_scope
     name = extract_name(socket.assigns.changeset)
     attrs = %{"name" => name}
-    visualizations = socket.assigns.visualizations
 
     case socket.assigns.dashboard do
       nil ->
-        with {:ok, dashboard} <- Dashboards.save_dashboard(scope, attrs),
-             :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
-          {:noreply,
-           socket
-           |> put_flash(:info, "Dashboard created.")
-           |> push_navigate(to: ~p"/app/dashboards/#{dashboard.id}")}
-        else
+        case Dashboards.save_dashboard(scope, attrs) do
+          {:ok, dashboard} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Dashboard created.")
+             |> push_navigate(to: ~p"/app/dashboards/#{dashboard.id}")}
+
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}
 
@@ -1114,13 +778,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         end
 
       dashboard ->
-        with {:ok, updated} <- Dashboards.update_dashboard(scope, dashboard, attrs),
-             :ok <- Dashboards.replace_dashboard_visualizations(scope, updated, visualizations) do
-          {:noreply,
-           socket
-           |> put_flash(:info, "Dashboard updated.")
-           |> push_navigate(to: ~p"/app/dashboards/#{updated.id}")}
-        else
+        case Dashboards.update_dashboard(scope, dashboard, attrs) do
+          {:ok, updated} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Dashboard updated.")
+             |> push_navigate(to: ~p"/app/dashboards/#{updated.id}")}
+
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply, assign(socket, :changeset, changeset)}
 
@@ -1128,6 +792,19 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             {:noreply, put_flash(socket, :error, "Failed to save dashboard. Please try again.")}
         end
     end
+  end
+
+  # Story 74/75: dashboard.a2ui_spec is the single source of truth for an
+  # agent-built dashboard. A dashboard saved before a2ui_spec existed has
+  # none -- derive its components from its legacy Visualization rows
+  # instead, read-only; the next chat turn writes a2ui_spec and this
+  # dashboard never needs the legacy path again.
+  defp visualizations_for_dashboard(%Dashboard{a2ui_spec: nil} = dashboard) do
+    load_visualizations_from_dashboard(dashboard)
+  end
+
+  defp visualizations_for_dashboard(%Dashboard{a2ui_spec: a2ui_spec}) do
+    visualizations_from_a2ui_spec(a2ui_spec)
   end
 
   defp load_visualizations_from_dashboard(%Dashboard{dashboard_visualizations: dvs})
@@ -1189,17 +866,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
     socket
     |> assign(:visualizations, visualizations)
-    |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
     |> assign(:chart_render, resolve_chart_render(visualizations, scope, date_range))
-  end
-
-  defp resolve_chart_specs(visualizations, scope) do
-    Enum.map(visualizations, fn viz ->
-      case Map.get(viz, :vega_spec) do
-        nil -> build_chart_spec(viz.metric_name, viz.chart_type, scope)
-        spec -> spec
-      end
-    end)
   end
 
   # Story 74: "Charts are ECharts"; "data is fetched at render time and never
@@ -1305,58 +972,4 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp extract_chart_type_from_spec(%{"mark" => mark}) when is_binary(mark), do: mark
   defp extract_chart_type_from_spec(%{"mark" => %{"type" => type}}) when is_binary(type), do: type
   defp extract_chart_type_from_spec(_), do: "line"
-
-  defp build_chart_spec(metric_name, chart_type, scope) do
-    {start_date, end_date} = Dashboards.default_date_range()
-
-    values =
-      scope
-      |> Metrics.query_time_series(metric_name, date_range: {start_date, end_date})
-      |> Enum.map(fn %{date: date, value: value} ->
-        %{"date" => Date.to_iso8601(date), "value" => value}
-      end)
-
-    %{
-      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
-      "width" => "container",
-      "height" => 100,
-      "mark" => chart_type,
-      "encoding" => %{
-        "x" => %{"field" => "date", "type" => "temporal"},
-        "y" => %{"field" => "value", "type" => "quantitative"}
-      },
-      "data" => %{"values" => values}
-    }
-  end
-
-  defp renumber_positions(visualizations) do
-    visualizations
-    |> Enum.with_index()
-    |> Enum.map(fn {viz, idx} -> %{viz | position: idx} end)
-  end
-
-  defp swap_at(list, i, j)
-       when i >= 0 and j >= 0 and i < length(list) and j < length(list) do
-    elem_i = Enum.at(list, i)
-    elem_j = Enum.at(list, j)
-
-    list
-    |> List.replace_at(i, elem_j)
-    |> List.replace_at(j, elem_i)
-    |> renumber_positions()
-  end
-
-  defp swap_at(list, _i, _j), do: list
-
-  defp move_at(list, from, to)
-       when from >= 0 and to >= 0 and from < length(list) and to < length(list) and from != to do
-    elem = Enum.at(list, from)
-
-    list
-    |> List.delete_at(from)
-    |> List.insert_at(to, elem)
-    |> renumber_positions()
-  end
-
-  defp move_at(list, _from, _to), do: list
 end

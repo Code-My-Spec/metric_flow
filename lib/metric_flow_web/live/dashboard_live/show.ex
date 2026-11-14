@@ -684,6 +684,12 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     |> assign(:page_title, loaded.name)
   end
 
+  # Story 74/75: dashboard.a2ui_spec is the single source of truth for an
+  # agent-built dashboard. A dashboard saved before a2ui_spec existed has
+  # none -- derive its components from its legacy Visualization rows
+  # instead, read-only.
+  defp a2ui_dashboard_components(%{a2ui_spec: %{"components" => components}}), do: components
+
   defp a2ui_dashboard_components(%{dashboard_visualizations: dvs}) when is_list(dvs) do
     dvs
     |> Enum.sort_by(& &1.position)

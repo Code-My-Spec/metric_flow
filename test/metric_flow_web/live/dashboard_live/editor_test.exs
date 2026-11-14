@@ -10,7 +10,6 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
-  alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
@@ -98,8 +97,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   # Test Assertions from spec
   # ---------------------------------------------------------------------------
 
-  describe "renders new dashboard editor with name field, template chooser, and save button" do
-    test "renders new dashboard editor with name field, template chooser, and save button", %{
+  describe "renders new dashboard editor with name field and save button" do
+    test "renders new dashboard editor with name field and save button", %{
       conn: conn
     } do
       user = user_fixture()
@@ -110,7 +109,6 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
         assert html =~ "New Dashboard"
         assert has_element?(lv, "[data-role='dashboard-name-input']")
-        assert has_element?(lv, "[data-role='template-chooser']")
         assert has_element?(lv, "[data-role='save-dashboard-btn']")
       end)
     end
@@ -131,49 +129,6 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     end
   end
 
-  describe "inserting a library visualization stored with the plain ad-hoc shape" do
-    test "regenerates a real ECharts option instead of rendering the literal metric_name/chart_type map",
-         %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      insert_metric!(user)
-
-      {:ok, library_viz} =
-        %Visualization{}
-        |> Visualization.changeset(%{
-          name: "sessions",
-          user_id: user.id,
-          vega_spec: %{"metric_name" => "sessions", "chart_type" => "area"}
-        })
-        |> Repo.insert()
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        lv
-        |> element("[data-role='add-visualization-btn']")
-        |> render_click()
-
-        lv
-        |> element("[data-role='library-visualization-option'][phx-value-id='#{library_viz.id}']")
-        |> render_click()
-
-        [data_option_json] =
-          render(lv)
-          |> Floki.parse_document!()
-          |> Floki.find("[data-role='echarts-chart']")
-          |> Floki.attribute("data-option")
-
-        decoded = Jason.decode!(data_option_json)
-
-        assert [series] = decoded["series"]
-        assert Map.has_key?(series, "areaStyle")
-        refute decoded == %{"metric_name" => "sessions", "chart_type" => "area"}
-      end)
-    end
-  end
-
   describe "validates dashboard name on change and shows inline error for blank name" do
     test "validates dashboard name on change and shows inline error for blank name", %{conn: conn} do
       user = user_fixture()
@@ -188,140 +143,27 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     end
   end
 
-  describe "selects a template and applies its visualizations to the canvas" do
-    test "selects a template and applies its visualizations to the canvas", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        lv
-        |> element("[data-role='template-card-marketing_overview']")
-        |> render_click()
-
-        assert has_element?(lv, "[data-role='visualization-card']")
-        refute has_element?(lv, "[data-role='empty-canvas']")
-      end)
-    end
-  end
-
-  describe "clears canvas when blank template is selected" do
-    test "clears canvas when blank template is selected", %{conn: conn} do
-      user = user_fixture()
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        lv |> element("[data-role='template-card-marketing_overview']") |> render_click()
-        assert has_element?(lv, "[data-role='visualization-card']")
-
-        render_click(lv, "clear_canvas", %{})
-        assert has_element?(lv, "[data-role='empty-canvas']")
-      end)
-    end
-  end
-
-  describe "opens metric picker and selects a metric and chart type" do
-    test "opens metric picker and selects a metric and chart type", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        render_click(lv, "open_metric_picker", %{})
-        assert has_element?(lv, "[data-role='metric-picker']")
-
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-
-        html =
-          lv
-          |> element("[data-role='chart-type-selector'] [phx-value-chart_type='bar']")
-          |> render_click()
-
-        assert html =~ "btn-primary"
-      end)
-    end
-  end
-
-  describe "adds a visualization to the canvas from the metric picker" do
-    test "adds a visualization to the canvas from the metric picker", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        render_click(lv, "open_metric_picker", %{})
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        render_click(lv, "add_visualization", %{})
-
-        assert has_element?(lv, "[data-role='visualization-card']")
-      end)
-    end
-  end
-
-  describe "removes a visualization from the canvas" do
-    test "removes a visualization from the canvas", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        render_click(lv, "open_metric_picker", %{})
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        render_click(lv, "add_visualization", %{})
-
-        lv |> element("[aria-label='Remove']") |> render_click()
-
-        assert has_element?(lv, "[data-role='empty-canvas']")
-      end)
-    end
-  end
-
-  describe "reorders visualizations with move up and move down buttons" do
-    test "reorders visualizations with move up and move down buttons", %{conn: conn} do
-      user = user_fixture()
-      insert_editor_test_metrics!(user)
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        render_click(lv, "open_metric_picker", %{})
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        render_click(lv, "add_visualization", %{})
-
-        render_click(lv, "open_metric_picker", %{})
-        lv |> element("[data-role='metric-list'] button", "clicks") |> render_click()
-        render_click(lv, "add_visualization", %{})
-
-        html = render_click(lv, "move_visualization_down", %{"index" => "0"})
-        assert is_binary(html)
-      end)
-    end
-  end
-
   describe "saves dashboard and navigates to show page with success flash" do
     test "saves dashboard and navigates to show page with success flash", %{conn: conn} do
       user = user_fixture()
-      insert_editor_test_metrics!(user)
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{metric_name: "impressions"})
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        render_change(lv, "validate_name", %{"dashboard" => %{"name" => "My New Dashboard"}})
+        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
 
-        render_click(lv, "open_metric_picker", %{})
-        lv |> element("[data-role='metric-list'] button", "sessions") |> render_click()
-        render_click(lv, "add_visualization", %{})
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Show me impressions over time as a line chart"
+        })
+
+        Process.sleep(100)
+        Application.delete_env(:metric_flow, :command_runner)
+
+        render_change(lv, "validate_name", %{"dashboard" => %{"name" => "My New Dashboard"}})
 
         lv |> element("[data-role='save-dashboard-btn']") |> render_click()
 
