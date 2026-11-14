@@ -287,4 +287,53 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
   end
+
+  describe "send_dashboard_chat with no metrics available" do
+    test "shows integration guidance instead of calling the agent", %{conn: conn} do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        html =
+          render_submit(lv, "send_dashboard_chat", %{"message" => "Show me traffic"})
+
+        assert html =~ "No metrics are available yet"
+        refute has_element?(lv, "[data-role='visualization-card']")
+      end)
+    end
+  end
+
+  describe "send_dashboard_chat with metrics available" do
+    test "builds a visualization from the agent's response and shows the exchange in the chat panel",
+         %{conn: conn} do
+      user = user_fixture()
+      insert_metric!(user, %{metric_name: "impressions"})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Show me impressions over time as a line chart"
+        })
+
+        Process.sleep(100)
+        html = render(lv)
+
+        Application.delete_env(:metric_flow, :command_runner)
+
+        assert html =~ "Show me impressions over time as a line chart"
+        assert html =~ "I&#39;ll create a line chart showing impressions over time."
+        assert has_element?(lv, "[data-role='visualization-card']")
+      end)
+    end
+  end
 end

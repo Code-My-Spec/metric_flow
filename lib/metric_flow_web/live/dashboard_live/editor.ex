@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Ai.VizChat
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Metrics
@@ -92,6 +93,60 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           {name_error(@changeset)}
         </p>
       </form>
+
+      <%!-- Build with AI chat --%>
+      <div data-role="dashboard-chat-panel" class="mf-card p-4 mb-6">
+        <h2 class="text-base font-semibold mb-1">Build with AI</h2>
+        <p class="text-sm text-base-content/60 mb-3">
+          Describe the dashboard you want and the agent will add it to the canvas below.
+        </p>
+
+        <div
+          :if={@dashboard_chat_messages != []}
+          data-role="dashboard-chat-messages"
+          class="space-y-2 mb-3 max-h-48 overflow-y-auto"
+        >
+          <div
+            :for={msg <- @dashboard_chat_messages}
+            data-role="dashboard-chat-message"
+            class={[
+              "p-2 rounded text-sm",
+              msg.role == :user && "bg-primary/10",
+              msg.role == :assistant && "bg-base-200"
+            ]}
+          >
+            <p class="font-semibold text-xs mb-1 text-base-content/60">
+              {if msg.role == :user, do: "You", else: "Agent"}
+            </p>
+            <p class="whitespace-pre-wrap">{msg.content}</p>
+          </div>
+        </div>
+
+        <form phx-submit="send_dashboard_chat" data-role="dashboard-chat-form">
+          <div class="flex gap-2">
+            <textarea
+              name="message"
+              data-role="dashboard-chat-input"
+              rows="2"
+              placeholder="e.g. a headline stat, a spend-over-time line chart and a table of campaigns"
+              disabled={@dashboard_chat_generating}
+              class="textarea textarea-bordered textarea-sm flex-1 resize-none"
+            ></textarea>
+            <button
+              type="submit"
+              data-role="dashboard-chat-send-btn"
+              disabled={@dashboard_chat_generating}
+              class={["btn btn-primary btn-sm self-end", @dashboard_chat_generating && "btn-disabled"]}
+            >
+              <span :if={@dashboard_chat_generating} class="loading loading-spinner loading-xs" />
+              <span :if={!@dashboard_chat_generating}>Send</span>
+            </button>
+          </div>
+          <p :if={@dashboard_chat_error} class="text-error text-xs mt-1" data-role="dashboard-chat-error">
+            {@dashboard_chat_error}
+          </p>
+        </form>
+      </div>
 
       <%!-- Visualization count error --%>
       <p :if={@viz_error} class="text-sm text-error mb-4">
@@ -357,6 +412,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
           |> assign(:spec_panel_open_index, nil)
           |> assign(:spec_error, nil)
+          |> assign(:dashboard_chat_messages, [])
+          |> assign(:dashboard_chat_generating, false)
+          |> assign(:dashboard_chat_error, nil)
+          |> assign(:dashboard_chat_context, nil)
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -390,6 +449,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
       |> assign(:spec_panel_open_index, nil)
       |> assign(:spec_error, nil)
+      |> assign(:dashboard_chat_messages, [])
+      |> assign(:dashboard_chat_generating, false)
+      |> assign(:dashboard_chat_error, nil)
+      |> assign(:dashboard_chat_context, nil)
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -589,9 +652,141 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
+  def handle_event("send_dashboard_chat", %{"message" => message}, socket) do
+    case String.trim(message) do
+      "" ->
+        {:noreply, socket}
+
+      trimmed ->
+        send_dashboard_chat_message(socket, trimmed)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Async dashboard chat result handlers
+  # ---------------------------------------------------------------------------
+
+  @impl true
+  def handle_info({ref, {:ok, %{text: text, spec: spec, context: updated_context}}}, socket)
+      when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+
+    assistant_msg = %{role: :assistant, content: text}
+
+    socket =
+      socket
+      |> append_chat_message(assistant_msg)
+      |> assign(:dashboard_chat_context, updated_context)
+      |> assign(:dashboard_chat_generating, false)
+
+    {:noreply, add_visualization_from_chat_spec(socket, spec)}
+  end
+
+  def handle_info({ref, {:error, {:unresolvable_metric, names}}}, socket) when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+
+    error_msg =
+      "I don't have data for #{Enum.join(names, ", ")} yet. Connect that platform in Integrations."
+
+    {:noreply, finish_dashboard_chat_with_error(socket, error_msg)}
+  end
+
+  def handle_info({ref, {:error, reason}}, socket) when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+    require Logger
+    Logger.error("dashboard chat error: #{inspect(reason)}")
+
+    {:noreply, finish_dashboard_chat_with_error(socket, "The agent couldn't build that. Please try again.")}
+  end
+
+  # Reaching here means the task crashed before sending {ref, result} -- a normal
+  # completion is already consumed and demonitor-flushed above.
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
+    require Logger
+    Logger.error("dashboard chat task crashed: #{inspect(reason)}")
+
+    {:noreply, finish_dashboard_chat_with_error(socket, "The AI service is unavailable right now.")}
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp send_dashboard_chat_message(socket, trimmed) do
+    case socket.assigns.available_metrics do
+      [] ->
+        error_msg = "No metrics are available yet. Connect a platform in Integrations to get started."
+
+        socket =
+          socket
+          |> append_chat_message(%{role: :user, content: trimmed})
+          |> append_chat_message(%{role: :assistant, content: error_msg})
+
+        {:noreply, socket}
+
+      metric_names ->
+        context = socket.assigns.dashboard_chat_context
+        runner = Application.get_env(:metric_flow, :command_runner)
+
+        Task.async(fn ->
+          VizChat.send_message(context, trimmed, metric_names: metric_names, command_runner: runner)
+        end)
+
+        socket =
+          socket
+          |> append_chat_message(%{role: :user, content: trimmed})
+          |> assign(:dashboard_chat_generating, true)
+          |> assign(:dashboard_chat_error, nil)
+
+        {:noreply, socket}
+    end
+  end
+
+  defp append_chat_message(socket, message) do
+    assign(socket, :dashboard_chat_messages, socket.assigns.dashboard_chat_messages ++ [message])
+  end
+
+  defp finish_dashboard_chat_with_error(socket, error_msg) do
+    socket
+    |> append_chat_message(%{role: :assistant, content: "Error: #{error_msg}"})
+    |> assign(:dashboard_chat_generating, false)
+    |> assign(:dashboard_chat_error, error_msg)
+  end
+
+  defp add_visualization_from_chat_spec(socket, nil), do: socket
+
+  defp add_visualization_from_chat_spec(socket, spec) do
+    next_position = length(socket.assigns.visualizations)
+
+    new_viz = %{
+      metric_name: extract_chat_metric_name(spec),
+      chart_type: extract_chart_type_from_spec(spec),
+      position: next_position,
+      vega_spec: custom_spec(spec)
+    }
+
+    assign_visualizations(socket, socket.assigns.visualizations ++ [new_viz])
+  end
+
+  defp extract_chat_metric_name(%{"title" => title}) when is_binary(title), do: title
+
+  defp extract_chat_metric_name(spec) do
+    case extract_chat_named_sources(spec) do
+      [name | _] -> name
+      [] -> "Custom"
+    end
+  end
+
+  defp extract_chat_named_sources(%{"data" => %{"name" => name}}), do: [name]
+
+  defp extract_chat_named_sources(%{"layer" => layers}) when is_list(layers) do
+    Enum.flat_map(layers, fn
+      %{"data" => %{"name" => name}} -> [name]
+      _ -> []
+    end)
+  end
+
+  defp extract_chat_named_sources(_), do: []
 
   defp do_save(socket) do
     scope = socket.assigns.current_scope
