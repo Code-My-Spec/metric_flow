@@ -1116,7 +1116,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       refute is_nil(a2ui_spec), "expected dashboard.a2ui_spec to be set after a chat build"
 
       components = a2ui_spec["components"] || []
-      assert length(components) > 0
+      assert components != []
     end)
   end
 
@@ -1147,7 +1147,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       components = a2ui_spec["components"] || []
       chart_or_stat_components = Enum.filter(components, &(&1["type"] in ["chart", "stat"]))
 
-      assert length(chart_or_stat_components) > 0
+      assert chart_or_stat_components != []
 
       for component <- chart_or_stat_components do
         query = component["query"]
