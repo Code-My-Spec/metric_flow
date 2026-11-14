@@ -44,16 +44,19 @@ defmodule MetricFlow.Dashboards.A2ui do
   when none of those apply; `build_chart_render/5` renders `:no_data`
   rather than ever querying with it.
   """
-  @spec component_metric(map()) :: String.t() | nil
-  def component_metric(%{"query" => %{"metric" => metric}}) when is_binary(metric), do: metric
+  @spec component_metric(map(), String.t() | nil) :: String.t() | nil
+  def component_metric(component, fallback \\ nil)
 
-  def component_metric(%{"metric_name" => metric_name}) when is_binary(metric_name),
+  def component_metric(%{"query" => %{"metric" => metric}}, _fallback) when is_binary(metric),
+    do: metric
+
+  def component_metric(%{"metric_name" => metric_name}, _fallback) when is_binary(metric_name),
     do: metric_name
 
-  def component_metric(component) do
+  def component_metric(component, fallback) do
     case named_vega_lite_source(component) do
       [name | _] -> name
-      [] -> nil
+      [] -> fallback
     end
   end
 
@@ -148,13 +151,20 @@ defmodule MetricFlow.Dashboards.A2ui do
   defp echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
   defp echarts_series(_, data), do: %{"type" => "line", "data" => data}
 
-  # A query's value is a float (the metrics table's column type); a table
-  # cell should read like the editor's "4005", not an unformatted
-  # "4005.0" -- rounded to a whole number, same as the stat tile's total,
-  # but without the stat's thousands-separator (a table is many rows, not
-  # one headline figure).
-  defp format_table_value(value) when is_float(value) or is_integer(value) do
-    value |> round() |> Integer.to_string()
+  # A query's value is a float (the metrics table's column type); a whole
+  # number should read "4005", not an unformatted "4005.0", but a
+  # fractional metric needs its precision kept -- up to 2 decimal places
+  # ("0.03", "12.50"), not rounded away to "0" or "12".
+  defp format_table_value(value) when is_integer(value), do: Integer.to_string(value)
+
+  defp format_table_value(value) when is_float(value) do
+    rounded = Float.round(value, 2)
+
+    if rounded - trunc(rounded) == 0.0 do
+      rounded |> trunc() |> Integer.to_string()
+    else
+      :erlang.float_to_binary(rounded, decimals: 2)
+    end
   end
 
   defp format_table_value(value), do: value

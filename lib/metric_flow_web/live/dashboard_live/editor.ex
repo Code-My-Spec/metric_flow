@@ -660,7 +660,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       "id" => "widget-#{viz.position}",
       "type" => a2ui_component_type(viz.chart_type),
       "title" => viz.metric_name,
-      "query" => %{"metric" => chart_metric_key(viz)}
+      "query" => %{
+        "metric" => A2ui.component_metric(Map.get(viz, :vega_spec) || %{}, viz.metric_name)
+      }
     }
 
     case viz.chart_type do
@@ -761,22 +763,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {[], nil}
     end
   end
-
-  defp extract_chat_named_sources(%{"data" => %{"name" => name}}), do: [name]
-
-  # Story 74: an A2UI component binds to a metric via "query" rather than
-  # Vega-Lite's named "data" source -- stashed as the vega_spec field for
-  # a chat-built widget so chart_metric_key/1 can reach it the same way.
-  defp extract_chat_named_sources(%{"query" => %{"metric" => metric}}), do: [metric]
-
-  defp extract_chat_named_sources(%{"layer" => layers}) when is_list(layers) do
-    Enum.flat_map(layers, fn
-      %{"data" => %{"name" => name}} -> [name]
-      _ -> []
-    end)
-  end
-
-  defp extract_chat_named_sources(_), do: []
 
   # Story 74: chat already autosaves every agent-built change -- this button
   # only persists a typed name. It stops short of touching visualizations
@@ -895,27 +881,21 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> assign(:visualizations, visualizations)
     |> assign(
       :chart_render,
-      Enum.map(
-        visualizations,
-        &A2ui.build_chart_render(chart_metric_key(&1), &1.chart_type, scope, date_range, platform)
-      )
+      Enum.map(visualizations, &build_chart_render_for_viz(&1, scope, date_range, platform))
     )
   end
 
   # A template/library-inserted visualization carries no :vega_spec key at
   # all (not even nil) -- Map.get, not a struct-shaped match, so both that
-  # and an explicit nil fall through to the plain metric_name.
-  defp chart_metric_key(%{metric_name: metric_name} = viz) do
-    case Map.get(viz, :vega_spec) do
-      nil ->
-        metric_name
-
-      vega_spec ->
-        case extract_chat_named_sources(vega_spec) do
-          [name | _] -> name
-          [] -> metric_name
-        end
-    end
+  # and an explicit nil fall through to the plain metric_name. Resolves
+  # through the same MetricFlow.Dashboards.A2ui.component_metric/2 the
+  # view page uses, rather than a second copy of this logic (main's
+  # review at b17a6bc) -- viz.metric_name (already resolved when this
+  # dashboard's rows were loaded, see load_visualizations_from_dashboard/1)
+  # is passed as the fallback a show.ex component doesn't have.
+  defp build_chart_render_for_viz(viz, scope, date_range, platform) do
+    metric = A2ui.component_metric(Map.get(viz, :vega_spec) || %{}, viz.metric_name)
+    A2ui.build_chart_render(metric, viz.chart_type, scope, date_range, platform)
   end
 
   # A stored vega_spec in the plain `%{"metric_name" => _, "chart_type" => _}` shape is an
