@@ -126,6 +126,14 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
+  # Story 75, criterion 1078: this list is retired for everyone, so it
+  # never mounts normally -- a free user is sent to checkout rather than
+  # shown an upgrade modal in place of a page that no longer exists.
+  def mount(_params, _session, %{assigns: %{paywall: paywall}} = socket)
+      when not is_nil(paywall) do
+    {:ok, redirect(socket, to: ~p"/app/subscriptions/checkout")}
+  end
+
   # Story 75: the old saved-visualizations list is retired in favor of the
   # one dashboards list at /app/dashboards; /visualizations/new and
   # /visualizations/:id/edit (VisualizationLive.Editor) are untouched.
