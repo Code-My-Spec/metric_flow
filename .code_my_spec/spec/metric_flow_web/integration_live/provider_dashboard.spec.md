@@ -18,7 +18,6 @@ liveview
 
 - MetricFlow.Integrations
 - MetricFlow.Metrics
-- MetricFlow.Reviews
 - MetricFlow.DataSync
 
 ## Components
