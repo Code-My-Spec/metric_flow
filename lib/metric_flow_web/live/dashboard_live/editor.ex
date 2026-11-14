@@ -487,7 +487,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_context, nil)
           |> assign(:dashboard_chat_session_id, chat_session_id)
           |> assign(:dashboard_chat_pending_message, nil)
-          |> assign(:dashboard_versions, Dashboards.list_dashboard_versions(dashboard))
+          |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
           |> assign(:dashboard_date_range, dashboard.date_range || "30")
           |> assign(:page_title, "Edit Dashboard")
 
@@ -712,34 +712,19 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   end
 
   # Story 74, rule 7: restoring an earlier version shows what the dashboard
-  # looked like then, and the restore itself appears as a new version.
+  # looked like then, and the restore itself appears as a new version --
+  # both now backed entirely by paper_trail. A version's item_changes only
+  # carries a2ui_spec when that version actually touched it (an insert
+  # always does; an update does whenever the spec changed); a version with
+  # no a2ui_spec in its diff (a rename, a favorite toggle) has nothing to
+  # restore from, so it's a no-op rather than guessing.
   def handle_event("restore_version", %{"id" => id_str}, socket) do
     id = String.to_integer(id_str)
+    version = Enum.find(socket.assigns.dashboard_versions, &(&1.id == id))
 
-    case Enum.find(socket.assigns.dashboard_versions, &(&1.id == id)) do
-      nil ->
-        {:noreply, socket}
-
-      version ->
-        scope = socket.assigns.current_scope
-        dashboard = socket.assigns.dashboard
-        visualizations = visualizations_from_version(version)
-
-        with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
-             {:ok, dashboard} <-
-               Dashboards.update_dashboard(scope, dashboard, %{
-                 "a2ui_spec" => build_a2ui_spec(visualizations)
-               }) do
-          socket =
-            socket
-            |> assign(:dashboard, dashboard)
-            |> assign_visualizations(visualizations)
-            |> record_dashboard_version(dashboard, visualizations)
-
-          {:noreply, socket}
-        else
-          _ -> {:noreply, socket}
-        end
+    case version && a2ui_spec_from_version(version) do
+      nil -> {:noreply, socket}
+      a2ui_spec -> {:noreply, apply_restored_spec(socket, a2ui_spec)}
     end
   end
 
@@ -905,6 +890,29 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp visualizations_from_a2ui_spec(_a2ui_spec), do: []
 
+  # A paper_trail version's item_changes only carries a2ui_spec when that
+  # version actually touched it (an insert always does; an update does
+  # whenever the spec changed); a version with no a2ui_spec in its diff
+  # (a rename, a favorite toggle) has nothing to restore from.
+  defp a2ui_spec_from_version(%{item_changes: changes}), do: Map.get(changes, "a2ui_spec")
+
+  defp apply_restored_spec(socket, a2ui_spec) do
+    scope = socket.assigns.current_scope
+    dashboard = socket.assigns.dashboard
+    visualizations = visualizations_from_a2ui_spec(a2ui_spec)
+
+    with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
+         {:ok, dashboard} <-
+           Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => a2ui_spec}) do
+      socket
+      |> assign(:dashboard, dashboard)
+      |> assign_visualizations(visualizations)
+      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
+    else
+      _ -> socket
+    end
+  end
+
   defp a2ui_component_title(%{"title" => title}) when is_binary(title), do: title
   defp a2ui_component_title(component), do: get_in(component, ["query", "metric"]) || "Untitled"
 
@@ -938,7 +946,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
            Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => build_a2ui_spec(visualizations)}) do
       socket
       |> assign(:dashboard, dashboard)
-      |> record_dashboard_version(dashboard, visualizations)
+      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
     else
       _ -> socket
     end
@@ -953,7 +961,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
          :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
       socket
       |> assign(:dashboard, dashboard)
-      |> record_dashboard_version(dashboard, visualizations)
+      |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
       |> push_patch(to: ~p"/app/dashboards/#{dashboard.id}/edit")
     else
       _ -> socket
@@ -986,30 +994,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp a2ui_component_type("text"), do: "stat"
   defp a2ui_component_type(_chart_type), do: "chart"
-
-  defp record_dashboard_version(socket, dashboard, visualizations) do
-    case Dashboards.create_dashboard_version(dashboard, visualizations) do
-      {:ok, version} ->
-        assign(socket, :dashboard_versions, [version | socket.assigns.dashboard_versions])
-
-      {:error, _} ->
-        socket
-    end
-  end
-
-  # A version's visualizations round-trip through jsonb as string-keyed maps;
-  # the rest of this module works in the atom-keyed shape `add_visualization_*`
-  # and `load_visualizations_from_dashboard/1` already use.
-  defp visualizations_from_version(%{visualizations: visualizations}) do
-    Enum.map(visualizations, fn viz ->
-      %{
-        metric_name: viz["metric_name"],
-        chart_type: viz["chart_type"],
-        position: viz["position"],
-        vega_spec: viz["vega_spec"]
-      }
-    end)
-  end
 
   # Story 75, criterion 1068: a draft the agent builds (no name typed) is
   # titled from the model's own chosen title (set_dashboard_spec's "title"),
