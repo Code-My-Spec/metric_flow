@@ -644,6 +644,9 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   defp notify_expired_integrations(scope, integrations) do
     Enum.map(integrations, fn integration ->
       cond do
+        not Map.has_key?(@provider_names, integration.provider) ->
+          integration
+
         Integration.expired?(integration) and is_nil(integration.reconnection_notified_at) ->
           IntegrationNotifier.deliver_reconnection_required(
             scope.user.email,
