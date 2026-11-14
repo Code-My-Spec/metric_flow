@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.UserLogsOutFromAnyPageSpex do
 
   spex "User logs out from any page", criterion: 526 do
     scenario "Dana logs out while viewing the accounts page" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "Dana is logged in and viewing the accounts page", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         conn = recycle(logged_in_conn)

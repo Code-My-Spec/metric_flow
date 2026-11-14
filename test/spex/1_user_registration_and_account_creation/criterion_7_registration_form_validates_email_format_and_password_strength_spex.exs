@@ -13,10 +13,12 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       when_ "the user submits the form with an email missing the @ sign", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "invalid-email",
-          password: "ValidPassword123!"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "invalid-email",
+            password: "ValidPassword123!"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -36,10 +38,12 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       when_ "the user submits the form with an empty email address", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "",
-          password: "ValidPassword123!"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "",
+            password: "ValidPassword123!"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -59,10 +63,12 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       when_ "the user submits the form with a password that is too short", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "user@example.com",
-          password: "short"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "user@example.com",
+            password: "short"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -82,10 +88,12 @@ defmodule MetricFlowSpex.RegistrationFormValidationSpex do
 
       when_ "the user submits the form with an empty password", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "user@example.com",
-          password: ""
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "user@example.com",
+            password: ""
+          }
+        )
         |> render_submit()
 
         {:ok, context}

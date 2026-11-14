@@ -58,7 +58,9 @@ defmodule MetricFlow.Repo.Migrations.CreateEntityMetricObservations do
                :measurement_kind,
                :breakdown_type,
                :breakdown_key
-             ], name: :entity_observations_identity)
+             ],
+             name: :entity_observations_identity
+           )
 
     create index(:entity_metric_observations, [:account_id, :metric_name, :report_date])
 

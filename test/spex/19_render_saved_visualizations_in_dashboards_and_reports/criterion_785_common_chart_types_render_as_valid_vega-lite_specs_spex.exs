@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion785CommonChartTypesRenderAsValidSpecsSpex do
 
   spex "Common chart types render as valid Vega-Lite specs", criterion: 785 do
     scenario "a visualization configured as a line, bar, area, or scatter chart renders correctly" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization with a bound metric", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -20,7 +20,8 @@ defmodule MetricFlowSpex.Criterion785CommonChartTypesRenderAsValidSpecsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "each of line, bar, area, and scatter renders as a valid Vega-Lite specification", context do
+      then_ "each of line, bar, area, and scatter renders as a valid Vega-Lite specification",
+            context do
         for chart_type <- ["line", "bar", "area", "scatter"] do
           assert has_element?(context.view, "[phx-value-chart_type='#{chart_type}']"),
                  "Expected a #{chart_type} chart type option to exist"

@@ -57,262 +57,266 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div>
-      <%!-- Header row --%>
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">
-          {page_title_for(@live_action)}
-        </h1>
-        <div class="flex items-center gap-2">
-          <button
-            phx-click="save_dashboard"
-            data-role="save-dashboard-btn"
-            class="btn btn-primary"
-          >
-            Save Dashboard
-          </button>
-          <.link navigate="/app/dashboards" class="btn btn-ghost">Cancel</.link>
-        </div>
-      </div>
-
-      <%!-- Dashboard name field --%>
-      <form phx-change="validate_name" phx-submit="save_dashboard" class="form-control mb-6">
-        <label class="label">
-          <span class="label-text">Dashboard Name</span>
-        </label>
-        <input
-          type="text"
-          name="dashboard[name]"
-          value={@changeset.params["name"] || (@dashboard && @dashboard.name) || ""}
-          data-role="dashboard-name-input"
-          class={["input w-full", has_name_error?(@changeset) && "input-error"]}
-          placeholder="My Dashboard"
-        />
-        <p :if={has_name_error?(@changeset)} class="text-sm text-error mt-1">
-          {name_error(@changeset)}
-        </p>
-      </form>
-
-      <%!-- Visualization count error --%>
-      <p :if={@viz_error} class="text-sm text-error mb-4">
-        {@viz_error}
-      </p>
-
-      <%!-- Template chooser (create route, empty canvas) --%>
-      <div
-        :if={@live_action == :new and @visualizations == []}
-        data-role="template-chooser"
-        class="mb-6"
-      >
-        <p class="text-base-content/60 mb-3">Start from a template or blank canvas</p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div
-            :for={{key, tpl} <- @templates}
-            phx-click="select_template"
-            phx-value-template={key}
-            data-role={"template-card-#{key}"}
-            class={[
-              "mf-card p-4 cursor-pointer",
-              @selected_template == key && "ring-2 ring-primary"
-            ]}
-          >
-            <p class="font-semibold text-sm">{tpl.label}</p>
-            <p class="text-xs text-base-content/60 mt-1">{tpl.description}</p>
-          </div>
-
-          <div
-            phx-click="clear_canvas"
-            phx-confirm="Clear the canvas? All visualizations will be removed."
-            data-role="template-card-blank"
-            class={[
-              "mf-card p-4 cursor-pointer",
-              @selected_template == "blank" && "ring-2 ring-primary"
-            ]}
-          >
-            <p class="font-semibold text-sm">Blank Canvas</p>
-            <p class="text-xs text-base-content/60 mt-1">Start with an empty dashboard</p>
+      <div>
+        <%!-- Header row --%>
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-bold">
+            {page_title_for(@live_action)}
+          </h1>
+          <div class="flex items-center gap-2">
+            <button
+              phx-click="save_dashboard"
+              data-role="save-dashboard-btn"
+              class="btn btn-primary"
+            >
+              Save Dashboard
+            </button>
+            <.link navigate="/app/dashboards" class="btn btn-ghost">Cancel</.link>
           </div>
         </div>
-      </div>
 
-      <%!-- Add Visualization button --%>
-      <button
-        phx-click="open_metric_picker"
-        data-role="add-visualization-btn"
-        class="btn btn-outline btn-sm mb-4"
-      >
-        + Add Visualization
-      </button>
-
-      <%!-- Metric picker panel --%>
-      <div
-        :if={@picker_open}
-        data-role="metric-picker"
-        class="mf-card p-5 mb-6"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold">Add Visualization</h3>
-          <button
-            phx-click="close_metric_picker"
-            data-role="close-metric-picker"
-            aria-label="Close metric picker"
-            class="btn btn-ghost btn-xs"
-          >
-            ✕
-          </button>
-        </div>
-
-        <%!-- Metric list --%>
-        <div data-role="metric-list" class="flex flex-wrap gap-2 mb-4 max-h-40 overflow-y-auto">
-          <button
-            :for={metric <- @available_metrics}
-            phx-click="select_metric"
-            phx-value-metric={metric}
-            class={[
-              "btn btn-sm",
-              @picker_selected_metric == metric && "btn-primary",
-              @picker_selected_metric != metric && "btn-ghost"
-            ]}
-          >
-            {metric}
-          </button>
-          <p :if={@available_metrics == []} class="text-sm text-base-content/60">
-            No metrics available. Connect a platform to get started.
+        <%!-- Dashboard name field --%>
+        <form phx-change="validate_name" phx-submit="save_dashboard" class="form-control mb-6">
+          <label class="label">
+            <span class="label-text">Dashboard Name</span>
+          </label>
+          <input
+            type="text"
+            name="dashboard[name]"
+            value={@changeset.params["name"] || (@dashboard && @dashboard.name) || ""}
+            data-role="dashboard-name-input"
+            class={["input w-full", has_name_error?(@changeset) && "input-error"]}
+            placeholder="My Dashboard"
+          />
+          <p :if={has_name_error?(@changeset)} class="text-sm text-error mt-1">
+            {name_error(@changeset)}
           </p>
-        </div>
+        </form>
 
-        <%!-- Chart type selector --%>
-        <div data-role="chart-type-selector" class="flex items-center gap-2 mb-4">
-          <button
-            :for={type <- @chart_types}
-            phx-click="select_chart_type"
-            phx-value-chart_type={type}
-            class={[
-              "btn btn-sm",
-              @picker_selected_chart_type == type && "btn-primary",
-              @picker_selected_chart_type != type && "btn-ghost"
-            ]}
-          >
-            {String.capitalize(type)}
-          </button>
-        </div>
+        <%!-- Visualization count error --%>
+        <p :if={@viz_error} class="text-sm text-error mb-4">
+          {@viz_error}
+        </p>
 
-        <%!-- Confirm add button --%>
-        <button
-          phx-click="add_visualization"
-          data-role="confirm-add-btn"
-          disabled={is_nil(@picker_selected_metric)}
-          class="btn btn-primary btn-sm"
+        <%!-- Template chooser (create route, empty canvas) --%>
+        <div
+          :if={@live_action == :new and @visualizations == []}
+          data-role="template-chooser"
+          class="mb-6"
         >
-          Add to Dashboard
+          <p class="text-base-content/60 mb-3">Start from a template or blank canvas</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div
+              :for={{key, tpl} <- @templates}
+              phx-click="select_template"
+              phx-value-template={key}
+              data-role={"template-card-#{key}"}
+              class={[
+                "mf-card p-4 cursor-pointer",
+                @selected_template == key && "ring-2 ring-primary"
+              ]}
+            >
+              <p class="font-semibold text-sm">{tpl.label}</p>
+              <p class="text-xs text-base-content/60 mt-1">{tpl.description}</p>
+            </div>
+
+            <div
+              phx-click="clear_canvas"
+              phx-confirm="Clear the canvas? All visualizations will be removed."
+              data-role="template-card-blank"
+              class={[
+                "mf-card p-4 cursor-pointer",
+                @selected_template == "blank" && "ring-2 ring-primary"
+              ]}
+            >
+              <p class="font-semibold text-sm">Blank Canvas</p>
+              <p class="text-xs text-base-content/60 mt-1">Start with an empty dashboard</p>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Add Visualization button --%>
+        <button
+          phx-click="open_metric_picker"
+          data-role="add-visualization-btn"
+          class="btn btn-outline btn-sm mb-4"
+        >
+          + Add Visualization
         </button>
 
-        <%!-- Insert from the visualization library --%>
-        <div :if={@library_visualizations != []} class="mt-4 pt-4 border-t border-base-300">
-          <p class="text-sm font-medium mb-2">Or insert from your visualization library:</p>
-          <div data-role="library-visualization-list" class="flex flex-wrap gap-2">
+        <%!-- Metric picker panel --%>
+        <div
+          :if={@picker_open}
+          data-role="metric-picker"
+          class="mf-card p-5 mb-6"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold">Add Visualization</h3>
             <button
-              :for={viz <- @library_visualizations}
-              phx-click="insert_library_visualization"
-              phx-value-id={viz.id}
-              data-role="library-visualization-option"
-              class="btn btn-sm btn-ghost"
+              phx-click="close_metric_picker"
+              data-role="close-metric-picker"
+              aria-label="Close metric picker"
+              class="btn btn-ghost btn-xs"
             >
-              {viz.name}
+              ✕
             </button>
           </div>
-        </div>
-      </div>
 
-      <%!-- Visualization canvas --%>
-      <div
-        id="visualization-canvas"
-        data-role="visualization-canvas"
-        phx-hook="SortableList"
-        class="space-y-4 mb-6"
-      >
-        <div :if={@visualizations == []} data-role="empty-canvas" class="mf-card p-8 text-center">
-          <p class="text-base-content/60">Add a visualization to get started</p>
-        </div>
-
-        <div
-          :for={{viz, idx} <- Enum.with_index(@visualizations)}
-          data-role="visualization-card"
-          draggable="true"
-          class="mf-card p-4"
-        >
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span data-role="drag-handle" class="cursor-grab text-base-content/40" aria-label="Drag to reorder">
-                ⠿
-              </span>
-              <span class="font-semibold">{viz.metric_name}</span>
-              <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <button
-                phx-click="move_visualization_up"
-                phx-value-index={idx}
-                aria-label="Move up"
-                class="btn btn-ghost btn-xs"
-              >
-                ↑
-              </button>
-              <button
-                phx-click="move_visualization_down"
-                phx-value-index={idx}
-                aria-label="Move down"
-                class="btn btn-ghost btn-xs"
-              >
-                ↓
-              </button>
-              <button
-                phx-click="remove_visualization"
-                phx-value-index={idx}
-                aria-label="Remove"
-                class="btn btn-ghost btn-xs btn-error"
-              >
-                ✕
-              </button>
-              <button
-                phx-click="toggle_card_spec_panel"
-                phx-value-index={idx}
-                data-role="open-spec-panel"
-                aria-label="Edit spec"
-                class="btn btn-ghost btn-xs"
-              >
-                Edit Spec
-              </button>
-            </div>
-          </div>
-
-          <div data-role="chart-preview" class="mt-2 h-32 bg-base-200 rounded overflow-hidden">
-            <div
-              id={"dashboard-chart-#{idx}"}
-              data-role="vega-lite-chart"
-              phx-hook="VegaLite"
-              data-spec={Jason.encode!(Enum.at(@chart_specs, idx))}
-              class="w-full h-full"
-            >
-            </div>
-          </div>
-
-          <div :if={@spec_panel_open_index == idx} data-role="spec-panel" class="mt-2">
-            <textarea
-              name="vega_spec"
-              data-role="vega-spec-textarea"
-              phx-blur="update_card_spec"
-              phx-value-index={idx}
+          <%!-- Metric list --%>
+          <div data-role="metric-list" class="flex flex-wrap gap-2 mb-4 max-h-40 overflow-y-auto">
+            <button
+              :for={metric <- @available_metrics}
+              phx-click="select_metric"
+              phx-value-metric={metric}
               class={[
-                "textarea textarea-bordered w-full font-mono text-xs min-h-[150px]",
-                @spec_error && "textarea-error"
+                "btn btn-sm",
+                @picker_selected_metric == metric && "btn-primary",
+                @picker_selected_metric != metric && "btn-ghost"
               ]}
-            >{Jason.encode!(Enum.at(@chart_specs, idx))}</textarea>
-            <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
+            >
+              {metric}
+            </button>
+            <p :if={@available_metrics == []} class="text-sm text-base-content/60">
+              No metrics available. Connect a platform to get started.
+            </p>
+          </div>
+
+          <%!-- Chart type selector --%>
+          <div data-role="chart-type-selector" class="flex items-center gap-2 mb-4">
+            <button
+              :for={type <- @chart_types}
+              phx-click="select_chart_type"
+              phx-value-chart_type={type}
+              class={[
+                "btn btn-sm",
+                @picker_selected_chart_type == type && "btn-primary",
+                @picker_selected_chart_type != type && "btn-ghost"
+              ]}
+            >
+              {String.capitalize(type)}
+            </button>
+          </div>
+
+          <%!-- Confirm add button --%>
+          <button
+            phx-click="add_visualization"
+            data-role="confirm-add-btn"
+            disabled={is_nil(@picker_selected_metric)}
+            class="btn btn-primary btn-sm"
+          >
+            Add to Dashboard
+          </button>
+
+          <%!-- Insert from the visualization library --%>
+          <div :if={@library_visualizations != []} class="mt-4 pt-4 border-t border-base-300">
+            <p class="text-sm font-medium mb-2">Or insert from your visualization library:</p>
+            <div data-role="library-visualization-list" class="flex flex-wrap gap-2">
+              <button
+                :for={viz <- @library_visualizations}
+                phx-click="insert_library_visualization"
+                phx-value-id={viz.id}
+                data-role="library-visualization-option"
+                class="btn btn-sm btn-ghost"
+              >
+                {viz.name}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Visualization canvas --%>
+        <div
+          id="visualization-canvas"
+          data-role="visualization-canvas"
+          phx-hook="SortableList"
+          class="space-y-4 mb-6"
+        >
+          <div :if={@visualizations == []} data-role="empty-canvas" class="mf-card p-8 text-center">
+            <p class="text-base-content/60">Add a visualization to get started</p>
+          </div>
+
+          <div
+            :for={{viz, idx} <- Enum.with_index(@visualizations)}
+            data-role="visualization-card"
+            draggable="true"
+            class="mf-card p-4"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span
+                  data-role="drag-handle"
+                  class="cursor-grab text-base-content/40"
+                  aria-label="Drag to reorder"
+                >
+                  ⠿
+                </span>
+                <span class="font-semibold">{viz.metric_name}</span>
+                <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button
+                  phx-click="move_visualization_up"
+                  phx-value-index={idx}
+                  aria-label="Move up"
+                  class="btn btn-ghost btn-xs"
+                >
+                  ↑
+                </button>
+                <button
+                  phx-click="move_visualization_down"
+                  phx-value-index={idx}
+                  aria-label="Move down"
+                  class="btn btn-ghost btn-xs"
+                >
+                  ↓
+                </button>
+                <button
+                  phx-click="remove_visualization"
+                  phx-value-index={idx}
+                  aria-label="Remove"
+                  class="btn btn-ghost btn-xs btn-error"
+                >
+                  ✕
+                </button>
+                <button
+                  phx-click="toggle_card_spec_panel"
+                  phx-value-index={idx}
+                  data-role="open-spec-panel"
+                  aria-label="Edit spec"
+                  class="btn btn-ghost btn-xs"
+                >
+                  Edit Spec
+                </button>
+              </div>
+            </div>
+
+            <div data-role="chart-preview" class="mt-2 h-32 bg-base-200 rounded overflow-hidden">
+              <div
+                id={"dashboard-chart-#{idx}"}
+                data-role="vega-lite-chart"
+                phx-hook="VegaLite"
+                data-spec={Jason.encode!(Enum.at(@chart_specs, idx))}
+                class="w-full h-full"
+              >
+              </div>
+            </div>
+
+            <div :if={@spec_panel_open_index == idx} data-role="spec-panel" class="mt-2">
+              <textarea
+                name="vega_spec"
+                data-role="vega-spec-textarea"
+                phx-blur="update_card_spec"
+                phx-value-index={idx}
+                class={[
+                  "textarea textarea-bordered w-full font-mono text-xs min-h-[150px]",
+                  @spec_error && "textarea-error"
+                ]}
+              >{Jason.encode!(Enum.at(@chart_specs, idx))}</textarea>
+              <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -414,7 +418,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     case socket.assigns.visualizations do
       [] ->
         {:noreply,
-         assign(socket, :viz_error, "Please add at least one visualization to save the dashboard.")}
+         assign(
+           socket,
+           :viz_error,
+           "Please add at least one visualization to save the dashboard."
+         )}
 
       _visualizations ->
         do_save(socket)
@@ -443,7 +451,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     {:noreply, assign(socket, :picker_selected_chart_type, type)}
   end
 
-  def handle_event("add_visualization", _params, %{assigns: %{picker_selected_metric: nil}} = socket) do
+  def handle_event(
+        "add_visualization",
+        _params,
+        %{assigns: %{picker_selected_metric: nil}} = socket
+      ) do
     {:noreply, socket}
   end
 

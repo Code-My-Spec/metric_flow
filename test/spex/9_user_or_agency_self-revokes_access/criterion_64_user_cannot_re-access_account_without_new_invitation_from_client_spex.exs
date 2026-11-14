@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserCannotReAccessAccountWithoutNewInvitationFromClient
 
   spex "User cannot re-access account without new invitation from client", criterion: 64 do
     scenario "a user who revoked their own access cannot get back in without a fresh invitation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the member switches into the owner's account", context do
         {:ok, accounts_view, _html} = live(context.member_conn, "/app/accounts")

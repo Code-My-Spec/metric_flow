@@ -10,11 +10,13 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "verify_me@example.com",
-          password: "SecurePassword123!",
-          account_name: "Verify Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "verify_me@example.com",
+            password: "SecurePassword123!",
+            account_name: "Verify Co"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -36,11 +38,13 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "unverified_user@example.com",
-          password: "SecurePassword123!",
-          account_name: "Unverified Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "unverified_user@example.com",
+            password: "SecurePassword123!",
+            account_name: "Unverified Co"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -51,7 +55,8 @@ defmodule MetricFlowSpex.EmailVerificationRequiredSpex do
         {:ok, Map.put(context, :settings_result, result)}
       end
 
-      then_ "the user is redirected to the login page instead of accessing the protected area", context do
+      then_ "the user is redirected to the login page instead of accessing the protected area",
+            context do
         case context.settings_result do
           {:ok, _view, _html} ->
             flunk("Expected redirect to login, but got access to settings page")

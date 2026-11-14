@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion796SpecIsDataFreeAndPopulatedAtRenderTimeSpex 
 
   spex "Visualization spec is data-free and populated at render time", criterion: 796 do
     scenario "a saved visualization bound to one or more metrics is rendered with fresh data, not an embedded spec" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved visualization bound to one or more metrics", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -37,7 +37,8 @@ defmodule MetricFlowSpex.Criterion796SpecIsDataFreeAndPopulatedAtRenderTimeSpex 
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "its spec contains no embedded data values, and the displayed data is fetched and injected at render time from the bound metrics", context do
+      then_ "its spec contains no embedded data values, and the displayed data is fetched and injected at render time from the bound metrics",
+            context do
         chart_html =
           context.view
           |> element("[data-role='vega-lite-chart']")

@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency can configure domain-based auto-enrollment for their email domain", criterion: 23 do
+  spex "Agency can configure domain-based auto-enrollment for their email domain",
+    criterion: 23 do
     scenario "owner sees auto-enrollment configuration section on account settings page" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -25,7 +26,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
     end
 
     scenario "owner can enter an email domain and save auto-enrollment settings" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -34,9 +35,11 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
       when_ "the owner enters their company email domain and submits the form", context do
         context.view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: "myagency.com"
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: "myagency.com"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -49,7 +52,7 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
     end
 
     scenario "after saving, the configured domain is displayed on the settings page" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -58,9 +61,11 @@ defmodule MetricFlowSpex.AgencyCanConfigureDomainBasedAutoEnrollmentForTheirEmai
 
       when_ "the owner saves the domain myagency.com for auto-enrollment", context do
         context.view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: "myagency.com"
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: "myagency.com"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

@@ -6,17 +6,18 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
 
   spex "When client accesses via main domain they see default branding", criterion: 261 do
     scenario "client visiting via main domain sees default MetricFlow branding" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account is originated by an agency with white-label config", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "agencymain",
-          logo_url: "https://example.com/agency-logo.png",
-          primary_color: "#AA1122",
-          secondary_color: "#22AA11"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "agencymain",
+            logo_url: "https://example.com/agency-logo.png",
+            primary_color: "#AA1122",
+            secondary_color: "#22AA11"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -51,7 +52,7 @@ defmodule MetricFlowSpex.ClientSeesDefaultBrandingViaMainDomainSpex do
     end
 
     scenario "default branding uses standard colors without agency customization" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client navigates to the dashboard on the main domain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

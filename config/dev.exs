@@ -103,4 +103,3 @@ config :swoosh, :api_client, false
 
 # Let paywalled features be used in dev without an active subscription.
 config :metric_flow, :paywall_enabled, false
-

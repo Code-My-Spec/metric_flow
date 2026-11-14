@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.IncorrectPasswordBlocksDeletionSpex do
 
   spex "Incorrect password blocks deletion", criterion: 546 do
     scenario "owner confirms the account name but enters an incorrect password" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex has confirmed the account name", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -15,10 +15,12 @@ defmodule MetricFlowSpex.IncorrectPasswordBlocksDeletionSpex do
 
       when_ "Alex enters an incorrect password", context do
         context.view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: "TotallyWrongPassword123!"
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: "TotallyWrongPassword123!"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

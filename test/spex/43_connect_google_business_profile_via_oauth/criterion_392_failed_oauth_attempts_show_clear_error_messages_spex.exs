@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Failed OAuth attempts show clear error messages", fail_on_error_logs: false, criterion: 392 do
+  spex "Failed OAuth attempts show clear error messages",
+    fail_on_error_logs: false,
+    criterion: 392 do
     scenario "OAuth callback with access_denied error shows not-connected state on the detail page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the user arrives at the callback with an access_denied error", context do
         capture_log(fn ->
@@ -36,7 +38,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
     end
 
     scenario "OAuth callback with invalid state token results in not-connected state" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the user arrives at the callback with an invalid CSRF state token", context do
         capture_log(fn ->
@@ -58,7 +60,7 @@ defmodule MetricFlowSpex.Criterion4852FailedOAuthAttemptsShowClearErrorMessagesS
     end
 
     scenario "Google Business detail page always shows an entry point to re-attempt OAuth" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       then_ "the detail page renders an OAuth entry point or a not-configured notice", context do
         {:ok, view, html} = live(context.owner_conn, "/app/integrations/connect/google_business")

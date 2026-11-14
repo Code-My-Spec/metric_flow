@@ -5,10 +5,10 @@ defmodule MetricFlowSpex.Criterion1013NoTransactionDayStoredAsZeroValueRecordSpe
   import MetricFlowSpex.SharedGivens
 
   spex "A day with no transactions is stored as a zero-value record rather than leaving a gap, so correlation calculations have continuous daily data",
-       criterion: 1013 do
+    criterion: 1013 do
     scenario "a QuickBooks account had no transactions on a given day" do
-      given_ :user_logged_in_as_owner
-      given_ :with_quickbooks_sync_stub
+      given_(:user_logged_in_as_owner)
+      given_(:with_quickbooks_sync_stub)
 
       given_ "a QuickBooks income account had no transactions on a given day", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,

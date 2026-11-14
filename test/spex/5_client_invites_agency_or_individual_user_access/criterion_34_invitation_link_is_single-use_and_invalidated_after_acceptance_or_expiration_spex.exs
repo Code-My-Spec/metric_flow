@@ -8,8 +8,8 @@ defmodule MetricFlowSpex.Criterion34InvitationLinkIsSingleUseAndInvalidatedAfter
   spex "Invitation link is single-use and invalidated after acceptance or expiration",
     criterion: 34 do
     scenario "an invitation link cannot be reused after it has already been accepted" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user, who accepts it", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.Criterion34InvitationLinkIsSingleUseAndInvalidatedAfter
     end
 
     scenario "an expired invitation link cannot be used" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner sends an invitation that has since expired", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

@@ -11,8 +11,8 @@ defmodule MetricFlowSpex.Criterion898TransferCompletesOnlyAfterEmailConfirmation
 
   spex "Transfer completes only after email confirmation", criterion: 898 do
     scenario "the new owner has not yet confirmed via email" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "a transfer invitation has been sent", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

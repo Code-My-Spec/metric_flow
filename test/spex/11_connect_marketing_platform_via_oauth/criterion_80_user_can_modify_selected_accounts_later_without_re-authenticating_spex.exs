@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
 
   spex "User can modify selected accounts later without re-authenticating", criterion: 80 do
     scenario "user can access account selection without OAuth re-authentication" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integration connect page for Google", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
     end
 
     scenario "user can edit account selection on an existing integration" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -41,7 +41,7 @@ defmodule MetricFlowSpex.UserCanModifySelectedAccountsLaterWithoutReAuthenticati
     end
 
     scenario "modify accounts page provides account selection without OAuth prompt" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to modify accounts for a connected provider", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")

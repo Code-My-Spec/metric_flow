@@ -7,9 +7,10 @@ defmodule MetricFlowSpex.Criterion893ClientInvitesMultiplePartiesWithDifferentAc
 
   spex "Client invites multiple parties with different access levels", criterion: 893 do
     scenario "a client grants different access to an agency and an individual in separate invitations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      when_ "they send invitations to an agency with account manager access and an individual with read-only access", context do
+      when_ "they send invitations to an agency with account manager access and an individual with read-only access",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view

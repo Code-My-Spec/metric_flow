@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UsersOnDifferentAccountsCannotSeeEachOthersDataSpex do
 
   spex "Users on different accounts cannot see each other's data", criterion: 540 do
     scenario "a user from one account cannot view another account's data" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a completely separate user registers their own account", context do
         email = "separate#{System.unique_integer([:positive])}@example.com"
@@ -15,21 +15,25 @@ defmodule MetricFlowSpex.UsersOnDifferentAccountsCannotSeeEachOthersDataSpex do
         {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Separate Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Separate Account"
+          }
+        )
         |> render_submit()
 
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         separate_conn = build_conn() |> then(&submit_form(login_form, &1)) |> recycle()
 

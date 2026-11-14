@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion853OnlyCorrelationsAboveTheMinimumThresholdAre
 
   spex "Only correlations above the minimum threshold are shown", criterion: 853 do
     scenario "correlations of varying strength are filtered to only those above 0.3" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "calculated correlations of varying strength", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -36,9 +36,15 @@ defmodule MetricFlowSpex.Criterion853OnlyCorrelationsAboveTheMinimumThresholdAre
       end
 
       then_ "only correlations with an absolute value greater than 0.3 are included", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='above_threshold']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='above_threshold']"
+               )
 
-        refute has_element?(context.view, "[data-role='correlation-row'][data-metric='below_threshold']"),
+        refute has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='below_threshold']"
+               ),
                "Expected the correlation with |coefficient| <= 0.3 to be excluded"
 
         {:ok, context}

@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.Criterion964NoCustomerIdConfiguredFailsRatherThanSilent
   import MetricFlowSpex.SharedGivens
 
   spex "An integration with no Google Ads customer ID configured fails to sync with a clear error rather than being silently skipped",
-       fail_on_error_logs: false, criterion: 964 do
+    fail_on_error_logs: false,
+    criterion: 964 do
     scenario "a Google Ads integration has no customer ID configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a Google Ads integration has no customer ID configured", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)

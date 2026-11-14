@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Account owner can view all users in their account with their access levels", criterion: 19 do
+  spex "Account owner can view all users in their account with their access levels",
+    criterion: 19 do
     scenario "owner sees themselves listed as owner on the members page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -27,17 +28,19 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
     end
 
     scenario "owner sees all invited members with their roles" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited a second user as admin", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -59,7 +62,7 @@ defmodule MetricFlowSpex.AccountOwnerCanViewAllUsersWithAccessLevelsSpex do
     end
 
     scenario "members page shows member information" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")

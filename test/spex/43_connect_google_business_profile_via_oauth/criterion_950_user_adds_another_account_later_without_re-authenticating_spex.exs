@@ -6,12 +6,12 @@ defmodule MetricFlowSpex.UserAddsAnotherAccountLaterWithoutReAuthenticatingSpex 
 
   spex "User adds another account later without re-authenticating", criterion: 950 do
     scenario "revisiting the accounts page and adding another account does not require OAuth again" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user already has one GMB account connected, with a second account also accessible",
              context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

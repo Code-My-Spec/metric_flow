@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.DirectUrlAccessToAPaywalledRouteIsBlockedForFreeUsersSp
 
   spex "Direct URL access to a paywalled route is blocked for free users", criterion: 504 do
     scenario "Dana pastes the direct URL for Visualizations into her browser" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "she pastes the direct URL for Visualizations into her browser", context do
         result = live(context.owner_conn, "/app/visualizations")

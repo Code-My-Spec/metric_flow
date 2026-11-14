@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
   ]
 
   spex "Legacy singular field migration shows pre-selected account",
-       fail_on_error_logs: false, criterion: 389 do
+    fail_on_error_logs: false,
+    criterion: 389 do
     scenario "user with legacy singular google_business_account_id can access the accounts page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a google_business integration with legacy singular account id", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -39,7 +40,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
       end
 
       then_ "the accounts page loads without crashing for legacy data", context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -50,14 +51,14 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end
 
       then_ "the save button is present so the user can confirm a selection, with the legacy account pre-selected",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -73,7 +74,7 @@ defmodule MetricFlowSpex.Criterion4849LegacySingularFieldMigrationShowsPreselect
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end

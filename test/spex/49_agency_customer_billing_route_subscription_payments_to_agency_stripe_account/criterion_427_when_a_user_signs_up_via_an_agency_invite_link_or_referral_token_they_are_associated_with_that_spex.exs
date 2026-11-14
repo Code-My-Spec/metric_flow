@@ -8,13 +8,16 @@ defmodule MetricFlowSpex.AgencyUserAssociatedViaInviteSpex do
   alias MetricFlow.Agencies
   alias MetricFlow.Users.Scope
 
-  spex "User who signs up via an agency invite link is associated with that agency", criterion: 427 do
+  spex "User who signs up via an agency invite link is associated with that agency",
+    criterion: 427 do
     scenario "a new user registers through the agency's referral link" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       when_ "a new user registers via the owner's referral link", context do
-        owner_scope = Scope.for_user(MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email))
+        owner_scope =
+          Scope.for_user(MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email))
+
         owner_account_id = Accounts.get_personal_account_id(owner_scope)
         token = Agencies.generate_referral_token(owner_account_id)
 

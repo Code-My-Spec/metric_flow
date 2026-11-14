@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AgencyCustomersShownAgencyPlansSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency customers see the agency's plans on checkout, not the platform default", criterion: 428 do
+  spex "Agency customers see the agency's plans on checkout, not the platform default",
+    criterion: 428 do
     scenario "agency customer visits checkout page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the checkout page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")

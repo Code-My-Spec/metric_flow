@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.Criterion4847EachSelectedAccountDisplayedWithNameAndIdS
   import MetricFlowSpex.SharedGivens
 
   spex "Each selected account is displayed with its account name and account ID",
-       fail_on_error_logs: false, criterion: 387 do
+    fail_on_error_logs: false,
+    criterion: 387 do
     scenario "Google Business account selection page shows account names and IDs" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)

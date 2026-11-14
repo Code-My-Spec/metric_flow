@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion833AcceptanceGrantsTheSpecifiedAccessLevelSpex
 
   spex "Acceptance grants the specified access level", criterion: 833 do
     scenario "accepting an invitation grants the invitee the role it specified" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited the second user as account manager", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -50,7 +50,8 @@ defmodule MetricFlowSpex.Criterion833AcceptanceGrantsTheSpecifiedAccessLevelSpex
       end
 
       when_ "the second user accepts the invitation", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/invitations/#{context.invitation_token}")
+        {:ok, view, _html} =
+          live(context.invitee_conn, "/invitations/#{context.invitation_token}")
 
         view
         |> element("[data-role=accept-btn]")

@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
 
   import MetricFlowSpex.SharedGivens
 
-  spex "GA4 metrics are mapped to canonical metric names in the cross-platform metric taxonomy (e.g., GA4 'sessions' maps to canonical 'sessions')", criterion: 300 do
+  spex "GA4 metrics are mapped to canonical metric names in the cross-platform metric taxonomy (e.g., GA4 'sessions' maps to canonical 'sessions')",
+    criterion: 300 do
     scenario "a successful GA4 sync appears in sync history, indicating metric mapping completed successfully" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,18 +15,24 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
       end
 
       when_ "a GA4 sync completion event is broadcast indicating metrics were synced", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
       end
 
-      then_ "the sync history shows a Google Analytics success entry with records synced", context do
+      then_ "the sync history shows a Google Analytics success entry with records synced",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",
@@ -42,7 +49,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
     end
 
     scenario "a GA4 sync failure due to metric mapping error appears in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -50,16 +57,22 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
       end
 
       when_ "a GA4 sync failure event with a metric mapping error is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "Metric mapping failed: unknown canonical name for ga4:customMetric1"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "Metric mapping failed: unknown canonical name for ga4:customMetric1"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
       end
 
-      then_ "the sync history shows a failed Google Analytics entry with the mapping error", context do
+      then_ "the sync history shows a failed Google Analytics entry with the mapping error",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",
@@ -73,7 +86,7 @@ defmodule MetricFlowSpex.Ga4MetricsAreMappedToCanonicalMetricNamesInTheCrossPlat
     end
 
     scenario "the sync history page is accessible by an authenticated owner" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")

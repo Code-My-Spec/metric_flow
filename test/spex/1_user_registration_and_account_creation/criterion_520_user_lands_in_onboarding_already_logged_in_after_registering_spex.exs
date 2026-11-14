@@ -8,11 +8,13 @@ defmodule MetricFlowSpex.UserLandsInOnboardingAfterRegisteringSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "onboard_now_dana@example.com",
-          password: "SecurePassword123!",
-          account_name: "Dana Onboard Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "onboard_now_dana@example.com",
+            password: "SecurePassword123!",
+            account_name: "Dana Onboard Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

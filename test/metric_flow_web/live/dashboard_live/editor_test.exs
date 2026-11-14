@@ -30,7 +30,9 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   # ---------------------------------------------------------------------------
 
   describe "renders new dashboard editor with name field, template chooser, and save button" do
-    test "renders new dashboard editor with name field, template chooser, and save button", %{conn: conn} do
+    test "renders new dashboard editor with name field, template chooser, and save button", %{
+      conn: conn
+    } do
       user = user_fixture()
       conn = log_in_user(conn, user)
 

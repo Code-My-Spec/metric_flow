@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4084ArrangeVisualizationsSpex do
 
   spex "User can arrange visualizations in layout", criterion: 152 do
     scenario "user can reorder visualizations with move up/down controls" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user has a dashboard with multiple visualizations from a template", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

@@ -4,16 +4,18 @@ defmodule MetricFlowSpex.PaywalledRoutesRedirectFreeUsersSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Paywalled routes return 402 or redirect with a flash message when accessed via direct URL by free users", criterion: 412 do
+  spex "Paywalled routes return 402 or redirect with a flash message when accessed via direct URL by free users",
+    criterion: 412 do
     scenario "free user directly navigates to the visualizations page and is redirected or shown an upgrade prompt" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates directly to the visualizations page via URL", context do
         result = live(context.owner_conn, "/app/visualizations")
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the user is either redirected with a flash message or shown an upgrade prompt on the page", context do
+      then_ "the user is either redirected with a flash message or shown an upgrade prompt on the page",
+            context do
         case context.result do
           {:ok, view, _html} ->
             html = render(view)

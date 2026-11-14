@@ -5,12 +5,14 @@ defmodule MetricFlowSpex.Criterion983ReviewSyncHasNoBackfillWindowSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Unlike the ad-platform and financial integrations, review sync does not use a backfill window",
-       criterion: 983 do
+    criterion: 983 do
     scenario "a Google Business Profile location's first review sync is not marked as an initial backfill" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a Google Business Profile location has never synced reviews before", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews,
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_business_reviews,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 
@@ -24,7 +26,8 @@ defmodule MetricFlowSpex.Criterion983ReviewSyncHasNoBackfillWindowSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the reviews entry completes successfully without an Initial Sync backfill marker, since the full history is retrieved every time", context do
+      then_ "the reviews entry completes successfully without an Initial Sync backfill marker, since the full history is retrieved every time",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserInsertsASavedVisualizationFromTheLibraryIntoAReport
 
   spex "User inserts a saved visualization from the library into a report", criterion: 933 do
     scenario "inserting a library visualization renders it inline in the report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user editing a custom report and a saved visualization in the visualization library",
              context do
@@ -28,7 +28,9 @@ defmodule MetricFlowSpex.UserInsertsASavedVisualizationFromTheLibraryIntoAReport
 
       when_ "they insert that visualization into the report", context do
         context.view
-        |> element("[data-role='library-visualization-option'][phx-value-id='#{context.visualization.id}']")
+        |> element(
+          "[data-role='library-visualization-option'][phx-value-id='#{context.visualization.id}']"
+        )
         |> render_click()
 
         {:ok, context}

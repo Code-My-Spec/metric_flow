@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion816ReportsListSortedByLastModifiedSpex do
 
   spex "Reports list is sorted by last modified date", criterion: 816 do
     scenario "reports modified at different times are ordered by last modified date" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user has saved reports modified at different times", context do
         {:ok, first_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -41,12 +41,15 @@ defmodule MetricFlowSpex.Criterion816ReportsListSortedByLastModifiedSpex do
 
         {:ok, html} =
           (fn ->
-            {:ok, _view, html} = live(context.owner_conn, "/app/reports")
-            {:ok, html}
-          end).()
+             {:ok, _view, html} = live(context.owner_conn, "/app/reports")
+             {:ok, html}
+           end).()
 
         pairs =
-          Regex.scan(~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s, html)
+          Regex.scan(
+            ~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s,
+            html
+          )
 
         [first_id, _] = Enum.find(pairs, fn [_, _id, name] -> name == "First Saved" end) |> tl()
 

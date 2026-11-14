@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion891InvitationLinkIsSingleUseSpex do
 
   spex "Invitation link is single-use", criterion: 891 do
     scenario "an accepted invitation link cannot be used a second time by anyone" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "an invitation has been accepted", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

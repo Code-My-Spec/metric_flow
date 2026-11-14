@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion827ClientSeesDefaultBrandingViaMainDomainSpex 
 
   spex "Client sees default branding via the main domain", criterion: 827 do
     scenario "a client whose account was originated by an agency sees default branding on the main domain" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client whose account was originated by an agency", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
@@ -24,7 +24,8 @@ defmodule MetricFlowSpex.Criterion827ClientSeesDefaultBrandingViaMainDomainSpex 
         {:ok, context}
       end
 
-      when_ "they access the system via the main domain instead of the agency's subdomain", context do
+      when_ "they access the system via the main domain instead of the agency's subdomain",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
         {:ok, Map.put(context, :view, view)}
       end

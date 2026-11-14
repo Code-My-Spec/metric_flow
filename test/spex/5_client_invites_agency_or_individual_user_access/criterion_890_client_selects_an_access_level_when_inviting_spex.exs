@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion890ClientSelectsAnAccessLevelWhenInvitingSpex 
 
   spex "Client selects an access level when inviting", criterion: 890 do
     scenario "a client sending an invitation is offered read-only, account manager, and admin" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "they choose an access level", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

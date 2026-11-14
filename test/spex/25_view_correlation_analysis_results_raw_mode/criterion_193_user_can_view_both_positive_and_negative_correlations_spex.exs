@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion193UserCanViewBothPositiveAndNegativeCorrelati
 
   spex "User can view both positive and negative correlations", criterion: 193 do
     scenario "a user viewing Raw mode sees both positive and negative correlations" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a positive and a negative correlation have both been calculated", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -31,8 +31,16 @@ defmodule MetricFlowSpex.Criterion193UserCanViewBothPositiveAndNegativeCorrelati
       end
 
       then_ "both the positive and the negative correlation are visible", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='positive_metric']")
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='negative_metric']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='positive_metric']"
+               )
+
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='negative_metric']"
+               )
+
         {:ok, context}
       end
     end

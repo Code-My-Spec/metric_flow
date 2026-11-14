@@ -158,7 +158,11 @@ defmodule MetricFlowWeb.AccountLive.Members do
           </div>
 
           <%!-- Agency access grants — shown to everyone with access to this account --%>
-          <div :if={@agency_grants != []} class="card bg-base-100 shadow" data-role="agency-access-list">
+          <div
+            :if={@agency_grants != []}
+            class="card bg-base-100 shadow"
+            data-role="agency-access-list"
+          >
             <div class="card-body p-0">
               <div class="overflow-x-auto">
                 <table class="table w-full">

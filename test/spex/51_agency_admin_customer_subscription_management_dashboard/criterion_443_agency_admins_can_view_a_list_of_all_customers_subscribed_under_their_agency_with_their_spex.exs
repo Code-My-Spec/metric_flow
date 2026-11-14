@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency admins can view a list of all customers subscribed under their agency", criterion: 443 do
+  spex "Agency admins can view a list of all customers subscribed under their agency",
+    criterion: 443 do
     scenario "agency admin navigates to the subscriptions page and sees the customer list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       when_ "the admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")
@@ -25,6 +26,7 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
         # Status column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Status" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
 
@@ -33,14 +35,17 @@ defmodule MetricFlowSpex.AgencyAdminsViewCustomerSubscriptionsSpex do
         # Plan column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Plan" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
 
       then_ "the list includes subscription start date column", context do
         html = render(context.view)
+
         # Start Date column shown in table when subscriptions exist; otherwise page shows empty state
         assert html =~ "Start Date" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
     end

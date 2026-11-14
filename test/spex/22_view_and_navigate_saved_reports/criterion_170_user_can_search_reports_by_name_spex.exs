@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion170UserCanSearchReportsByNameSpex do
 
   spex "User can search reports by name", criterion: 170 do
     scenario "searching by a report's name filters the visible reports" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the user has two saved reports with different names", context do
         {:ok, view_a, _html} = live(context.owner_conn, "/app/visualizations/new")

@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
 
   spex "All user access grants to this account are revoked", criterion: 271 do
     scenario "after account deletion, a member no longer sees the account in their accounts list" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the second user has been invited as a member of the owner's account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "account_manager"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "account_manager"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -26,10 +28,12 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -39,11 +43,13 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
@@ -59,17 +65,19 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
     end
 
     scenario "after account deletion, a member cannot access the deleted account" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the second user has been invited as a member of the owner's account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "account_manager"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "account_manager"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -79,10 +87,12 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -92,11 +102,13 @@ defmodule MetricFlowSpex.AllUserAccessGrantsToThisAccountAreRevokedSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)

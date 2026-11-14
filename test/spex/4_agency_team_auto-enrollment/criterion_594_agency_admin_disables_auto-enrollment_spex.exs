@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyAdminDisablesAutoEnrollmentSpex do
 
   spex "Agency admin disables auto-enrollment", criterion: 594 do
     scenario "disabling auto-enrollment stops new matching-domain registrations from being enrolled" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "auto-enrollment is currently enabled for the agency's domain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

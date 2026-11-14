@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion822ReopeningRestoresLastViewedDateRangeSpex do
 
   spex "Reopening a report restores its last-viewed date range", criterion: 822 do
     scenario "reopening a report later shows the same date range selected previously" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user previously viewed a report with a specific date range selected", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -45,7 +45,8 @@ defmodule MetricFlowSpex.Criterion822ReopeningRestoresLastViewedDateRangeSpex do
         {:ok, Map.put(context, :view, second_view)}
       end
 
-      then_ "it shows the same date range that was selected the last time it was viewed", context do
+      then_ "it shows the same date range that was selected the last time it was viewed",
+            context do
         assert context.view
                |> element("[phx-value-range='last_7_days'].btn-primary")
                |> has_element?()

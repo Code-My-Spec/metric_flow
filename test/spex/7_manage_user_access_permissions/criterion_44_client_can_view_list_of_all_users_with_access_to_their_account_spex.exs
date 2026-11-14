@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
 
   spex "Client can view list of all users with access to their account", criterion: 44 do
     scenario "owner navigates to members page and sees the members list" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the account members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -30,17 +30,19 @@ defmodule MetricFlowSpex.ClientCanViewListOfAllUsersWithAccessToTheirAccountSpex
     end
 
     scenario "owner sees multiple users after inviting a member" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user to their account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}

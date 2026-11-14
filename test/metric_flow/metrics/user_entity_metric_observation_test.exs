@@ -40,7 +40,8 @@ defmodule MetricFlow.Metrics.UserEntityMetricObservationTest do
     user = user_fixture()
     observation = %UserEntityMetricObservation{user_id: user.id}
 
-    assert {:ok, _} = observation |> UserEntityMetricObservation.changeset(@attrs) |> Repo.insert()
+    assert {:ok, _} =
+             observation |> UserEntityMetricObservation.changeset(@attrs) |> Repo.insert()
 
     assert {:error, changeset} =
              observation

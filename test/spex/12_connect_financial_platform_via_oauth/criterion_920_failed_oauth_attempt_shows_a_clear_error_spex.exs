@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.FailedOauthAttemptShowsAClearErrorSpex do
 
   spex "Failed OAuth attempt shows a clear error", fail_on_error_logs: false, criterion: 920 do
     scenario "a user's OAuth attempt fails because they deny access" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user's OAuth attempt fails (they deny access)", context do
         capture_log(fn ->

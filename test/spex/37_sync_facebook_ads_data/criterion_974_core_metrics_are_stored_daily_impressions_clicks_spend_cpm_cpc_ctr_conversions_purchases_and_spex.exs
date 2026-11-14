@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.Criterion974CoreMetricsStoredDailySpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Core metrics are stored daily: impressions, clicks, spend, CPM, CPC, CTR, conversions (purchases and off-site conversions), and conversion rate",
-       criterion: 974 do
+    criterion: 974 do
     scenario "a Facebook Ads account with campaign activity syncs its core metrics" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client has a connected Facebook Ads account with campaign activity", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads,
@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.Criterion974CoreMetricsStoredDailySpex do
         {:ok, context}
       end
 
-      given_ :with_facebook_ads_sync_stub
+      given_(:with_facebook_ads_sync_stub)
 
       when_ "the sync runs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -26,7 +26,8 @@ defmodule MetricFlowSpex.Criterion974CoreMetricsStoredDailySpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "impressions, clicks, spend, CPM, CPC, CTR, conversions, and conversion rate are stored for the day", context do
+      then_ "impressions, clicks, spend, CPM, CPC, CTR, conversions, and conversion rate are stored for the day",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

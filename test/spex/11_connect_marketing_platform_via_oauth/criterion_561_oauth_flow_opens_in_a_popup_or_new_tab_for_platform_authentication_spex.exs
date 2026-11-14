@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInAPopupOrNewTabForPlatformAuthentication
 
   spex "OAuth flow opens in a popup or new tab for platform authentication", criterion: 561 do
     scenario "Dana starts the OAuth flow for Facebook Ads and it opens in a popup or new tab" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Dana starts the OAuth flow for Facebook Ads", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/facebook_ads")

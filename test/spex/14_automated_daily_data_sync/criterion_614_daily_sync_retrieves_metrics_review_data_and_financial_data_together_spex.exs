@@ -4,13 +4,20 @@ defmodule MetricFlowSpex.DailySyncRetrievesMetricsReviewAndFinancialDataTogether
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Daily sync retrieves metrics, review data, and financial data together", fail_on_error_logs: false, criterion: 614 do
+  spex "Daily sync retrieves metrics, review data, and financial data together",
+    fail_on_error_logs: false,
+    criterion: 614 do
     scenario "a single daily sync run covers marketing, review, and financial integrations together" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "an account with marketing, review, and financial integrations", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews)
+
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_business_reviews
+        )
+
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
         {:ok, context}
       end

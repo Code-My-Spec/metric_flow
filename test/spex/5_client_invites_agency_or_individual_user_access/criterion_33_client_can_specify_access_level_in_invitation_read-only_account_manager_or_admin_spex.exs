@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.Criterion33ClientCanSpecifyAccessLevelInInvitationSpex 
   spex "Client can specify access level in invitation: read-only, account manager, or admin",
     criterion: 33 do
     scenario "the invitation form offers read-only, account manager, and admin as access levels" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the owner opens the invitation form", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -24,7 +24,7 @@ defmodule MetricFlowSpex.Criterion33ClientCanSpecifyAccessLevelInInvitationSpex 
     end
 
     scenario "the owner can send an invitation at the admin access level" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the owner sends an invitation with the admin access level selected", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

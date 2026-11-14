@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion819ClickingReportOpensFullViewSpex do
 
   spex "Clicking a report opens its full view", criterion: 819 do
     scenario "a user viewing the reports list clicks a report and it opens" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user viewing the reports list", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")

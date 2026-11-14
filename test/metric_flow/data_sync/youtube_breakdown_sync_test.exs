@@ -71,7 +71,9 @@ defmodule MetricFlow.DataSync.YouTubeBreakdownSyncTest do
       context.channel,
       @first,
       @today,
-      @fetched, http_plug: plug)
+      @fetched,
+      http_plug: plug
+    )
   end
 
   test "all five breakdowns persist independently and stay out of channel totals", context do

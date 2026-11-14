@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion871AiProvidesAnActionableRecommendationFromASt
 
   spex "AI provides an actionable recommendation from a strong correlation", criterion: 871 do
     scenario "Google Ads spend shows a 0.85 correlation with revenue and AI Suggestions analyzes it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "Google Ads spend shows a 0.85 correlation with revenue", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -34,7 +34,8 @@ defmodule MetricFlowSpex.Criterion871AiProvidesAnActionableRecommendationFromASt
         {:ok, context}
       end
 
-      then_ "it provides an actionable recommendation such as increasing Google Ads budget", context do
+      then_ "it provides an actionable recommendation such as increasing Google Ads budget",
+            context do
         html = render(context.view)
 
         has_actionable_recommendation =

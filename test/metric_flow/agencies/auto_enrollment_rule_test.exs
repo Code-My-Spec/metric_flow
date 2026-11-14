@@ -150,7 +150,9 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
 
     test "accepts email_domain with subdomains (e.g., \"mail.example.com\")" do
       account = account_fixture()
-      attrs = Map.put(valid_auto_enrollment_rule_attrs(account.id), :email_domain, "mail.example.com")
+
+      attrs =
+        Map.put(valid_auto_enrollment_rule_attrs(account.id), :email_domain, "mail.example.com")
 
       changeset = AutoEnrollmentRule.changeset(new_rule(), attrs)
 
@@ -159,7 +161,9 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
 
     test "accepts email_domain with hyphens (e.g., \"my-company.com\")" do
       account = account_fixture()
-      attrs = Map.put(valid_auto_enrollment_rule_attrs(account.id), :email_domain, "my-company.com")
+
+      attrs =
+        Map.put(valid_auto_enrollment_rule_attrs(account.id), :email_domain, "my-company.com")
 
       changeset = AutoEnrollmentRule.changeset(new_rule(), attrs)
 
@@ -170,7 +174,9 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
       account = account_fixture()
 
       for level <- [:read_only, :account_manager, :admin] do
-        attrs = Map.put(valid_auto_enrollment_rule_attrs(account.id), :default_access_level, level)
+        attrs =
+          Map.put(valid_auto_enrollment_rule_attrs(account.id), :default_access_level, level)
+
         changeset = AutoEnrollmentRule.changeset(new_rule(), attrs)
 
         assert changeset.valid?, "expected #{level} to be a valid default_access_level"
@@ -199,7 +205,9 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
 
     test "accepts :read_only as default_access_level" do
       account = account_fixture()
-      attrs = Map.put(valid_auto_enrollment_rule_attrs(account.id), :default_access_level, :read_only)
+
+      attrs =
+        Map.put(valid_auto_enrollment_rule_attrs(account.id), :default_access_level, :read_only)
 
       changeset = AutoEnrollmentRule.changeset(new_rule(), attrs)
 
@@ -211,7 +219,11 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
       account = account_fixture()
 
       attrs =
-        Map.put(valid_auto_enrollment_rule_attrs(account.id), :default_access_level, :account_manager)
+        Map.put(
+          valid_auto_enrollment_rule_attrs(account.id),
+          :default_access_level,
+          :account_manager
+        )
 
       changeset = AutoEnrollmentRule.changeset(new_rule(), attrs)
 
@@ -322,9 +334,7 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRuleTest do
       account = account_fixture()
 
       rule =
-        insert_rule!(
-          Map.put(valid_auto_enrollment_rule_attrs(account.id), :enabled, false)
-        )
+        insert_rule!(Map.put(valid_auto_enrollment_rule_attrs(account.id), :enabled, false))
 
       update_attrs = %{enabled: true}
       changeset = AutoEnrollmentRule.changeset(rule, update_attrs)

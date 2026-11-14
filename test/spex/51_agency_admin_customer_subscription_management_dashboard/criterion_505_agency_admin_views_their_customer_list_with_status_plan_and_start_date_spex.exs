@@ -4,14 +4,18 @@ defmodule MetricFlowSpex.AgencyAdminViewsTheirCustomerListWithStatusPlanAndStart
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency admin views their customer list with status, plan, and start date", criterion: 505 do
+  spex "Agency admin views their customer list with status, plan, and start date",
+    criterion: 505 do
     scenario "Alex administers Acme Agency with subscribed customers" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "Acme Agency has a subscribed customer", context do
         subscription =
-          MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
 
         {:ok, Map.put(context, :customer_subscription, subscription)}
       end
@@ -21,7 +25,8 @@ defmodule MetricFlowSpex.AgencyAdminViewsTheirCustomerListWithStatusPlanAndStart
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "Alex sees each customer's subscription status, plan, and subscription start date", context do
+      then_ "Alex sees each customer's subscription status, plan, and subscription start date",
+            context do
         html = render(context.view)
         assert html =~ context.customer_subscription.stripe_customer_id
         assert html =~ context.agency_plan.name

@@ -30,7 +30,9 @@ defmodule MetricFlow.Billing.BillingRepositoryTest do
   end
 
   defp insert_subscription!(account_id, overrides \\ %{}) do
-    {:ok, sub} = BillingRepository.upsert_subscription(valid_subscription_attrs(account_id, overrides))
+    {:ok, sub} =
+      BillingRepository.upsert_subscription(valid_subscription_attrs(account_id, overrides))
+
     sub
   end
 
@@ -64,7 +66,11 @@ defmodule MetricFlow.Billing.BillingRepositoryTest do
   end
 
   defp insert_stripe_account!(agency_account_id, overrides \\ %{}) do
-    {:ok, sa} = BillingRepository.upsert_stripe_account(valid_stripe_account_attrs(agency_account_id, overrides))
+    {:ok, sa} =
+      BillingRepository.upsert_stripe_account(
+        valid_stripe_account_attrs(agency_account_id, overrides)
+      )
+
     sa
   end
 
@@ -299,7 +305,12 @@ defmodule MetricFlow.Billing.BillingRepositoryTest do
       agency_plan = insert_plan!(%{agency_account_id: agency_id})
 
       {_user2, customer_id, _scope2} = create_account()
-      sub = insert_subscription!(customer_id, %{plan_id: agency_plan.id, stripe_customer_id: "cus_searchable_123"})
+
+      sub =
+        insert_subscription!(customer_id, %{
+          plan_id: agency_plan.id,
+          stripe_customer_id: "cus_searchable_123"
+        })
 
       results = BillingRepository.list_agency_subscriptions(agency_id, search: "searchable")
       assert length(results) == 1

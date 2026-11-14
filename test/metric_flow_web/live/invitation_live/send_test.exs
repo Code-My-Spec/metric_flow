@@ -150,7 +150,9 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
   end
 
   describe "displays pending invitations list with email, role badge, and cancel button" do
-    test "displays pending invitations list with email, role badge, and cancel button", %{conn: conn} do
+    test "displays pending invitations list with email, role badge, and cancel button", %{
+      conn: conn
+    } do
       user = user_fixture()
       account = account_fixture(user)
       _invitation = invitation_fixture(account, user, "pending@example.com", :admin)

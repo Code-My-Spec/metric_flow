@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion837AgencyInviteesTeamGainsAccessPerTheAgencysT
 
   spex "Agency invitee's team gains access per the agency's team structure", criterion: 837 do
     scenario "an agency user accepting a client invitation is granted access reflected in the client's member list" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the client has invited the agency user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -50,7 +50,8 @@ defmodule MetricFlowSpex.Criterion837AgencyInviteesTeamGainsAccessPerTheAgencysT
       end
 
       when_ "the agency user accepts the client invitation", context do
-        {:ok, view, _html} = live(context.agency_user_conn, "/invitations/#{context.invitation_token}")
+        {:ok, view, _html} =
+          live(context.agency_user_conn, "/invitations/#{context.invitation_token}")
 
         view
         |> element("[data-role=accept-btn]")
@@ -59,7 +60,8 @@ defmodule MetricFlowSpex.Criterion837AgencyInviteesTeamGainsAccessPerTheAgencysT
         {:ok, context}
       end
 
-      then_ "the client account's member list reflects the agency user's granted access", context do
+      then_ "the client account's member list reflects the agency user's granted access",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
         html = render(view)
         assert html =~ context.second_user_email

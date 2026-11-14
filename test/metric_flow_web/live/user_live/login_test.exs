@@ -35,7 +35,9 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "sends magic link email and shows ambiguous confirmation flash when user exists" do
-    test "sends magic link email and shows ambiguous confirmation flash when user exists", %{conn: conn} do
+    test "sends magic link email and shows ambiguous confirmation flash when user exists", %{
+      conn: conn
+    } do
       user = user_fixture()
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
@@ -66,7 +68,9 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   end
 
   describe "triggers password form submission to UserSessionController on submit_password event" do
-    test "triggers password form submission to UserSessionController on submit_password event", %{conn: conn} do
+    test "triggers password form submission to UserSessionController on submit_password event", %{
+      conn: conn
+    } do
       user = user_fixture() |> set_password()
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
@@ -134,7 +138,10 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       %{user: user, conn: log_in_user(conn, user)}
     end
 
-    test "shows reauthentication notice in sudo mode with email pre-filled", %{conn: conn, user: user} do
+    test "shows reauthentication notice in sudo mode with email pre-filled", %{
+      conn: conn,
+      user: user
+    } do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "You need to reauthenticate"

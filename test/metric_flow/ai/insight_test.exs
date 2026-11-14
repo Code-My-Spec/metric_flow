@@ -71,7 +71,8 @@ defmodule MetricFlow.Ai.InsightTest do
     Map.merge(
       %{
         account_id: account_id,
-        content: "Increasing budget on Google Ads campaigns targeting high-intent keywords could improve revenue.",
+        content:
+          "Increasing budget on Google Ads campaigns targeting high-intent keywords could improve revenue.",
         summary: "Increase Google Ads budget to improve revenue",
         suggestion_type: :budget_increase,
         confidence: 0.85,

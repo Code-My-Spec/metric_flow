@@ -4,14 +4,18 @@ defmodule MetricFlowSpex.CustomerListPaginatesWhenThereAreMoreCustomersThanFitOn
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Customer list paginates when there are more customers than fit one page", criterion: 510 do
+  spex "Customer list paginates when there are more customers than fit one page",
+    criterion: 510 do
     scenario "Acme Agency has more subscribed customers than fit on one page" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "Acme Agency has more subscribed customers than fit on one page", context do
         for _ <- 1..21 do
-          MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
         end
 
         {:ok, context}

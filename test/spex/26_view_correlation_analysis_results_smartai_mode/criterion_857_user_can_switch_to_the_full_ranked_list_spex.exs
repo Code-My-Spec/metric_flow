@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion857UserCanSwitchToTheFullRankedListSpex do
 
   spex "User can switch to the full ranked list", criterion: 857 do
     scenario "a user viewing curated Smart results switches to the full ranked list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing the curated Smart/AI results", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

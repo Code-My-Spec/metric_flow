@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDebuggingDetailSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync errors are logged with debugging detail", fail_on_error_logs: false, criterion: 619 do
+  spex "Sync errors are logged with debugging detail",
+    fail_on_error_logs: false,
+    criterion: 619 do
     scenario "a failed sync's log includes enough detail to debug it" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a sync attempt fails", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
@@ -23,7 +25,8 @@ defmodule MetricFlowSpex.SyncErrorsAreLoggedWithDebuggingDetailSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the entry includes the integration, timestamp, and cause needed to debug it", context do
+      then_ "the entry includes the integration, timestamp, and cause needed to debug it",
+            context do
         assert has_element?(context.view, "[data-role='sync-provider']")
         assert has_element?(context.view, "[data-role='sync-error']")
         {:ok, context}

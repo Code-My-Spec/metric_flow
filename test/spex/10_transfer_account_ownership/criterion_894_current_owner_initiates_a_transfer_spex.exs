@@ -11,8 +11,8 @@ defmodule MetricFlowSpex.Criterion894CurrentOwnerInitiatesATransferSpex do
 
   spex "Current owner initiates a transfer", criterion: 894 do
     scenario "the owner is the current account owner and initiates a transfer" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       when_ "they initiate an ownership transfer to the existing member", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

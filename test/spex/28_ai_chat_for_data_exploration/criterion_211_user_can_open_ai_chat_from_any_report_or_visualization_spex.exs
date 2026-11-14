@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion211UserCanOpenAiChatFromAnyReportOrVisualizati
 
   spex "User can open AI chat from any report or visualization", criterion: 211 do
     scenario "a user viewing a visualization opens AI chat from that view" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user viewing a visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -31,7 +31,9 @@ defmodule MetricFlowSpex.Criterion211UserCanOpenAiChatFromAnyReportOrVisualizati
             assert has_element?(chat_view, "[data-role='conversation-area']")
 
           _ ->
-            flunk("Expected opening AI chat from the visualization to navigate to the chat interface")
+            flunk(
+              "Expected opening AI chat from the visualization to navigate to the chat interface"
+            )
         end
 
         {:ok, context}

@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
   ]
 
   spex "After successful authentication, user sees a list of Google Business Profile locations",
-       fail_on_error_logs: false, criterion: 385 do
+    fail_on_error_logs: false,
+    criterion: 385 do
     scenario "connected user sees real locations fetched from the GBP API" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -41,7 +42,7 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
 
       then_ "the user first selects which GMB accounts to authorize, then sees real locations with checkboxes",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -49,12 +50,19 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
               live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             assert accounts_html =~ "data-role=\"account-list\""
-            assert has_element?(accounts_view, "input[type='checkbox'][name='google_business_account_ids[]']")
+
+            assert has_element?(
+                     accounts_view,
+                     "input[type='checkbox'][name='google_business_account_ids[]']"
+                   )
+
             assert accounts_html =~ "Select Accounts"
 
             accounts_view
             |> form("[data-role='account-selection']")
-            |> render_submit(%{"google_business_account_ids" => ["accounts/102071280510983396749"]})
+            |> render_submit(%{
+              "google_business_account_ids" => ["accounts/102071280510983396749"]
+            })
 
             {:ok, locations_view, locations_html} =
               live(context.owner_conn, "/app/integrations/connect/google_business/locations")
@@ -71,7 +79,7 @@ defmodule MetricFlowSpex.Criterion4845AfterAuthUserSeesGBPAccountListSpex do
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end

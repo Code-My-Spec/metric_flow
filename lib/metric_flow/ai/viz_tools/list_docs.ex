@@ -20,7 +20,10 @@ defmodule MetricFlow.Ai.VizTools.ListDocs do
     %{
       type: "object",
       properties: %{
-        path: %{type: "string", description: "Directory path (e.g. '' for root, 'mark', 'encoding')"}
+        path: %{
+          type: "string",
+          description: "Directory path (e.g. '' for root, 'mark', 'encoding')"
+        }
       }
     }
   end

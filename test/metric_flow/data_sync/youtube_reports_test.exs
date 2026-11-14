@@ -58,7 +58,9 @@ defmodule MetricFlow.DataSync.YouTubeReportsTest do
                "selected",
                "video-one",
                ["views"],
-               {@first, @first}, http_plug: plug)
+               {@first, @first},
+               http_plug: plug
+             )
 
     assert {:error, :invalid_video_id} =
              YouTubeReports.fetch_video(
@@ -66,7 +68,9 @@ defmodule MetricFlow.DataSync.YouTubeReportsTest do
                "selected",
                "one;country==US",
                ["views"],
-               {@first, @first}, http_plug: plug)
+               {@first, @first},
+               http_plug: plug
+             )
   end
 
   test "reports the available date instead of the requested end date" do

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
 
   spex "AI analyzes correlation data and provides actionable recommendations", criterion: 205 do
     scenario "user sees an AI recommendations section when AI suggestions are enabled in Smart mode" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -48,8 +48,8 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
     end
 
     scenario "AI recommendations mention specific metrics and correlation values" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -76,13 +76,13 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
         html = render(context.view)
 
         has_metric_references =
-          has_element?(context.view, "[data-role='ai-recommendations']") and
-            (html =~ "correlation" or html =~ "Correlation") or
-          html =~ "0." or
-          html =~ "metric" or
-          html =~ "Metric" or
-          html =~ "revenue" or
-          html =~ "Revenue"
+          (has_element?(context.view, "[data-role='ai-recommendations']") and
+             (html =~ "correlation" or html =~ "Correlation")) or
+            html =~ "0." or
+            html =~ "metric" or
+            html =~ "Metric" or
+            html =~ "revenue" or
+            html =~ "Revenue"
 
         assert has_metric_references,
                "Expected AI recommendations to mention metric names and correlation values. Got: #{html}"
@@ -92,8 +92,8 @@ defmodule MetricFlowSpex.AiAnalyzesCorrelationDataAndProvidesActionableRecommend
     end
 
     scenario "AI recommendations include actionable suggestions with verbs like increase, optimize, or budget" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

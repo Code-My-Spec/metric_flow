@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion817SearchingByNameFiltersListSpex do
 
   spex "Searching by name filters the reports list", criterion: 817 do
     scenario "searching by a report's name filters the list to matching reports" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user with multiple saved reports", context do
         {:ok, view_a, _html} = live(context.owner_conn, "/app/visualizations/new")

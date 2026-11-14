@@ -11,10 +11,10 @@ defmodule MetricFlowSpex.Criterion67OwnerCanTransferToExistingUserWithAccountAcc
   import MetricFlowSpex.SharedGivens
 
   spex "Owner can transfer to existing user with account access or send transfer invitation to new email",
-       criterion: 67 do
+    criterion: 67 do
     scenario "the owner is offered both an existing member and a new email as transfer targets" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       when_ "they open the transfer ownership section", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

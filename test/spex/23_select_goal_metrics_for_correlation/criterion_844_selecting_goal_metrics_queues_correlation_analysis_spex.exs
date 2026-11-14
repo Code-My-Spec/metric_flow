@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion844SelectingGoalMetricsQueuesCorrelationAnalys
 
   spex "Selecting goal metrics queues correlation analysis", criterion: 844 do
     scenario "saving a goal metric selection queues correlation analysis for those goals" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user selects one or more goal metrics", context do
         yesterday = Date.add(Date.utc_today(), -1)

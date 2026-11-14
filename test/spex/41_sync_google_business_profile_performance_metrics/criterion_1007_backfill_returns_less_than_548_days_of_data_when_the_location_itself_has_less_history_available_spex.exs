@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.Criterion1007BackfillReturnsLessThan548DaysWhenLocation
   import MetricFlowSpex.SharedGivens
 
   spex "Backfill returns less than 548 days of data when the location itself has less history available",
-       criterion: 1007 do
+    criterion: 1007 do
     scenario "a Google Business Profile location with a shorter history than 548 days still completes its first sync" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a Google Business Profile location has less than 548 days of history available", context do
+      given_ "a Google Business Profile location has less than 548 days of history available",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
@@ -24,7 +25,8 @@ defmodule MetricFlowSpex.Criterion1007BackfillReturnsLessThan548DaysWhenLocation
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "only the available history is backfilled rather than erroring on the shortfall", context do
+      then_ "only the available history is backfilled rather than erroring on the shortfall",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

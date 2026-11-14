@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.FreeUserSeesAPaywallInsteadOfAiFeatureContentSpex do
 
   spex "Free user sees a paywall instead of AI feature content", criterion: 496 do
     scenario "Dana on the free plan navigates to Correlations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "Dana navigates to Correlations", context do
         result = live(context.owner_conn, "/app/correlations")

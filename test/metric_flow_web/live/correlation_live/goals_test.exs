@@ -72,17 +72,25 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
 
       %Metric{}
       |> Metric.changeset(%{
-        user_id: user.id, metric_type: "revenue", metric_name: "revenue",
-        value: 1000.0 + i, recorded_at: DateTime.new!(date, ~T[00:00:00], "Etc/UTC"),
-        provider: :google_analytics, dimensions: %{}
+        user_id: user.id,
+        metric_type: "revenue",
+        metric_name: "revenue",
+        value: 1000.0 + i,
+        recorded_at: DateTime.new!(date, ~T[00:00:00], "Etc/UTC"),
+        provider: :google_analytics,
+        dimensions: %{}
       })
       |> Repo.insert!()
 
       %Metric{}
       |> Metric.changeset(%{
-        user_id: user.id, metric_type: "advertising", metric_name: "clicks",
-        value: 50.0 + i, recorded_at: DateTime.new!(date, ~T[00:00:00], "Etc/UTC"),
-        provider: :google_ads, dimensions: %{}
+        user_id: user.id,
+        metric_type: "advertising",
+        metric_name: "clicks",
+        value: 50.0 + i,
+        recorded_at: DateTime.new!(date, ~T[00:00:00], "Etc/UTC"),
+        provider: :google_ads,
+        dimensions: %{}
       })
       |> Repo.insert!()
     end)

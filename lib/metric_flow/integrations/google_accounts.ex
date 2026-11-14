@@ -79,7 +79,10 @@ defmodule MetricFlow.Integrations.GoogleAccounts do
   defp handle_response(%Req.Response{status: 401}), do: {:error, :unauthorized}
 
   defp handle_response(%Req.Response{status: 403}) do
-    Logger.warning("Google Analytics Admin API returned 403 — API may not be enabled in GCP project")
+    Logger.warning(
+      "Google Analytics Admin API returned 403 — API may not be enabled in GCP project"
+    )
+
     {:error, :api_disabled}
   end
 

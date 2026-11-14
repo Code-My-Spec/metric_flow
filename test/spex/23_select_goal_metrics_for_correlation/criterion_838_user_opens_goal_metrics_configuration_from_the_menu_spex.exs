@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion838UserOpensGoalMetricsConfigurationFromTheMen
 
   spex "User opens Goal Metrics configuration from the menu", criterion: 838 do
     scenario "a user viewing the application menu selects Goal Metrics configuration" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing the application menu", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")

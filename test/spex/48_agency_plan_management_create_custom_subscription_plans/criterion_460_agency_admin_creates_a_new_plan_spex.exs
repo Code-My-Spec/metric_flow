@@ -10,8 +10,8 @@ defmodule MetricFlowSpex.Story48.Criterion4136Spex do
 
   spex "Agency admin creates a new plan", criterion: 460 do
     scenario "admin creates a plan with a name and monthly price" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "Alex is an agency admin for Acme Agency, on the plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserInitiatesGbpOauthFromIntegrationsSettingsSpex do
 
   spex "User initiates GBP OAuth from integrations settings", criterion: 943 do
     scenario "clicking connect on the Google Business card starts the OAuth flow" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user viewing the integrations settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")

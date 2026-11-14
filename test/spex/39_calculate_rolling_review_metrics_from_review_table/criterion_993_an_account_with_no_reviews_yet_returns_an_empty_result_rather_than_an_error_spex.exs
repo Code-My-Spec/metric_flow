@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.AccountWithNoReviewsReturnsEmptyResultNotErrorSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "An account with no reviews yet returns an empty result rather than an error",
-       criterion: 993 do
+    criterion: 993 do
     scenario "viewing the review metrics dashboard before any reviews have synced renders an empty state, not an error" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the account is connected to a review-producing platform but has no reviews yet",
              context do

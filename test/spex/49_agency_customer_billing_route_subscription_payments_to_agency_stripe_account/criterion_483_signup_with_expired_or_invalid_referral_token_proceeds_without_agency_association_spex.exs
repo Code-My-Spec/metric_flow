@@ -8,9 +8,10 @@ defmodule MetricFlowSpex.SignupWithExpiredOrInvalidReferralTokenProceedsWithoutA
   alias MetricFlow.Agencies
   alias MetricFlow.Users.Scope
 
-  spex "Signup with expired or invalid referral token proceeds without agency association", criterion: 483 do
+  spex "Signup with expired or invalid referral token proceeds without agency association",
+    criterion: 483 do
     scenario "a user who registers with an invalid referral token is not tied to any agency" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "a new user registers with a garbled referral token", context do
         email = "outsider#{System.unique_integer([:positive])}@example.com"

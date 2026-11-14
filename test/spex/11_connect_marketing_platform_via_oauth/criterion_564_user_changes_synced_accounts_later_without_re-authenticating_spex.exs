@@ -6,10 +6,13 @@ defmodule MetricFlowSpex.UserChangesSyncedAccountsLaterWithoutReAuthenticatingSp
 
   spex "User changes synced accounts later without re-authenticating", criterion: 564 do
     scenario "Dana changes which Google Ads accounts sync without re-authenticating" do
-      given_ :owner_with_google_ads_integration
+      given_(:owner_with_google_ads_integration)
 
-      given_ "Dana is on the account selection page having already selected accounts to sync", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
+      given_ "Dana is on the account selection page having already selected accounts to sync",
+             context do
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_analytics/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 

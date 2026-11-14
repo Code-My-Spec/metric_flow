@@ -91,7 +91,9 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
   end
 
   describe "hides agency settings cards for non-owner/admin roles and personal accounts" do
-    test "hides agency settings cards for non-owner/admin roles and personal accounts", %{conn: conn} do
+    test "hides agency settings cards for non-owner/admin roles and personal accounts", %{
+      conn: conn
+    } do
       owner = user_fixture()
       account = team_account_with_owner(owner)
       reader = user_fixture()
@@ -116,7 +118,9 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
   end
 
   describe "enables auto-enrollment with domain and access level and shows success flash" do
-    test "enables auto-enrollment with domain and access level and shows success flash", %{conn: conn} do
+    test "enables auto-enrollment with domain and access level and shows success flash", %{
+      conn: conn
+    } do
       user = user_fixture()
       account = team_account_with_owner(user)
       conn = log_in_user(conn, user)
@@ -126,7 +130,10 @@ defmodule MetricFlowWeb.AgencyLive.SettingsTest do
       html =
         lv
         |> form("form#auto-enrollment-form", %{
-          "auto_enrollment" => %{"domain" => "myagency.com", "default_access_level" => "read_only"}
+          "auto_enrollment" => %{
+            "domain" => "myagency.com",
+            "default_access_level" => "read_only"
+          }
         })
         |> render_submit()
 

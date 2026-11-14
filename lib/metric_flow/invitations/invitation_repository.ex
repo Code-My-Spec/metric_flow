@@ -19,7 +19,8 @@ defmodule MetricFlow.Invitations.InvitationRepository do
   Returns `{:ok, invitation}` on success or `{:error, changeset}` on validation
   or constraint failure.
   """
-  @spec create_invitation(Ecto.Changeset.t()) :: {:ok, Invitation.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_invitation(Ecto.Changeset.t()) ::
+          {:ok, Invitation.t()} | {:error, Ecto.Changeset.t()}
   def create_invitation(%Ecto.Changeset{} = changeset) do
     Repo.insert(changeset)
   end

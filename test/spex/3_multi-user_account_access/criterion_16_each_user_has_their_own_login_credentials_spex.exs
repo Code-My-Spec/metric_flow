@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
 
   spex "Each user has their own login credentials", criterion: 16 do
     scenario "two users can register and log in independently" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "a second user is also registered", context do
         second_email = "second#{System.unique_integer([:positive])}@example.com"
@@ -15,11 +15,13 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         {:ok, view, _html} = live(build_conn(), "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: second_email,
-          password: second_password,
-          account_name: "Second Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: second_email,
+            password: second_password,
+            account_name: "Second Account"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.merge(context, %{second_email: second_email, second_password: second_password})}
@@ -29,11 +31,13 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         {:ok, view, _html} = live(build_conn(), "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         conn = submit_form(form, build_conn())
         {:ok, Map.put(context, :first_user_conn, conn)}
@@ -48,11 +52,13 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         {:ok, view, _html} = live(build_conn(), "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.second_email,
-            password: context.second_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.second_email,
+              password: context.second_password,
+              remember_me: true
+            }
+          )
 
         conn = submit_form(form, build_conn())
         {:ok, Map.put(context, :second_user_conn, conn)}
@@ -65,7 +71,7 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
     end
 
     scenario "one user's credentials do not work for another user" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "a second user is registered with a different password", context do
         email = "other#{System.unique_integer([:positive])}@example.com"
@@ -74,11 +80,13 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         {:ok, view, _html} = live(build_conn(), "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Other Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Other Account"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.merge(context, %{other_email: email, other_password: password})}
@@ -88,10 +96,12 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
         {:ok, view, _html} = live(build_conn(), "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.other_password
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.other_password
+            }
+          )
 
         render_submit(form)
         conn = follow_trigger_action(form, build_conn())
@@ -107,17 +117,19 @@ defmodule MetricFlowSpex.EachUserHasTheirOwnLoginCredentialsSpex do
     end
 
     scenario "each logged-in user sees their own email in the header" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user is logged in", context do
         {:ok, view, _html} = live(build_conn(), "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, build_conn())
         {:ok, Map.put(context, :logged_in_conn, recycle(logged_in_conn))}

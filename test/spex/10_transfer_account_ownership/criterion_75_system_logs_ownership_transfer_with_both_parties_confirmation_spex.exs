@@ -13,8 +13,8 @@ defmodule MetricFlowSpex.Criterion75SystemLogsOwnershipTransferWithBothPartiesCo
 
   spex "System logs ownership transfer with both parties confirmation", criterion: 75 do
     scenario "an ownership transfer completes" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the owner transfers ownership to the member and the member confirms", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
@@ -46,7 +46,8 @@ defmodule MetricFlowSpex.Criterion75SystemLogsOwnershipTransferWithBothPartiesCo
         {:ok, context}
       end
 
-      then_ "it logs the transfer with confirmation from both the previous and new owner", context do
+      then_ "it logs the transfer with confirmation from both the previous and new owner",
+            context do
         {:ok, view, _html} = live(context.member_conn, "/app/accounts/settings")
         html = render(view)
         assert html =~ context.owner_email

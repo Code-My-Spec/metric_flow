@@ -10,10 +10,11 @@ defmodule MetricFlowSpex.Story48.Criterion4139Spex do
 
   spex "Plan creation provisions a Stripe Product and Price", criterion: 463 do
     scenario "creating a plan stores the resulting Stripe Price ID" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
-      given_ "Acme Agency has a connected Stripe account, and Alex is on the plans page", context do
+      given_ "Acme Agency has a connected Stripe account, and Alex is on the plans page",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")
         {:ok, Map.put(context, :view, view)}
       end

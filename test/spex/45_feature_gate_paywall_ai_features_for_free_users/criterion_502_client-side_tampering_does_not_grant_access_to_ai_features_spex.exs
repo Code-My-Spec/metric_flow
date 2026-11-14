@@ -6,11 +6,13 @@ defmodule MetricFlowSpex.ClientSideTamperingDoesNotGrantAccessToAiFeaturesSpex d
 
   spex "Client-side tampering does not grant access to AI features", criterion: 502 do
     scenario "Dana on the free plan manipulates client-side state to claim a paid plan" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "she navigates to Visualizations while claiming a paid plan via forged request params",
             context do
-        result = live(context.owner_conn, "/app/visualizations?plan=paid&subscription_status=active")
+        result =
+          live(context.owner_conn, "/app/visualizations?plan=paid&subscription_status=active")
+
         {:ok, Map.put(context, :result, result)}
       end
 

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.SubscriptionStatusBadgeReflectsStateSpex do
 
   spex "Subscription status badge reflects real-time synced state", criterion: 448 do
     scenario "agency admin sees status badges displayed for subscriptions on the page" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       when_ "the admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")
@@ -22,14 +22,17 @@ defmodule MetricFlowSpex.SubscriptionStatusBadgeReflectsStateSpex do
                  has_element?(context.view, "[data-status]") or
                  has_element?(context.view, ".badge") or
                  html =~ "Active Subscribers" or html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
 
-      then_ "the Status column header is present indicating status display is supported", context do
+      then_ "the Status column header is present indicating status display is supported",
+            context do
         html = render(context.view)
         # Status column header shown when subscriptions exist; otherwise shows empty state
         assert html =~ "Status" or html =~ "No customer subscriptions yet" or
                  html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
     end

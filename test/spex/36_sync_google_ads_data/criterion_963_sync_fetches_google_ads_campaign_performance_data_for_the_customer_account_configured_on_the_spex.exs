@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.Criterion963SyncFetchesGoogleAdsCampaignDataViaExisting
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches Google Ads campaign performance data for the configured customer account, using the account's existing Google OAuth authorization -- no separate connection step required",
-       criterion: 963 do
+    criterion: 963 do
     scenario "a client with a connected Google Ads customer account syncs campaign performance data" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client has a connected Google Ads customer account", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
@@ -17,7 +17,7 @@ defmodule MetricFlowSpex.Criterion963SyncFetchesGoogleAdsCampaignDataViaExisting
         {:ok, context}
       end
 
-      given_ :with_google_ads_sync_stub
+      given_(:with_google_ads_sync_stub)
 
       when_ "the sync runs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -26,7 +26,8 @@ defmodule MetricFlowSpex.Criterion963SyncFetchesGoogleAdsCampaignDataViaExisting
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "campaign performance data is fetched using the account's own Google OAuth authorization", context do
+      then_ "campaign performance data is fetched using the account's own Google OAuth authorization",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

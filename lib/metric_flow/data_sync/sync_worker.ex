@@ -802,7 +802,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
       "It may have been removed or the URL changed."
   end
 
-  defp format_error(:insufficient_permissions, %Integration{provider: :google_search_console} = integration, date_range) do
+  defp format_error(
+         :insufficient_permissions,
+         %Integration{provider: :google_search_console} = integration,
+         date_range
+       ) do
     site = site_url_from(integration) || "the configured site"
 
     "Insufficient permissions to access Search Console site #{site}#{format_date_range(date_range)}. " <>

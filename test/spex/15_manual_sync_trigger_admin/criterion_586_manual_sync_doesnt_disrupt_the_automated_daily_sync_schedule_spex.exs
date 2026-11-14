@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ManualSyncDoesntDisruptTheAutomatedDailySyncScheduleSpe
 
   spex "Manual sync doesn't disrupt the automated daily sync schedule", criterion: 586 do
     scenario "triggering a manual sync leaves the integration's automated sync eligibility intact" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "an integration has an automated daily sync schedule", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -30,7 +30,8 @@ defmodule MetricFlowSpex.ManualSyncDoesntDisruptTheAutomatedDailySyncScheduleSpe
         {:ok, context}
       end
 
-      then_ "the automated daily sync still runs at its normal scheduled time afterward", context do
+      then_ "the automated daily sync still runs at its normal scheduled time afterward",
+            context do
         # The integration remains connected (not disconnected or disabled by the manual
         # sync), which is what the automated daily job checks to decide whether to run.
         assert has_element?(

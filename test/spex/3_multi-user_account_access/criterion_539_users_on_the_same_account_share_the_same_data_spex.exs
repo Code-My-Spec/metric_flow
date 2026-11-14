@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UsersOnTheSameAccountShareTheSameDataSpex do
 
   spex "Users on the same account share the same data", criterion: 539 do
     scenario "a teammate added directly to the account sees the same account" do
-      given_ :user_logged_in_as_owner
-      given_ :agency_member_registered
+      given_(:user_logged_in_as_owner)
+      given_(:agency_member_registered)
 
       when_ "each opens their accounts list", context do
         # The Members page itself is deliberately owner/admin-only (see

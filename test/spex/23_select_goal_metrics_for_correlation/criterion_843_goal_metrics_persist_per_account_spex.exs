@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion843GoalMetricsPersistPerAccountSpex do
 
   spex "Goal metrics persist per account", criterion: 843 do
     scenario "a user's goal metrics are still configured when they return in a later session" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has selected goal metrics for their account", context do
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{metric_name: "revenue"})

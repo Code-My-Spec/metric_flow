@@ -79,7 +79,9 @@ defmodule MetricFlow.Integrations.Strategies.QuickBooksOAuth2Test do
     test "returns ok tuple with an empty map regardless of token" do
       assert {:ok, %{}} = QuickBooksOAuth2.fetch_user(valid_config(), %{})
       assert {:ok, %{}} = QuickBooksOAuth2.fetch_user(valid_config(), valid_token())
-      assert {:ok, %{}} = QuickBooksOAuth2.fetch_user(valid_config(), %{"access_token" => "different-token"})
+
+      assert {:ok, %{}} =
+               QuickBooksOAuth2.fetch_user(valid_config(), %{"access_token" => "different-token"})
     end
 
     test "never raises or returns an error tuple" do

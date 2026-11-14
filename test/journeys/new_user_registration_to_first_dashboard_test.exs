@@ -26,9 +26,10 @@ defmodule MetricFlowWeb.Journeys.NewUserRegistrationToFirstDashboardTest do
     |> Repo.insert!()
   end
 
-  test "registers, confirms, sees empty dashboard, checks account/settings, and is guarded after logout", %{
-    conn: conn
-  } do
+  test "registers, confirms, sees empty dashboard, checks account/settings, and is guarded after logout",
+       %{
+         conn: conn
+       } do
     # Step 1-2: registration form
     {:ok, lv, _html} = live(conn, ~p"/users/register")
 
@@ -36,7 +37,12 @@ defmodule MetricFlowWeb.Journeys.NewUserRegistrationToFirstDashboardTest do
 
     form =
       form(lv, "#registration_form",
-        user: valid_user_attributes(email: email, account_name: "QA Journey1 Account", account_type: "client")
+        user:
+          valid_user_attributes(
+            email: email,
+            account_name: "QA Journey1 Account",
+            account_type: "client"
+          )
       )
 
     render_submit(form)

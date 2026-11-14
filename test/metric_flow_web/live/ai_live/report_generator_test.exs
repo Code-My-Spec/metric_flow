@@ -76,7 +76,9 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "disables generate button when prompt is blank or generation is in progress" do
-    test "disables generate button when prompt is blank or generation is in progress", %{conn: conn} do
+    test "disables generate button when prompt is blank or generation is in progress", %{
+      conn: conn
+    } do
       user = user_fixture()
 
       capture_log(fn ->
@@ -87,7 +89,9 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
   end
 
   describe "shows chart preview section with Vega-Lite container after successful generation" do
-    test "shows chart preview section with Vega-Lite container after successful generation", %{conn: conn} do
+    test "shows chart preview section with Vega-Lite container after successful generation", %{
+      conn: conn
+    } do
       user = user_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 

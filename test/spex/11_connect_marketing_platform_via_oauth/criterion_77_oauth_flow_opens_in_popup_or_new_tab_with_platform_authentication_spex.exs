@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
 
   spex "OAuth flow opens in popup or new tab with platform authentication", criterion: 77 do
     scenario "connect button for Google is rendered with an OAuth initiation action" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -16,15 +16,23 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
       then_ "the Google connect element is present on the page", context do
         html = render(context.view)
         assert html =~ "Google"
-        assert has_element?(context.view, "[data-platform='google_analytics'] [data-role='connect-button']") or
-                 has_element?(context.view, "[data-platform='google_ads'] [data-role='connect-button']"),
+
+        assert has_element?(
+                 context.view,
+                 "[data-platform='google_analytics'] [data-role='connect-button']"
+               ) or
+                 has_element?(
+                   context.view,
+                   "[data-platform='google_ads'] [data-role='connect-button']"
+                 ),
                "Expected a Google provider (google_analytics or google_ads) to have a connect button"
+
         {:ok, context}
       end
     end
 
     scenario "connect button for Facebook is rendered with an OAuth initiation action" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -34,13 +42,18 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
       then_ "the Facebook connect element is present on the page", context do
         html = render(context.view)
         assert html =~ "Facebook"
-        assert has_element?(context.view, "[data-platform='facebook_ads'] [data-role='connect-button']")
+
+        assert has_element?(
+                 context.view,
+                 "[data-platform='facebook_ads'] [data-role='connect-button']"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "connect button for QuickBooks is rendered with an OAuth initiation action" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -50,13 +63,18 @@ defmodule MetricFlowSpex.OAuthFlowOpensInPopupOrNewTabWithPlatformAuthentication
       then_ "the QuickBooks connect element is present on the page", context do
         html = render(context.view)
         assert html =~ "QuickBooks"
-        assert has_element?(context.view, "[data-platform='quickbooks'] [data-role='connect-button']")
+
+        assert has_element?(
+                 context.view,
+                 "[data-platform='quickbooks'] [data-role='connect-button']"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "the connect page renders provider connect buttons with OAuth initiation links" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")

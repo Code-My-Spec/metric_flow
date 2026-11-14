@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4086SavedReportsInListSpex do
 
   spex "Saved reports appear in user report list", criterion: 154 do
     scenario "after saving a dashboard, it appears on the dashboards index" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user creates and saves a dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

@@ -178,7 +178,6 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             >
               Save
             </button>
-
           </div>
 
           <%!-- Error bar --%>
@@ -186,7 +185,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
           <%!-- Chart area --%>
           <div class="flex-1 overflow-auto p-4" data-role="chart-preview-section">
-            <div :if={is_nil(@chart_preview)} data-role="chart-placeholder" class="flex items-center justify-center h-full">
+            <div
+              :if={is_nil(@chart_preview)}
+              data-role="chart-placeholder"
+              class="flex items-center justify-center h-full"
+            >
               <div class="text-center">
                 <p class="text-base-content/60 text-sm">
                   Select a metric or describe a chart in the AI Chat panel.
@@ -219,7 +222,11 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
                 {if @show_data_table, do: "Hide data", else: "View data"}
               </button>
 
-              <div :if={@show_data_table} data-role="chart-data-table" class="mt-2 overflow-auto max-h-48">
+              <div
+                :if={@show_data_table}
+                data-role="chart-data-table"
+                class="mt-2 overflow-auto max-h-48"
+              >
                 <table class="table table-xs">
                   <thead>
                     <tr>
@@ -265,61 +272,60 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
             id="chat-panel-content"
             class="w-88 flex flex-col bg-base-100 overflow-hidden"
           >
-
-          <%!-- Chat messages --%>
-          <div
-            id="chat-messages"
-            data-role="chat-messages"
-            class="flex-1 overflow-y-auto p-3 space-y-3"
-            phx-update="stream"
-          >
+            <%!-- Chat messages --%>
             <div
-              :for={{dom_id, msg} <- @streams.chat_messages}
-              id={dom_id}
-              class={[
-                "p-3 rounded-lg text-sm",
-                msg.role == :user && "bg-primary/10 ml-6",
-                msg.role == :assistant && "bg-base-200 mr-6"
-              ]}
+              id="chat-messages"
+              data-role="chat-messages"
+              class="flex-1 overflow-y-auto p-3 space-y-3"
+              phx-update="stream"
             >
-              <p class="font-semibold text-xs mb-1 text-base-content/60">
-                {if msg.role == :user, do: "You", else: "AI"}
-              </p>
-              <p class="whitespace-pre-wrap">{msg.content}</p>
-            </div>
-          </div>
-
-          <%!-- Chat input --%>
-          <div class="border-t border-base-300 p-3">
-            <form phx-submit="send_chat" data-role="chat-form">
-              <div class="flex gap-2">
-                <textarea
-                  id="chat-prompt-input"
-                  name="prompt"
-                  data-role="chat-input"
-                  rows="2"
-                  placeholder="Describe the chart you want..."
-                  disabled={@chat_generating}
-                  class="textarea textarea-bordered textarea-sm flex-1 resize-none"
-                ></textarea>
-                <button
-                  type="submit"
-                  data-role="chat-send-btn"
-                  disabled={@chat_generating}
-                  class={[
-                    "btn btn-primary btn-sm self-end",
-                    @chat_generating && "btn-disabled"
-                  ]}
-                >
-                  <span :if={@chat_generating} class="loading loading-spinner loading-xs" />
-                  <span :if={!@chat_generating}>Send</span>
-                </button>
+              <div
+                :for={{dom_id, msg} <- @streams.chat_messages}
+                id={dom_id}
+                class={[
+                  "p-3 rounded-lg text-sm",
+                  msg.role == :user && "bg-primary/10 ml-6",
+                  msg.role == :assistant && "bg-base-200 mr-6"
+                ]}
+              >
+                <p class="font-semibold text-xs mb-1 text-base-content/60">
+                  {if msg.role == :user, do: "You", else: "AI"}
+                </p>
+                <p class="whitespace-pre-wrap">{msg.content}</p>
               </div>
-              <p :if={@chat_error} class="text-error text-xs mt-1" data-role="chat-error">
-                {@chat_error}
-              </p>
-            </form>
-          </div>
+            </div>
+
+            <%!-- Chat input --%>
+            <div class="border-t border-base-300 p-3">
+              <form phx-submit="send_chat" data-role="chat-form">
+                <div class="flex gap-2">
+                  <textarea
+                    id="chat-prompt-input"
+                    name="prompt"
+                    data-role="chat-input"
+                    rows="2"
+                    placeholder="Describe the chart you want..."
+                    disabled={@chat_generating}
+                    class="textarea textarea-bordered textarea-sm flex-1 resize-none"
+                  ></textarea>
+                  <button
+                    type="submit"
+                    data-role="chat-send-btn"
+                    disabled={@chat_generating}
+                    class={[
+                      "btn btn-primary btn-sm self-end",
+                      @chat_generating && "btn-disabled"
+                    ]}
+                  >
+                    <span :if={@chat_generating} class="loading loading-spinner loading-xs" />
+                    <span :if={!@chat_generating}>Send</span>
+                  </button>
+                </div>
+                <p :if={@chat_error} class="text-error text-xs mt-1" data-role="chat-error">
+                  {@chat_error}
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -435,7 +441,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     |> assign(:name_error, nil)
     |> assign(:spec_error, nil)
     |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-    |> assign(:goal_metric_name, Correlations.get_latest_correlation_summary(scope).goal_metric_name)
+    |> assign(
+      :goal_metric_name,
+      Correlations.get_latest_correlation_summary(scope).goal_metric_name
+    )
     |> assign(:chart_types, @chart_types)
     |> assign(:left_panel_open, false)
     |> assign(:right_panel_open, true)
@@ -604,7 +613,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
 
       bound ->
         scope = socket.assigns.current_scope
-        template = build_template_spec(bound, socket.assigns.selected_chart_type, socket.assigns.name)
+
+        template =
+          build_template_spec(bound, socket.assigns.selected_chart_type, socket.assigns.name)
+
         preview = resolve_named_data(template, scope)
         {:noreply, assign(socket, chart_preview: preview, raw_vega_spec: format_spec(template))}
     end
@@ -635,8 +647,17 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
       when is_reference(ref) do
     Process.demonitor(ref, [:flush])
     require Logger
-    Logger.warning("viz_chat exchange completed session_id=#{inspect(socket.assigns.chat_session_id)}")
-    persist_chat_message(socket.assigns.current_scope, socket.assigns.chat_session_id, :assistant, text)
+
+    Logger.warning(
+      "viz_chat exchange completed session_id=#{inspect(socket.assigns.chat_session_id)}"
+    )
+
+    persist_chat_message(
+      socket.assigns.current_scope,
+      socket.assigns.chat_session_id,
+      :assistant,
+      text
+    )
 
     assistant_msg = %{
       role: :assistant,
@@ -738,7 +759,8 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   # messages can be persisted. A brand-new, unsaved visualization gets a
   # session with no context_id yet; `link_chat_session_to_visualization/3`
   # backfills it once the visualization is saved.
-  defp ensure_chat_session(%{assigns: %{chat_session_id: id}} = socket, _scope) when not is_nil(id) do
+  defp ensure_chat_session(%{assigns: %{chat_session_id: id}} = socket, _scope)
+       when not is_nil(id) do
     {id, socket}
   end
 
@@ -762,8 +784,12 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   # visualization is saved for the first time, so history survives reopening.
   defp link_chat_session_to_visualization(socket, _scope, nil), do: socket
 
-  defp link_chat_session_to_visualization(%{assigns: %{chat_session_id: nil}} = socket, _scope, %Visualization{}),
-    do: socket
+  defp link_chat_session_to_visualization(
+         %{assigns: %{chat_session_id: nil}} = socket,
+         _scope,
+         %Visualization{}
+       ),
+       do: socket
 
   defp link_chat_session_to_visualization(socket, scope, %Visualization{} = visualization) do
     case Ai.get_chat_session(scope, socket.assigns.chat_session_id) do
@@ -859,7 +885,10 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   # "bar" respectively) with other chart types and can't be told apart from
   # the mark alone.
   defp extract_chart_type(%{"chart_type" => type}) when is_binary(type), do: type
-  defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark), do: mark_to_chart_type(mark)
+
+  defp extract_chart_type(%{"mark" => %{"type" => mark}}) when is_binary(mark),
+    do: mark_to_chart_type(mark)
+
   defp extract_chart_type(%{"mark" => mark}) when is_binary(mark), do: mark_to_chart_type(mark)
   defp extract_chart_type(_), do: "line"
 
@@ -952,7 +981,9 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
      }}
   end
 
-  defp layer_mark(mark) when is_map(mark), do: Map.merge(mark, %{"point" => true, "tooltip" => true})
+  defp layer_mark(mark) when is_map(mark),
+    do: Map.merge(mark, %{"point" => true, "tooltip" => true})
+
   defp layer_mark(mark), do: %{"type" => mark, "point" => true, "tooltip" => true}
 
   # Resolves named data sources in a spec by fetching real metric data.
@@ -996,18 +1027,22 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
   end
 
   defp extract_named_metrics(%{"data" => %{"name" => name}}), do: [name]
+
   defp extract_named_metrics(%{"layer" => layers}) when is_list(layers) do
     Enum.flat_map(layers, fn
       %{"data" => %{"name" => name}} -> [name]
       _ -> []
     end)
   end
+
   defp extract_named_metrics(_), do: []
 
   defp has_named_data?(%{"data" => %{"name" => _}}), do: true
+
   defp has_named_data?(%{"layer" => layers}) when is_list(layers) do
     Enum.any?(layers, &match?(%{"data" => %{"name" => _}}, &1))
   end
+
   defp has_named_data?(_), do: false
 
   defp preview_data_rows(%{"data" => %{"values" => values}}) when is_list(values), do: values
@@ -1037,8 +1072,12 @@ defmodule MetricFlowWeb.VisualizationLive.Editor do
     }
   end
 
-  defp generation_error_message(:no_metrics), do: "No metrics available. Connect a platform first."
-  defp generation_error_message(:invalid_spec), do: "AI generated an invalid chart spec. Try rephrasing."
+  defp generation_error_message(:no_metrics),
+    do: "No metrics available. Connect a platform first."
+
+  defp generation_error_message(:invalid_spec),
+    do: "AI generated an invalid chart spec. Try rephrasing."
+
   defp generation_error_message(:api_error), do: "AI service is temporarily unavailable."
 
   defp generation_error_message({:unresolvable_metric, names}) when is_list(names) do

@@ -6,14 +6,17 @@ defmodule MetricFlowSpex.AutoEnrolledUserGetsTheConfiguredDefaultAccessLevelSpex
 
   spex "Auto-enrolled user gets the configured default access level", criterion: 592 do
     scenario "a newly auto-enrolled user's access level matches the agency's configured default" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the agency admin has set a default access level for auto-enrollment", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
         |> form("#auto-enrollment-form",
-          auto_enrollment: %{domain: "defaultlevel592.com", default_access_level: "account_manager"}
+          auto_enrollment: %{
+            domain: "defaultlevel592.com",
+            default_access_level: "account_manager"
+          }
         )
         |> render_submit()
 

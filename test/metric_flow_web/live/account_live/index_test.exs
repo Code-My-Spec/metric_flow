@@ -108,7 +108,9 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
   end
 
   describe "shows Switch button for inactive accounts and Active label for current account" do
-    test "shows Switch button for inactive accounts and Active label for current account", %{conn: conn} do
+    test "shows Switch button for inactive accounts and Active label for current account", %{
+      conn: conn
+    } do
       user = user_fixture()
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)

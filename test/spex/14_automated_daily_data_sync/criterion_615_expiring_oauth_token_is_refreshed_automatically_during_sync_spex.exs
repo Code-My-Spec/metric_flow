@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.ExpiringOauthTokenIsRefreshedAutomaticallyDuringSyncSpe
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Expiring OAuth token is refreshed automatically during sync", fail_on_error_logs: false, criterion: 615 do
+  spex "Expiring OAuth token is refreshed automatically during sync",
+    fail_on_error_logs: false,
+    criterion: 615 do
     scenario "a sync completes without interruption despite a near-expiration token" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "an integration's OAuth token is nearing expiration", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
@@ -23,7 +25,8 @@ defmodule MetricFlowSpex.ExpiringOauthTokenIsRefreshedAutomaticallyDuringSyncSpe
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the token is refreshed automatically and the sync completes without interruption", context do
+      then_ "the token is refreshed automatically and the sync completes without interruption",
+            context do
         refute has_element?(context.view, "[data-role='sync-error']", "reconnect")
         {:ok, context}
       end

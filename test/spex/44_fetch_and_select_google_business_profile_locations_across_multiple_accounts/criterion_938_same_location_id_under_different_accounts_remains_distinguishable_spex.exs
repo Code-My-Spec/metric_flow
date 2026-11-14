@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.SameLocationIdUnderDifferentAccountsRemainsDistinguisha
 
   spex "Same location ID under different accounts remains distinguishable", criterion: 938 do
     scenario "two accounts each with a location sharing the same raw ID stay distinguishable when both are selected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "two connected accounts each have a location sharing the same underlying location ID",
              context do
@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.SameLocationIdUnderDifferentAccountsRemainsDistinguisha
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/shared-id", "title" => "Shared Name — Account 111"}]
+                  "locations" => [
+                    %{"name" => "locations/shared-id", "title" => "Shared Name — Account 111"}
+                  ]
                 })
               )
 
@@ -26,7 +28,9 @@ defmodule MetricFlowSpex.SameLocationIdUnderDifferentAccountsRemainsDistinguisha
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/shared-id", "title" => "Shared Name — Account 222"}]
+                  "locations" => [
+                    %{"name" => "locations/shared-id", "title" => "Shared Name — Account 222"}
+                  ]
                 })
               )
 

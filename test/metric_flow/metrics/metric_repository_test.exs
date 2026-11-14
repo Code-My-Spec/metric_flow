@@ -264,7 +264,9 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
     test "stores dimensions as embedded map" do
       {user, scope} = user_with_scope()
       dimensions = %{"campaign" => "spring_sale", "ad_group" => "group_1"}
-      attrs = Map.merge(Map.delete(valid_metric_attrs(user.id), :user_id), %{dimensions: dimensions})
+
+      attrs =
+        Map.merge(Map.delete(valid_metric_attrs(user.id), :user_id), %{dimensions: dimensions})
 
       assert {:ok, metric} = MetricRepository.create_metric(scope, attrs)
       assert metric.dimensions == dimensions
@@ -362,7 +364,10 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
 
       attrs_list =
         Enum.map(1..5, fn i ->
-          Map.delete(valid_metric_attrs(user.id, %{metric_name: "metric_#{i}", value: i * 1.0}), :user_id)
+          Map.delete(
+            valid_metric_attrs(user.id, %{metric_name: "metric_#{i}", value: i * 1.0}),
+            :user_id
+          )
         end)
 
       assert {:ok, 5} = MetricRepository.create_metrics(scope, attrs_list)
@@ -472,7 +477,12 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
   describe "query_time_series/3" do
     test "returns list of date/value maps for matching metrics" do
       {user, scope} = user_with_scope()
-      insert_metric!(user.id, %{metric_name: "sessions", value: 50.0, recorded_at: valid_recorded_at(1)})
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 50.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = MetricRepository.query_time_series(scope, "sessions", [])
 
@@ -496,9 +506,23 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
     test "orders results by date ascending" do
       {user, scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(3)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 20.0, recorded_at: valid_recorded_at(2)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 30.0, recorded_at: valid_recorded_at(1)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(3)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 20.0,
+        recorded_at: valid_recorded_at(2)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 30.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = MetricRepository.query_time_series(scope, "sessions", [])
 
@@ -568,7 +592,8 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
       start_date = Date.utc_today() |> Date.add(-10)
       end_date = Date.utc_today()
 
-      results = MetricRepository.query_time_series(scope, "sessions", date_range: {start_date, end_date})
+      results =
+        MetricRepository.query_time_series(scope, "sessions", date_range: {start_date, end_date})
 
       assert length(results) == 1
       assert hd(results).value == 10.0
@@ -584,8 +609,17 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
       {user, scope} = user_with_scope()
       {other_user, _other_scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(1)})
-      insert_metric!(other_user.id, %{metric_name: "sessions", value: 999.0, recorded_at: valid_recorded_at(1)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(1)
+      })
+
+      insert_metric!(other_user.id, %{
+        metric_name: "sessions",
+        value: 999.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = MetricRepository.query_time_series(scope, "sessions", [])
 
@@ -597,8 +631,17 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
       {user_a, scope_a} = user_with_scope()
       {user_b, _scope_b} = user_with_scope()
 
-      insert_metric!(user_a.id, %{metric_name: "sessions", value: 5.0, recorded_at: valid_recorded_at(1)})
-      insert_metric!(user_b.id, %{metric_name: "sessions", value: 500.0, recorded_at: valid_recorded_at(1)})
+      insert_metric!(user_a.id, %{
+        metric_name: "sessions",
+        value: 5.0,
+        recorded_at: valid_recorded_at(1)
+      })
+
+      insert_metric!(user_b.id, %{
+        metric_name: "sessions",
+        value: 500.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = MetricRepository.query_time_series(scope_a, "sessions", [])
 
@@ -670,7 +713,9 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
 
     test "filters by provider when provider option is provided" do
       {user, scope} = user_with_scope()
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_analytics, value: 10.0})
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_ads, value: 90.0})
 
       result = MetricRepository.aggregate_metrics(scope, "sessions", provider: :google_analytics)
@@ -682,13 +727,23 @@ defmodule MetricFlow.Metrics.MetricRepositoryTest do
     test "filters by date range when date_range option is provided" do
       {user, scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 90.0, recorded_at: valid_recorded_at(20)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(5)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 90.0,
+        recorded_at: valid_recorded_at(20)
+      })
 
       start_date = Date.utc_today() |> Date.add(-10)
       end_date = Date.utc_today()
 
-      result = MetricRepository.aggregate_metrics(scope, "sessions", date_range: {start_date, end_date})
+      result =
+        MetricRepository.aggregate_metrics(scope, "sessions", date_range: {start_date, end_date})
 
       assert result.sum == 10.0
       assert result.count == 1

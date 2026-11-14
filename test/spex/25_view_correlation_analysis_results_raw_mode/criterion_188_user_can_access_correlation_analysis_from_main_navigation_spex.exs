@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
 
   spex "User can access correlation analysis from main navigation", criterion: 188 do
     scenario "authenticated user sees a Correlations link in the main navigation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user is on any authenticated page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -25,8 +25,8 @@ defmodule MetricFlowSpex.CorrelationAccessFromMainNavigationSpex do
     end
 
     scenario "authenticated user can navigate to the Correlations page via the navigation link" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

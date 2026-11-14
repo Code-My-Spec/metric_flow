@@ -6,11 +6,11 @@ defmodule MetricFlowSpex.AllSelectedAccountsAreSavedTogetherSpex do
 
   spex "All selected accounts are saved together", criterion: 948 do
     scenario "saving the integration persists every selected account, not just the first" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user selected multiple GMB accounts", context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion876UserMarksASuggestionAsHelpfulOrNotHelpfulSp
 
   spex "User marks a suggestion as helpful or not helpful", criterion: 876 do
     scenario "a user has received an AI suggestion and marks it as helpful" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has received an AI suggestion", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

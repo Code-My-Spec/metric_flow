@@ -18,6 +18,7 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       {_user, scope} = user_with_scope()
       account_id = Accounts.get_personal_account_id(scope)
       insert_insight!(account_id)
+
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
 
       results = AiRepository.list_insights(scope)
@@ -35,6 +36,7 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       {_user, scope} = user_with_scope()
       account_id = Accounts.get_personal_account_id(scope)
       insert_insight!(account_id, %{suggestion_type: :budget_increase})
+
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
 
       results = AiRepository.list_insights(scope, suggestion_type: :budget_increase)
@@ -48,6 +50,7 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       correlation_result = insert_correlation_result!(account_id)
       insert_insight!(account_id, %{correlation_result_id: correlation_result.id})
+
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
 
       results = AiRepository.list_insights(scope, correlation_result_id: correlation_result.id)
@@ -77,8 +80,16 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
 
       base_time = DateTime.utc_now()
 
-      insert_insight!(account_id, %{generated_at: DateTime.add(base_time, -1, :second), summary: "Second newest"})
-      insert_insight!(account_id, %{generated_at: DateTime.add(base_time, -2, :second), summary: "Third newest"})
+      insert_insight!(account_id, %{
+        generated_at: DateTime.add(base_time, -1, :second),
+        summary: "Second newest"
+      })
+
+      insert_insight!(account_id, %{
+        generated_at: DateTime.add(base_time, -2, :second),
+        summary: "Third newest"
+      })
+
       insert_insight!(account_id, %{generated_at: base_time, summary: "Newest"})
 
       limited = AiRepository.list_insights(scope, limit: 2)
@@ -97,7 +108,11 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       other_account_id = Accounts.get_personal_account_id(other_scope)
 
       insert_insight!(account_id)
-      insert_insight!(other_account_id, %{suggestion_type: :optimization, summary: "Other account insight"})
+
+      insert_insight!(other_account_id, %{
+        suggestion_type: :optimization,
+        summary: "Other account insight"
+      })
 
       results = AiRepository.list_insights(scope)
 
@@ -167,7 +182,8 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
 
       attrs =
-        valid_insight_attrs(account_id,
+        valid_insight_attrs(
+          account_id,
           %{
             content: "Custom content for this insight.",
             summary: "Custom summary",
@@ -214,7 +230,10 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
     test "returns error changeset when suggestion_type is invalid" do
       {_user, scope} = user_with_scope()
       account_id = Accounts.get_personal_account_id(scope)
-      attrs = valid_insight_attrs(account_id, %{suggestion_type: :not_a_type}) |> Map.delete(:account_id)
+
+      attrs =
+        valid_insight_attrs(account_id, %{suggestion_type: :not_a_type})
+        |> Map.delete(:account_id)
 
       assert {:error, changeset} = AiRepository.create_insight(scope, attrs)
       refute changeset.valid?
@@ -309,7 +328,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       session = insert_chat_session!(user.id, account_id)
 
       first_msg = insert_chat_message!(session.id, %{role: :user, content: "First message"})
-      second_msg = insert_chat_message!(session.id, %{role: :assistant, content: "Second message"})
+
+      second_msg =
+        insert_chat_message!(session.id, %{role: :assistant, content: "Second message"})
 
       # Ensure different inserted_at values
       Repo.update_all(
@@ -372,14 +393,18 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
     test "stores context_type from attrs" do
       {_user, scope} = user_with_scope()
 
-      assert {:ok, session} = AiRepository.create_chat_session(scope, %{context_type: :correlation})
+      assert {:ok, session} =
+               AiRepository.create_chat_session(scope, %{context_type: :correlation})
+
       assert session.context_type == :correlation
     end
 
     test "allows optional context_id to be nil" do
       {_user, scope} = user_with_scope()
 
-      assert {:ok, session} = AiRepository.create_chat_session(scope, %{context_type: :general, context_id: nil})
+      assert {:ok, session} =
+               AiRepository.create_chat_session(scope, %{context_type: :general, context_id: nil})
+
       assert session.context_id == nil
     end
 
@@ -397,7 +422,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
     test "returns error changeset when context_type is invalid" do
       {_user, scope} = user_with_scope()
 
-      assert {:error, changeset} = AiRepository.create_chat_session(scope, %{context_type: :not_a_type})
+      assert {:error, changeset} =
+               AiRepository.create_chat_session(scope, %{context_type: :not_a_type})
+
       refute changeset.valid?
     end
 
@@ -419,7 +446,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id)
 
-      assert {:ok, updated} = AiRepository.update_chat_session(scope, session, %{title: "New title"})
+      assert {:ok, updated} =
+               AiRepository.update_chat_session(scope, session, %{title: "New title"})
+
       assert updated.id == session.id
       assert updated.title == "New title"
     end
@@ -429,7 +458,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id, %{title: "Old title"})
 
-      assert {:ok, updated} = AiRepository.update_chat_session(scope, session, %{title: "Updated title"})
+      assert {:ok, updated} =
+               AiRepository.update_chat_session(scope, session, %{title: "Updated title"})
+
       assert updated.title == "Updated title"
     end
 
@@ -438,7 +469,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id)
 
-      assert {:ok, updated} = AiRepository.update_chat_session(scope, session, %{status: :archived})
+      assert {:ok, updated} =
+               AiRepository.update_chat_session(scope, session, %{status: :archived})
+
       assert updated.status == :archived
     end
 
@@ -447,7 +480,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id)
 
-      assert {:error, changeset} = AiRepository.update_chat_session(scope, session, %{status: :not_a_status})
+      assert {:error, changeset} =
+               AiRepository.update_chat_session(scope, session, %{status: :not_a_status})
+
       refute changeset.valid?
     end
   end
@@ -474,7 +509,11 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id)
 
-      attrs = %{chat_session_id: session.id, role: :assistant, content: "Revenue is up 15% this month."}
+      attrs = %{
+        chat_session_id: session.id,
+        role: :assistant,
+        content: "Revenue is up 15% this month."
+      }
 
       assert {:ok, message} = AiRepository.create_chat_message(scope, attrs)
       assert message.chat_session_id == session.id
@@ -487,7 +526,12 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       session = insert_chat_session!(user.id, account_id)
 
-      attrs = %{chat_session_id: session.id, role: :assistant, content: "Here is the analysis.", token_count: 42}
+      attrs = %{
+        chat_session_id: session.id,
+        role: :assistant,
+        content: "Here is the analysis.",
+        token_count: 42
+      }
 
       assert {:ok, message} = AiRepository.create_chat_message(scope, attrs)
       assert message.token_count == 42
@@ -522,7 +566,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+      assert {:ok, feedback} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+
       assert feedback.id != nil
       assert feedback.rating == :helpful
     end
@@ -532,7 +578,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+      assert {:ok, feedback} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+
       assert feedback.insight_id == insight.id
       assert feedback.user_id == user.id
     end
@@ -542,13 +590,27 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      {:ok, _first} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful, comment: "Great insight!"})
-      {:ok, updated} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :not_helpful, comment: "Changed my mind."})
+      {:ok, _first} =
+        AiRepository.upsert_feedback(scope, insight.id, %{
+          rating: :helpful,
+          comment: "Great insight!"
+        })
+
+      {:ok, updated} =
+        AiRepository.upsert_feedback(scope, insight.id, %{
+          rating: :not_helpful,
+          comment: "Changed my mind."
+        })
 
       assert updated.rating == :not_helpful
       assert updated.comment == "Changed my mind."
 
-      all_feedback = Repo.all(from f in SuggestionFeedback, where: f.insight_id == ^insight.id and f.user_id == ^user.id)
+      all_feedback =
+        Repo.all(
+          from f in SuggestionFeedback,
+            where: f.insight_id == ^insight.id and f.user_id == ^user.id
+        )
+
       assert length(all_feedback) == 1
     end
 
@@ -557,7 +619,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+      assert {:ok, feedback} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful})
+
       assert feedback.user_id == user.id
     end
 
@@ -566,7 +630,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :not_helpful})
+      assert {:ok, feedback} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :not_helpful})
+
       assert feedback.insight_id == insight.id
     end
 
@@ -575,7 +641,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful, comment: nil})
+      assert {:ok, feedback} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :helpful, comment: nil})
+
       assert feedback.comment == nil
     end
 
@@ -584,7 +652,9 @@ defmodule MetricFlow.Ai.AiRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       insight = insert_insight!(account_id)
 
-      assert {:error, changeset} = AiRepository.upsert_feedback(scope, insight.id, %{rating: :not_a_rating})
+      assert {:error, changeset} =
+               AiRepository.upsert_feedback(scope, insight.id, %{rating: :not_a_rating})
+
       refute changeset.valid?
     end
   end

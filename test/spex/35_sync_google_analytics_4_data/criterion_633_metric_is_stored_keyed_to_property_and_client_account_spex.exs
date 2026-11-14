@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.MetricIsStoredKeyedToPropertyAndClientAccountSpex do
 
   spex "Metric is stored keyed to property and client account", criterion: 633 do
     scenario "a synced metric value shows up under the syncing account's own sync history" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the account has a connected GA4 property", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.MetricIsStoredKeyedToPropertyAndClientAccountSpex do
         {:ok, context}
       end
 
-      given_ :with_google_analytics_sync_stub
+      given_(:with_google_analytics_sync_stub)
 
       when_ "a synced metric value for a day is stored", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -25,8 +25,14 @@ defmodule MetricFlowSpex.MetricIsStoredKeyedToPropertyAndClientAccountSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "it is keyed to the GA4 property and the client account, appearing in this account's own history", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']", "Google Analytics")
+      then_ "it is keyed to the GA4 property and the client account, appearing in this account's own history",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",
+                 "Google Analytics"
+               )
+
         {:ok, context}
       end
     end

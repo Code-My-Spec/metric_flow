@@ -187,6 +187,7 @@ defmodule MetricFlow.Integrations do
   @spec handle_login_callback(map(), map()) :: {:ok, map()} | {:error, term()}
   def handle_login_callback(session_params, callback_params) do
     mod = login_provider()
+
     config =
       mod.config()
       |> with_static_discovery(mod.strategy())

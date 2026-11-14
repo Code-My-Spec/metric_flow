@@ -114,7 +114,13 @@ defmodule MetricFlow.Agencies.WhiteLabelConfig do
 
   defp validate_logo_file_type(changeset) do
     validate_change(changeset, :logo_url, fn :logo_url, url ->
-      extension = url |> URI.parse() |> Map.get(:path, url) |> to_string() |> Path.extname() |> String.downcase()
+      extension =
+        url
+        |> URI.parse()
+        |> Map.get(:path, url)
+        |> to_string()
+        |> Path.extname()
+        |> String.downcase()
 
       if extension in @allowed_logo_extensions do
         []

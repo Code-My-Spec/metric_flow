@@ -37,12 +37,14 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
 
       when_ "the user fills in the form with the Client account type and submits", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "client_user@example.com",
-          password: "SecurePassword123!",
-          account_name: "Client Corp",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "client_user@example.com",
+            password: "SecurePassword123!",
+            account_name: "Client Corp",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -62,12 +64,14 @@ defmodule MetricFlowSpex.AccountTypeSpecifiedDuringRegistrationSpex do
 
       when_ "the user fills in the form with the Agency account type and submits", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "agency_user@example.com",
-          password: "SecurePassword123!",
-          account_name: "Agency Inc",
-          account_type: "agency"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "agency_user@example.com",
+            password: "SecurePassword123!",
+            account_name: "Agency Inc",
+            account_type: "agency"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

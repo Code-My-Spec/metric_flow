@@ -6,11 +6,11 @@ defmodule MetricFlowSpex.UserRemovesAnAccountLaterWithoutReAuthenticatingSpex do
 
   spex "User removes an account later without re-authenticating", criterion: 951 do
     scenario "removing one of two previously selected accounts does not require OAuth again" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user has two GMB accounts connected", context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

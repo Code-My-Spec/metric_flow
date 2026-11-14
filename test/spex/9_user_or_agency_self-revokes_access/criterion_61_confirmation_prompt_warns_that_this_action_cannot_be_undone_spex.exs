@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.ConfirmationPromptWarnsThatThisActionCannotBeUndoneSpex
 
   spex "Confirmation prompt warns that this action cannot be undone", criterion: 61 do
     scenario "the self-revoke confirmation prompt warns deletion cannot be undone" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the member switches into the owner's account", context do
         {:ok, accounts_view, _html} = live(context.member_conn, "/app/accounts")

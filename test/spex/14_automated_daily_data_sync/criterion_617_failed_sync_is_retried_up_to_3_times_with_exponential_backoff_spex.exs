@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.FailedSyncIsRetriedUpTo3TimesWithExponentialBackoffSpex
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Failed sync is retried up to 3 times with exponential backoff", fail_on_error_logs: false, criterion: 617 do
+  spex "Failed sync is retried up to 3 times with exponential backoff",
+    fail_on_error_logs: false,
+    criterion: 617 do
     scenario "a sync attempt for an integration fails and the system retries it" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a sync attempt for an integration fails", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
@@ -23,8 +25,13 @@ defmodule MetricFlowSpex.FailedSyncIsRetriedUpTo3TimesWithExponentialBackoffSpex
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "it retries up to 3 times with exponential backoff between attempts before finally failing", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']")
+      then_ "it retries up to 3 times with exponential backoff between attempts before finally failing",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='failed']"
+               )
+
         {:ok, context}
       end
     end

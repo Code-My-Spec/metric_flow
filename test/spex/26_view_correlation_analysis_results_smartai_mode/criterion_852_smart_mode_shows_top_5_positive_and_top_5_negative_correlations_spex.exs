@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion852SmartModeShowsTop5PositiveAndNegativeCorrel
 
   spex "Smart mode shows top 5 positive and top 5 negative correlations", criterion: 852 do
     scenario "a goal metric with many calculated correlations shows only the top 5 of each sign" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a goal metric with many calculated correlations", context do
         for i <- 1..7 do
@@ -52,8 +52,11 @@ defmodule MetricFlowSpex.Criterion852SmartModeShowsTop5PositiveAndNegativeCorrel
           |> Floki.find("[data-role='top-negative-correlations'] [data-role='correlation-row']")
           |> length()
 
-        assert positive_count == 5, "Expected exactly 5 positive correlations, got #{positive_count}"
-        assert negative_count == 5, "Expected exactly 5 negative correlations, got #{negative_count}"
+        assert positive_count == 5,
+               "Expected exactly 5 positive correlations, got #{positive_count}"
+
+        assert negative_count == 5,
+               "Expected exactly 5 negative correlations, got #{negative_count}"
 
         {:ok, context}
       end

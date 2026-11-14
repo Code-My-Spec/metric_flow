@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
   spex "User can log in with email and password", criterion: 9 do
     scenario "registered user logs in with valid email and password" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
@@ -15,11 +15,13 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
 
       when_ "the user submits valid email and password", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :login_conn, conn)}
@@ -37,7 +39,7 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
     end
 
     scenario "registered user logs in via magic link" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")

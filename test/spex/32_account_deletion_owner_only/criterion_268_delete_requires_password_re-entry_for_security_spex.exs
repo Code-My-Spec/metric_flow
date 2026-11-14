@@ -6,19 +6,22 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
 
   spex "Delete requires password re-entry for security", criterion: 268 do
     scenario "deletion is rejected when password is incorrect" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the owner submits the delete form with the correct account name but wrong password", context do
+      when_ "the owner submits the delete form with the correct account name but wrong password",
+            context do
         context.view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: "WrongPassword123!"
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: "WrongPassword123!"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -31,19 +34,22 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
     end
 
     scenario "deletion is rejected when password is empty" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the owner submits the delete form with the correct account name but empty password", context do
+      when_ "the owner submits the delete form with the correct account name but empty password",
+            context do
         context.view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: ""
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: ""
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -57,20 +63,23 @@ defmodule MetricFlowSpex.DeleteRequiresPasswordReEntryForSecuritySpex do
     end
 
     scenario "deletion succeeds when correct account name and correct password are provided" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the owner submits the delete form with the correct account name and correct password", context do
+      when_ "the owner submits the delete form with the correct account name and correct password",
+            context do
         result =
           context.view
-          |> form("#delete-account-form", delete_confirmation: %{
-            account_name: "Owner Account",
-            password: context.owner_password
-          })
+          |> form("#delete-account-form",
+            delete_confirmation: %{
+              account_name: "Owner Account",
+              password: context.owner_password
+            }
+          )
           |> render_submit()
 
         {:ok, Map.put(context, :submit_result, result)}

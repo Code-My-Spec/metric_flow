@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.IntegrationsListIncludesMarketingAndFinancialPlatformsT
 
   spex "Integrations list includes marketing and financial platforms together", criterion: 569 do
     scenario "an owner with both QuickBooks and Google Ads connected sees both in one list" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user also has a connected marketing platform", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)

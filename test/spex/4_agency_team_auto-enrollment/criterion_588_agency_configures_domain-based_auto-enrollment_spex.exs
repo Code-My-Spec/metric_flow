@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyConfiguresDomainBasedAutoEnrollmentSpex do
 
   spex "Agency configures domain-based auto-enrollment", criterion: 588 do
     scenario "an agency owner configures auto-enrollment for their organization's email domain" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner is on their agency settings page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

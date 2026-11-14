@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
 
   spex "UI shows sync in progress with loading indicator", criterion: 112 do
     scenario "before clicking Sync Now no Syncing badge is visible" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
     end
 
     scenario "after clicking Sync Now the UI shows a Syncing badge for that integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
     end
 
     scenario "the loading spinner element is present when sync is in progress" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -62,7 +62,11 @@ defmodule MetricFlowSpex.UiShowsSyncInProgressWithLoadingIndicatorSpex do
       end
 
       then_ "the page renders a loading spinner element inside the Syncing badge", context do
-        assert has_element?(context.view, "[data-role='integration-sync-status'] .loading-spinner")
+        assert has_element?(
+                 context.view,
+                 "[data-role='integration-sync-status'] .loading-spinner"
+               )
+
         {:ok, context}
       end
     end

@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion832LoggedOutInviteeIsPromptedToLogInOrRegister
 
   spex "Logged-out invitee is prompted to log in or register", criterion: 832 do
     scenario "a logged-out invitee opening the invitation link is offered log in and register" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

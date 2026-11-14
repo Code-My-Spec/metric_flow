@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion846CorrelationsRecalculateDailyAfterSyncComple
 
   spex "Correlations recalculate daily after sync completes", criterion: 846 do
     scenario "correlations are recalculated once a daily sync completes" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the daily data sync has just completed", context do
         yesterday = Date.add(Date.utc_today(), -1)

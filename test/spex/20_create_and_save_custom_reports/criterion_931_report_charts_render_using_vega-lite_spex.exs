@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.ReportChartsRenderUsingVegaLiteSpex do
 
   spex "Report charts render using Vega-Lite", criterion: 931 do
     scenario "viewing a report with charts renders them with Vega-Lite specifications" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a report containing charts", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

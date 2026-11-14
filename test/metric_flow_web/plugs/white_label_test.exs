@@ -68,7 +68,9 @@ defmodule MetricFlowWeb.Plugs.WhiteLabelTest do
       assert session_config.subdomain == config.subdomain
     end
 
-    test "session config contains subdomain, logo_url, primary_color, secondary_color", %{conn: conn} do
+    test "session config contains subdomain, logo_url, primary_color, secondary_color", %{
+      conn: conn
+    } do
       agency = account_fixture(%{type: "agency"})
 
       white_label_config_fixture(agency.id, %{
@@ -118,7 +120,9 @@ defmodule MetricFlowWeb.Plugs.WhiteLabelTest do
 
       # Manually set verified_at since the fixture doesn't set it
       config
-      |> Ecto.Changeset.change(custom_domain_verified_at: DateTime.utc_now() |> DateTime.truncate(:second))
+      |> Ecto.Changeset.change(
+        custom_domain_verified_at: DateTime.utc_now() |> DateTime.truncate(:second)
+      )
       |> MetricFlow.Repo.update!()
 
       conn =
@@ -190,7 +194,9 @@ defmodule MetricFlowWeb.Plugs.WhiteLabelTest do
         })
 
       config
-      |> Ecto.Changeset.change(custom_domain_verified_at: DateTime.utc_now() |> DateTime.truncate(:second))
+      |> Ecto.Changeset.change(
+        custom_domain_verified_at: DateTime.utc_now() |> DateTime.truncate(:second)
+      )
       |> MetricFlow.Repo.update!()
 
       conn =

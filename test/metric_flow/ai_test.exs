@@ -27,7 +27,10 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "list_insights/2" do
-    test "returns list of insights for the scoped account", %{scope: scope, account_id: account_id} do
+    test "returns list of insights for the scoped account", %{
+      scope: scope,
+      account_id: account_id
+    } do
       insert_insight!(account_id)
       insert_insight!(account_id)
 
@@ -41,7 +44,10 @@ defmodule MetricFlow.AiTest do
       assert Ai.list_insights(scope) == []
     end
 
-    test "filters by suggestion_type when option provided", %{scope: scope, account_id: account_id} do
+    test "filters by suggestion_type when option provided", %{
+      scope: scope,
+      account_id: account_id
+    } do
       insert_insight!(account_id, %{suggestion_type: :budget_increase})
       insert_insight!(account_id, %{suggestion_type: :optimization})
 
@@ -51,7 +57,10 @@ defmodule MetricFlow.AiTest do
       assert hd(results).suggestion_type == :budget_increase
     end
 
-    test "filters by correlation_result_id when option provided", %{scope: scope, account_id: account_id} do
+    test "filters by correlation_result_id when option provided", %{
+      scope: scope,
+      account_id: account_id
+    } do
       correlation_result = insert_correlation_result!(account_id)
       insert_insight!(account_id, %{correlation_result_id: correlation_result.id})
       insert_insight!(account_id)
@@ -62,8 +71,13 @@ defmodule MetricFlow.AiTest do
       assert hd(results).correlation_result_id == correlation_result.id
     end
 
-    test "orders results by generated_at descending (most recent first)", %{scope: scope, account_id: account_id} do
-      older_time = DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+    test "orders results by generated_at descending (most recent first)", %{
+      scope: scope,
+      account_id: account_id
+    } do
+      older_time =
+        DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+
       newer_time = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       insert_insight!(account_id, %{generated_at: older_time})
@@ -75,7 +89,10 @@ defmodule MetricFlow.AiTest do
       assert times == Enum.sort(times, {:desc, DateTime})
     end
 
-    test "does not return insights belonging to other accounts", %{scope: scope, account_id: account_id} do
+    test "does not return insights belonging to other accounts", %{
+      scope: scope,
+      account_id: account_id
+    } do
       {_other_user, other_scope} = user_with_scope()
       other_account_id = Accounts.get_personal_account_id(other_scope)
 
@@ -121,7 +138,9 @@ defmodule MetricFlow.AiTest do
       assert {:error, :not_found} = Ai.get_insight(scope, -1)
     end
 
-    test "returns error tuple with :not_found when insight belongs to a different account", %{scope: scope} do
+    test "returns error tuple with :not_found when insight belongs to a different account", %{
+      scope: scope
+    } do
       {_other_user, other_scope} = user_with_scope()
       other_account_id = Accounts.get_personal_account_id(other_scope)
       other_insight = insert_insight!(other_account_id)
@@ -135,13 +154,21 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "submit_feedback/3" do
-    test "returns ok tuple with SuggestionFeedback on success", %{scope: scope, account_id: account_id} do
+    test "returns ok tuple with SuggestionFeedback on success", %{
+      scope: scope,
+      account_id: account_id
+    } do
       insight = insert_insight!(account_id)
 
-      assert {:ok, %SuggestionFeedback{}} = Ai.submit_feedback(scope, insight.id, %{rating: :helpful})
+      assert {:ok, %SuggestionFeedback{}} =
+               Ai.submit_feedback(scope, insight.id, %{rating: :helpful})
     end
 
-    test "creates new feedback record when none exists for the user and insight", %{scope: scope, account_id: account_id, user: user} do
+    test "creates new feedback record when none exists for the user and insight", %{
+      scope: scope,
+      account_id: account_id,
+      user: user
+    } do
       insight = insert_insight!(account_id)
 
       assert {:ok, feedback} = Ai.submit_feedback(scope, insight.id, %{rating: :helpful})
@@ -150,7 +177,11 @@ defmodule MetricFlow.AiTest do
       assert feedback.rating == :helpful
     end
 
-    test "updates existing feedback record when user changes their rating", %{scope: scope, account_id: account_id, user: user} do
+    test "updates existing feedback record when user changes their rating", %{
+      scope: scope,
+      account_id: account_id,
+      user: user
+    } do
       insight = insert_insight!(account_id)
       insert_suggestion_feedback!(insight.id, user.id, %{rating: :helpful})
 
@@ -158,10 +189,16 @@ defmodule MetricFlow.AiTest do
       assert updated.rating == :not_helpful
     end
 
-    test "stores the user_id from the scope, not from attrs", %{scope: scope, account_id: account_id, user: user} do
+    test "stores the user_id from the scope, not from attrs", %{
+      scope: scope,
+      account_id: account_id,
+      user: user
+    } do
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = Ai.submit_feedback(scope, insight.id, %{rating: :helpful, user_id: -999})
+      assert {:ok, feedback} =
+               Ai.submit_feedback(scope, insight.id, %{rating: :helpful, user_id: -999})
+
       assert feedback.user_id == user.id
     end
 
@@ -174,20 +211,25 @@ defmodule MetricFlow.AiTest do
       other_account_id = Accounts.get_personal_account_id(other_scope)
       other_insight = insert_insight!(other_account_id)
 
-      assert {:error, :not_found} = Ai.submit_feedback(scope, other_insight.id, %{rating: :helpful})
+      assert {:error, :not_found} =
+               Ai.submit_feedback(scope, other_insight.id, %{rating: :helpful})
     end
 
     test "returns error changeset when rating is invalid", %{scope: scope, account_id: account_id} do
       insight = insert_insight!(account_id)
 
-      assert {:error, changeset} = Ai.submit_feedback(scope, insight.id, %{rating: :super_helpful})
+      assert {:error, changeset} =
+               Ai.submit_feedback(scope, insight.id, %{rating: :super_helpful})
+
       assert changeset.errors[:rating] != nil
     end
 
     test "allows nil comment", %{scope: scope, account_id: account_id} do
       insight = insert_insight!(account_id)
 
-      assert {:ok, feedback} = Ai.submit_feedback(scope, insight.id, %{rating: :helpful, comment: nil})
+      assert {:ok, feedback} =
+               Ai.submit_feedback(scope, insight.id, %{rating: :helpful, comment: nil})
+
       assert feedback.comment == nil
     end
   end
@@ -197,7 +239,11 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "get_feedback_for_insight/2" do
-    test "returns SuggestionFeedback when the user has submitted feedback for the insight", %{scope: scope, account_id: account_id, user: user} do
+    test "returns SuggestionFeedback when the user has submitted feedback for the insight", %{
+      scope: scope,
+      account_id: account_id,
+      user: user
+    } do
       insight = insert_insight!(account_id)
       insert_suggestion_feedback!(insight.id, user.id, %{rating: :helpful})
 
@@ -208,7 +254,10 @@ defmodule MetricFlow.AiTest do
       assert result.user_id == user.id
     end
 
-    test "returns nil when the user has not submitted feedback", %{scope: scope, account_id: account_id} do
+    test "returns nil when the user has not submitted feedback", %{
+      scope: scope,
+      account_id: account_id
+    } do
       insight = insert_insight!(account_id)
 
       assert Ai.get_feedback_for_insight(scope, insight.id) == nil
@@ -218,7 +267,10 @@ defmodule MetricFlow.AiTest do
       assert Ai.get_feedback_for_insight(scope, -1) == nil
     end
 
-    test "does not return feedback submitted by other users", %{scope: scope, account_id: account_id} do
+    test "does not return feedback submitted by other users", %{
+      scope: scope,
+      account_id: account_id
+    } do
       insight = insert_insight!(account_id)
       {other_user, _other_scope} = user_with_scope()
       insert_suggestion_feedback!(insight.id, other_user.id, %{rating: :helpful})
@@ -262,7 +314,9 @@ defmodule MetricFlow.AiTest do
     end
 
     test "stores context_id when provided", %{scope: scope} do
-      assert {:ok, session} = Ai.create_chat_session(scope, %{context_type: :correlation, context_id: 42})
+      assert {:ok, session} =
+               Ai.create_chat_session(scope, %{context_type: :correlation, context_id: 42})
+
       assert session.context_id == 42
     end
 
@@ -282,7 +336,11 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "list_chat_sessions/1" do
-    test "returns list of chat sessions for scoped user", %{scope: scope, user: user, account_id: account_id} do
+    test "returns list of chat sessions for scoped user", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       insert_chat_session!(user.id, account_id)
       insert_chat_session!(user.id, account_id)
 
@@ -296,11 +354,17 @@ defmodule MetricFlow.AiTest do
       assert Ai.list_chat_sessions(scope) == []
     end
 
-    test "orders by updated_at descending (most recently active first)", %{scope: scope, user: user, account_id: account_id} do
+    test "orders by updated_at descending (most recently active first)", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       older = insert_chat_session!(user.id, account_id)
       newer = insert_chat_session!(user.id, account_id)
 
-      old_time = DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+      old_time =
+        DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+
       new_time = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       Repo.update_all(
@@ -319,7 +383,11 @@ defmodule MetricFlow.AiTest do
       assert ids == [newer.id, older.id]
     end
 
-    test "does not return sessions belonging to other users", %{scope: scope, user: user, account_id: account_id} do
+    test "does not return sessions belonging to other users", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       {other_user, other_scope} = user_with_scope()
       other_account_id = Accounts.get_personal_account_id(other_scope)
 
@@ -338,17 +406,27 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "get_chat_session/2" do
-    test "returns ok tuple with ChatSession when found", %{scope: scope, user: user, account_id: account_id} do
+    test "returns ok tuple with ChatSession when found", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       session = insert_chat_session!(user.id, account_id)
 
       assert {:ok, fetched} = Ai.get_chat_session(scope, session.id)
       assert fetched.id == session.id
     end
 
-    test "preloads messages ordered by inserted_at ascending", %{scope: scope, user: user, account_id: account_id} do
+    test "preloads messages ordered by inserted_at ascending", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       session = insert_chat_session!(user.id, account_id)
 
-      earlier_time = DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+      earlier_time =
+        DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+
       later_time = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       msg2 = insert_chat_message!(session.id)
@@ -389,7 +467,10 @@ defmodule MetricFlow.AiTest do
   # ---------------------------------------------------------------------------
 
   describe "generate_insights/3" do
-    test "returns ok tuple with list of Insight structs on success", %{scope: scope, account_id: account_id} do
+    test "returns ok tuple with list of Insight structs on success", %{
+      scope: scope,
+      account_id: account_id
+    } do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
       runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
@@ -402,7 +483,10 @@ defmodule MetricFlow.AiTest do
       end)
     end
 
-    test "persists one Insight per structured response item returned by InsightsGenerator", %{scope: scope, account_id: account_id} do
+    test "persists one Insight per structured response item returned by InsightsGenerator", %{
+      scope: scope,
+      account_id: account_id
+    } do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
       runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
@@ -414,7 +498,10 @@ defmodule MetricFlow.AiTest do
       end)
     end
 
-    test "links each insight to the account_id from the scope", %{scope: scope, account_id: account_id} do
+    test "links each insight to the account_id from the scope", %{
+      scope: scope,
+      account_id: account_id
+    } do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
       runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight()]})
@@ -429,7 +516,9 @@ defmodule MetricFlow.AiTest do
       assert {:error, :not_found} = Ai.generate_insights(scope, -1)
     end
 
-    test "returns error :not_found when correlation job belongs to a different account", %{scope: scope} do
+    test "returns error :not_found when correlation job belongs to a different account", %{
+      scope: scope
+    } do
       {_other_user, other_scope} = user_with_scope()
       other_account_id = Accounts.get_personal_account_id(other_scope)
       correlation_result = insert_correlation_result!(other_account_id)
@@ -438,7 +527,10 @@ defmodule MetricFlow.AiTest do
       assert {:error, :not_found} = Ai.generate_insights(scope, job.id)
     end
 
-    test "returns error :job_not_complete when job status is not :completed", %{scope: scope, account_id: account_id} do
+    test "returns error :job_not_complete when job status is not :completed", %{
+      scope: scope,
+      account_id: account_id
+    } do
       job =
         %CorrelationJob{}
         |> CorrelationJob.changeset(%{
@@ -451,7 +543,10 @@ defmodule MetricFlow.AiTest do
       assert {:error, :job_not_complete} = Ai.generate_insights(scope, job.id)
     end
 
-    test "returns error :no_results when the correlation job has no results", %{scope: scope, account_id: account_id} do
+    test "returns error :no_results when the correlation job has no results", %{
+      scope: scope,
+      account_id: account_id
+    } do
       job =
         %CorrelationJob{}
         |> CorrelationJob.changeset(%{
@@ -464,7 +559,10 @@ defmodule MetricFlow.AiTest do
       assert {:error, :no_results} = Ai.generate_insights(scope, job.id)
     end
 
-    test "propagates error tuple when InsightsGenerator returns an error", %{scope: scope, account_id: account_id} do
+    test "propagates error tuple when InsightsGenerator returns an error", %{
+      scope: scope,
+      account_id: account_id
+    } do
       correlation_result = insert_correlation_result!(account_id)
       job = Repo.get!(CorrelationJob, correlation_result.correlation_job_id)
       runner = ClaudeCodeStub.error("simulated provider failure")
@@ -479,7 +577,8 @@ defmodule MetricFlow.AiTest do
     Map.merge(
       %{
         "summary" => "Sessions strongly predict revenue",
-        "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+        "content" =>
+          "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
         "suggestion_type" => "budget_increase",
         "confidence" => 0.85
       },
@@ -497,18 +596,24 @@ defmodule MetricFlow.AiTest do
 
       capture_log(fn ->
         assert {:ok, spec} =
-                 Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+                 Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time",
+                   command_runner: runner
+                 )
 
         assert is_map(spec)
       end)
     end
 
-    test "returned spec map includes \"$schema\" pointing to the Vega-Lite v5 URL", %{scope: scope} do
+    test "returned spec map includes \"$schema\" pointing to the Vega-Lite v5 URL", %{
+      scope: scope
+    } do
       runner = ReportGeneratorStub.generate_revenue_bar_chart()
 
       capture_log(fn ->
         {:ok, spec} =
-          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time",
+            command_runner: runner
+          )
 
         assert spec["$schema"] == "https://vega.github.io/schema/vega-lite/v5.json"
       end)
@@ -519,14 +624,18 @@ defmodule MetricFlow.AiTest do
 
       capture_log(fn ->
         {:ok, spec} =
-          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time", command_runner: runner)
+          Ai.generate_vega_spec(scope, "Show me a bar chart of revenue over time",
+            command_runner: runner
+          )
 
         assert Map.has_key?(spec, "mark")
         assert Map.has_key?(spec, "encoding")
       end)
     end
 
-    test "passes available metric names from the scoped account to ReportGenerator", %{scope: scope} do
+    test "passes available metric names from the scoped account to ReportGenerator", %{
+      scope: scope
+    } do
       # The function delegates to ReportGenerator which builds a prompt containing
       # metric names. We verify the function succeeds with the stub — the
       # metric names list may be empty when no metrics are in the DB, but the call
@@ -534,15 +643,18 @@ defmodule MetricFlow.AiTest do
       runner = ReportGeneratorStub.generate_revenue_bar_chart()
 
       capture_log(fn ->
-        assert {:ok, _spec} = Ai.generate_vega_spec(scope, "Show me a revenue chart", command_runner: runner)
+        assert {:ok, _spec} =
+                 Ai.generate_vega_spec(scope, "Show me a revenue chart", command_runner: runner)
       end)
     end
 
-    test "returns error :invalid_vega_spec when returned map is missing required Vega-Lite fields", %{scope: scope} do
+    test "returns error :invalid_vega_spec when returned map is missing required Vega-Lite fields",
+         %{scope: scope} do
       runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => %{"mark" => "bar"}})
 
       capture_log(fn ->
-        assert {:error, _reason} = Ai.generate_vega_spec(scope, "Generate a chart", command_runner: runner)
+        assert {:error, _reason} =
+                 Ai.generate_vega_spec(scope, "Generate a chart", command_runner: runner)
       end)
     end
 
@@ -550,7 +662,8 @@ defmodule MetricFlow.AiTest do
       runner = ClaudeCodeStub.error("simulated provider failure")
 
       capture_log(fn ->
-        assert {:error, _reason} = Ai.generate_vega_spec(scope, "Show me revenue data", command_runner: runner)
+        assert {:error, _reason} =
+                 Ai.generate_vega_spec(scope, "Show me revenue data", command_runner: runner)
       end)
     end
   end
@@ -565,7 +678,10 @@ defmodule MetricFlow.AiTest do
       %{session: session}
     end
 
-    test "returns ok tuple with a pid immediately (does not block)", %{scope: scope, session: session} do
+    test "returns ok tuple with a pid immediately (does not block)", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Hello"])]
 
       assert {:ok, pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -589,7 +705,10 @@ defmodule MetricFlow.AiTest do
       assert_receive {:chat_complete, _}, 5000
     end
 
-    test "spawns a Task that streams tokens to the caller as :chat_token messages", %{scope: scope, session: session} do
+    test "spawns a Task that streams tokens to the caller as :chat_token messages", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -599,7 +718,10 @@ defmodule MetricFlow.AiTest do
       assert_receive {:chat_complete, _}, 5000
     end
 
-    test "persists an assistant ChatMessage after the stream completes", %{scope: scope, session: session} do
+    test "persists an assistant ChatMessage after the stream completes", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -614,7 +736,10 @@ defmodule MetricFlow.AiTest do
       assert length(assistant_msgs) == 1
     end
 
-    test "assistant ChatMessage content equals the concatenation of all streamed tokens", %{scope: scope, session: session} do
+    test "assistant ChatMessage content equals the concatenation of all streamed tokens", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -629,7 +754,10 @@ defmodule MetricFlow.AiTest do
       assert hd(assistant_msgs).content == "Hello world"
     end
 
-    test "assistant ChatMessage token_count equals the length of the full content string", %{scope: scope, session: session} do
+    test "assistant ChatMessage token_count equals the length of the full content string", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Hello", " world"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -644,7 +772,10 @@ defmodule MetricFlow.AiTest do
       assert hd(assistant_msgs).token_count == String.length("Hello world")
     end
 
-    test "sends :chat_complete message with token_count to caller when streaming finishes", %{scope: scope, session: session} do
+    test "sends :chat_complete message with token_count to caller when streaming finishes", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: success_stream_fn(["Done"])]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -653,7 +784,10 @@ defmodule MetricFlow.AiTest do
       assert count == String.length("Done")
     end
 
-    test "sends :chat_error message to caller when LlmClient returns an error", %{scope: scope, session: session} do
+    test "sends :chat_error message to caller when LlmClient returns an error", %{
+      scope: scope,
+      session: session
+    } do
       opts = [stream_chat_fn: error_stream_fn(:api_error)]
 
       {:ok, _pid} = Ai.send_chat_message(scope, session.id, "Hi", opts)
@@ -668,12 +802,18 @@ defmodule MetricFlow.AiTest do
     test "returns error :not_found when session belongs to a different user", %{scope: scope} do
       {other_user, other_scope} = user_with_scope()
       other_account_id = Accounts.get_personal_account_id(other_scope)
-      other_session = insert_chat_session!(other_user.id, other_account_id, %{status: :active, title: "Other"})
+
+      other_session =
+        insert_chat_session!(other_user.id, other_account_id, %{status: :active, title: "Other"})
 
       assert {:error, :not_found} = Ai.send_chat_message(scope, other_session.id, "Hi")
     end
 
-    test "returns error :session_archived when session status is :archived", %{scope: scope, user: user, account_id: account_id} do
+    test "returns error :session_archived when session status is :archived", %{
+      scope: scope,
+      user: user,
+      account_id: account_id
+    } do
       archived = insert_chat_session!(user.id, account_id, %{status: :archived, title: "Old"})
 
       assert {:error, :session_archived} = Ai.send_chat_message(scope, archived.id, "Hi")

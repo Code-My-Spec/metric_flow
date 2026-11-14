@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion847SystemTestsMultipleTimeLagsToFindTheBestFit
 
   spex "System tests multiple time lags to find the best fit", criterion: 847 do
     scenario "a metric is tested for correlation across multiple time lags" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a metric being tested for correlation with a goal metric", context do
         yesterday = Date.add(Date.utc_today(), -1)

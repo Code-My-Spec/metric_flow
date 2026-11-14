@@ -61,7 +61,8 @@ defmodule MetricFlowTest.AlloyStub do
   Convenience wrapper: a `command_runner` that always returns a plain
   end-turn reply with the given text and no tool calls.
   """
-  @spec end_turn_command_runner(String.t()) :: (String.t(), list(), keyword() -> {String.t(), integer()})
+  @spec end_turn_command_runner(String.t()) :: (String.t(), list(), keyword() ->
+                                                  {String.t(), integer()})
   def end_turn_command_runner(text) do
     fake_command_runner(fn _args, _opts ->
       envelope(%{"stop_reason" => "end_turn", "text" => text, "tool_calls" => []})
