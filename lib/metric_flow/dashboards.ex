@@ -18,6 +18,7 @@ defmodule MetricFlow.Dashboards do
   alias MetricFlow.Dashboards.ChartBuilder
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.DashboardsRepository
+  alias MetricFlow.Dashboards.DashboardVersion
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Dashboards.VisualizationsRepository
   alias MetricFlow.Integrations
@@ -104,6 +105,15 @@ defmodule MetricFlow.Dashboards do
   @doc "Deletes every user-owned dashboard for the scoped user."
   @spec delete_all_dashboards(Scope.t()) :: :ok
   defdelegate delete_all_dashboards(scope), to: DashboardsRepository
+
+  @doc "Records a snapshot of a dashboard's visualizations as a new version."
+  @spec create_dashboard_version(Dashboard.t(), [map()]) ::
+          {:ok, DashboardVersion.t()} | {:error, Ecto.Changeset.t()}
+  defdelegate create_dashboard_version(dashboard, visualizations), to: DashboardsRepository
+
+  @doc "Returns all versions recorded for a dashboard, most recent first."
+  @spec list_dashboard_versions(Dashboard.t()) :: [DashboardVersion.t()]
+  defdelegate list_dashboard_versions(dashboard), to: DashboardsRepository
 
   @doc "Deletes every visualization for the scoped user."
   @spec delete_all_visualizations(Scope.t()) :: :ok

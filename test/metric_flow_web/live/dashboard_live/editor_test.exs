@@ -6,6 +6,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   import MetricFlowTest.UsersFixtures
   import MetricFlowTest.MetricsFixtures
 
+  alias MetricFlow.Accounts.Account
+  alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
@@ -22,6 +24,25 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
     %Dashboard{}
     |> Dashboard.changeset(Map.merge(defaults, attrs))
+    |> Repo.insert!()
+  end
+
+  defp insert_account!(user, attrs \\ %{}) do
+    defaults = %{
+      name: "Test Account",
+      slug: "account-#{System.unique_integer([:positive])}",
+      type: "client",
+      originator_user_id: user.id
+    }
+
+    %Account{}
+    |> Account.creation_changeset(Map.merge(defaults, attrs))
+    |> Repo.insert!()
+  end
+
+  defp insert_member!(account, user, role) do
+    %AccountMember{}
+    |> AccountMember.changeset(%{account_id: account.id, user_id: user.id, role: role})
     |> Repo.insert!()
   end
 
@@ -309,6 +330,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     test "builds a visualization from the agent's response and shows the exchange in the chat panel",
          %{conn: conn} do
       user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
       insert_metric!(user, %{metric_name: "impressions"})
       conn = log_in_user(conn, user)
 

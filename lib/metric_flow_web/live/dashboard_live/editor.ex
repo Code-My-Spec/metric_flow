@@ -149,6 +149,23 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         </form>
       </div>
 
+      <%!-- Versions (Story 74, rule 7: every agent change is a restorable version) --%>
+      <div :if={@dashboard_versions != []} data-role="dashboard-version-list" class="mf-card p-4 mb-6">
+        <h2 class="text-base font-semibold mb-2">Versions</h2>
+        <ul class="space-y-1">
+          <li
+            :for={{version, idx} <- Enum.with_index(@dashboard_versions)}
+            data-role="dashboard-version"
+            class="text-sm text-base-content/70"
+          >
+            Version {length(@dashboard_versions) - idx} -- {Calendar.strftime(
+              version.inserted_at,
+              "%b %d, %Y %H:%M"
+            )}
+          </li>
+        </ul>
+      </div>
+
       <%!-- Visualization count error --%>
       <p :if={@viz_error} class="text-sm text-error mb-4">
         {@viz_error}
@@ -420,6 +437,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_context, nil)
           |> assign(:dashboard_chat_session_id, chat_session_id)
           |> assign(:dashboard_chat_pending_message, nil)
+          |> assign(:dashboard_versions, Dashboards.list_dashboard_versions(dashboard))
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -459,6 +477,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard_chat_context, nil)
       |> assign(:dashboard_chat_session_id, nil)
       |> assign(:dashboard_chat_pending_message, nil)
+      |> assign(:dashboard_versions, [])
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -796,8 +815,17 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # Story 74, rule 1: the first thing the agent builds is saved as a draft
   # with no explicit Save -- once a dashboard already exists we just keep
   # replacing its visualizations on every later build.
-  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{}}} = socket, _visualizations),
-    do: socket
+  # Story 74, rule 1: the first build saves a draft with no explicit Save.
+  # Story 74, rule 7: every later change -- including this first one -- is
+  # recorded as a version.
+  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations) do
+    scope = socket.assigns.current_scope
+
+    case Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
+      :ok -> record_dashboard_version(socket, dashboard, visualizations)
+      {:error, _} -> socket
+    end
+  end
 
   defp autosave_draft_dashboard(socket, visualizations) do
     scope = socket.assigns.current_scope
@@ -805,9 +833,22 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
     with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name}),
          :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
-      assign(socket, :dashboard, dashboard)
+      socket
+      |> assign(:dashboard, dashboard)
+      |> record_dashboard_version(dashboard, visualizations)
+      |> push_patch(to: ~p"/app/dashboards/#{dashboard.id}/edit")
     else
       _ -> socket
+    end
+  end
+
+  defp record_dashboard_version(socket, dashboard, visualizations) do
+    case Dashboards.create_dashboard_version(dashboard, visualizations) do
+      {:ok, version} ->
+        assign(socket, :dashboard_versions, [version | socket.assigns.dashboard_versions])
+
+      {:error, _} ->
+        socket
     end
   end
 

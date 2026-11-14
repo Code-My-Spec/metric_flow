@@ -10,6 +10,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   import Ecto.Query
 
   alias MetricFlow.Dashboards.Dashboard
+  alias MetricFlow.Dashboards.DashboardVersion
   alias MetricFlow.Dashboards.DashboardVisualization
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
@@ -235,5 +236,38 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
     |> Repo.delete_all()
 
     :ok
+  end
+
+  # ---------------------------------------------------------------------------
+  # create_dashboard_version/2
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Records a snapshot of a dashboard's visualizations as a new version.
+
+  Returns `{:ok, version}` on success, `{:error, changeset}` on failure.
+  """
+  @spec create_dashboard_version(Dashboard.t(), [map()]) ::
+          {:ok, DashboardVersion.t()} | {:error, Ecto.Changeset.t()}
+  def create_dashboard_version(%Dashboard{id: dashboard_id}, visualizations) do
+    %DashboardVersion{}
+    |> DashboardVersion.changeset(%{dashboard_id: dashboard_id, visualizations: visualizations})
+    |> Repo.insert()
+  end
+
+  # ---------------------------------------------------------------------------
+  # list_dashboard_versions/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Returns all versions recorded for a dashboard, most recent first.
+  """
+  @spec list_dashboard_versions(Dashboard.t()) :: [DashboardVersion.t()]
+  def list_dashboard_versions(%Dashboard{id: dashboard_id}) do
+    from(v in DashboardVersion,
+      where: v.dashboard_id == ^dashboard_id,
+      order_by: [desc: v.inserted_at, desc: v.id]
+    )
+    |> Repo.all()
   end
 end
