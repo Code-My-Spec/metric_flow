@@ -319,16 +319,17 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
            anywhere or calls any tool. --%>
       <div data-role="filter-control" class="mf-card p-3 mb-6 flex items-center gap-2">
         <label class="text-sm text-base-content/70" for="dashboard-date-range">Date range</label>
-        <select
-          id="dashboard-date-range"
-          name="range"
-          phx-change="filter_date_range"
-          class="select select-sm select-bordered"
-        >
-          <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
-          <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
-          <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
-        </select>
+        <form phx-change="filter_date_range">
+          <select
+            id="dashboard-date-range"
+            name="range"
+            class="select select-sm select-bordered"
+          >
+            <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
+            <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
+            <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
+          </select>
+        </form>
       </div>
 
       <%!-- Visualization canvas --%>
@@ -892,25 +893,50 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp add_visualizations_from_chat_specs(socket, []), do: socket
 
   defp add_visualizations_from_chat_specs(socket, specs) do
-    start_position = length(socket.assigns.visualizations)
-
-    new_vizzes =
-      specs
-      |> Enum.with_index(start_position)
-      |> Enum.map(fn {spec, position} ->
-        %{
-          metric_name: extract_chat_metric_name(spec),
-          chart_type: extract_chart_type_from_spec(spec),
-          position: position,
-          vega_spec: custom_spec(spec)
-        }
-      end)
-
-    visualizations = socket.assigns.visualizations ++ new_vizzes
+    visualizations =
+      merge_chat_specs(socket.assigns.visualizations, socket.assigns.chart_specs, specs)
 
     socket
     |> assign_visualizations(visualizations)
     |> autosave_draft_dashboard(visualizations)
+  end
+
+  # Story 74 rule 4 (refining): the model is told to pass back a widget's
+  # COMPLETE spec to change it, and a title is the only identifier it's
+  # given for an existing widget (see existing_widgets_context/1). A
+  # returned spec whose title matches an existing widget's current title
+  # is that widget updated in place; anything else is a genuinely new
+  # widget appended to the end. Matched against the titles as they were
+  # *before* this turn's edits, so two specs in one turn can't shadow
+  # each other.
+  defp merge_chat_specs(visualizations, chart_specs, specs) do
+    titles = Enum.map(chart_specs, &Map.get(&1, "title"))
+    Enum.reduce(specs, visualizations, &merge_chat_spec(&2, titles, &1))
+  end
+
+  defp merge_chat_spec(visualizations, titles, spec) do
+    case Map.get(spec, "title") && Enum.find_index(titles, &(&1 == Map.get(spec, "title"))) do
+      nil -> visualizations ++ [new_chat_visualization(spec, length(visualizations))]
+      index -> List.update_at(visualizations, index, &update_chat_visualization(&1, spec))
+    end
+  end
+
+  defp new_chat_visualization(spec, position) do
+    %{
+      metric_name: extract_chat_metric_name(spec),
+      chart_type: extract_chart_type_from_spec(spec),
+      position: position,
+      vega_spec: custom_spec(spec)
+    }
+  end
+
+  defp update_chat_visualization(viz, spec) do
+    %{
+      viz
+      | metric_name: extract_chat_metric_name(spec),
+        chart_type: extract_chart_type_from_spec(spec),
+        vega_spec: custom_spec(spec)
+    }
   end
 
   # Story 74, rule 1: the first thing the agent builds is saved as a draft

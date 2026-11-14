@@ -8,9 +8,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
+  alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
+  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -356,6 +358,104 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         assert html =~ "Show me impressions over time as a line chart"
         assert html =~ "I&#39;ll create a line chart showing impressions over time."
         assert has_element?(lv, "[data-role='visualization-card']")
+      end)
+    end
+  end
+
+  describe "filter_date_range persists and survives a reopen" do
+    test "changing the date range through its form updates the dashboard and survives a reopen",
+         %{conn: conn} do
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{metric_name: "impressions"})
+      scope = Scope.for_user(user)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Show me impressions over time as a line chart"
+        })
+
+        Process.sleep(100)
+        Application.delete_env(:metric_flow, :command_runner)
+
+        assert [dashboard] = Dashboards.list_dashboards(scope)
+
+        # A real browser only sends phx-change from inside a <form>; select by
+        # the form itself (as the browser's change event bubbles to) rather
+        # than the select, so this fails the way main's live walk did if the
+        # control ever loses its wrapping form again.
+        lv
+        |> element("form[phx-change='filter_date_range']")
+        |> render_change(%{"range" => "90"})
+
+        {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+        assert reopened_html =~ ~s(value="90" selected)
+      end)
+    end
+  end
+
+  describe "refining an existing widget through chat updates it in place" do
+    test "changing an existing widget's chart type replaces it instead of adding a duplicate",
+         %{conn: conn} do
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{metric_name: "impressions"})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Show me impressions over time as a line chart"
+        })
+
+        Process.sleep(100)
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.refine_to_area_chart()
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Change Impressions Over Time to an area chart"
+        })
+
+        Process.sleep(100)
+        html = render(lv)
+
+        Application.delete_env(:metric_flow, :command_runner)
+
+        cards =
+          html
+          |> Floki.parse_fragment!()
+          |> Floki.find("[data-role='visualization-card']")
+
+        # generate_initial/0 built two widgets (a stat tile and the line
+        # chart); the refine must update "Impressions Over Time" in place,
+        # not add a third card.
+        assert length(cards) == 2
+        assert html =~ "Impressions Over Time"
+        assert html =~ "badge-ghost badge-sm\">area<"
+        refute html =~ "badge-ghost badge-sm\">line<"
       end)
     end
   end
