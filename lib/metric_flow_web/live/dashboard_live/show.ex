@@ -59,7 +59,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       <div>
         <div class="mb-8 flex items-start justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold">All Metrics</h1>
+            <h1 class="text-2xl font-bold">{@page_title}</h1>
             <p class="mt-1 text-base-content/60">
               Your complete marketing and financial picture
             </p>
