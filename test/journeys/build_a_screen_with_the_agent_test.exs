@@ -984,4 +984,50 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert Regex.match?(~r/last 30 days|30-day|30 day/i, combined_text)
     end)
   end
+
+  test "a chat-built dashboard renders without any Vega-Lite remnants", %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      html = build_chart_via_chat(view)
+
+      # Story 74's notes (get_story 74): "Charts are ECharts" -- replacing
+      # the Vega-Lite rendering path this dashboard builder uses today.
+      # This only asserts the negative half (no Vega-Lite rendering
+      # remnant survives a chat build); it does not assert an ECharts
+      # container exists, since no ECharts markup convention has been
+      # established anywhere in this codebase yet -- see journey_result.md
+      # Journey 6 and the question raised to main about A2UI/ECharts
+      # specifics not yet being settled.
+      refute html =~ "vega-embed"
+      refute has_element?(view, "[data-role='vega-lite-chart']")
+    end)
+  end
+
+  test "the dashboard editor has no hand-edit spec affordance", %{conn: conn} do
+    stage("Refine the dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      # Story 74's notes (get_story 74): "Chat only: no hand-edit spec
+      # editor." The dashboard editor currently has an "Edit Spec"
+      # affordance (dashboard_live/editor.ex,
+      # data-role="open-spec-panel", aria-label "Edit spec") that opens a
+      # raw-spec text editor -- the opposite of chat-only authoring.
+      refute has_element?(view, "[data-role='open-spec-panel']")
+    end)
+  end
 end
