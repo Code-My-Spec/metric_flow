@@ -664,7 +664,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp mount_a2ui_dashboard(socket, scope, dashboard) do
     {:ok, loaded} = Dashboards.get_dashboard_with_visualizations(scope, dashboard.id)
     date_range = loaded.date_range || "30"
-    platform = loaded.platform_filter && String.to_existing_atom(loaded.platform_filter)
+    platform = A2ui.stored_platform(loaded)
     components = a2ui_dashboard_components(loaded)
 
     socket

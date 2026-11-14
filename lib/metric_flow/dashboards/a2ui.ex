@@ -198,6 +198,21 @@ defmodule MetricFlow.Dashboards.A2ui do
     |> Map.fetch!(:range)
   end
 
+  @doc """
+  Resolves a dashboard's stored `platform_filter` string into the atom
+  `available_platforms/1` and the shared `platform_filter/1` component
+  compare against. Nil when the dashboard has none (\"All\"). The one
+  place this conversion happens -- main's review found
+  `DashboardLive.Editor` assigning the raw string while
+  `DashboardLive.Show` converted it inline, so the editor's filter
+  buttons never matched the saved value, not even \"All\".
+  """
+  @spec stored_platform(%{platform_filter: String.t() | nil}) :: atom() | nil
+  def stored_platform(%{platform_filter: nil}), do: nil
+
+  def stored_platform(%{platform_filter: platform_str}) when is_binary(platform_str),
+    do: String.to_existing_atom(platform_str)
+
   @doc "Every provider the scope's account has any metric data from."
   @spec available_platforms(MetricFlow.Users.Scope.t()) :: [atom()]
   def available_platforms(scope) do

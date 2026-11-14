@@ -281,7 +281,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_pending_message, nil)
           |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
           |> assign(:dashboard_date_range, dashboard.date_range || "30")
-          |> assign(:dashboard_platform_filter, dashboard.platform_filter)
+          |> assign(:dashboard_platform_filter, A2ui.stored_platform(dashboard))
           |> assign(:page_title, "Edit Dashboard")
           |> assign_visualizations(visualizations)
 
