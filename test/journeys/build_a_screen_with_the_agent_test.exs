@@ -2197,4 +2197,53 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert show_html =~ "4,005"
     end)
   end
+
+  test "after reopening, the editor highlights the saved platform filter's button, not none", %{
+    conn: conn
+  } do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      insert_metric!(user, %{provider: :facebook_ads, metric_name: "impressions", value: 10.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      render_click(show_view, "filter_platform", %{"platform" => "google_ads"})
+
+      {:ok, _edit_view, edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      # Main's live walk (147b446, bug f50d37e9-96ff-40a9-9829-786fff1bfc14,
+      # 2026-11-14): saving a platform filter via the view page, then
+      # reopening the EDITOR, applies the filter (data is scoped to it)
+      # but highlights no platform button, not even "All". Root cause:
+      # the editor's fresh mount assigns dashboard.platform_filter (a
+      # string, e.g. "google_ads") straight into
+      # @dashboard_platform_filter, but platform_filter/1's own button
+      # comparison (@selected_platform == platform) compares against
+      # @available_platforms' atoms -- a string never equals an atom, so
+      # no button lights up. The view page assigns the atom directly
+      # (from handle_event's own String.to_existing_atom/1), which is why
+      # only the view page highlights correctly.
+      google_ads_button =
+        edit_html
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='platform-filter'] button")
+        |> Enum.find(&(Floki.text(&1) =~ "Google Ads"))
+
+      refute is_nil(google_ads_button), "expected a Google Ads button in the platform filter"
+
+      assert google_ads_button |> Floki.attribute("class") |> List.first() =~ "btn-primary",
+             "expected the saved platform's own button to be highlighted after a fresh mount"
+    end)
+  end
 end
