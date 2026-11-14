@@ -9,12 +9,18 @@ Journeys 1-5 from the plan were walked live against the running app
 codified as a `Phoenix.LiveViewTest` module under `test/journeys/` (see
 Phase 3 notes below) — the prior attempt at this phase had pivoted to
 unrelated BDD-spec fixes without actually executing any journey; this run
-replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent"),
-added and walked in a later session against this copy's app
-(`http://127.0.0.1:53149`, commit 5d7b86d7), fails: the feature it covers
-(chat-driven multi-widget dashboard building, with draft/version persistence)
-has not been built. That journey is codified as a failing test rather than a
-passing one, per Phase 3's handling of a real new-feature gap.
+replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent") was added and first
+walked against commit 5d7b86d7 (fail -- no chat affordance existed at all),
+then re-walked outside the normal task loop against commit 4db2d04 after the
+coder landed the first stage: chat now builds a single visualization from
+natural language using real data (pass), but draft autosave, multi-widget
+composition, missing-metric guidance, agent-chat history, and
+versioning/restore remain unbuilt. The journey stays codified as a failing
+test (untouched by this re-walk) rather than a passing one, since most of
+Story 74's criteria still have no code to attach to. The re-walk itself was
+done outside `start_task`/`evaluate_task` because of a graph deadlock
+(c2084903) that refused to re-offer `qa_journey` after the first stage
+landed; see Issues.
 
 ## Journey Results
 
@@ -88,37 +94,58 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** fail
+**Status:** partial (re-walked outside the task loop; graph deadlock c2084903
+tracked separately, see Issues)
 
-Logged in as `qa@example.com` and opened `/app/dashboards/new` (real app, commit
-5d7b86d7). The page is the existing manual dashboard builder only: "Start from
-a template or blank canvas" (Financial Summary / Marketing Overview / Blank
-Canvas) plus "+ Add Visualization". There is no chat input, no "describe the
-dashboard you want" affordance, and no agent conversation panel anywhere on
-the page. The sidebar's only "Chat" entry (`Intelligence > Chat`) opens the
-general AI data-exploration chat (Story 10) at `/app/chat`, which is a
-separate feature from building dashboard widgets.
+**First walk (commit 5d7b86d7):** fail at step 2. `/app/dashboards/new` was
+the existing manual builder only ("Start from a template or blank canvas" +
+"+ Add Visualization"), with no chat affordance anywhere. Screenshot:
+`.code_my_spec/qa/journeys/screenshots/journey6_new_dashboard.png`.
 
-Checked the code to confirm this isn't just a missing UI hook: the
-`Dashboard` schema (`lib/metric_flow/dashboards/dashboard.ex`) has only
-`name`, `description`, `built_in` — no draft/published status and no
-versioning. The only existing LLM-authoring surface, `VizChat`
-(`lib/metric_flow/ai/viz_chat.ex`), is wired into `VisualizationLive.Editor`
-and authors one `Visualization`'s Vega-Lite spec at a time; it has no
-concept of a dashboard-level draft, a mix of stat tiles/charts/tables/layout
-containers/interactive controls in one response, or a saved chat history tied
-to a dashboard with restorable versions. None of Story 74's acceptance
-criteria (draft-on-first-build, mixed widget types, missing-metric guidance
-redirecting to integrations, "Edit with agent" resuming history, per-change
-versioning with restore, control-driven re-querying without side effects,
-default 30-day range) have anywhere to attach in the current code.
+**Re-walk (commit 4db2d04, this copy's app at `http://127.0.0.1:53149`):**
+the coder landed the first stage. Logged in as `qa@example.com` and opened
+`/app/dashboards/new`:
 
-This is a real, unbuilt feature, not a UI bug: stopping at step 2 of the
-journey and codifying the gap as a failing test rather than filing an issue.
+- **Chat builds a visualization from natural language — pass.** A "Build
+  with AI" panel (`[data-role='dashboard-chat-input']` /
+  `[data-role='dashboard-chat-send-btn']`) is present. Sending "Show me a
+  spend-over-time line chart" added a working line chart ("Spend Over
+  Time", plotting `total_cost` by date) to the canvas, with the agent's
+  reply explaining the metric choice and offering follow-ups. Screenshot:
+  `.code_my_spec/qa/journeys/screenshots/journey6_stage2_chat_built_chart.png`.
+- **Draft autosave on first build — fail / not built.** Reloading the page
+  after the chart was built returned to the blank "/new" state ("Add a
+  visualization to get started") with the chat history and chart gone; the
+  URL never moved off `/app/dashboards/new` to a persisted dashboard id. No
+  dashboard record is created until an explicit "Save Dashboard" click, so
+  Story 74's "saved as a draft the first time the agent builds something,
+  with no explicit save needed" rule does not hold yet.
+- **Mixed widget types in one request, missing-metric redirect to
+  integrations, "Edit with agent" resuming a saved dashboard's history, and
+  per-change versioning with restore — not built.** Not independently
+  re-tested this walk (per main's guidance, since only `dashboard_live/
+  editor.ex` changed in 684d9a0); recorded as not-built rather than
+  regressions, consistent with the Dashboard schema still having no
+  draft/version fields.
 
-Screenshot: `.code_my_spec/qa/journeys/screenshots/journey6_new_dashboard.png`
+Not a regression anywhere tested: everything that worked before still
+works, and the one new capability (single-visualization chat building)
+works as described. The remaining Story 74 criteria (draft persistence,
+multi-widget composition, missing-metric guidance, agent-chat history,
+versioning/restore) still have no code to attach to and remain open coder
+work, tracked via the still-committed failing test rather than a new issue.
 
 ## Issues
+
+Graph deadlock c2084903 (framework, tracked by main/CodeMySpec main, not
+filed by this agent): after the coder landed journey 66a06609's first stage
+(684d9a0, then client_utils/diagnostics fix at 4db2d04), the graph kept
+reporting the story as `blocked: the walk is red; the coder fixes it` and
+refused both `get_next_requirement` and a direct `start_task` claim for
+`qa_journey` on this journey, apparently still reading the earlier failed
+walk rather than the new green compiler/exunit runs. The Journey 6 re-walk
+above was done as recorded evidence outside `start_task`/`evaluate_task` at
+main's direction while that deadlock is escalated.
 
 None newly filed against the application — this run exercised already-
 shipped, previously-QA'd surfaces and found no new application defects.
