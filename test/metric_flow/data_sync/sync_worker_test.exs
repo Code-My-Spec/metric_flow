@@ -699,6 +699,22 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
       assert log =~ to_string(integration.id)
     end
+
+    test "humanizes the error message when no Google Business Profile locations are configured" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :google_business)
+      sync_job = insert_sync_job!(user.id, integration.id, :google_business)
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message == "no_locations_configured"
+      assert history.error_message =~ "Google Business Profile"
+    end
   end
 
   # ---------------------------------------------------------------------------
