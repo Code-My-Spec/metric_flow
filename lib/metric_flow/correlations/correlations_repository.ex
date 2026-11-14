@@ -118,6 +118,27 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
     end
   end
 
+  # Like get_latest_completed_job/1, but skips a completed job that never
+  # captured a data window -- the empty-goal-metric-series path in
+  # CorrelationWorker marks a run :completed with no data_window_start/end
+  # and no results, and such a run should not displace an earlier run's
+  # summary just because it completed more recently.
+  @spec get_latest_completed_job_with_data_window(Scope.t()) :: CorrelationJob.t() | nil
+  def get_latest_completed_job_with_data_window(%Scope{} = scope) do
+    case get_account_id(scope) do
+      nil ->
+        nil
+
+      account_id ->
+        CorrelationJob
+        |> where(account_id: ^account_id, status: :completed)
+        |> where([j], not is_nil(j.data_window_start))
+        |> order_by(desc: :completed_at)
+        |> limit(1)
+        |> Repo.one()
+    end
+  end
+
   @spec has_running_job?(Scope.t()) :: boolean()
   def has_running_job?(%Scope{} = scope) do
     case get_account_id(scope) do

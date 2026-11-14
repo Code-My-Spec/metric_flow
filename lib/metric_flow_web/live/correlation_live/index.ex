@@ -197,10 +197,13 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               <span :if={@summary.last_calculated_at} data-role="last-calculated">
                 Last calculated {format_datetime(@summary.last_calculated_at)}
               </span>
-              <span :if={@summary.data_window} data-role="data-window">
+              <span :if={@summary.data_window != {nil, nil}} data-role="data-window">
                 Data window: {format_data_window(@summary.data_window)}
               </span>
-              <span :if={@summary.data_points_count} data-role="data-points">
+              <span
+                :if={is_integer(@summary.data_points_count) and @summary.data_points_count > 0}
+                data-role="data-points"
+              >
                 {@summary.data_points_count} data points
               </span>
             </div>
