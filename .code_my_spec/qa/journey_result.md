@@ -246,6 +246,17 @@ only the live confirmation that the deployed model behaves accordingly is
 still outstanding, blocked on the browser tool's reliability under current
 host load, not on anything in the application.
 
+**Fifth re-walk attempt (commit de23c19, 2026-11-14): partial again --
+same cause.** Main confirmed load had dropped to ~7/10 cores and re-enabled
+the loop; the app instance was already confirmed serving `de23c19` (no
+restart needed). The same packed login script (navigate to `/users/log-in`,
+wait for "Log in", fill the password-login fields, press Enter) 504'd twice
+in a row again, with no other browser action attempted in between. Per
+main's stop condition, held here rather than retrying further; no login, so
+again no multi-widget result was captured. The committed test suite remains
+the only confirmed evidence that the fix works (5/5 passing at de23c19);
+live confirmation is still outstanding, blocked on browser tool reliability.
+
 Not a regression anywhere tested: everything that worked before still
 works, and all capabilities tested to date work as described except
 multi-widget composition. Multi-widget composition (now understood as a
