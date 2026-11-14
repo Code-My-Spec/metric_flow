@@ -313,6 +313,29 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
       assert locations != []
     end
 
+    test "location :account uses the real accountName from the Account Management API instead of a raw ID label, when account IDs are discovered via fetch_accounts" do
+      accounts_response =
+        Jason.encode!(%{
+          "accounts" => [
+            %{"name" => "accounts/987654321", "accountName" => "Example Coffee Roasters"}
+          ]
+        })
+
+      plug =
+        build_multi_response_plug([
+          {200, accounts_response},
+          {200, location_api_response("accounts/987654321")}
+        ])
+
+      assert {:ok, [location | _]} =
+               GoogleBusinessLocations.list_locations(integration_without_account_ids(),
+                 http_plug: plug
+               )
+
+      refute location.account == "Account 987654321"
+      assert location.account == "Example Coffee Roasters"
+    end
+
     test "returns {:error, :no_accounts_configured} when no account IDs found" do
       plug =
         build_multi_response_plug([

@@ -221,6 +221,29 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
     end
   end
 
+  describe "displays legacy failed entries without leaking internal module names" do
+    test "strips the Elixir module prefix from an older stored error_message", %{conn: conn} do
+      user = user_fixture()
+      integration = insert_integration!(user.id, :facebook_ads)
+      sync_job = insert_sync_job!(user.id, integration.id, :facebook_ads)
+
+      insert_sync_history!(user.id, integration.id, sync_job.id, %{
+        status: :failed,
+        error_message: "MetricFlow.DataSync.DataProviders.FacebookAds: missing_ad_account_id"
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
+
+        refute has_element?(lv, "[data-role='sync-error']", "MetricFlow.")
+        refute has_element?(lv, "[data-role='sync-error']", "Elixir.")
+        assert has_element?(lv, "[data-role='sync-error']", "missing_ad_account_id")
+      end)
+    end
+  end
+
   describe "filters entries by status when filter buttons are clicked" do
     test "filters entries by status when filter buttons are clicked", %{conn: conn} do
       user = user_fixture()

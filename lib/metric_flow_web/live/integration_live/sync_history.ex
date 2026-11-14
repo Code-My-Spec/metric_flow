@@ -250,7 +250,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           {@entry.records_synced} records synced
         </p>
         <p :if={@entry[:reason]} data-role="sync-error" class="text-sm text-error mt-1">
-          {@entry.reason}
+          {strip_legacy_module_prefix(@entry.reason)}
         </p>
         <p
           :if={Map.has_key?(@entry, :attempt) and Map.has_key?(@entry, :max_attempts)}
@@ -290,7 +290,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           data-role="sync-error"
           class="mt-1 text-sm text-amber-700"
         >
-          {@entry.error_message}
+          {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-semibold" data-role="sync-provider">
@@ -341,7 +341,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           {@entry.records_synced} records synced
         </p>
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
-          {@entry.error_message}
+          {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <details
           :if={@entry.provider_error_detail}
@@ -386,7 +386,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           {@entry.records_synced} records synced
         </p>
         <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
-          {@entry.error_message}
+          {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <details
           :if={@entry.provider_error_detail}
@@ -549,6 +549,17 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
   end
 
   defp format_datetime(_), do: ""
+
+  # Some sync_history rows written before error messages were humanized store
+  # the originating Elixir module path (e.g. "MetricFlow.DataSync.DataProviders.
+  # FacebookAds: missing_ad_account_id"); strip it so it never leaks to users.
+  @legacy_module_prefix ~r/(?:Elixir\.)?[A-Z][A-Za-z0-9_]*(?:\.[A-Z][A-Za-z0-9_]*)+:\s*/
+
+  defp strip_legacy_module_prefix(message) when is_binary(message) do
+    Regex.replace(@legacy_module_prefix, message, "")
+  end
+
+  defp strip_legacy_module_prefix(message), do: message
 
   defp filter_events(events, "all"), do: events
   defp filter_events(events, status), do: Enum.filter(events, &(&1.status == status))
