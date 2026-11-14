@@ -406,6 +406,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               class="w-full h-full"
             >
             </div>
+            <p
+              :if={elem(Enum.at(@chart_render, idx), 0) == :no_data}
+              data-role="no-data-message"
+              class="text-sm text-base-content/60"
+            >
+              No data for this period
+            </p>
           </div>
         </div>
       </div>
@@ -1166,12 +1173,29 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     Enum.map(visualizations, &build_chart_render(&1, scope))
   end
 
-  defp build_chart_render(%{chart_type: "text"} = viz, scope) do
-    {:stat, stat_tile_value(viz, scope)}
+  # Story 74 (main, live walk of a7ba770): a widget whose query resolves to
+  # zero data points in range gets a clear message instead of a silent 0
+  # stat or an empty chart -- checked once, ahead of the stat/chart split,
+  # so neither branch has to re-derive "no data" on its own.
+  defp build_chart_render(viz, scope) do
+    case query_metric_values(viz, scope) do
+      [] -> {:no_data, nil}
+      values -> build_chart_render(viz, values, :values)
+    end
   end
 
-  defp build_chart_render(viz, scope) do
-    {:chart, build_echarts_option(viz, scope)}
+  defp build_chart_render(%{chart_type: "text"}, values, :values) do
+    {:stat, Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)}
+  end
+
+  defp build_chart_render(viz, values, :values) do
+    option = %{
+      "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
+      "yAxis" => %{"type" => "value"},
+      "series" => [echarts_series(viz.chart_type, Enum.map(values, &elem(&1, 1)))]
+    }
+
+    {:chart, option}
   end
 
   # A template/library-inserted visualization carries no :vega_spec key at
@@ -1194,22 +1218,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     scope
     |> Metrics.query_time_series(chart_metric_key(viz), date_range: {start_date, end_date})
     |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
-  end
-
-  defp stat_tile_value(viz, scope) do
-    viz
-    |> query_metric_values(scope)
-    |> Enum.reduce(0, fn {_date, value}, acc -> acc + value end)
-  end
-
-  defp build_echarts_option(viz, scope) do
-    values = query_metric_values(viz, scope)
-
-    %{
-      "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
-      "yAxis" => %{"type" => "value"},
-      "series" => [echarts_series(viz.chart_type, Enum.map(values, &elem(&1, 1)))]
-    }
   end
 
   defp echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
