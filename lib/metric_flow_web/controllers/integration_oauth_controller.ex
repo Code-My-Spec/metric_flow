@@ -247,7 +247,8 @@ defmodule MetricFlowWeb.IntegrationOauthController do
          _reason
        )
        when is_binary(description) and description != "" do
-    "Authorization failed: #{description} (#{error})"
+    Logger.info("OAuth callback error=#{error} error_description=#{description}")
+    "Authorization failed: #{description}"
   end
 
   defp format_oauth_error(%{"error" => "access_denied"}, _provider, _reason) do
