@@ -241,16 +241,17 @@ defmodule MetricFlowWeb.IntegrationOauthController do
     end
   end
 
-  defp format_oauth_error(%{"error" => "access_denied"}, _provider, _reason) do
-    "Access was denied. Please try again if you want to connect."
-  end
-
   defp format_oauth_error(
          %{"error" => error, "error_description" => description},
          _provider,
          _reason
-       ) do
+       )
+       when is_binary(description) and description != "" do
     "Authorization failed: #{description} (#{error})"
+  end
+
+  defp format_oauth_error(%{"error" => "access_denied"}, _provider, _reason) do
+    "Access was denied. Please try again if you want to connect."
   end
 
   defp format_oauth_error(%{"error" => error}, _provider, _reason) do
