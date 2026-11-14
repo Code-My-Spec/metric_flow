@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
   ]
 
   spex "User can return to settings to add/remove accounts without re-authenticating",
-       fail_on_error_logs: false, criterion: 390 do
+    fail_on_error_logs: false,
+    criterion: 390 do
     scenario "previously connected user can revisit the accounts selection page without new OAuth" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration with saved locations", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -41,7 +42,7 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
       end
 
       then_ "visiting the accounts page a second time loads without OAuth redirect", context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -53,14 +54,14 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end
 
       then_ "the accounts page shows checkboxes so the user can modify their account selection, and the locations page shows checkboxes for their location selection",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -79,14 +80,14 @@ defmodule MetricFlowSpex.Criterion4850UserCanReturnToSettingsWithoutReauthSpex d
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end
     end
 
     scenario "the detail page links to the accounts sub-path without triggering OAuth" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)

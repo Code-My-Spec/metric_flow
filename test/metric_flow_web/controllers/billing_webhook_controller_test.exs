@@ -19,7 +19,10 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
   defp sign_payload(payload, timestamp \\ nil) do
     timestamp = timestamp || System.system_time(:second) |> to_string()
     signed = "#{timestamp}.#{payload}"
-    signature = :crypto.mac(:hmac, :sha256, @webhook_secret, signed) |> Base.encode16(case: :lower)
+
+    signature =
+      :crypto.mac(:hmac, :sha256, @webhook_secret, signed) |> Base.encode16(case: :lower)
+
     "t=#{timestamp},v1=#{signature}"
   end
 
@@ -47,15 +50,17 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
     json_payload = if is_binary(payload), do: payload, else: Jason.encode!(payload)
     include_signature = Keyword.get(opts, :signature, true)
 
-    conn = conn
+    conn =
+      conn
       |> put_req_header("content-type", "application/json")
       |> Plug.Conn.assign(:raw_body, json_payload)
 
-    conn = if include_signature do
-      put_req_header(conn, "stripe-signature", sign_payload(json_payload))
-    else
-      conn
-    end
+    conn =
+      if include_signature do
+        put_req_header(conn, "stripe-signature", sign_payload(json_payload))
+      else
+        conn
+      end
 
     post(conn, "/billing/webhooks", json_payload)
   end
@@ -80,10 +85,11 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
     end
 
     test "returns 200 for valid subscription.deleted event", %{conn: conn} do
-      event = subscription_event("customer.subscription.deleted", %{
-        "status" => "canceled",
-        "canceled_at" => 1_700_100_000
-      })
+      event =
+        subscription_event("customer.subscription.deleted", %{
+          "status" => "canceled",
+          "canceled_at" => 1_700_100_000
+        })
 
       capture_log(fn ->
         conn = post_webhook(conn, event)
@@ -207,7 +213,8 @@ defmodule MetricFlowWeb.BillingWebhookControllerTest do
                end)
     end
 
-    test "handles duplicate event delivery idempotently (same event ID processed twice returns 200 both times)", %{conn: _conn} do
+    test "handles duplicate event delivery idempotently (same event ID processed twice returns 200 both times)",
+         %{conn: _conn} do
       event = subscription_event("customer.subscription.created")
 
       capture_log(fn ->

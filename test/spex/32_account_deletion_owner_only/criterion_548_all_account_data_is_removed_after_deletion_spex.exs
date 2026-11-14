@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.AllAccountDataIsRemovedAfterDeletionSpex do
 
   spex "All account data is removed after deletion", criterion: 548 do
     scenario "owner's account with metrics and integrations is fully removed after deletion" do
-      given_ :owner_with_integrations
-      given_ :owner_has_metrics
+      given_(:owner_with_integrations)
+      given_(:owner_has_metrics)
 
       when_ "Alex completes account deletion", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :settings_view, view)}

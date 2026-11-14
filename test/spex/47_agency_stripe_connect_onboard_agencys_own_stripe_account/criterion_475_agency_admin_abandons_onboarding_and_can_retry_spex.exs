@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.AbandonedOnboardingOffersRetrySpex do
 
   spex "Agency admin abandons onboarding and can retry", criterion: 475 do
     scenario "admin who left onboarding incomplete sees an option to resume" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_incomplete_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_incomplete_stripe_connect)
 
       when_ "the admin returns to the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

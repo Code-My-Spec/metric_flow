@@ -456,7 +456,9 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
     %WhiteLabelConfig{}
     |> WhiteLabelConfig.changeset(attrs_with_agency)
     |> Repo.insert(
-      on_conflict: {:replace_all_except, [:id, :inserted_at, :custom_domain_verified_at, :subdomain_verified_at]},
+      on_conflict:
+        {:replace_all_except,
+         [:id, :inserted_at, :custom_domain_verified_at, :subdomain_verified_at]},
       conflict_target: [:agency_id]
     )
   end

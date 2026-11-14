@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.Criterion887InvitationEmailContainsASecureLinkThatExpir
 
   spex "Invitation email contains a secure link that expires in 7 days", criterion: 887 do
     scenario "the invitee receives an email with a secure link that expires 7 days from when it was sent" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client sends an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -37,7 +37,9 @@ defmodule MetricFlowSpex.Criterion887InvitationEmailContainsASecureLinkThatExpir
       then_ "it contains a secure link that expires 7 days from when it was sent", context do
         assert byte_size(context.token) > 10
 
-        expected_expiry = Calendar.strftime(DateTime.add(DateTime.utc_now(), 7, :day), "%b %d, %Y")
+        expected_expiry =
+          Calendar.strftime(DateTime.add(DateTime.utc_now(), 7, :day), "%b %d, %Y")
+
         assert render(context.view) =~ expected_expiry
         {:ok, context}
       end

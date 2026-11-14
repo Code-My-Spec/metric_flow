@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion793UserResizesVisualizationWithinReportLayoutS
 
   spex "User resizes a visualization within the report layout", criterion: 793 do
     scenario "a user resizes a visualization's panel within a report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a visualization displayed in a report", context do
         viz =

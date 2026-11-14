@@ -4,19 +4,22 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System logs all permission changes with timestamp and user who made change", criterion: 49 do
+  spex "System logs all permission changes with timestamp and user who made change",
+    criterion: 49 do
     scenario "a role change produces a confirmation with details" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user with read_only role", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :members_view, view)}
@@ -36,7 +39,8 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
         {:ok, context}
       end
 
-      then_ "the updated role is reflected in the members list with the change visible", context do
+      then_ "the updated role is reflected in the members list with the change visible",
+            context do
         html = render(context.members_view)
         assert html =~ context.second_user_email
         assert html =~ "admin"
@@ -45,17 +49,19 @@ defmodule MetricFlowSpex.SystemLogsAllPermissionChangesWithTimestampAndUserWhoMa
     end
 
     scenario "a member removal produces a confirmation with details" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user to their account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}

@@ -111,7 +111,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
     test "creates dashboard with valid attributes" do
       {_user, scope} = user_with_scope()
 
-      assert {:ok, dashboard} = DashboardsRepository.create_dashboard(scope, %{name: "New Dashboard"})
+      assert {:ok, dashboard} =
+               DashboardsRepository.create_dashboard(scope, %{name: "New Dashboard"})
+
       assert dashboard.id != nil
       assert dashboard.name == "New Dashboard"
     end
@@ -119,7 +121,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
     test "sets user_id from scope automatically" do
       {user, scope} = user_with_scope()
 
-      assert {:ok, dashboard} = DashboardsRepository.create_dashboard(scope, %{name: "My Dashboard"})
+      assert {:ok, dashboard} =
+               DashboardsRepository.create_dashboard(scope, %{name: "My Dashboard"})
+
       assert dashboard.user_id == user.id
     end
 
@@ -136,7 +140,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
 
       long_name = String.duplicate("a", 256)
 
-      assert {:error, changeset} = DashboardsRepository.create_dashboard(scope, %{name: long_name})
+      assert {:error, changeset} =
+               DashboardsRepository.create_dashboard(scope, %{name: long_name})
+
       refute changeset.valid?
       assert %{name: [_]} = errors_on(changeset)
     end
@@ -151,7 +157,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
       {user, _scope} = user_with_scope()
       dashboard = dashboard_fixture(user)
 
-      assert {:ok, updated} = DashboardsRepository.update_dashboard(dashboard, %{name: "Updated Name"})
+      assert {:ok, updated} =
+               DashboardsRepository.update_dashboard(dashboard, %{name: "Updated Name"})
+
       assert updated.name == "Updated Name"
       assert updated.id == dashboard.id
     end

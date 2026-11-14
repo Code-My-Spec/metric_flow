@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion178UserCanModifyGoalMetricsAtAnyTimeSpex do
 
   spex "User can modify goal metrics at any time", criterion: 178 do
     scenario "a user changes their previously selected goal metric" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user has previously selected goal metrics", context do
         yesterday = Date.add(Date.utc_today(), -1)

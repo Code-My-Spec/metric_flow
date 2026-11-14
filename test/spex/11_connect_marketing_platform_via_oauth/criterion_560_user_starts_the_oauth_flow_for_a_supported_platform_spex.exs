@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserStartsTheOAuthFlowForASupportedPlatformSpex do
 
   spex "User starts the OAuth flow for a supported platform", criterion: 560 do
     scenario "Dana clicks connect for Google Ads and the OAuth flow begins" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Dana is on the integrations connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")

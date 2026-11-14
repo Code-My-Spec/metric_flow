@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion870UserEnablesAiSuggestionsInSmartModeSpex do
 
   spex "User enables AI Suggestions in Smart mode", criterion: 870 do
     scenario "a user viewing correlation analysis in Smart mode enables the AI Suggestions option" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing correlation analysis in Smart mode", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

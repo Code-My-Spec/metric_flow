@@ -5,25 +5,29 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Account originator cannot delete account they originated (only owner can)", criterion: 266 do
+  spex "Account originator cannot delete account they originated (only owner can)",
+    criterion: 266 do
     scenario "originator who transferred ownership cannot see delete account section" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the originator invites the second user as admin", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
       end
 
-      given_ "the originator transfers ownership to the second user and the second user confirms", context do
+      given_ "the originator transfers ownership to the second user and the second user confirms",
+             context do
         {:ok, context} = complete_ownership_transfer(context, context.second_user_email)
         {:ok, context}
       end
@@ -40,23 +44,26 @@ defmodule MetricFlowSpex.AccountOriginatorCannotDeleteAccountTheyOriginatedSpex 
     end
 
     scenario "new owner who received transferred ownership can see delete account section" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the originator invites the second user as admin", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
       end
 
-      given_ "the originator transfers ownership to the second user and the second user confirms", context do
+      given_ "the originator transfers ownership to the second user and the second user confirms",
+             context do
         {:ok, context} = complete_ownership_transfer(context, context.second_user_email)
         {:ok, context}
       end

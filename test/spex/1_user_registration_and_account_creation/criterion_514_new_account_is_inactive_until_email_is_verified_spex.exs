@@ -8,17 +8,20 @@ defmodule MetricFlowSpex.NewAccountInactiveUntilVerifiedSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "unactivated_dana@example.com",
-          password: "SecurePassword123!",
-          account_name: "Dana Ventures"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "unactivated_dana@example.com",
+            password: "SecurePassword123!",
+            account_name: "Dana Ventures"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
       end
 
-      when_ "Dana has not yet clicked the verification link and tries to access the app", context do
+      when_ "Dana has not yet clicked the verification link and tries to access the app",
+            context do
         result = live(context.conn, "/app/accounts")
         {:ok, Map.put(context, :access_result, result)}
       end

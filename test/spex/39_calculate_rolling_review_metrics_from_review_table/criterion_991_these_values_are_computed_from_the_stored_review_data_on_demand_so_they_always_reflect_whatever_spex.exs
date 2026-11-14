@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.RollingReviewMetricsAreComputedOnDemandNotPreCalculated
   import MetricFlowSpex.SharedGivens
 
   spex "These values are computed from the stored review data on demand, so they always reflect whatever reviews have been synced most recently, rather than being pre-calculated and stored separately",
-       criterion: 991 do
+    criterion: 991 do
     scenario "a review synced after the dashboard was first viewed is reflected immediately on the next view, with no separate recalculation step" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "the account has one review, and the dashboard has already been viewed once", context do
+      given_ "the account has one review, and the dashboard has already been viewed once",
+             context do
         MetricFlowSpex.Fixtures.create_review_for(context.owner_email, %{
           review_date: Date.utc_today(),
           star_rating: 5

@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion5059ResizeOrExpandVisualizationSpex do
 
   spex "User can resize or expand a visualization within the report layout", criterion: 145 do
     scenario "chart preview container is full-width and responsive" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has a chart rendered in the editor", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

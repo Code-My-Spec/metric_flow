@@ -282,7 +282,9 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
 
     test "case-insensitive domain matching" do
       agency = account_fixture()
-      rule = auto_enrollment_rule_fixture(agency.id, %{email_domain: "casematch.com", enabled: true})
+
+      rule =
+        auto_enrollment_rule_fixture(agency.id, %{email_domain: "casematch.com", enabled: true})
 
       result = AgenciesRepository.find_matching_rule("CASEMATCH.COM")
 
@@ -291,7 +293,9 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
 
     test "handles email addresses with subdomains correctly" do
       agency = account_fixture()
-      rule = auto_enrollment_rule_fixture(agency.id, %{email_domain: "sub.example.com", enabled: true})
+
+      rule =
+        auto_enrollment_rule_fixture(agency.id, %{email_domain: "sub.example.com", enabled: true})
 
       result = AgenciesRepository.find_matching_rule("sub.example.com")
 
@@ -344,7 +348,11 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       user_second = user_fixture()
 
       first_member =
-        Repo.insert!(%AccountMember{account_id: agency.id, user_id: user_first.id, role: :read_only})
+        Repo.insert!(%AccountMember{
+          account_id: agency.id,
+          user_id: user_first.id,
+          role: :read_only
+        })
 
       second_member =
         Repo.insert!(%AccountMember{account_id: agency.id, user_id: user_second.id, role: :admin})
@@ -360,7 +368,11 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       other_agency = account_fixture()
       other_user = user_fixture()
 
-      Repo.insert!(%AccountMember{account_id: other_agency.id, user_id: other_user.id, role: :admin})
+      Repo.insert!(%AccountMember{
+        account_id: other_agency.id,
+        user_id: other_user.id,
+        role: :admin
+      })
 
       results = AgenciesRepository.list_team_members(agency.id)
 
@@ -406,14 +418,16 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       agency = account_fixture()
       nonexistent_user_id = -1
 
-      assert {:error, _reason} = AgenciesRepository.add_team_member(agency.id, nonexistent_user_id)
+      assert {:error, _reason} =
+               AgenciesRepository.add_team_member(agency.id, nonexistent_user_id)
     end
 
     test "validates account_id exists" do
       user = user_fixture()
       nonexistent_account_id = -1
 
-      assert {:error, _reason} = AgenciesRepository.add_team_member(nonexistent_account_id, user.id)
+      assert {:error, _reason} =
+               AgenciesRepository.add_team_member(nonexistent_account_id, user.id)
     end
   end
 
@@ -601,7 +615,8 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       agency = account_fixture()
       client = account_fixture()
 
-      assert {:ok, grant} = AgenciesRepository.grant_client_access(agency.id, client.id, :read_only)
+      assert {:ok, grant} =
+               AgenciesRepository.grant_client_access(agency.id, client.id, :read_only)
 
       assert grant.agency_account_id == agency.id
       assert grant.client_account_id == client.id
@@ -612,7 +627,9 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       agency = account_fixture()
       client = account_fixture()
 
-      assert {:ok, _first} = AgenciesRepository.grant_client_access(agency.id, client.id, :read_only)
+      assert {:ok, _first} =
+               AgenciesRepository.grant_client_access(agency.id, client.id, :read_only)
+
       assert {:ok, updated} = AgenciesRepository.grant_client_access(agency.id, client.id, :admin)
 
       assert updated.access_level == :admin
@@ -829,7 +846,8 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
 
       updated_attrs = Map.put(original_attrs, :primary_color, "#123456")
 
-      assert {:ok, updated} = AgenciesRepository.upsert_white_label_config(agency.id, updated_attrs)
+      assert {:ok, updated} =
+               AgenciesRepository.upsert_white_label_config(agency.id, updated_attrs)
 
       assert updated.primary_color == "#123456"
       assert updated.subdomain == original_attrs.subdomain
@@ -868,9 +886,12 @@ defmodule MetricFlow.Agencies.AgenciesRepositoryTest do
       attrs_a = valid_white_label_config_attrs(agency_a.id)
       AgenciesRepository.upsert_white_label_config(agency_a.id, attrs_a)
 
-      attrs_b = Map.put(valid_white_label_config_attrs(agency_b.id), :subdomain, attrs_a.subdomain)
+      attrs_b =
+        Map.put(valid_white_label_config_attrs(agency_b.id), :subdomain, attrs_a.subdomain)
 
-      assert {:error, changeset} = AgenciesRepository.upsert_white_label_config(agency_b.id, attrs_b)
+      assert {:error, changeset} =
+               AgenciesRepository.upsert_white_label_config(agency_b.id, attrs_b)
+
       refute changeset.valid?
       assert %{subdomain: ["has already been taken"]} = errors_on(changeset)
     end

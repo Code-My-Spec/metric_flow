@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can select multiple income accounts, system will sum debits and credits", criterion: 88 do
+  spex "User can select multiple income accounts, system will sum debits and credits",
+    criterion: 88 do
     scenario "the account selection page allows selecting multiple accounts" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
@@ -19,6 +20,7 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
         assert has_element?(context.view, "[data-role='account-checkbox']") or
                  has_element?(context.view, "[data-role='manual-property-input']") or
                  has_element?(context.view, "[data-role='manual-entry']")
+
         {:ok, context}
       end
 
@@ -26,12 +28,13 @@ defmodule MetricFlowSpex.UserCanSelectMultipleIncomeAccountsSystemWillSumDebitsA
         assert has_element?(context.view, "[data-role='account-list']") or
                  has_element?(context.view, "[data-role='manual-entry']") or
                  has_element?(context.view, "[data-role='account-selection']")
+
         {:ok, context}
       end
     end
 
     scenario "saving multiple selected accounts preserves the selection" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =

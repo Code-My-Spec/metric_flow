@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.DefaultDateRangeExcludesTodaySpex do
 
   spex "Default date range excludes today", criterion: 620 do
     scenario "today's data has not yet fully synced, so the default range excludes it" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       when_ "today's data has not yet fully synced", context do
         {:ok, view, html} = live(context.owner_conn, "/app/integrations/sync-history")

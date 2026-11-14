@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion854FewerThanFiveQualifyingCorrelationsSpex do
 
   spex "Fewer than five qualifying correlations shows only what qualifies", criterion: 854 do
     scenario "only two positive correlations exceed the threshold and only those are shown" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "fewer than 5 positive correlations exceed the minimum threshold", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -47,7 +47,8 @@ defmodule MetricFlowSpex.Criterion854FewerThanFiveQualifyingCorrelationsSpex do
         {:ok, context}
       end
 
-      then_ "only the qualifying correlations are shown rather than padding the list with weaker ones below the threshold", context do
+      then_ "only the qualifying correlations are shown rather than padding the list with weaker ones below the threshold",
+            context do
         positive_count =
           context.view
           |> render()
@@ -58,8 +59,15 @@ defmodule MetricFlowSpex.Criterion854FewerThanFiveQualifyingCorrelationsSpex do
         assert positive_count == 2,
                "Expected exactly the 2 qualifying correlations, not padded with weaker ones, got #{positive_count}"
 
-        refute has_element?(context.view, "[data-role='correlation-row'][data-metric='below_threshold_one']")
-        refute has_element?(context.view, "[data-role='correlation-row'][data-metric='below_threshold_two']")
+        refute has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='below_threshold_one']"
+               )
+
+        refute has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='below_threshold_two']"
+               )
 
         {:ok, context}
       end

@@ -5,12 +5,14 @@ defmodule MetricFlowSpex.Criterion981SyncFetchesIndividualReviewsForEachLocation
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches individual reviews from the Google Business Profile API for each configured location, via the account's Google OAuth",
-       criterion: 981 do
+    criterion: 981 do
     scenario "a client with a connected Google Business Profile location syncs its reviews" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client has a connected Google Business Profile location", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews,
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_business_reviews,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 
@@ -24,7 +26,8 @@ defmodule MetricFlowSpex.Criterion981SyncFetchesIndividualReviewsForEachLocation
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "reviews for that location are fetched using the account's own Google OAuth authorization", context do
+      then_ "reviews for that location are fetched using the account's own Google OAuth authorization",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

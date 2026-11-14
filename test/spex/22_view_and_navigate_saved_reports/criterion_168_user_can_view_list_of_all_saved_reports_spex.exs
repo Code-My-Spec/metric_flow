@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
 
   spex "User can view list of all saved reports", criterion: 168 do
     scenario "authenticated user can navigate to the dashboards list page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboards page", context do
         result = live(context.owner_conn, "/app/dashboards")
@@ -28,7 +28,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
     end
 
     scenario "dashboards page shows the page heading" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
@@ -47,7 +47,7 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
     end
 
     scenario "dashboards page shows user-owned dashboards section" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboards page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
@@ -68,10 +68,13 @@ defmodule MetricFlowSpex.Criterion4095UserCanViewListOfAllSavedReportsSpex do
     end
 
     scenario "dashboards page shows system canned dashboards section" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a canned dashboard exists in the database", context do
-        MetricFlowSpex.Fixtures.create_canned_dashboard!(context.owner_email, "Marketing Overview")
+        MetricFlowSpex.Fixtures.create_canned_dashboard!(
+          context.owner_email,
+          "Marketing Overview"
+        )
 
         {:ok, context}
       end

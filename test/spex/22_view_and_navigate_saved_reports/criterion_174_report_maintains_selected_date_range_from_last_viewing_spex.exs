@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion174ReportMaintainsDateRangeSpex do
 
   spex "Report maintains selected date range from last viewing", criterion: 174 do
     scenario "reopening a report shows the same date range selected on the last visit" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved report the user has viewed with a specific date range selected", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -45,7 +45,8 @@ defmodule MetricFlowSpex.Criterion174ReportMaintainsDateRangeSpex do
         {:ok, Map.put(context, :view, second_view)}
       end
 
-      then_ "it shows the same date range that was selected the last time it was viewed", context do
+      then_ "it shows the same date range that was selected the last time it was viewed",
+            context do
         assert context.view
                |> element("[phx-value-range='last_90_days'].btn-primary")
                |> has_element?()

@@ -490,7 +490,9 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
     end
 
     test "returns positive integer for successful sync" do
-      started_at = DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
+
       completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       sync_history =
@@ -507,7 +509,9 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
     end
 
     test "returns positive integer for failed sync" do
-      started_at = DateTime.add(DateTime.utc_now(), -15, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -15, :second) |> DateTime.truncate(:microsecond)
+
       completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       sync_history =
@@ -524,7 +528,9 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
     end
 
     test "returns positive integer for partially successful sync" do
-      started_at = DateTime.add(DateTime.utc_now(), -20, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -20, :second) |> DateTime.truncate(:microsecond)
+
       completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       sync_history =

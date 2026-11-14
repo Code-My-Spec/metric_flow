@@ -5,21 +5,22 @@ defmodule MetricFlowSpex.SyncFetchesOrganicSearchDataViaExistingOauthSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches organic search performance data from the Google Search Console API for the configured site, using the account's existing Google OAuth authorization",
-       fail_on_error_logs: false, criterion: 994 do
+    fail_on_error_logs: false,
+    criterion: 994 do
     scenario "a customer already has a Google OAuth connection from Google Ads" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the account already has a Google OAuth token from connecting Google Ads", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
 
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console,
-          provider_metadata: %{"site_url" => "https://example.com/"}
-        )
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console, provider_metadata: %{"site_url" => "https://example.com/"})
 
         {:ok, context}
       end
 
-      given_ :with_google_search_console_sync_stub
+      given_(:with_google_search_console_sync_stub)
 
       when_ "Search Console is synced", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")

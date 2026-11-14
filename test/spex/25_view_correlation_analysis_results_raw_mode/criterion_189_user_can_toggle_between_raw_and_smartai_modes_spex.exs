@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion189UserCanToggleBetweenRawAndSmartAiModesSpex 
 
   spex "User can toggle between Raw and Smart/AI modes", criterion: 189 do
     scenario "a user switches from Raw mode to Smart mode and back" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing the correlations page in Raw mode", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

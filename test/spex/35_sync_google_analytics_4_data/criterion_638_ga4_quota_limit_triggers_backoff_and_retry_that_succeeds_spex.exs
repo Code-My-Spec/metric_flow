@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.Ga4QuotaLimitTriggersBackoffAndRetryThatSucceedsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "GA4 quota limit triggers backoff and retry that succeeds", fail_on_error_logs: false, criterion: 638 do
+  spex "GA4 quota limit triggers backoff and retry that succeeds",
+    fail_on_error_logs: false,
+    criterion: 638 do
     scenario "a sync that hits the GA4 quota limit is retried with backoff and eventually succeeds" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the sync hits the GA4 API's quota limit", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
@@ -16,7 +18,7 @@ defmodule MetricFlowSpex.Ga4QuotaLimitTriggersBackoffAndRetryThatSucceedsSpex do
         {:ok, context}
       end
 
-      given_ :with_google_analytics_quota_retry_stub
+      given_(:with_google_analytics_quota_retry_stub)
 
       when_ "the request is retried with exponential backoff", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -29,7 +31,12 @@ defmodule MetricFlowSpex.Ga4QuotaLimitTriggersBackoffAndRetryThatSucceedsSpex do
       end
 
       then_ "the request eventually succeeds within quota", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']", "Google Analytics")
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",
+                 "Google Analytics"
+               )
+
         {:ok, context}
       end
     end

@@ -46,7 +46,9 @@ defmodule MetricFlowWeb.Journeys.IntegrationDashboardAndDataSyncTest do
     |> Repo.insert!()
   end
 
-  test "shows connected integration with sync status and renders a dashboard with real data", %{conn: conn} do
+  test "shows connected integration with sync status and renders a dashboard with real data", %{
+    conn: conn
+  } do
     user = user_fixture()
     account = insert_account!(user)
     insert_member!(account, user, :owner)

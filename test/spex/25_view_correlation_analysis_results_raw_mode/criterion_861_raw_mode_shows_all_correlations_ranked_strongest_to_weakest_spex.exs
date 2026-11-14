@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion861RawModeShowsAllCorrelationsRankedStrongestT
 
   spex "Raw mode shows all correlations ranked strongest to weakest", criterion: 861 do
     scenario "correlations calculated for a goal metric are shown ranked in Raw mode" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "correlations have been calculated for a goal metric", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

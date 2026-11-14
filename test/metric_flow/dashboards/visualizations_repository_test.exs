@@ -176,7 +176,9 @@ defmodule MetricFlow.Dashboards.VisualizationsRepositoryTest do
       {user, _scope} = user_with_scope()
       viz = insert_visualization!(user.id)
 
-      assert {:ok, updated} = VisualizationsRepository.update_visualization(viz, %{name: "New Name"})
+      assert {:ok, updated} =
+               VisualizationsRepository.update_visualization(viz, %{name: "New Name"})
+
       assert updated.name == "New Name"
     end
 
@@ -184,7 +186,10 @@ defmodule MetricFlow.Dashboards.VisualizationsRepositoryTest do
       {user, _scope} = user_with_scope()
       viz = insert_visualization!(user.id)
 
-      new_spec = %{"$schema" => "https://vega.github.io/schema/vega-lite/v5.json", "mark" => "line"}
+      new_spec = %{
+        "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+        "mark" => "line"
+      }
 
       assert {:ok, updated} =
                VisualizationsRepository.update_visualization(viz, %{vega_spec: new_spec})

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion177SelectedGoalMetricsAreHighlightedOrBadgedIn
 
   spex "Selected goal metrics are highlighted or badged in metric lists", criterion: 177 do
     scenario "a metric selected as a goal is highlighted elsewhere in the application" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a metric has been selected as a goal", context do
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{metric_name: "revenue"})

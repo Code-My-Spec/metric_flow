@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion858ModeSelectionPersistsAsASavedPreferenceSpex
 
   spex "Mode selection persists as a saved preference", criterion: 858 do
     scenario "a user who selected Smart mode still sees Smart mode in a later session" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has selected Smart mode instead of Raw mode", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

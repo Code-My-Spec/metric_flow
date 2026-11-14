@@ -60,7 +60,10 @@ defmodule MetricFlow.Integrations.GoogleSearchConsoleSites do
   defp handle_response(%Req.Response{status: 401}), do: {:error, :unauthorized}
 
   defp handle_response(%Req.Response{status: 403}) do
-    Logger.warning("Google Search Console API returned 403 — API may not be enabled or insufficient permissions")
+    Logger.warning(
+      "Google Search Console API returned 403 — API may not be enabled or insufficient permissions"
+    )
+
     {:error, :api_disabled}
   end
 

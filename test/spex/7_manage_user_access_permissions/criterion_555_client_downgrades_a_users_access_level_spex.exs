@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.ClientDowngradesAUsersAccessLevelSpex do
 
   spex "Client downgrades a user's access level", criterion: 555 do
     scenario "Jordan downgrades an admin teammate to read-only" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a teammate currently has admin access", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}

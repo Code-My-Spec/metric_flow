@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.OriginatorWhoIsNoLongerOwnerCannotDeleteTheAccountSpex 
 
   spex "Originator who is no longer owner cannot delete the account", criterion: 542 do
     scenario "originator whose ownership has been transferred cannot delete the account" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the second user has been invited as admin", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

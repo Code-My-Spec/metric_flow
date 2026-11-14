@@ -39,8 +39,15 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
       dimensions: %{}
     }
 
+    attrs = Map.merge(defaults, attrs)
+
+    attrs =
+      Map.put_new_lazy(attrs, :normalized_metric_name, fn ->
+        MetricFlow.Metrics.NormalizedMetric.normalize(attrs.provider, attrs.metric_name)
+      end)
+
     %Metric{}
-    |> Metric.changeset(Map.merge(defaults, attrs))
+    |> Metric.changeset(attrs)
     |> Repo.insert!()
   end
 
@@ -79,7 +86,9 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "displays metrics dashboard with chart and data table when integrations exist" do
-    test "displays metrics dashboard with chart and data table when integrations exist", %{conn: conn} do
+    test "displays metrics dashboard with chart and data table when integrations exist", %{
+      conn: conn
+    } do
       user = user_fixture()
       insert_integration!(user)
       insert_metric!(user)
@@ -112,7 +121,6 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
         assert has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
-
   end
 
   describe "changes date range when date range filter button is clicked" do
@@ -139,6 +147,47 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
     end
   end
 
+  test "bulk selection updates charts and tables while individual toggles keep working", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    insert_integration!(user)
+    insert_metric!(user, %{metric_name: "sessions"})
+    insert_metric!(user, %{metric_name: "page_views"})
+    conn = log_in_user(conn, user)
+
+    capture_log(fn ->
+      {:ok, view, _html} = live(conn, ~p"/app/dashboard")
+
+      assert has_element?(view, "#metric-toggle-sessions[aria-pressed='true']")
+      view |> element("#metric-toggle-sessions") |> render_click()
+      refute has_element?(view, "[data-role='data-table'] th", "sessions")
+
+      view |> element("#select-all-metrics") |> render_click()
+      refute has_element?(view, "[data-role='metric-toggles'] [aria-pressed='false']")
+      assert has_element?(view, "[data-role='data-table'] th", "sessions")
+      assert has_element?(view, "[data-role='data-table'] th", "page_views")
+      assert has_element?(view, "#multi-series-chart")
+
+      view |> element("#deselect-all-metrics") |> render_click()
+      refute has_element?(view, "[data-role='metric-toggles'] [aria-pressed='true']")
+      refute has_element?(view, "[data-role='data-table'] table")
+      refute has_element?(view, "#multi-series-chart")
+
+      view |> element("#metric-toggle-sessions") |> render_click()
+      assert has_element?(view, "#metric-toggle-sessions[aria-pressed='true']")
+      assert has_element?(view, "[data-role='data-table'] th", "sessions")
+      refute has_element?(view, "[data-role='data-table'] th", "page_views")
+      assert has_element?(view, "#multi-series-chart")
+
+      view |> element("#select-all-metrics") |> render_click()
+      view |> element("#metric-toggle-sessions") |> render_click()
+      assert has_element?(view, "#metric-toggle-sessions[aria-pressed='false']")
+      assert has_element?(view, "[data-role='data-table'] th", "page_views")
+      refute has_element?(view, "[data-role='data-table'] th", "sessions")
+    end)
+  end
+
   describe "toggles metric visibility when metric toggle button is clicked" do
     test "toggles metric visibility when metric toggle button is clicked", %{conn: conn} do
       user = user_fixture()
@@ -160,7 +209,9 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
   end
 
   describe "highlights active platform and date range filter buttons with btn-primary" do
-    test "highlights active platform and date range filter buttons with btn-primary", %{conn: conn} do
+    test "highlights active platform and date range filter buttons with btn-primary", %{
+      conn: conn
+    } do
       user = user_fixture()
       insert_integration!(user)
       conn = log_in_user(conn, user)

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion829ClientCustomizesDashboardUnderWhiteLabeling
 
   spex "Client customizes their own dashboard under white-labeling", criterion: 829 do
     scenario "a client viewing a white-labeled interface customizes their own dashboard normally" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_metrics)
 
       given_ "a client viewing a white-labeled interface", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)

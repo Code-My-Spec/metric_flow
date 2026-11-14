@@ -175,7 +175,11 @@ defmodule MetricFlowWeb.VisualizationLive.IndexTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/visualizations")
 
-        assert has_element?(lv, "[data-role='visualization-card'][data-visualization-id='#{viz.id}']")
+        assert has_element?(
+                 lv,
+                 "[data-role='visualization-card'][data-visualization-id='#{viz.id}']"
+               )
+
         send(self(), :done)
       end)
 

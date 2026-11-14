@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.SubdomainRegistrantIsNotAutoEnrolledSpex do
 
   spex "Subdomain registrant is not auto-enrolled", criterion: 591 do
     scenario "a user registering on a subdomain of the configured domain is not auto-enrolled" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "an agency has configured auto-enrollment for a domain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

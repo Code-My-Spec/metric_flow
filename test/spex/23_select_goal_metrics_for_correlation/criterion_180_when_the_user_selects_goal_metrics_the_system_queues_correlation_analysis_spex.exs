@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion180WhenTheUserSelectsGoalMetricsTheSystemQueue
   spex "When the user selects goal metrics, the system queues correlation analysis",
     criterion: 180 do
     scenario "saving a goal metric selection queues correlation analysis" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user has enough historical metric data for correlation to run", context do
         yesterday = Date.add(Date.utc_today(), -1)

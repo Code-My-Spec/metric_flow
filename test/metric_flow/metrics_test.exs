@@ -348,7 +348,12 @@ defmodule MetricFlow.MetricsTest do
   describe "query_time_series/3" do
     test "returns list of date/value maps for matching metrics" do
       {user, scope} = user_with_scope()
-      insert_metric!(user.id, %{metric_name: "sessions", value: 50.0, recorded_at: valid_recorded_at(1)})
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 50.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = Metrics.query_time_series(scope, "sessions", [])
 
@@ -372,9 +377,23 @@ defmodule MetricFlow.MetricsTest do
     test "orders by date ascending" do
       {user, scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(3)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 20.0, recorded_at: valid_recorded_at(2)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 30.0, recorded_at: valid_recorded_at(1)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(3)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 20.0,
+        recorded_at: valid_recorded_at(2)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 30.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = Metrics.query_time_series(scope, "sessions", [])
 
@@ -460,8 +479,17 @@ defmodule MetricFlow.MetricsTest do
       {user, scope} = user_with_scope()
       {other_user, _other_scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(1)})
-      insert_metric!(other_user.id, %{metric_name: "sessions", value: 999.0, recorded_at: valid_recorded_at(1)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(1)
+      })
+
+      insert_metric!(other_user.id, %{
+        metric_name: "sessions",
+        value: 999.0,
+        recorded_at: valid_recorded_at(1)
+      })
 
       results = Metrics.query_time_series(scope, "sessions", [])
 
@@ -533,7 +561,9 @@ defmodule MetricFlow.MetricsTest do
 
     test "filters by provider when provider option provided" do
       {user, scope} = user_with_scope()
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_analytics, value: 10.0})
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_ads, value: 90.0})
 
       result = Metrics.aggregate_metrics(scope, "sessions", provider: :google_analytics)
@@ -545,8 +575,17 @@ defmodule MetricFlow.MetricsTest do
     test "filters by date range when date_range option provided" do
       {user, scope} = user_with_scope()
 
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 90.0, recorded_at: valid_recorded_at(20)})
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(5)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 90.0,
+        recorded_at: valid_recorded_at(20)
+      })
 
       start_date = Date.utc_today() |> Date.add(-10)
       end_date = Date.utc_today()

@@ -44,7 +44,10 @@ defmodule MetricFlowWeb.Layouts do
         }
       </style>
     <% end %>
-    <div class="drawer lg:drawer-open min-h-screen" data-white-label={if @white_label_config, do: "true"}>
+    <div
+      class="drawer lg:drawer-open min-h-screen"
+      data-white-label={if @white_label_config, do: "true"}
+    >
       <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
 
       <div class="drawer-content flex flex-col bg-base-100">
@@ -52,8 +55,18 @@ defmodule MetricFlowWeb.Layouts do
         <div class="navbar bg-base-200 border-b border-base-300 lg:hidden">
           <div class="flex-none">
             <label for="drawer-toggle" class="btn btn-square btn-ghost">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                class="inline-block w-5 h-5 stroke-current"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </label>
           </div>
@@ -61,14 +74,21 @@ defmodule MetricFlowWeb.Layouts do
             <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
               <a href="/app/dashboard" class="btn btn-ghost">
                 <img
-                  src={Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")}
+                  src={
+                    Map.get(@white_label_config, :logo_url) ||
+                      Map.get(@white_label_config, "logo_url")
+                  }
                   alt="Logo"
                   data-role="agency-logo"
                   class="h-6 w-auto"
                 />
               </a>
             <% else %>
-              <a href="/app/dashboard" class="btn btn-ghost text-lg font-bold tracking-tight" data-role="default-logo">
+              <a
+                href="/app/dashboard"
+                class="btn btn-ghost text-lg font-bold tracking-tight"
+                data-role="default-logo"
+              >
                 <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
               </a>
             <% end %>
@@ -95,19 +115,27 @@ defmodule MetricFlowWeb.Layouts do
             <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
               <a href="/app/dashboard" class="flex items-center gap-2">
                 <img
-                  src={Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")}
+                  src={
+                    Map.get(@white_label_config, :logo_url) ||
+                      Map.get(@white_label_config, "logo_url")
+                  }
                   alt="Logo"
                   data-role="agency-logo"
                   class="h-7 w-auto"
                 />
               </a>
             <% else %>
-              <a href="/app/dashboard" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+              <a
+                href="/app/dashboard"
+                class="flex items-center gap-2 text-lg font-bold tracking-tight"
+              >
                 <span class="text-primary">Metric</span><span class="text-accent">Flow</span>
               </a>
             <% end %>
             <%= if @active_account_name do %>
-              <p data-role="current-account-name" class="text-xs text-base-content/50 mt-1 truncate">{@active_account_name}</p>
+              <p data-role="current-account-name" class="text-xs text-base-content/50 mt-1 truncate">
+                {@active_account_name}
+              </p>
             <% end %>
           </div>
 
@@ -200,7 +228,9 @@ defmodule MetricFlowWeb.Layouts do
               <div class="flex items-center gap-2 px-2 py-1">
                 <div class="avatar placeholder">
                   <div class="bg-primary text-primary-content w-7 rounded-full">
-                    <span class="text-xs">{String.first(@current_scope.user.email) |> String.upcase()}</span>
+                    <span class="text-xs">
+                      {String.first(@current_scope.user.email) |> String.upcase()}
+                    </span>
                   </div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -269,7 +299,9 @@ defmodule MetricFlowWeb.Layouts do
         <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
           <a href="/" class="btn btn-ghost">
             <img
-              src={Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")}
+              src={
+                Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")
+              }
               alt="Agency Logo"
               data-role="agency-logo"
               class="h-8 w-auto"
@@ -292,7 +324,10 @@ defmodule MetricFlowWeb.Layouts do
                 </span>
               </div>
             </div>
-            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow">
+            <ul
+              tabindex="-1"
+              class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow"
+            >
               <li class="menu-title text-xs">{@current_scope.user.email}</li>
               <li><a href={~p"/app/users/settings"}>Settings</a></li>
               <li>
@@ -383,15 +418,27 @@ defmodule MetricFlowWeb.Layouts do
     <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
       <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
 
-      <button class="flex p-2 cursor-pointer w-1/3" phx-click={JS.dispatch("phx:set-theme")} data-phx-theme="system">
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="system"
+      >
         <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
-      <button class="flex p-2 cursor-pointer w-1/3" phx-click={JS.dispatch("phx:set-theme")} data-phx-theme="light">
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="light"
+      >
         <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
-      <button class="flex p-2 cursor-pointer w-1/3" phx-click={JS.dispatch("phx:set-theme")} data-phx-theme="dark">
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="dark"
+      >
         <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
     </div>

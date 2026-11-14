@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.FreeUserHasFullAccessToDashboardAndIntegrationsSpex do
 
   spex "Free user has full access to Dashboard and Integrations", criterion: 495 do
     scenario "Dana on the free plan opens the Dashboard" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "Dana opens the Dashboard", context do
         result = live(context.owner_conn, "/app/dashboard")
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.FreeUserHasFullAccessToDashboardAndIntegrationsSpex do
     end
 
     scenario "Dana on the free plan opens an Integrations page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "Dana opens an Integrations page", context do
         result = live(context.owner_conn, "/app/integrations")

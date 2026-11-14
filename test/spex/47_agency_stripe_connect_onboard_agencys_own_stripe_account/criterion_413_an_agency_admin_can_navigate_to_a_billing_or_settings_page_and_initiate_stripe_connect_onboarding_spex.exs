@@ -3,9 +3,10 @@ defmodule MetricFlowSpex.AgencyAdminCanInitiateStripeConnectSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency admin can navigate to Stripe Connect page and initiate onboarding", criterion: 413 do
+  spex "Agency admin can navigate to Stripe Connect page and initiate onboarding",
+    criterion: 413 do
     scenario "admin visits Stripe Connect page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the admin navigates to the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

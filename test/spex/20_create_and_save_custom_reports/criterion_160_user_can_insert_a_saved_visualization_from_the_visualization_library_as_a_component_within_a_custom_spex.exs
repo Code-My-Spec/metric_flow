@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.Criterion5061InsertSavedVizFromLibrarySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can insert a saved visualization from the library into a custom report", criterion: 160 do
+  spex "User can insert a saved visualization from the library into a custom report",
+    criterion: 160 do
     scenario "the add visualization button opens a picker with available metrics" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user is on the new dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

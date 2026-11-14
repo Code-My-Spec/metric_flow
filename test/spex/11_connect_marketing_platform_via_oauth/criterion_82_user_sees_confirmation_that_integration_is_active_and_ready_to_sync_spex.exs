@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
 
   spex "User sees confirmation that integration is active and ready to sync", criterion: 82 do
     scenario "OAuth callback page shows active and ready to sync confirmation" do
-      given_ :owner_with_google_ads_integration
+      given_(:owner_with_google_ads_integration)
 
       given_ "the user navigates to the Google detail page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
@@ -15,20 +15,25 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
 
       then_ "the user sees a confirmation that the integration is active", context do
         html = render(context.view)
+
         assert html =~ "active" or html =~ "Active" or html =~ "ready" or html =~ "Ready" or
                  html =~ "Connected" or html =~ "connected"
+
         {:ok, context}
       end
 
       then_ "the user sees messaging about data syncing", context do
         html = render(context.view)
-        assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected" or html =~ "Connected"
+
+        assert html =~ "sync" or html =~ "Sync" or html =~ "data" or html =~ "connected" or
+                 html =~ "Connected"
+
         {:ok, context}
       end
     end
 
     scenario "integrations list page shows active status for connected platform" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user views the integrations list page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -46,7 +51,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatIntegrationIsActiveAndReadyToSy
     end
 
     scenario "confirmation page includes a call to action after integration setup" do
-      given_ :owner_with_google_ads_integration
+      given_(:owner_with_google_ads_integration)
 
       given_ "the user navigates to the Google detail page after OAuth", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")

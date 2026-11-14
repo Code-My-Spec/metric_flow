@@ -29,6 +29,9 @@ config :metric_flow, MetricFlow.Mailer, adapter: Swoosh.Adapters.Test
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
+# Keep paywall tests and spex exercising the real gate; override per-test if needed.
+config :metric_flow, :paywall_enabled, true
+
 # Oban testing mode — jobs are not executed, but can be asserted on.
 # The repo must be set explicitly here because this config replaces the
 # base config.exs Oban config entirely in the test environment.
@@ -69,3 +72,14 @@ config :metric_flow, :test_providers, [
   :stub_refresh_fail,
   :stub_refresh_raises
 ]
+
+# Static copy of Google's OIDC discovery document so OAuth URL building in tests
+# never calls accounts.google.com.
+config :metric_flow, :google_openid_configuration, %{
+  "issuer" => "https://accounts.google.com",
+  "authorization_endpoint" => "https://accounts.google.com/o/oauth2/v2/auth",
+  "token_endpoint" => "https://oauth2.googleapis.com/token",
+  "userinfo_endpoint" => "https://openidconnect.googleapis.com/v1/userinfo",
+  "jwks_uri" => "https://www.googleapis.com/oauth2/v3/certs",
+  "revocation_endpoint" => "https://oauth2.googleapis.com/revoke"
+}

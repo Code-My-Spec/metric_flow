@@ -4,11 +4,12 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Visualizations in the library display their saved name and last-updated timestamp", criterion: 146 do
+  spex "Visualizations in the library display their saved name and last-updated timestamp",
+    criterion: 146 do
     scenario "saved visualization appears in the library with name and timestamp" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user creates and saves a visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -43,6 +44,7 @@ defmodule MetricFlowSpex.Criterion5060VizLibraryShowsNameAndTimestampSpex do
         # Should show some form of timestamp (date, "ago", etc.)
         assert html =~ ~r/\d{4}/ || html =~ "ago" || html =~ "today" || html =~ "Updated",
                "Expected a timestamp or date to be displayed for the visualization"
+
         {:ok, context}
       end
     end

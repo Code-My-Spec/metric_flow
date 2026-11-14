@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.SuccessfulPaymentPersistsSubscriptionIdStripeCustomerId
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Successful payment persists subscription_id, stripe_customer_id, and agency_id", criterion: 488 do
+  spex "Successful payment persists subscription_id, stripe_customer_id, and agency_id",
+    criterion: 488 do
     scenario "a subscription.created webhook arrives for an agency customer's successful payment" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       when_ "Stripe confirms the payment via a subscription.created webhook", context do
         account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
@@ -31,13 +32,17 @@ defmodule MetricFlowSpex.SuccessfulPaymentPersistsSubscriptionIdStripeCustomerId
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}
       end
 
-      then_ "the webhook is accepted and the subscription now shows as active on the agency's account", context do
+      then_ "the webhook is accepted and the subscription now shows as active on the agency's account",
+            context do
         assert context.response.status in [200, 202]
 
         {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")

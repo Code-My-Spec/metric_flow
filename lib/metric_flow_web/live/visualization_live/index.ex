@@ -30,93 +30,93 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div>
-      <%!-- Page header --%>
-      <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
-        <div>
-          <h1 class="text-2xl font-bold">Visualizations</h1>
-          <p class="mt-1 text-base-content/60">Your saved charts and visualizations</p>
-        </div>
-        <.link
-          navigate={~p"/app/visualizations/new"}
-          class="btn btn-primary btn-sm"
-          data-role="new-visualization-btn"
-        >
-          New Visualization
-        </.link>
-      </div>
-
-      <%!-- Empty state --%>
-      <div
-        :if={@visualizations == []}
-        data-role="empty-visualizations"
-        class="mf-card p-8 text-center"
-      >
-        <p class="text-base-content/60 mb-4">No visualizations yet</p>
-        <.link navigate={~p"/app/visualizations/new"} class="btn btn-primary btn-sm">
-          Create your first visualization
-        </.link>
-      </div>
-
-      <%!-- Visualization grid --%>
-      <div :if={@visualizations != []} class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div
-          :for={visualization <- @visualizations}
-          data-role="visualization-card"
-          data-visualization-id={visualization.id}
-          class="mf-card p-5"
-        >
-          <p class="font-semibold mb-1">{visualization.name}</p>
-          <p data-role="visualization-updated-at" class="text-xs text-base-content/50 mb-1">
-            Updated {Calendar.strftime(visualization.updated_at, "%b %d, %Y")}
-          </p>
-          <p :if={visualization.shareable} class="text-xs text-base-content/60 mb-3">
-            Shareable
-          </p>
-          <div class="flex items-center gap-2 mt-3">
-            <.link
-              navigate={~p"/app/visualizations/#{visualization.id}/edit"}
-              class="btn btn-ghost btn-sm"
-              data-role={"edit-visualization-#{visualization.id}"}
-            >
-              Edit
-            </.link>
-            <button
-              phx-click="delete"
-              phx-value-id={visualization.id}
-              data-role={"delete-visualization-#{visualization.id}"}
-              class="btn btn-ghost btn-xs text-error"
-            >
-              Delete
-            </button>
+      <div>
+        <%!-- Page header --%>
+        <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
+          <div>
+            <h1 class="text-2xl font-bold">Visualizations</h1>
+            <p class="mt-1 text-base-content/60">Your saved charts and visualizations</p>
           </div>
-
-          <%!-- Inline delete confirmation --%>
-          <div
-            :if={@confirming_delete == visualization.id}
-            data-role={"delete-confirm-#{visualization.id}"}
-            class="mt-3 flex items-center gap-2"
+          <.link
+            navigate={~p"/app/visualizations/new"}
+            class="btn btn-primary btn-sm"
+            data-role="new-visualization-btn"
           >
-            <span class="text-sm text-base-content/60">Are you sure?</span>
-            <button
-              phx-click="confirm_delete"
-              phx-value-id={visualization.id}
-              data-role={"confirm-delete-#{visualization.id}"}
-              class="btn btn-error btn-xs"
+            New Visualization
+          </.link>
+        </div>
+
+        <%!-- Empty state --%>
+        <div
+          :if={@visualizations == []}
+          data-role="empty-visualizations"
+          class="mf-card p-8 text-center"
+        >
+          <p class="text-base-content/60 mb-4">No visualizations yet</p>
+          <.link navigate={~p"/app/visualizations/new"} class="btn btn-primary btn-sm">
+            Create your first visualization
+          </.link>
+        </div>
+
+        <%!-- Visualization grid --%>
+        <div :if={@visualizations != []} class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div
+            :for={visualization <- @visualizations}
+            data-role="visualization-card"
+            data-visualization-id={visualization.id}
+            class="mf-card p-5"
+          >
+            <p class="font-semibold mb-1">{visualization.name}</p>
+            <p data-role="visualization-updated-at" class="text-xs text-base-content/50 mb-1">
+              Updated {Calendar.strftime(visualization.updated_at, "%b %d, %Y")}
+            </p>
+            <p :if={visualization.shareable} class="text-xs text-base-content/60 mb-3">
+              Shareable
+            </p>
+            <div class="flex items-center gap-2 mt-3">
+              <.link
+                navigate={~p"/app/visualizations/#{visualization.id}/edit"}
+                class="btn btn-ghost btn-sm"
+                data-role={"edit-visualization-#{visualization.id}"}
+              >
+                Edit
+              </.link>
+              <button
+                phx-click="delete"
+                phx-value-id={visualization.id}
+                data-role={"delete-visualization-#{visualization.id}"}
+                class="btn btn-ghost btn-xs text-error"
+              >
+                Delete
+              </button>
+            </div>
+
+            <%!-- Inline delete confirmation --%>
+            <div
+              :if={@confirming_delete == visualization.id}
+              data-role={"delete-confirm-#{visualization.id}"}
+              class="mt-3 flex items-center gap-2"
             >
-              Yes, delete
-            </button>
-            <button
-              phx-click="cancel_delete"
-              data-role="cancel-delete"
-              class="btn btn-ghost btn-xs"
-            >
-              Cancel
-            </button>
+              <span class="text-sm text-base-content/60">Are you sure?</span>
+              <button
+                phx-click="confirm_delete"
+                phx-value-id={visualization.id}
+                data-role={"confirm-delete-#{visualization.id}"}
+                class="btn btn-error btn-xs"
+              >
+                Yes, delete
+              </button>
+              <button
+                phx-click="cancel_delete"
+                data-role="cancel-delete"
+                class="btn btn-ghost btn-xs"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end

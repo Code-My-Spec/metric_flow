@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion850MetricWithInsufficientHistoryIsExcludedFrom
 
   spex "Metric with insufficient history is excluded from correlation", criterion: 850 do
     scenario "a metric with fewer than 30 days of data does not appear in correlation results" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a metric with fewer than 30 days of data", context do
         yesterday = Date.add(Date.utc_today(), -1)
@@ -51,7 +51,8 @@ defmodule MetricFlowSpex.Criterion850MetricWithInsufficientHistoryIsExcludedFrom
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "that metric is excluded from correlation calculations rather than producing an unreliable result", context do
+      then_ "that metric is excluded from correlation calculations rather than producing an unreliable result",
+            context do
         refute has_element?(context.view, "[data-role='correlation-row'][data-metric='clicks']"),
                "Expected the metric with only 5 days of data to be excluded from correlation results"
 

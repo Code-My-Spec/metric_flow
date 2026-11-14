@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
 
   spex "User sees confirmation that QuickBooks is connected and ready to sync", criterion: 90 do
     scenario "successful OAuth callback displays a connection confirmation" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks detail page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
@@ -38,7 +38,7 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedAndReadyTo
     end
 
     scenario "the confirmation page provides navigation back to integrations" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks detail page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")

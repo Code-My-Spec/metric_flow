@@ -49,7 +49,9 @@ defmodule MetricFlow.Agencies.AutoEnrollmentRule do
     rule
     |> cast(attrs, [:agency_id, :email_domain, :default_access_level, :enabled])
     |> validate_required([:agency_id, :email_domain, :default_access_level])
-    |> validate_format(:email_domain, @domain_format, message: "must be a valid domain (e.g., example.com)")
+    |> validate_format(:email_domain, @domain_format,
+      message: "must be a valid domain (e.g., example.com)"
+    )
     |> assoc_constraint(:agency)
     |> unique_constraint(:email_domain,
       name: :auto_enrollment_rules_agency_id_email_domain_index,

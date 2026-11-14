@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.Criterion1002SyncFetchesLocationEngagementMetricsSpex d
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches location engagement metrics from the Google Business Profile Performance API for each configured location",
-       criterion: 1002 do
+    criterion: 1002 do
     scenario "a client with a connected Google Business Profile location syncs its engagement metrics" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a client has a connected Google Business Profile with a location configured", context do
+      given_ "a client has a connected Google Business Profile with a location configured",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
@@ -24,7 +25,8 @@ defmodule MetricFlowSpex.Criterion1002SyncFetchesLocationEngagementMetricsSpex d
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "engagement metrics for that location are fetched from the Business Profile Performance API", context do
+      then_ "engagement metrics for that location are fetched from the Business Profile Performance API",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

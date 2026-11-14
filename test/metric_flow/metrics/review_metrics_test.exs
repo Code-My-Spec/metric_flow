@@ -153,7 +153,8 @@ defmodule MetricFlow.Metrics.ReviewMetricsTest do
       start_date = days_ago(10)
       end_date = today()
 
-      result = ReviewMetrics.query_rolling_review_metrics(scope, date_range: {start_date, end_date})
+      result =
+        ReviewMetrics.query_rolling_review_metrics(scope, date_range: {start_date, end_date})
 
       assert length(result.review_count) == 1
       assert hd(result.review_count).date == in_range_date

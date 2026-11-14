@@ -20,7 +20,8 @@ defmodule MetricFlow.Ai.LlmProvider do
     {module, merge_command_runner(module, config, opts[:command_runner])}
   end
 
-  defp merge_command_runner(Alloy.Provider.ClaudeCode, config, runner) when is_function(runner, 3) do
+  defp merge_command_runner(Alloy.Provider.ClaudeCode, config, runner)
+       when is_function(runner, 3) do
     Keyword.put(config, :command_runner, runner)
   end
 

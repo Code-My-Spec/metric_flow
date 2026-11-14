@@ -24,6 +24,23 @@ defmodule MetricFlowWeb.OnboardingLive.IndexTest do
       assert_receive :done
     end
 
+    test "offers an actionable next step and dashboard access", %{conn: conn} do
+      conn = log_in_user(conn, user_fixture())
+      {:ok, view, _html} = live(conn, ~p"/onboarding")
+
+      assert has_element?(
+               view,
+               "#onboarding-next-steps",
+               "choose the accounts or properties to sync"
+             )
+
+      assert has_element?(view, "#onboarding-connect-platforms[href='/app/integrations']")
+      assert has_element?(view, "#onboarding-open-dashboard[href='/app/dashboard']")
+
+      view |> element("#onboarding-connect-platforms") |> render_click()
+      assert_redirect(view, ~p"/app/integrations")
+    end
+
     test "redirects unauthenticated user to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                live(conn, ~p"/onboarding")

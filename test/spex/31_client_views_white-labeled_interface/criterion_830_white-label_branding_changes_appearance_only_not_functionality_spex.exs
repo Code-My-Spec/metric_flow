@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion830WhiteLabelBrandingChangesAppearanceOnlySpex
 
   spex "White-label branding changes appearance only, not functionality", criterion: 830 do
     scenario "the same features are available under white-labeled and default branding, differing only visually" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_metrics)
 
       given_ "a client viewing a white-labeled interface", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
@@ -30,14 +30,17 @@ defmodule MetricFlowSpex.Criterion830WhiteLabelBrandingChangesAppearanceOnlySpex
         {:ok, white_labeled_view, _html} = live(context.agency_conn, "/app/dashboard")
         {:ok, default_view, _html} = live(context.owner_conn, "/app/dashboard")
 
-        {:ok, Map.merge(context, %{white_labeled_view: white_labeled_view, default_view: default_view})}
+        {:ok,
+         Map.merge(context, %{white_labeled_view: white_labeled_view, default_view: default_view})}
       end
 
-      then_ "the available features and functionality are identical; only the visual appearance differs", context do
+      then_ "the available features and functionality are identical; only the visual appearance differs",
+            context do
         assert has_element?(context.white_labeled_view, "[data-role='agency-logo']")
         refute has_element?(context.default_view, "[data-role='agency-logo']")
 
-        assert has_element?(context.white_labeled_view, "nav") == has_element?(context.default_view, "nav")
+        assert has_element?(context.white_labeled_view, "nav") ==
+                 has_element?(context.default_view, "nav")
 
         {:ok, context}
       end

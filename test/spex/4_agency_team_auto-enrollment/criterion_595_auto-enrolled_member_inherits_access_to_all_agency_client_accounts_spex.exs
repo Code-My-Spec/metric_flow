@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.AutoEnrolledMemberInheritsAccessToAllAgencyClientAccoun
 
   spex "Auto-enrolled member inherits access to all agency client accounts", criterion: 595 do
     scenario "a user auto-enrolled into an agency that manages client accounts gets access to all of them" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
-      given_ "the agency has configured auto-enrollment and manages two client accounts", context do
+      given_ "the agency has configured auto-enrollment and manages two client accounts",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
         agency_domain = "inherits595-#{System.unique_integer([:positive])}.com"
 
@@ -21,8 +22,19 @@ defmodule MetricFlowSpex.AutoEnrolledMemberInheritsAccessToAllAgencyClientAccoun
         client1 = MetricFlowSpex.Fixtures.client_account_fixture("Client 595 Alpha")
         client2 = MetricFlowSpex.Fixtures.client_account_fixture("Client 595 Beta")
 
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client1.id, :admin, true)
-        MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client2.id, :admin, true)
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client1.id,
+          :admin,
+          true
+        )
+
+        MetricFlowSpex.Fixtures.grant_client_account_access(
+          context.owner_email,
+          client2.id,
+          :admin,
+          true
+        )
 
         {:ok,
          Map.merge(context, %{
@@ -32,7 +44,8 @@ defmodule MetricFlowSpex.AutoEnrolledMemberInheritsAccessToAllAgencyClientAccoun
          })}
       end
 
-      when_ "a user registers with an email matching the agency domain and is auto-enrolled", context do
+      when_ "a user registers with an email matching the agency domain and is auto-enrolled",
+            context do
         member_email = "newmember595@#{context.agency_domain}"
         member_password = "SecurePassword123!"
 

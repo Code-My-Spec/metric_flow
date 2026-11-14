@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
   import MetricFlowSpex.SharedGivens
 
   spex "Sync jobs for reviews (story 513) and performance metrics (story 517) are updated to iterate over all accounts in googleBusinessAccountIds — not just a single googleBusinessAccountId",
-       fail_on_error_logs: false, criterion: 403 do
+    fail_on_error_logs: false,
+    criterion: 403 do
     scenario "google_business integration with multiple account IDs is visible on integrations page" do
-      given_ "a user registered with a google_business integration configured with multiple account IDs", context do
+      given_ "a user registered with a google_business integration configured with multiple account IDs",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -75,7 +77,8 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
     end
 
     scenario "google_business integration configured with two account IDs shows the integration entry" do
-      given_ "a user registered with a google_business integration configured with two account IDs", context do
+      given_ "a user registered with a google_business integration configured with two account IDs",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -129,7 +132,8 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the integrations list displays a connected google_business integration entry", context do
+      then_ "the integrations list displays a connected google_business integration entry",
+            context do
         assert has_element?(context.view, "[data-provider='google_business']") or
                  has_element?(context.view, "[data-role='integration']") or
                  render(context.view) =~ "Google Business" or
@@ -140,7 +144,8 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
     end
 
     scenario "sync history page is accessible for a user with a multi-account google_business integration" do
-      given_ "a user registered with a google_business integration configured with multiple account IDs", context do
+      given_ "a user registered with a google_business integration configured with multiple account IDs",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -194,7 +199,8 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
         {:ok, Map.put(context, :sync_history_result, result)}
       end
 
-      then_ "the sync history page loads successfully for the multi-account google_business integration", context do
+      then_ "the sync history page loads successfully for the multi-account google_business integration",
+            context do
         case context.sync_history_result do
           {:ok, _view, _html} ->
             {:ok, context}
@@ -203,13 +209,16 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
             flunk("Expected /integrations/sync-history to load but was redirected to #{path}")
 
           {:error, {:live_redirect, %{to: path}}} ->
-            flunk("Expected /integrations/sync-history to load but was live-redirected to #{path}")
+            flunk(
+              "Expected /integrations/sync-history to load but was live-redirected to #{path}"
+            )
         end
       end
     end
 
     scenario "sync history page shows google_business sync entries covering multiple accounts" do
-      given_ "a user registered with a google_business integration with two configured account IDs", context do
+      given_ "a user registered with a google_business integration with two configured account IDs",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -263,7 +272,8 @@ defmodule MetricFlowSpex.SyncJobsForReviewsStory513AndPerformanceMetricsStory517
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync history page renders a history section for google_business syncs", context do
+      then_ "the sync history page renders a history section for google_business syncs",
+            context do
         assert has_element?(context.view, "[data-role='sync-history']") or
                  render(context.view) =~ "sync" or
                  render(context.view) =~ "Sync" or

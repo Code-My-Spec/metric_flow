@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.RollingReviewMetricsCanBeScopedToADateRangeSpex do
 
   spex "The same three values can be scoped to a given date range", criterion: 992 do
     scenario "narrowing the date range excludes a review recorded well outside of it" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the account has one review from 90 days ago and one review from yesterday",
              context do

@@ -66,7 +66,11 @@ defmodule MetricFlow.Correlations do
   """
   @spec run_correlations_for_multiple_goals(Scope.t(), [String.t()], atom()) ::
           {:ok, CorrelationJob.t()} | {:error, :insufficient_data} | {:error, :already_running}
-  def run_correlations_for_multiple_goals(%Scope{} = scope, [first_goal | rest_goals], time_window) do
+  def run_correlations_for_multiple_goals(
+        %Scope{} = scope,
+        [first_goal | rest_goals],
+        time_window
+      ) do
     case run_correlations(scope, %{goal_metric_name: first_goal, time_window: time_window}) do
       {:ok, job} = result ->
         account_id = job.account_id
@@ -118,7 +122,8 @@ defmodule MetricFlow.Correlations do
         }
 
       %CorrelationJob{} = job ->
-        results = CorrelationsRepository.list_correlation_results(scope, correlation_job_id: job.id)
+        results =
+          CorrelationsRepository.list_correlation_results(scope, correlation_job_id: job.id)
 
         %{
           results: results,

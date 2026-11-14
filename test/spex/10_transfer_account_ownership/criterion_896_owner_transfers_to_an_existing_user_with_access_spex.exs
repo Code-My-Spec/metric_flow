@@ -11,8 +11,8 @@ defmodule MetricFlowSpex.Criterion896OwnerTransfersToAnExistingUserWithAccessSpe
 
   spex "Owner transfers to an existing user with access", criterion: 896 do
     scenario "the owner selects a member with existing access as the new owner" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       when_ "the owner selects them as the new owner", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

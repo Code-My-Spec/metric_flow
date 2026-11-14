@@ -30,11 +30,13 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
 
       when_ "the user submits the form without an account name", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "no_account_name@example.com",
-          password: "SecurePassword123!",
-          account_name: ""
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "no_account_name@example.com",
+            password: "SecurePassword123!",
+            account_name: ""
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -54,11 +56,13 @@ defmodule MetricFlowSpex.AccountNameDuringRegistrationSpex do
 
       when_ "the user fills in email, password, and account name and submits the form", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "with_account@example.com",
-          password: "SecurePassword123!",
-          account_name: "My Company"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "with_account@example.com",
+            password: "SecurePassword123!",
+            account_name: "My Company"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

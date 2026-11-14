@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.PermissionChangesAreLoggedWithTimestampAndActorSpex do
 
   spex "Permission changes are logged with timestamp and actor", criterion: 558 do
     scenario "a role change is logged with a timestamp and the acting user" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user with read_only role", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -29,7 +31,9 @@ defmodule MetricFlowSpex.PermissionChangesAreLoggedWithTimestampAndActorSpex do
         log =
           capture_log(fn ->
             context.view
-            |> element("[data-role='change-role'][data-user-email='#{context.second_user_email}']")
+            |> element(
+              "[data-role='change-role'][data-user-email='#{context.second_user_email}']"
+            )
             |> render_click(%{"role" => "admin"})
           end)
 

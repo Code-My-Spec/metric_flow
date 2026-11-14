@@ -4,11 +4,13 @@ defmodule MetricFlowSpex.DeletedOrInaccessibleLocationIsFlaggedRatherThanSilentl
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Deleted or inaccessible location is flagged rather than silently dropped", criterion: 940 do
+  spex "Deleted or inaccessible location is flagged rather than silently dropped",
+    criterion: 940 do
     scenario "a previously synced location missing from the current fetch is flagged, not dropped" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a previously synced location has since been deleted or had access revoked", context do
+      given_ "a previously synced location has since been deleted or had access revoked",
+             context do
         plug = fn conn ->
           case conn.request_path do
             "/v1/accounts/111/locations" ->
@@ -16,7 +18,9 @@ defmodule MetricFlowSpex.DeletedOrInaccessibleLocationIsFlaggedRatherThanSilentl
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/still-here", "title" => "Still Here Location"}]
+                  "locations" => [
+                    %{"name" => "locations/still-here", "title" => "Still Here Location"}
+                  ]
                 })
               )
 

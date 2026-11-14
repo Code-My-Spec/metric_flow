@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.OwnerSeesTheDeleteAccountOptionSpex do
 
   spex "Owner sees the delete-account option", criterion: 541 do
     scenario "owner holding the owner role sees the delete-account option in settings" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "Alex opens account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

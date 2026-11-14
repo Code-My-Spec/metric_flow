@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion835ExpiredInvitationShowsAClearErrorSpex do
 
   spex "Expired invitation shows a clear error", criterion: 835 do
     scenario "opening an expired invitation link shows a clear expiration error" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation that is then expired", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

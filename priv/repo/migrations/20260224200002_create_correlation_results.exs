@@ -20,10 +20,10 @@ defmodule MetricFlow.Repo.Migrations.CreateCorrelationResults do
     create index(:correlation_results, [:correlation_job_id])
 
     create unique_index(:correlation_results, [
-      :account_id,
-      :correlation_job_id,
-      :metric_name,
-      :goal_metric_name
-    ])
+             :account_id,
+             :correlation_job_id,
+             :metric_name,
+             :goal_metric_name
+           ])
   end
 end

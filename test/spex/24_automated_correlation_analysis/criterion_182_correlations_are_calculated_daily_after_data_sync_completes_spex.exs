@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.CorrelationsDailyCalculationSpex do
 
   spex "Correlations are calculated daily after data sync completes", criterion: 182 do
     scenario "user sees when correlations were last calculated" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -32,8 +32,8 @@ defmodule MetricFlowSpex.CorrelationsDailyCalculationSpex do
     end
 
     scenario "user sees that correlations update daily after sync" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

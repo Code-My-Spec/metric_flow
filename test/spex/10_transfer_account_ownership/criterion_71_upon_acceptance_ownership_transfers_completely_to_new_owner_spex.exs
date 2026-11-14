@@ -12,10 +12,11 @@ defmodule MetricFlowSpex.Criterion71UponAcceptanceOwnershipTransfersCompletelyTo
 
   spex "Upon acceptance, ownership transfers completely to new owner", criterion: 71 do
     scenario "the member accepts an ownership transfer" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
-      given_ "the owner has initiated a transfer to the member, not remaining as admin", context do
+      given_ "the owner has initiated a transfer to the member, not remaining as admin",
+             context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
@@ -37,7 +38,8 @@ defmodule MetricFlowSpex.Criterion71UponAcceptanceOwnershipTransfersCompletelyTo
       end
 
       when_ "the member confirms the transfer", context do
-        {:ok, view, _html} = live(context.member_conn, "/account_transfers/#{context.transfer_token}")
+        {:ok, view, _html} =
+          live(context.member_conn, "/account_transfers/#{context.transfer_token}")
 
         view
         |> element("[data-role='accept-transfer-btn']")

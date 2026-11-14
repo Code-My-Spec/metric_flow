@@ -84,7 +84,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     @describetag :integration
 
     test "returns keyword list with required OAuth configuration keys" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -98,7 +99,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes client_id from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -111,7 +113,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes client_secret from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -124,7 +127,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes redirect_uri with \"/app/integrations/oauth/callback/google_ads\" path" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -137,7 +141,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes authorization_params with adwords scope" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -149,7 +154,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes email and profile scopes in addition to adwords" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -163,7 +169,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes access_type \"offline\" for refresh token support" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()
@@ -174,7 +181,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
     end
 
     test "includes prompt \"consent\" to force consent screen" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAds.config()

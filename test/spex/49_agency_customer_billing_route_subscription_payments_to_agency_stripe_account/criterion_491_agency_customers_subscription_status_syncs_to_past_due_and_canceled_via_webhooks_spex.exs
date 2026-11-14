@@ -3,12 +3,14 @@ defmodule MetricFlowSpex.AgencyCustomersSubscriptionStatusSyncsToPastDueAndCance
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency customer's subscription status syncs to past_due and canceled via webhooks", criterion: 491 do
+  spex "Agency customer's subscription status syncs to past_due and canceled via webhooks",
+    criterion: 491 do
     scenario "an agency customer's subscription is marked past_due by a webhook" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
-      when_ "Stripe sends a subscription.updated event marking the subscription past_due", context do
+      when_ "Stripe sends a subscription.updated event marking the subscription past_due",
+            context do
         account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
 
         payload =
@@ -30,7 +32,10 @@ defmodule MetricFlowSpex.AgencyCustomersSubscriptionStatusSyncsToPastDueAndCance
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}

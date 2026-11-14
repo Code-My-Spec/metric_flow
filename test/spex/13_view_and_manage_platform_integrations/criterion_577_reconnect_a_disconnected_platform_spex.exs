@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ReconnectADisconnectedPlatformSpex do
 
   spex "Reconnect a disconnected platform", criterion: 577 do
     scenario "a previously disconnected integration is reconnected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user has a previously disconnected integration", context do
         {:ok, context}

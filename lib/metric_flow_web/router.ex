@@ -180,6 +180,10 @@ defmodule MetricFlowWeb.Router do
       live "/account_transfers/:token", AccountTransferLive.Accept, :new
     end
 
+    # Social login: unauthenticated, identity scopes only
+    get "/auth/google/login", GoogleLoginController, :login
+    get "/auth/google/callback", GoogleLoginController, :callback
+
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
   end

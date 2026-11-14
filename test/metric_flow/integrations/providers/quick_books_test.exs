@@ -399,7 +399,8 @@ defmodule MetricFlow.Integrations.Providers.QuickBooksTest do
       expected_credentials = Base.encode64("#{client_id}:#{client_secret}")
       expected_header_value = "Basic #{expected_credentials}"
 
-      assert expected_header_value == "Basic " <> Base.encode64("stub-client-id:stub-client-secret")
+      assert expected_header_value ==
+               "Basic " <> Base.encode64("stub-client-id:stub-client-secret")
     end
 
     test "sends the token in the request body as a JSON-encoded object with a token key" do

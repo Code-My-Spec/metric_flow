@@ -6,14 +6,15 @@ defmodule MetricFlowSpex.PaywallCtaRoutesToCheckoutSpex do
 
   spex "A CTA on the paywall routes the user to the subscription checkout flow", criterion: 408 do
     scenario "the paywall on correlations includes a link or button pointing to the checkout page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates to the correlations page", context do
         result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the paywall contains a call-to-action that leads to the subscription checkout", context do
+      then_ "the paywall contains a call-to-action that leads to the subscription checkout",
+            context do
         case context.result do
           {:ok, view, _html} ->
             html = render(view)

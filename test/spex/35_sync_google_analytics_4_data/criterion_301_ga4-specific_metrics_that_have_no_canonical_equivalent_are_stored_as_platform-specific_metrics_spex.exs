@@ -4,22 +4,29 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
 
   import MetricFlowSpex.SharedGivens
 
-  spex "GA4-specific metrics that have no canonical equivalent are stored as platform-specific metrics labeled 'Google Analytics: [metric name]'", criterion: 301 do
+  spex "GA4-specific metrics that have no canonical equivalent are stored as platform-specific metrics labeled 'Google Analytics: [metric name]'",
+    criterion: 301 do
     scenario "a successful GA4 sync that includes platform-specific metrics appears in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "a GA4 sync completion event arrives with records including platform-specific metrics", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+      when_ "a GA4 sync completion event arrives with records including platform-specific metrics",
+            context do
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -39,20 +46,26 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
     end
 
     scenario "the sync history shows Google Analytics as the provider for all GA4 metric types" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "a GA4 sync event with both canonical and platform-specific metrics completes", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 15,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+      when_ "a GA4 sync event with both canonical and platform-specific metrics completes",
+            context do
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 15,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -72,7 +85,7 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
     end
 
     scenario "the sync history page shows the Google Analytics provider name consistently" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -81,12 +94,18 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
 
       when_ "multiple GA4 sync completion events arrive", context do
         Enum.each(1..3, fn i ->
-          Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-            provider: :google_analytics,
-            records_synced: 11,
-            completed_at: DateTime.utc_now(),
-            data_date: Date.add(Date.utc_today(), -i)
-          }})
+          Phoenix.PubSub.broadcast(
+            MetricFlow.PubSub,
+            "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+            {:sync_completed,
+             %{
+               provider: :google_analytics,
+               records_synced: 11,
+               completed_at: DateTime.utc_now(),
+               data_date: Date.add(Date.utc_today(), -i)
+             }}
+          )
+
           :timer.sleep(30)
         end)
 
@@ -94,7 +113,8 @@ defmodule MetricFlowSpex.Ga4SpecificMetricsThatHaveNoCanonicalEquivalentAreStore
         {:ok, context}
       end
 
-      then_ "all sync history entries are labeled with the Google Analytics provider name", context do
+      then_ "all sync history entries are labeled with the Google Analytics provider name",
+            context do
         html = render(context.view)
 
         # Count how many times Google Analytics appears as a provider label

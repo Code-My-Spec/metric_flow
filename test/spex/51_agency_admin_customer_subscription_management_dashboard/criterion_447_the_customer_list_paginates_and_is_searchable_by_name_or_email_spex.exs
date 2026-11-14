@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
 
   spex "The customer list paginates and is searchable by name or email", criterion: 447 do
     scenario "agency admin sees a search input on the subscriptions page for filtering customers" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       when_ "the admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")
@@ -19,6 +19,7 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
         # Search input has placeholder="Search by customer ID or email..."
         assert html =~ "Search" or html =~ "search" or
                  has_element?(context.view, "input[name='query']")
+
         {:ok, context}
       end
 
@@ -30,6 +31,7 @@ defmodule MetricFlowSpex.CustomerListPaginatesAndSearchableSpex do
                  has_element?(context.view, "[phx-click='prev_page']") or
                  has_element?(context.view, "nav[aria-label='Pagination']") or
                  html =~ "Next" or html =~ "Customer Subscriptions"
+
         {:ok, context}
       end
     end

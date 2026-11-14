@@ -84,7 +84,7 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
-  Retrieves a specific insight by ID, scoped to the account."""
+  Retrieves a specific insight by ID, scoped to the account.
 
   Returns {:ok, insight} when found or {:error, :not_found} when the insight
   does not exist, belongs to a different account, or the user has no personal account.
@@ -134,7 +134,9 @@ defmodule MetricFlow.Ai.AiRepository do
   @spec delete_all_insights(Scope.t()) :: {non_neg_integer(), nil}
   def delete_all_insights(%Scope{} = scope) do
     case get_account_id(scope) do
-      nil -> {0, nil}
+      nil ->
+        {0, nil}
+
       account_id ->
         Insight
         |> where(account_id: ^account_id)
@@ -234,7 +236,8 @@ defmodule MetricFlow.Ai.AiRepository do
   Returns {:ok, session} when found, shared, and the scope's user belongs
   to the session's account; {:error, :not_found} otherwise.
   """
-  @spec get_shared_chat_session(Scope.t(), integer()) :: {:ok, ChatSession.t()} | {:error, :not_found}
+  @spec get_shared_chat_session(Scope.t(), integer()) ::
+          {:ok, ChatSession.t()} | {:error, :not_found}
   def get_shared_chat_session(%Scope{user: user} = scope, id) do
     case Repo.get_by(ChatSession, id: id, shared: true) do
       nil ->

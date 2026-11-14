@@ -40,7 +40,10 @@ defmodule MetricFlow.Billing.WebhookProcessor do
 
     case BillingRepository.get_subscription_by_stripe_id(stripe_sub_id) do
       nil ->
-        Logger.warning("Webhook: invoice.payment_failed for unknown subscription #{stripe_sub_id}")
+        Logger.warning(
+          "Webhook: invoice.payment_failed for unknown subscription #{stripe_sub_id}"
+        )
+
         :ok
 
       subscription ->
@@ -62,7 +65,8 @@ defmodule MetricFlow.Billing.WebhookProcessor do
     payouts_enabled = object["payouts_enabled"]
     details_submitted = object["details_submitted"]
 
-    onboarding_status = determine_onboarding_status(charges_enabled, payouts_enabled, details_submitted)
+    onboarding_status =
+      determine_onboarding_status(charges_enabled, payouts_enabled, details_submitted)
 
     case BillingRepository.get_stripe_account_by_stripe_id(stripe_account_id) do
       nil ->

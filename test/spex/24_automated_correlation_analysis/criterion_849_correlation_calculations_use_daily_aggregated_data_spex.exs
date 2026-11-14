@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion849CorrelationCalculationsUseDailyAggregatedDa
 
   spex "Correlation calculations use daily aggregated data", criterion: 849 do
     scenario "multiple same-day records are aggregated to a single daily data point before correlation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "raw synced data at whatever granularity it arrives in", context do
         yesterday = Date.add(Date.utc_today(), -1)
@@ -62,7 +62,8 @@ defmodule MetricFlowSpex.Criterion849CorrelationCalculationsUseDailyAggregatedDa
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "they operate on daily aggregated values rather than raw or differently-aggregated data", context do
+      then_ "they operate on daily aggregated values rather than raw or differently-aggregated data",
+            context do
         row_html =
           context.view
           |> element("[data-role='correlation-row'][data-metric='clicks']")

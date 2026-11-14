@@ -11,11 +11,13 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
         {:ok, view, _html} = live(conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "taken@example.com",
-          password: "SecurePassword123!",
-          account_name: "Taken Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "taken@example.com",
+            password: "SecurePassword123!",
+            account_name: "Taken Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -28,11 +30,13 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
 
       when_ "a second user tries to register with the same email address", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "taken@example.com",
-          password: "AnotherSecurePass456!",
-          account_name: "Another Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "taken@example.com",
+            password: "AnotherSecurePass456!",
+            account_name: "Another Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -50,11 +54,13 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
         {:ok, view, _html} = live(conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "duplicate@example.com",
-          password: "SecurePassword123!",
-          account_name: "Duplicate Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "duplicate@example.com",
+            password: "SecurePassword123!",
+            account_name: "Duplicate Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -67,11 +73,13 @@ defmodule MetricFlowSpex.DuplicateEmailRejectedSpex do
 
       when_ "the user submits the form with the duplicate email", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "duplicate@example.com",
-          password: "AnotherSecurePass456!",
-          account_name: "Another Dup Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "duplicate@example.com",
+            password: "AnotherSecurePass456!",
+            account_name: "Another Dup Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

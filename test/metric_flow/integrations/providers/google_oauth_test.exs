@@ -72,7 +72,11 @@ defmodule MetricFlow.Integrations.Providers.GoogleOauthTest do
 
     test "includes redirect_uri with /integrations/oauth/callback/google_oauth path" do
       config = GoogleOauth.config()
-      assert String.ends_with?(Keyword.get(config, :redirect_uri), "/app/integrations/oauth/callback/google_oauth")
+
+      assert String.ends_with?(
+               Keyword.get(config, :redirect_uri),
+               "/app/integrations/oauth/callback/google_oauth"
+             )
     end
 
     test "includes authorization_params with read scope" do

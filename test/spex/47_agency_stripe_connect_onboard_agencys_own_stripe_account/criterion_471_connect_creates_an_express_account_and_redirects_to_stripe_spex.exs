@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.ConnectCreatesExpressAccountAndRedirectsSpex do
 
   spex "Connect creates an Express account and redirects to Stripe", criterion: 471 do
     scenario "admin clicks connect and is redirected to the onboarding URL Stripe returned" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Stripe accepts the account and account-link creation calls", context do
         Application.put_env(:metric_flow, :stripe_test_plug, fn conn ->

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AdminCannotModifyAnotherAdminsOrTheOwnersAccessLevelSpe
 
   spex "Admin cannot modify another admin's or the owner's access level", criterion: 536 do
     scenario "Alex, an admin, attempts to change another admin's access level" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex and Bob both hold admin access", context do
         alex_email = "alex#{System.unique_integer([:positive])}@example.com"
@@ -17,11 +17,13 @@ defmodule MetricFlowSpex.AdminCannotModifyAnotherAdminsOrTheOwnersAccessLevelSpe
           {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
           reg_view
-          |> form("#registration_form", user: %{
-            email: email,
-            password: alex_password,
-            account_name: "Personal Account"
-          })
+          |> form("#registration_form",
+            user: %{
+              email: email,
+              password: alex_password,
+              account_name: "Personal Account"
+            }
+          )
           |> render_submit()
         end
 
@@ -38,11 +40,13 @@ defmodule MetricFlowSpex.AdminCannotModifyAnotherAdminsOrTheOwnersAccessLevelSpe
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: alex_email,
-            password: alex_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: alex_email,
+              password: alex_password,
+              remember_me: true
+            }
+          )
 
         alex_conn = build_conn() |> then(&submit_form(login_form, &1)) |> recycle()
         bob_id = MetricFlowTest.UsersFixtures.get_user_by_email(bob_email).id

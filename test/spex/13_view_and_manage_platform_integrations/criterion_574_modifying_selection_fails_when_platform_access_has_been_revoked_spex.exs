@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.ModifyingSelectionFailsWhenPlatformAccessHasBeenRevoked
   spex "Modifying selection fails when platform access has been revoked", criterion: 574 do
     scenario "an integration whose platform token has expired or been revoked" do
       given_ "the user has an integration whose platform token has expired or been revoked",
-              context do
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 

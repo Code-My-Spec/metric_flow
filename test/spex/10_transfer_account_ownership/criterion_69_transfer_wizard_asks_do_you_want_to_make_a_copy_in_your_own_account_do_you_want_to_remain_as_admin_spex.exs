@@ -11,9 +11,9 @@ defmodule MetricFlowSpex.Criterion69TransferWizardAsksDoYouWantToMakeACopyInYour
   import MetricFlowSpex.SharedGivens
 
   spex "Transfer wizard asks: Do you want to make a copy in your own account, Do you want to remain as admin after transfer",
-       criterion: 69 do
+    criterion: 69 do
     scenario "the owner views the transfer ownership wizard" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "they open the transfer ownership section", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

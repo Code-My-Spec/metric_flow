@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion786LessCommonChartTypesRenderAsValidSpecsSpex 
 
   spex "Less common chart types also render as valid Vega-Lite specs", criterion: 786 do
     scenario "a visualization configured as a donut or Gantt chart renders correctly" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization with a bound metric", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

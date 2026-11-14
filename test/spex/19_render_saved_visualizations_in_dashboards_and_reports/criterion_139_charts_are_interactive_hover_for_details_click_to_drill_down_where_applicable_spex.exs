@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
 
   spex "Charts are interactive with hover and click capabilities", criterion: 139 do
     scenario "rendered chart has interactive Vega-Lite configuration" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has a chart rendered in the editor", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -20,7 +20,8 @@ defmodule MetricFlowSpex.Criterion4079ChartsAreInteractiveSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the chart element is rendered with the VegaLite hook for client-side interactivity", context do
+      then_ "the chart element is rendered with the VegaLite hook for client-side interactivity",
+            context do
         # Vega-Lite charts rendered via vegaEmbed are inherently interactive
         # (hover tooltips, selection, zoom) — we verify the hook is wired up
         assert has_element?(context.view, "[phx-hook='VegaLite'][data-role='vega-lite-chart']")

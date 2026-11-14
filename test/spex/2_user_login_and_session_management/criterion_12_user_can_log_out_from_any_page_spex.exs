@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
 
   spex "User can log out from any page", criterion: 12 do
     scenario "logged-in user sees log out link and can log out from settings" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user is logged in and on the settings page", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         conn = recycle(logged_in_conn)
@@ -52,17 +54,19 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
     end
 
     scenario "after logging out the user cannot access authenticated pages" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user logs in then logs out", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
 
@@ -83,7 +87,9 @@ defmodule MetricFlowSpex.UserCanLogOutFromAnyPageSpex do
       end
 
       then_ "the user is redirected to the login page", context do
-        {:error, {:redirect, %{to: path}}} = live(context.after_logout_conn, "/app/users/settings")
+        {:error, {:redirect, %{to: path}}} =
+          live(context.after_logout_conn, "/app/users/settings")
+
         assert path =~ "/users/log-in"
         {:ok, context}
       end

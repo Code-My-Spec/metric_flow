@@ -4,11 +4,14 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
-  test "shows one password form and clear recovery and registration links", %{conn: conn} do
+  test "shows one password form, Google sign-in, and clear recovery and registration links", %{
+    conn: conn
+  } do
     {:ok, view, _html} = live(conn, ~p"/users/log-in")
 
     assert has_element?(view, "#login_form_password")
     assert has_element?(view, "#password_email")
+    assert has_element?(view, "#google-login")
     assert has_element?(view, "#forgot-password-link[href='/users/forgot-password']")
     assert has_element?(view, "#register-link[href='/users/register']")
     refute has_element?(view, "#login_form_magic")
@@ -69,11 +72,13 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
     assert has_element?(registration_view, "#registration_form")
   end
 
-  test "reauthentication keeps the user's email readonly and hides registration", %{conn: conn} do
+  test "reauthentication shows a notice, keeps the user's email readonly, and hides registration",
+       %{conn: conn} do
     user = user_fixture()
     conn = log_in_user(conn, user)
-    {:ok, view, _html} = live(conn, ~p"/users/log-in")
+    {:ok, view, html} = live(conn, ~p"/users/log-in")
 
+    assert html =~ "You need to reauthenticate"
     assert has_element?(view, "#password_email[readonly][value='#{user.email}']")
     refute has_element?(view, "#register-link")
     refute has_element?(view, "#login_form_password input[name='user[remember_me]']")

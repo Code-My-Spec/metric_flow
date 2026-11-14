@@ -45,17 +45,19 @@ defmodule MetricFlowSpex.InactiveSessionsExpireAfterReasonablePeriodSpex do
     end
 
     scenario "user with valid session can access protected pages" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user has an active session", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :logged_in_conn, logged_in_conn)}

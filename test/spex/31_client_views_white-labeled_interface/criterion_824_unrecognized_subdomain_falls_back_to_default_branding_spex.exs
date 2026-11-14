@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.Criterion824UnrecognizedSubdomainFallsBackToDefaultBran
 
   spex "Unrecognized subdomain falls back to default branding", criterion: 824 do
     scenario "a subdomain matching no active agency shows default branding instead of an error" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a client accesses the system via a subdomain that doesn't match any active agency", context do
+      given_ "a client accesses the system via a subdomain that doesn't match any active agency",
+             context do
         %Plug.Conn{} = owner_conn = context.owner_conn
         conn = %{owner_conn | host: "no-such-agency-824.metricflow.io"}
         {:ok, Map.put(context, :conn, conn)}

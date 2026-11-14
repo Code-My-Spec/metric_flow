@@ -6,10 +6,11 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
 
   spex "AI learns from feedback to improve future suggestions", criterion: 210 do
     scenario "after providing feedback, user sees a message indicating feedback helps improve suggestions" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
-      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
+      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
@@ -44,7 +45,8 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
         {:ok, context}
       end
 
-      then_ "the user sees a message indicating their feedback helps improve suggestions", context do
+      then_ "the user sees a message indicating their feedback helps improve suggestions",
+            context do
         html = render(context.view)
 
         has_feedback_message =
@@ -66,10 +68,11 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
     end
 
     scenario "the feedback section communicates the learning and improvement aspect" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
-      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
+      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
@@ -83,7 +86,8 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the AI suggestions area contains language about learning or personalization", context do
+      then_ "the AI suggestions area contains language about learning or personalization",
+            context do
         html = render(context.view)
 
         has_learning_language =
@@ -108,10 +112,11 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
     end
 
     scenario "user who provides not-helpful feedback sees an indication their preferences are being considered" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
-      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled", context do
+      given_ "the user navigates to the correlations page in Smart mode with AI suggestions enabled",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
 
         view
@@ -134,7 +139,10 @@ defmodule MetricFlowSpex.AiLearnsFromFeedbackToImproveFutureSuggestionsSpex do
             |> element("[data-role='feedback-not-helpful']")
             |> render_click()
 
-          has_element?(view, "[data-role='ai-recommendations'] [data-role='feedback-not-helpful']") ->
+          has_element?(
+            view,
+            "[data-role='ai-recommendations'] [data-role='feedback-not-helpful']"
+          ) ->
             view
             |> element("[data-role='ai-recommendations'] [data-role='feedback-not-helpful']")
             |> render_click()

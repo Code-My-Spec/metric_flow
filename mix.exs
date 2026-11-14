@@ -35,7 +35,7 @@ defmodule MetricFlow.MixProject do
   defp compilers(:test),
     do: [:diagnostics, :phoenix_live_view, :erlang, :elixir, :app]
 
-  defp compilers(_), do: [:phoenix_live_view, :erlang, :elixir, :app]
+  defp compilers(_), do: [:diagnostics, :phoenix_live_view, :erlang, :elixir, :app]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support", "test/spex"]

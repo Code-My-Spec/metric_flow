@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.Criterion1006FirstSyncBackfills548DaysSubsequentSyncsAr
   import MetricFlowSpex.SharedGivens
 
   spex "On first sync, up to 548 days of historical data is backfilled; subsequent daily syncs are intended to fetch only data since the last successful sync rather than re-fetching the full history",
-       criterion: 1006 do
+    criterion: 1006 do
     scenario "a newly connected Google Business Profile location backfills on its first sync, then syncs incrementally" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a Google Business Profile location was just connected and has never synced", context do
+      given_ "a Google Business Profile location was just connected and has never synced",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
@@ -29,7 +30,8 @@ defmodule MetricFlowSpex.Criterion1006FirstSyncBackfills548DaysSubsequentSyncsAr
         {:ok, context}
       end
 
-      then_ "a subsequent daily sync fetches only data since the last successful sync rather than re-fetching the full history", context do
+      then_ "a subsequent daily sync fetches only data since the last successful sync rather than re-fetching the full history",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         view |> element("[data-role='trigger-daily-sync']") |> render_click()
         Oban.drain_queue(queue: :sync)

@@ -14,12 +14,14 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
 
       when_ "the user submits the registration form with account details", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "founder@example.com",
-          password: "SecurePassword123!",
-          account_name: "Founder Corp",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "founder@example.com",
+            password: "SecurePassword123!",
+            account_name: "Founder Corp",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -42,19 +44,24 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "owner_check@example.com",
-          password: "SecurePassword123!",
-          account_name: "Owner Corp",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "owner_check@example.com",
+            password: "SecurePassword123!",
+            account_name: "Owner Corp",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         # Authenticate the registered user for subsequent requests
         user = MetricFlowTest.UsersFixtures.get_user_by_email("owner_check@example.com")
         auth_conn = log_in_user(build_conn(), user)
 
-        {:ok, context |> Map.put(:registered_email, "owner_check@example.com") |> Map.put(:conn, auth_conn)}
+        {:ok,
+         context
+         |> Map.put(:registered_email, "owner_check@example.com")
+         |> Map.put(:conn, auth_conn)}
       end
 
       when_ "the authenticated user navigates to the accounts page", context do
@@ -74,19 +81,24 @@ defmodule MetricFlowSpex.CreatorBecomesOriginatorAndOwnerSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "originator@example.com",
-          password: "SecurePassword123!",
-          account_name: "Originator LLC",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "originator@example.com",
+            password: "SecurePassword123!",
+            account_name: "Originator LLC",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         # Authenticate the registered user for subsequent requests
         user = MetricFlowTest.UsersFixtures.get_user_by_email("originator@example.com")
         auth_conn = log_in_user(build_conn(), user)
 
-        {:ok, context |> Map.put(:registered_email, "originator@example.com") |> Map.put(:conn, auth_conn)}
+        {:ok,
+         context
+         |> Map.put(:registered_email, "originator@example.com")
+         |> Map.put(:conn, auth_conn)}
       end
 
       when_ "the authenticated user navigates to the accounts page", context do

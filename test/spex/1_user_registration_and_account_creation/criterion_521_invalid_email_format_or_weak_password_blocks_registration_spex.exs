@@ -11,11 +11,13 @@ defmodule MetricFlowSpex.InvalidEmailOrWeakPasswordBlocksRegistrationSpex do
 
       when_ "she enters a malformed email and submits the registration form", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "not-an-email",
-          password: "SecurePassword123!",
-          account_name: "Dana Retry Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "not-an-email",
+            password: "SecurePassword123!",
+            account_name: "Dana Retry Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -27,11 +29,13 @@ defmodule MetricFlowSpex.InvalidEmailOrWeakPasswordBlocksRegistrationSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "not-an-email",
-          password: "AnotherSecurePass456!",
-          account_name: "Dana Retry Co Two"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "not-an-email",
+            password: "AnotherSecurePass456!",
+            account_name: "Dana Retry Co Two"
+          }
+        )
         |> render_submit()
 
         refute render(view) =~ "has already been taken"
@@ -48,11 +52,13 @@ defmodule MetricFlowSpex.InvalidEmailOrWeakPasswordBlocksRegistrationSpex do
 
       when_ "she enters a weak password and submits the registration form", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "weakpass_dana@example.com",
-          password: "short",
-          account_name: "Dana Weak Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "weakpass_dana@example.com",
+            password: "short",
+            account_name: "Dana Weak Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -64,11 +70,13 @@ defmodule MetricFlowSpex.InvalidEmailOrWeakPasswordBlocksRegistrationSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "weakpass_dana@example.com",
-          password: "AnotherSecurePass456!",
-          account_name: "Dana Weak Co Two"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "weakpass_dana@example.com",
+            password: "AnotherSecurePass456!",
+            account_name: "Dana Weak Co Two"
+          }
+        )
         |> render_submit()
 
         refute render(view) =~ "has already been taken"

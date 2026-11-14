@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.TypingTheWrongAccountNameBlocksDeletionSpex do
 
   spex "Typing the wrong account name blocks deletion", criterion: 544 do
     scenario "owner starts the delete flow and types a name that doesn't match the account's name" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex is the account owner and starts the delete flow", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -15,10 +15,12 @@ defmodule MetricFlowSpex.TypingTheWrongAccountNameBlocksDeletionSpex do
 
       when_ "Alex types a name that doesn't match the account's name", context do
         context.view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Not The Real Name",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Not The Real Name",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}

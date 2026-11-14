@@ -169,7 +169,8 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
           "before" => "before_cursor",
           "after" => "cursor_for_next_page"
         },
-        "next" => "https://graph.facebook.com/v18.0/act_123456789/insights?after=cursor_for_next_page"
+        "next" =>
+          "https://graph.facebook.com/v18.0/act_123456789/insights?after=cursor_for_next_page"
       }
     })
   end
@@ -1104,24 +1105,28 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
       if context[:skip], do: flunk("FACEBOOK_TEST_AD_ACCOUNT_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "facebook_ads_fetch_metrics", cassette_opts("facebook_ads_fetch_metrics"), fn plug ->
-          assert {:ok, metrics} =
-                   FacebookAds.fetch_metrics(context.integration,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+        with_cassette(
+          "facebook_ads_fetch_metrics",
+          cassette_opts("facebook_ads_fetch_metrics"),
+          fn plug ->
+            assert {:ok, metrics} =
+                     FacebookAds.fetch_metrics(context.integration,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert is_list(metrics)
+            assert is_list(metrics)
 
-          for metric <- metrics do
-            assert metric.provider == :facebook_ads
-            assert metric.metric_type == "ad_performance"
-            assert is_binary(metric.metric_name)
-            assert is_number(metric.value)
-            assert %DateTime{} = metric.recorded_at
-            assert is_map(metric.metadata)
+            for metric <- metrics do
+              assert metric.provider == :facebook_ads
+              assert metric.metric_type == "ad_performance"
+              assert is_binary(metric.metric_name)
+              assert is_number(metric.value)
+              assert %DateTime{} = metric.recorded_at
+              assert is_map(metric.metadata)
+            end
           end
-        end
+        )
       end)
     end
 
@@ -1129,17 +1134,26 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAdsTest do
       if context[:skip], do: flunk("FACEBOOK_TEST_AD_ACCOUNT_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "facebook_ads_unauthorized", cassette_opts("facebook_ads_unauthorized"), fn plug ->
-          bad_token = %{context.integration | access_token: "invalid-token"}
+        with_cassette(
+          "facebook_ads_unauthorized",
+          cassette_opts("facebook_ads_unauthorized"),
+          fn plug ->
+            bad_token = %{context.integration | access_token: "invalid-token"}
 
-          assert {:error, reason} =
-                   FacebookAds.fetch_metrics(bad_token,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+            assert {:error, reason} =
+                     FacebookAds.fetch_metrics(bad_token,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert reason in [:unauthorized, :insufficient_permissions, :ad_account_not_found, :invalid_token]
-        end
+            assert reason in [
+                     :unauthorized,
+                     :insufficient_permissions,
+                     :ad_account_not_found,
+                     :invalid_token
+                   ]
+          end
+        )
       end)
     end
   end

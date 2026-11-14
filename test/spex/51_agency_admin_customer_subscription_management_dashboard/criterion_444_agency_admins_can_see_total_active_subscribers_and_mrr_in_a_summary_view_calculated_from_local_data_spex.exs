@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.AgencyAdminsSeeSubscriberSummarySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Agency admins can see total active subscribers and MRR in a summary view", criterion: 444 do
+  spex "Agency admins can see total active subscribers and MRR in a summary view",
+    criterion: 444 do
     scenario "agency admin views the subscriptions page and sees summary metrics" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       when_ "the admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")

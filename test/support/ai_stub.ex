@@ -31,9 +31,7 @@ defmodule MetricFlowTest.AiStub do
   def setup_ai_stubs do
     original = Application.get_env(:metric_flow, :test_llm_options)
 
-    Application.put_env(:metric_flow, :test_llm_options, [
-      stream_chat_fn: &fake_stream_chat/4
-    ])
+    Application.put_env(:metric_flow, :test_llm_options, stream_chat_fn: &fake_stream_chat/4)
 
     ExUnit.Callbacks.on_exit(fn ->
       if original do

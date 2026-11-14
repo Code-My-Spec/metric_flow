@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion856AiHighlightsMostContextuallyMeaningfulCorre
 
   spex "AI highlights the most contextually meaningful correlations", criterion: 856 do
     scenario "the AI marks a correlation as contextually meaningful independent of raw rank" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "several correlations are shown in Smart/AI mode", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -37,8 +37,12 @@ defmodule MetricFlowSpex.Criterion856AiHighlightsMostContextuallyMeaningfulCorre
         {:ok, context}
       end
 
-      then_ "it highlights which of them are most meaningful, not just which have the highest raw correlation value", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-ai-highlighted='true']"),
+      then_ "it highlights which of them are most meaningful, not just which have the highest raw correlation value",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-ai-highlighted='true']"
+               ),
                "Expected the AI to mark at least one correlation as contextually meaningful, distinct from raw coefficient rank"
 
         {:ok, context}

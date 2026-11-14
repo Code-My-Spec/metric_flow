@@ -115,10 +115,13 @@ defmodule MetricFlow.Invitations.InvitationRepositoryTest do
       account = insert_account!(user)
       shared_hash = unique_token_hash()
 
-      first_changeset = build_changeset(valid_invitation_attrs(account.id) |> Map.put(:token_hash, shared_hash))
+      first_changeset =
+        build_changeset(valid_invitation_attrs(account.id) |> Map.put(:token_hash, shared_hash))
+
       {:ok, _} = InvitationRepository.create_invitation(first_changeset)
 
-      second_changeset = build_changeset(valid_invitation_attrs(account.id) |> Map.put(:token_hash, shared_hash))
+      second_changeset =
+        build_changeset(valid_invitation_attrs(account.id) |> Map.put(:token_hash, shared_hash))
 
       assert {:error, result_changeset} = InvitationRepository.create_invitation(second_changeset)
       refute result_changeset.valid?
@@ -134,7 +137,9 @@ defmodule MetricFlow.Invitations.InvitationRepositoryTest do
         |> Map.delete(:email)
         |> build_changeset()
 
-      assert {:error, missing_changeset} = InvitationRepository.create_invitation(missing_email_changeset)
+      assert {:error, missing_changeset} =
+               InvitationRepository.create_invitation(missing_email_changeset)
+
       assert %{email: ["can't be blank"]} = errors_on(missing_changeset)
 
       invalid_email_changeset =
@@ -142,7 +147,9 @@ defmodule MetricFlow.Invitations.InvitationRepositoryTest do
         |> Map.put(:email, "not-an-email")
         |> build_changeset()
 
-      assert {:error, invalid_changeset} = InvitationRepository.create_invitation(invalid_email_changeset)
+      assert {:error, invalid_changeset} =
+               InvitationRepository.create_invitation(invalid_email_changeset)
+
       assert %{email: [_]} = errors_on(invalid_changeset)
     end
 

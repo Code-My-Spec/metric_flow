@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Ga4OnlyMetricIsStoredWithAPlatformSpecificLabelSpex do
 
   spex "GA4-only metric is stored with a platform-specific label", criterion: 641 do
     scenario "a GA4 metric with no canonical equivalent still syncs successfully" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a GA4 metric has no canonical cross-platform equivalent", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
@@ -16,7 +16,7 @@ defmodule MetricFlowSpex.Ga4OnlyMetricIsStoredWithAPlatformSpecificLabelSpex do
         {:ok, context}
       end
 
-      given_ :with_google_analytics_sync_stub
+      given_(:with_google_analytics_sync_stub)
 
       when_ "it is stored", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -26,7 +26,12 @@ defmodule MetricFlowSpex.Ga4OnlyMetricIsStoredWithAPlatformSpecificLabelSpex do
       end
 
       then_ "it is labeled 'Google Analytics: [metric name]'", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']", "Google Analytics")
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",
+                 "Google Analytics"
+               )
+
         {:ok, context}
       end
     end

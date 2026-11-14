@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.AgencyAdminsCanUpdatePlanPricingSpex do
 
   spex "Agency admins can update plan pricing", criterion: 423 do
     scenario "admin updates a plan's monthly price" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
+      given_(:owner_has_agency_plan)
 
       given_ "the admin navigates to the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

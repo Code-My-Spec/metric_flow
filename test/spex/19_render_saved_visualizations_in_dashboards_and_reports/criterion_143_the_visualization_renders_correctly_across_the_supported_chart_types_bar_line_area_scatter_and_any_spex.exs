@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
 
   spex "Visualization renders correctly across supported chart types", criterion: 143 do
     scenario "editing the vega-lite spec directly updates the chart preview" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has a chart in the editor with spec editor open", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -63,9 +63,9 @@ defmodule MetricFlowSpex.Criterion5057VizRendersAcrossChartTypesSpex do
     end
 
     scenario "invalid JSON in the spec editor shows an error" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has the spec editor open", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

@@ -128,8 +128,11 @@ defmodule MetricFlow.Ai.LlmClient do
 
   defp to_alloy_messages(messages) do
     Enum.map(messages, fn
-      %{role: role, content: content} when role in [:user, "user"] -> Message.user(content)
-      %{role: role, content: content} when role in [:assistant, "assistant"] -> Message.assistant(content)
+      %{role: role, content: content} when role in [:user, "user"] ->
+        Message.user(content)
+
+      %{role: role, content: content} when role in [:assistant, "assistant"] ->
+        Message.assistant(content)
     end)
   end
 

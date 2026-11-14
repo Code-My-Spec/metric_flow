@@ -30,8 +30,7 @@ defmodule MetricFlowSpex.Criterion5048NaturalLanguageGeneratesSpecSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
-          render(context.view)
+          await_chart(context.view)
         end)
 
         html = render(context.view)

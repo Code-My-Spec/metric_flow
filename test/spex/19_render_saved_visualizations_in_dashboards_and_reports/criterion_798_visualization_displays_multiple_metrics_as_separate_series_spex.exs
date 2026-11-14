@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion798VisualizationDisplaysMultipleMetricsAsSepar
 
   spex "Visualization displays multiple metrics as separate series", criterion: 798 do
     scenario "a visualization bound to two metrics renders both as separate series on the same chart" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization bound to two metrics", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -48,6 +48,7 @@ defmodule MetricFlowSpex.Criterion798VisualizationDisplaysMultipleMetricsAsSepar
           |> render()
 
         assert chart_html =~ "layer"
+
         assert chart_html =~ "&quot;values&quot;",
                "Expected each layer's series data to be populated at render time, got: #{chart_html}"
 

@@ -45,7 +45,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.created"
+      assert capture_log([level: :info], fn ->
+               assert :ok = Billing.process_webhook_event(event)
+             end) =~ "subscription.created"
 
       subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
       assert subscription.account_id == account.id
@@ -106,7 +108,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.updated"
+      assert capture_log([level: :info], fn ->
+               assert :ok = Billing.process_webhook_event(event)
+             end) =~ "subscription.updated"
 
       subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
       assert subscription.status == :past_due
@@ -131,7 +135,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "subscription.deleted"
+      assert capture_log([level: :info], fn ->
+               assert :ok = Billing.process_webhook_event(event)
+             end) =~ "subscription.deleted"
 
       subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
       assert subscription.status == :cancelled
@@ -169,7 +175,10 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(created_event) end)
+      capture_log([level: :info], fn ->
+        assert :ok = Billing.process_webhook_event(created_event)
+      end)
+
       assert BillingRepository.get_subscription_by_stripe_id(sub_id).account_id == client.id
 
       updated_event = %{
@@ -187,7 +196,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(updated_event) end)
+      capture_log([level: :info], fn ->
+        assert :ok = Billing.process_webhook_event(updated_event)
+      end)
 
       subscription = BillingRepository.get_subscription_by_stripe_id(sub_id)
       assert subscription.status == :past_due
@@ -225,7 +236,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "payment_succeeded"
+      assert capture_log([level: :info], fn ->
+               assert :ok = Billing.process_webhook_event(event)
+             end) =~ "payment_succeeded"
     end
 
     test "processes account.updated for Connect onboarding" do
@@ -241,7 +254,9 @@ defmodule MetricFlow.BillingTest do
         }
       }
 
-      assert capture_log([level: :info], fn -> assert :ok = Billing.process_webhook_event(event) end) =~ "account.updated"
+      assert capture_log([level: :info], fn ->
+               assert :ok = Billing.process_webhook_event(event)
+             end) =~ "account.updated"
     end
 
     test "returns ignored for unrecognized event types" do

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserRevokesTheirOwnAccessFromAccountSettingsSpex do
 
   spex "User revokes their own access from account settings", criterion: 907 do
     scenario "a non-owner member leaves the client account from account settings" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the member switches into the owner's account", context do
         {:ok, accounts_view, _html} = live(context.member_conn, "/app/accounts")

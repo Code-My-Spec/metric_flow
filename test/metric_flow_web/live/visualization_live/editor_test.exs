@@ -108,11 +108,12 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         refute has_element?(lv, "[data-role='preview-chart-btn'][disabled]")
       end)
     end
-
   end
 
   describe "selects chart type on select_chart_type click and highlights active button" do
-    test "selects chart type on select_chart_type click and highlights active button", %{conn: conn} do
+    test "selects chart type on select_chart_type click and highlights active button", %{
+      conn: conn
+    } do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -172,7 +173,6 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         assert html =~ "can&#39;t be blank"
       end)
     end
-
   end
 
   describe "saves visualization and shows success flash" do
@@ -191,11 +191,12 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         assert html =~ "Visualization saved."
       end)
     end
-
   end
 
   describe "shows validation errors when saving with blank name or no metrics selected" do
-    test "shows validation errors when saving with blank name or no metrics selected", %{conn: conn} do
+    test "shows validation errors when saving with blank name or no metrics selected", %{
+      conn: conn
+    } do
       user = user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
@@ -211,7 +212,6 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
         assert html =~ "can&#39;t be blank"
       end)
     end
-
   end
 
   describe "toggles shareable flag on toggle_shareable click" do
@@ -232,7 +232,9 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   end
 
   describe "redirects to visualizations with error when editing non-existent visualization" do
-    test "redirects to visualizations with error when editing non-existent visualization", %{conn: conn} do
+    test "redirects to visualizations with error when editing non-existent visualization", %{
+      conn: conn
+    } do
       user = user_fixture()
       conn = log_in_user(conn, user)
 
@@ -241,6 +243,5 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
                  live(conn, ~p"/app/visualizations/999999/edit")
       end)
     end
-
   end
 end

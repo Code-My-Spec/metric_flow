@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion840UserSelectsMultipleMetricsAsGoalsSpex do
 
   spex "User selects multiple metrics as goals", criterion: 840 do
     scenario "a user in the goal metrics configuration screen selects more than one metric as goals" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user in the goal metrics configuration screen", context do
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{metric_name: "revenue"})

@@ -6,12 +6,17 @@ defmodule MetricFlowSpex.UserSeesConfirmationTheIntegrationIsActiveSpex do
 
   spex "User sees confirmation the integration is active", criterion: 566 do
     scenario "Dana completes the connect flow for Google Analytics and sees an active confirmation" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "Dana completes the connect flow for Google Analytics", context do
-        _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
-          MetricFlowTest.OAuthStub.valid_callback_params())
+        _callback_conn =
+          get(
+            context.owner_conn,
+            "/app/integrations/oauth/callback/google",
+            MetricFlowTest.OAuthStub.valid_callback_params()
+          )
+
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end

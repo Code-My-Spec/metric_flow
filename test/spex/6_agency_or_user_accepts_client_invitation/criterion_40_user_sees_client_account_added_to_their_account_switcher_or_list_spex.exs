@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
 
   spex "User sees client account added to their account switcher or list", criterion: 40 do
     scenario "after accepting an invitation, the client account appears in the account switcher" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -34,11 +36,13 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -46,7 +50,8 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
       end
 
       when_ "the second user accepts the invitation", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/invitations/#{context.invitation_token}")
+        {:ok, view, _html} =
+          live(context.invitee_conn, "/invitations/#{context.invitation_token}")
 
         view
         |> element("[data-role=accept-btn]")
@@ -64,17 +69,19 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
     end
 
     scenario "after accepting an invitation, the client account is accessible via account switcher" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -91,11 +98,13 @@ defmodule MetricFlowSpex.UserSeesClientAccountAddedToTheirAccountSwitcherOrListS
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)

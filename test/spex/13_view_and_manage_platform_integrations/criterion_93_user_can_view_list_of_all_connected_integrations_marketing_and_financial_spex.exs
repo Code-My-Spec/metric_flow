@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can view list of all connected integrations (marketing and financial)", criterion: 93 do
+  spex "User can view list of all connected integrations (marketing and financial)",
+    criterion: 93 do
     scenario "authenticated user can navigate to the integrations index page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         result = live(context.owner_conn, "/app/integrations")
@@ -28,7 +29,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
     end
 
     scenario "integrations index page renders an integrations list section" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -48,7 +49,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
     end
 
     scenario "integrations index page shows marketing platforms" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -70,7 +71,7 @@ defmodule MetricFlowSpex.UserCanViewListOfAllConnectedIntegrationsMarketingAndFi
     end
 
     scenario "integrations index page shows financial platforms" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

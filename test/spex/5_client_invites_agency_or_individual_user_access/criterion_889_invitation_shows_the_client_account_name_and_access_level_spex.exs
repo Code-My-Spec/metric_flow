@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion889InvitationShowsTheClientAccountNameAndAcces
 
   spex "Invitation shows the client account name and access level", criterion: 889 do
     scenario "the invitee views an invitation sent with a chosen access level" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a client sends an invitation with a chosen access level", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

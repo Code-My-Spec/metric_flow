@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion784SwitchingChartTypePreservesSelectionsSpex d
 
   spex "Switching chart type preserves filters and selections", criterion: 784 do
     scenario "a visualization with a selected metric switches chart type from bar to line" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a visualization with an active metric selection and bar chart type", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

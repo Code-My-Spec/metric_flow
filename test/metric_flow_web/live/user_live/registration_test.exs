@@ -5,7 +5,8 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   import MetricFlowTest.UsersFixtures
 
   describe "renders registration form with email, password, account name, and account type fields" do
-    test "renders registration form with email, password, account name, and account type fields", %{conn: conn} do
+    test "renders registration form with email, password, account name, and account type fields",
+         %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ ~s(type="email")
@@ -15,6 +16,18 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
       assert html =~ "Client"
       assert html =~ "Agency"
     end
+  end
+
+  test "explains account types beside the accessible selector", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/users/register")
+
+    assert has_element?(
+             view,
+             "#registration_form select[name='user[account_type]'][aria-describedby='account-type-help']"
+           )
+
+    assert has_element?(view, "#account-type-help", "your own business")
+    assert has_element?(view, "#account-type-help", "multiple client businesses")
   end
 
   describe "autofocuses email input on mount" do
@@ -48,7 +61,9 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "live-validates email format on change and shows inline error for invalid email" do
-    test "live-validates email format on change and shows inline error for invalid email", %{conn: conn} do
+    test "live-validates email format on change and shows inline error for invalid email", %{
+      conn: conn
+    } do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       result =
@@ -76,7 +91,8 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "creates user and shows success screen with confirmation email message on valid submit" do
-    test "creates user and shows success screen with confirmation email message on valid submit", %{conn: conn} do
+    test "creates user and shows success screen with confirmation email message on valid submit",
+         %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()
@@ -91,7 +107,9 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
   end
 
   describe "displays account name confirmation on success screen when account name was provided" do
-    test "displays account name confirmation on success screen when account name was provided", %{conn: conn} do
+    test "displays account name confirmation on success screen when account name was provided", %{
+      conn: conn
+    } do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()

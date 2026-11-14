@@ -9,12 +9,14 @@ defmodule MetricFlowSpex.RegisteringUserBecomesDefaultOwnerSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "owner_alex@example.com",
-          password: "SecurePassword123!",
-          account_name: "Alex Owner Co",
-          account_type: "agency"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "owner_alex@example.com",
+            password: "SecurePassword123!",
+            account_name: "Alex Owner Co",
+            account_type: "agency"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

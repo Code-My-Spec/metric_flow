@@ -126,10 +126,19 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "displays raw mode results table with metric, coefficient, lag, and platform columns" do
-    test "displays raw mode results table with metric, coefficient, lag, and platform columns", %{conn: conn} do
+    test "displays raw mode results table with metric, coefficient, lag, and platform columns", %{
+      conn: conn
+    } do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
-      insert_correlation_result!(account.id, job, %{metric_name: "clicks", coefficient: 0.82, optimal_lag: 7, provider: :google_ads})
+
+      insert_correlation_result!(account.id, job, %{
+        metric_name: "clicks",
+        coefficient: 0.82,
+        optimal_lag: 7,
+        provider: :google_ads
+      })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -191,7 +200,9 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", coefficient: 0.82})
+
       insert_correlation_result!(account.id, job, %{metric_name: "impressions", coefficient: 0.45})
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -211,7 +222,9 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
       {user, account} = user_with_personal_account()
       job = insert_completed_job!(account.id)
       insert_correlation_result!(account.id, job, %{metric_name: "clicks", provider: :google_ads})
+
       insert_correlation_result!(account.id, job, %{metric_name: "spend", provider: :facebook_ads})
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -260,7 +273,9 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
   end
 
   describe "shows insufficient data warning when correlation run fails due to insufficient data" do
-    test "shows insufficient data warning when correlation run fails due to insufficient data", %{conn: conn} do
+    test "shows insufficient data warning when correlation run fails due to insufficient data", %{
+      conn: conn
+    } do
       {user, _account} = user_with_personal_account()
       conn = log_in_user(conn, user)
 

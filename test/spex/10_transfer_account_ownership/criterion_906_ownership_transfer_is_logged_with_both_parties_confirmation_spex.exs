@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion906OwnershipTransferIsLoggedWithBothPartiesCon
 
   spex "Ownership transfer is logged with both parties' confirmation", criterion: 906 do
     scenario "an ownership transfer has completed" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "an ownership transfer has completed", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
@@ -45,7 +45,8 @@ defmodule MetricFlowSpex.Criterion906OwnershipTransferIsLoggedWithBothPartiesCon
         {:ok, context}
       end
 
-      then_ "it logs the transfer along with confirmation from both the previous and new owner", context do
+      then_ "it logs the transfer along with confirmation from both the previous and new owner",
+            context do
         {:ok, view, _html} = live(context.member_conn, "/app/accounts/settings")
         html = render(view)
         assert html =~ context.owner_email

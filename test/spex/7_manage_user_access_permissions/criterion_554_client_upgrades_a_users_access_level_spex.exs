@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.ClientUpgradesAUsersAccessLevelSpex do
 
   spex "Client upgrades a user's access level", criterion: 554 do
     scenario "Jordan upgrades a read-only teammate to account manager" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a teammate currently has read-only access", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}

@@ -11,6 +11,8 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
 
   use Phoenix.Component
 
+  import MetricFlowWeb.CoreComponents, only: [input: 1]
+
   alias MetricFlow.Agencies.AutoEnrollmentRule
   alias MetricFlow.Agencies.WhiteLabelConfig
 
@@ -52,10 +54,14 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
             <div class="flex items-center gap-3">
               <div>
                 <span class="font-medium text-sm">{grant.agency_account_name}</span>
-                <span class="text-xs text-base-content/50 font-mono ml-1">({grant.agency_account_slug})</span>
+                <span class="text-xs text-base-content/50 font-mono ml-1">
+                  ({grant.agency_account_slug})
+                </span>
               </div>
               <span class="badge badge-sm">{access_level_label(grant.access_level)}</span>
-              <span :if={grant.origination_status == :originator} class="badge badge-primary badge-sm">Originator</span>
+              <span :if={grant.origination_status == :originator} class="badge badge-primary badge-sm">
+                Originator
+              </span>
             </div>
             <button
               :if={@can_manage_agencies and grant.origination_status != :originator}
@@ -75,7 +81,12 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
         </div>
 
         <%!-- Grant form (owners/admins only) --%>
-        <form :if={@can_manage_agencies} id="grant-agency-access-form" phx-submit="grant_agency_access" class="space-y-4 mt-4">
+        <form
+          :if={@can_manage_agencies}
+          id="grant-agency-access-form"
+          phx-submit="grant_agency_access"
+          class="space-y-4 mt-4"
+        >
           <div class="form-control">
             <label class="label">
               <span class="label-text">Agency Account Slug</span>
@@ -85,7 +96,10 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
               name="agency_access[slug]"
               data-role="agency-slug-input"
               value={Map.get(@grant_agency_form.params, "slug", "")}
-              class={["input w-full font-mono", has_form_error?(@grant_agency_form, :slug) && "input-error"]}
+              class={[
+                "input w-full font-mono",
+                has_form_error?(@grant_agency_form, :slug) && "input-error"
+              ]}
               placeholder="e.g., my-agency"
             />
             <p :if={has_form_error?(@grant_agency_form, :slug)} class="text-sm text-error mt-1">
@@ -176,7 +190,10 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
               name="auto_enrollment[domain]"
               data-role="auto-enrollment-domain-input"
               value={domain_value(@auto_enrollment_rule, @auto_enrollment_form)}
-              class={["input w-full", has_form_error?(@auto_enrollment_form, :email_domain) && "input-error"]}
+              class={[
+                "input w-full",
+                has_form_error?(@auto_enrollment_form, :email_domain) && "input-error"
+              ]}
               placeholder="e.g., myagency.com"
             />
             <p
@@ -230,8 +247,21 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
   """
   attr :white_label_config, :any, default: nil
   attr :white_label_form, :map, required: true
+  attr :logo_upload, :any, default: nil
+  attr :pending_logo, :any, default: nil
 
   def white_label_section(assigns) do
+    changeset =
+      Ecto.Changeset.cast(
+        assigns.white_label_config || %WhiteLabelConfig{},
+        assigns.white_label_form.params,
+        [:subdomain, :custom_domain, :logo_url, :primary_color, :secondary_color, :accent_color]
+      )
+
+    errors = assigns.white_label_form.errors
+    changeset = %{changeset | errors: errors, valid?: errors == [], action: :validate}
+    assigns = assign(assigns, :branding_form, to_form(changeset, as: :white_label))
+
     ~H"""
     <div data-role="agency-white-label" class="card bg-base-100 shadow mf-card">
       <div class="card-body">
@@ -247,7 +277,22 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
           class="mt-4 p-4 rounded bg-base-200/50 border border-base-300"
         >
           <p class="text-xs text-base-content/50 mb-2">Preview</p>
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <img
+              :if={preview_value(@white_label_form, :logo_url) != ""}
+              id="branding-logo-url-preview"
+              src={preview_value(@white_label_form, :logo_url)}
+              alt="Agency logo preview"
+              class="h-16 max-w-48 object-contain"
+            />
+            <div
+              :if={preview_value(@white_label_form, :accent_color) != ""}
+              id="branding-accent-preview"
+              class="h-8 w-8 rounded"
+              style={"background-color: #{preview_value(@white_label_form, :accent_color)}"}
+              aria-label="Accent color preview"
+            >
+            </div>
             <div
               :if={preview_value(@white_label_form, :primary_color) != ""}
               class="w-8 h-8 rounded"
@@ -260,149 +305,126 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
               style={"background-color: #{preview_value(@white_label_form, :secondary_color)}"}
             >
             </div>
-            <span :if={preview_value(@white_label_form, :primary_color) != ""} class="text-xs font-mono">
+            <span
+              :if={preview_value(@white_label_form, :primary_color) != ""}
+              class="text-xs font-mono"
+            >
               {preview_value(@white_label_form, :primary_color)}
             </span>
-            <span :if={preview_value(@white_label_form, :secondary_color) != ""} class="text-xs font-mono">
+            <span
+              :if={preview_value(@white_label_form, :secondary_color) != ""}
+              class="text-xs font-mono"
+            >
               {preview_value(@white_label_form, :secondary_color)}
             </span>
           </div>
         </div>
 
-        <form id="white-label-form" phx-submit="save_white_label" phx-change="validate_white_label" class="space-y-4 mt-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Subdomain</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[subdomain]"
-              value={white_label_value(@white_label_config, @white_label_form, :subdomain)}
-              class={["input w-full font-mono", has_form_error?(@white_label_form, :subdomain) && "input-error"]}
-            />
-            <p class="text-xs text-base-content/50 mt-1">
-              Lowercase letters, numbers, and hyphens only (3–63 characters).
-            </p>
-            <p
-              :if={has_form_error?(@white_label_form, :subdomain)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :subdomain)}
-            </p>
+        <.form
+          for={@branding_form}
+          id="white-label-form"
+          phx-submit="save_white_label"
+          phx-change="validate_white_label"
+          class="space-y-4 mt-4"
+        >
+          <div
+            :if={@logo_upload}
+            id="branding-logo-upload"
+            class="space-y-3 rounded-xl border border-slate-200 p-4"
+          >
+            <label for={@logo_upload.ref} class="block text-sm font-medium">Upload logo</label>
+            <p class="text-sm text-slate-500">PNG, JPG, or SVG. Maximum size 2 MB.</p>
+            <.live_file_input upload={@logo_upload} class="block w-full text-sm" />
+            <%= for entry <- @logo_upload.entries do %>
+              <div id={"logo-upload-#{entry.ref}"} class="space-y-2">
+                <.live_img_preview entry={entry} class="h-16 max-w-48 object-contain" />
+                <p class="text-sm">{entry.client_name}</p>
+                <progress
+                  value={entry.progress}
+                  max="100"
+                  aria-label="Logo upload progress"
+                  class="w-full"
+                />
+                <%= for error <- upload_errors(@logo_upload, entry) do %>
+                  <p role="alert" class="text-sm text-red-600">{logo_upload_error(error)}</p>
+                <% end %>
+              </div>
+            <% end %>
+            <%= for error <- upload_errors(@logo_upload) do %>
+              <p role="alert" class="text-sm text-red-600">{logo_upload_error(error)}</p>
+            <% end %>
+            <div :if={@pending_logo} id="pending-logo-preview" class="space-y-2">
+              <img
+                src={@pending_logo.url}
+                alt="Unsaved agency logo preview"
+                class="h-16 max-w-48 object-contain"
+              />
+              <p class="text-sm text-slate-500">Logo uploaded. Save your branding to apply it.</p>
+            </div>
           </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Custom Domain</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[custom_domain]"
-              value={white_label_value(@white_label_config, @white_label_form, :custom_domain)}
-              class={["input w-full font-mono", has_form_error?(@white_label_form, :custom_domain) && "input-error"]}
-              placeholder="analytics.yourdomain.com"
-            />
-            <p class="text-xs text-base-content/50 mt-1">
-              Optional. A fully qualified domain name for your branded instance.
-            </p>
-            <p
-              :if={has_form_error?(@white_label_form, :custom_domain)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :custom_domain)}
-            </p>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Logo URL</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[logo_url]"
-              value={white_label_value(@white_label_config, @white_label_form, :logo_url)}
-              class={["input w-full", has_form_error?(@white_label_form, :logo_url) && "input-error"]}
-            />
-            <p
-              :if={has_form_error?(@white_label_form, :logo_url)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :logo_url)}
-            </p>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Primary Color</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[primary_color]"
-              value={white_label_value(@white_label_config, @white_label_form, :primary_color)}
-              class={["input w-full font-mono", has_form_error?(@white_label_form, :primary_color) && "input-error"]}
-              placeholder="#RRGGBB"
-            />
-            <p
-              :if={has_form_error?(@white_label_form, :primary_color)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :primary_color)}
-            </p>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Secondary Color</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[secondary_color]"
-              value={white_label_value(@white_label_config, @white_label_form, :secondary_color)}
-              class={["input w-full font-mono", has_form_error?(@white_label_form, :secondary_color) && "input-error"]}
-              placeholder="#RRGGBB"
-            />
-            <p
-              :if={has_form_error?(@white_label_form, :secondary_color)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :secondary_color)}
-            </p>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Accent Color</span>
-            </label>
-            <input
-              type="text"
-              name="white_label[accent_color]"
-              value={white_label_value(@white_label_config, @white_label_form, :accent_color)}
-              class={["input w-full font-mono", has_form_error?(@white_label_form, :accent_color) && "input-error"]}
-              placeholder="#RRGGBB"
-            />
-            <p
-              :if={has_form_error?(@white_label_form, :accent_color)}
-              class="text-sm text-error mt-1"
-            >
-              {first_form_error(@white_label_form, :accent_color)}
-            </p>
-          </div>
-
-          <div class="card-actions justify-end gap-2">
+          <.input
+            field={@branding_form[:subdomain]}
+            id="branding-subdomain"
+            type="text"
+            label="Subdomain"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <.input
+            field={@branding_form[:custom_domain]}
+            id="branding-custom-domain"
+            type="text"
+            label="Custom Domain"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <.input
+            field={@branding_form[:logo_url]}
+            id="branding-logo-url"
+            type="text"
+            label="Logo URL"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <.input
+            field={@branding_form[:primary_color]}
+            id="branding-primary-color"
+            type="text"
+            label="Primary Color"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <.input
+            field={@branding_form[:secondary_color]}
+            id="branding-secondary-color"
+            type="text"
+            label="Secondary Color"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <.input
+            field={@branding_form[:accent_color]}
+            id="branding-accent-color"
+            type="text"
+            label="Accent Color"
+            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          />
+          <div class="flex flex-wrap justify-end gap-2">
             <button
               :if={not is_nil(@white_label_config)}
               type="button"
-              class="btn btn-ghost btn-sm"
+              id="reset-branding"
+              class="rounded-lg px-4 py-2 text-sm font-medium transition hover:bg-slate-100"
               data-role="reset-white-label"
               phx-click="reset_white_label"
             >
               Reset to Default
             </button>
-            <button type="submit" class="btn btn-primary w-full sm:w-auto">
+            <button
+              id="save-branding"
+              type="submit"
+              phx-disable-with="Saving…"
+              class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50 sm:w-auto"
+            >
               Save Branding
             </button>
           </div>
-        </form>
+        </.form>
 
         <%!-- DNS verification section: shown when subdomain or custom domain is configured --%>
         <div
@@ -430,7 +452,9 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
 
           <%!-- Custom domain status --%>
           <div
-            :if={is_binary(@white_label_config.custom_domain) and @white_label_config.custom_domain != ""}
+            :if={
+              is_binary(@white_label_config.custom_domain) and @white_label_config.custom_domain != ""
+            }
             class="flex items-center gap-3 mb-2"
           >
             <span class="font-mono text-sm">{@white_label_config.custom_domain}</span>
@@ -472,19 +496,6 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
     param == Atom.to_string(option) or (is_nil(param) and option == :read_only)
   end
 
-  defp white_label_value(config, form, field) do
-    form_value = Map.get(form.params, Atom.to_string(field), "")
-
-    if form_value != "" do
-      form_value
-    else
-      case config do
-        %WhiteLabelConfig{} -> Map.get(config, field) || ""
-        nil -> ""
-      end
-    end
-  end
-
   defp has_form_error?(form, field) do
     form
     |> Map.get(:errors, [])
@@ -498,10 +509,15 @@ defmodule MetricFlowWeb.AgencyLive.Settings do
     end
   end
 
+  defp logo_upload_error(:too_large), do: "Choose a logo smaller than 2 MB."
+  defp logo_upload_error(:too_many_files), do: "Choose one logo at a time."
+  defp logo_upload_error(:not_accepted), do: "Choose a PNG, JPG, or SVG logo."
+  defp logo_upload_error(_error), do: "The logo could not be uploaded. Please try again."
+
   defp has_preview_data?(form) do
     params = Map.get(form, :params, %{})
 
-    Enum.any?(["primary_color", "secondary_color"], fn key ->
+    Enum.any?(["logo_url", "primary_color", "secondary_color", "accent_color"], fn key ->
       value = Map.get(params, key, "")
       is_binary(value) and value != ""
     end)

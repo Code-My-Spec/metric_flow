@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion826AgencyColorSchemeAppliedThroughoutInterface
 
   spex "Agency color scheme applied throughout the interface", criterion: 826 do
     scenario "the agency's color scheme is applied consistently as the client navigates through the application" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client viewing a white-labeled interface", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
@@ -21,7 +21,8 @@ defmodule MetricFlowSpex.Criterion826AgencyColorSchemeAppliedThroughoutInterface
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
-        {:ok, Map.put(context, :agency_conn, %{context.owner_conn | host: "branded826.metricflow.io"})}
+        {:ok,
+         Map.put(context, :agency_conn, %{context.owner_conn | host: "branded826.metricflow.io"})}
       end
 
       when_ "they navigate through the application", context do

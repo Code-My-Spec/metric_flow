@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.Criterion31InviteeReceivesInvitationInTheirEmailInboxSp
 
   spex "Invitee receives invitation in their email inbox", criterion: 31 do
     scenario "an invitee receives an email in their inbox after being invited" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the owner sends an invitation to the invitee's address", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

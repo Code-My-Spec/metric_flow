@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System handles GA4 API quota limits with exponential backoff and retry (default quota: 10 requests/second/project)", criterion: 298 do
+  spex "System handles GA4 API quota limits with exponential backoff and retry (default quota: 10 requests/second/project)",
+    criterion: 298 do
     scenario "a GA4 sync failure due to quota limits is surfaced in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,10 +15,15 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       end
 
       when_ "a GA4 sync failure event with a quota exceeded error is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "GA4 API quota exceeded: RESOURCE_EXHAUSTED"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "GA4 API quota exceeded: RESOURCE_EXHAUSTED"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -46,14 +52,15 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
     end
 
     scenario "the sync history schedule section mentions automatic retry behavior" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the schedule section explains that failed syncs are retried automatically", context do
+      then_ "the schedule section explains that failed syncs are retried automatically",
+            context do
         html = render(context.view)
 
         assert html =~ "retried" or html =~ "retry" or html =~ "backoff",
@@ -64,7 +71,7 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
     end
 
     scenario "a GA4 sync failure with attempt count information is shown in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -72,12 +79,17 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       end
 
       when_ "a GA4 sync failure event with attempt details is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "Rate limit hit",
-          attempt: 2,
-          max_attempts: 3
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "Rate limit hit",
+             attempt: 2,
+             max_attempts: 3
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}

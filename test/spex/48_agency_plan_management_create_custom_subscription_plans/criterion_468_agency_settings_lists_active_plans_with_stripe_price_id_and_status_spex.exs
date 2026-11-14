@@ -10,8 +10,8 @@ defmodule MetricFlowSpex.Story48.Criterion4144Spex do
 
   spex "Agency settings lists active plans with Stripe Price ID and status", criterion: 468 do
     scenario "the plans page shows name, Stripe Price ID column, and status for each active plan" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "Alex is on the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

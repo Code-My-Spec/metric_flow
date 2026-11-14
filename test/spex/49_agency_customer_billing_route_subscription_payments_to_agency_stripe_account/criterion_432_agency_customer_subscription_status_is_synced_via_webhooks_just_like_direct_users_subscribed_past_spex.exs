@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
 
   spex "Agency customer subscription status is synced via webhooks", criterion: 432 do
     scenario "subscription.updated webhook arrives for an agency customer" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
+      given_(:owner_has_stripe_connect)
 
-      when_ "a subscription updated event is sent for an agency customer's existing subscription", context do
+      when_ "a subscription updated event is sent for an agency customer's existing subscription",
+            context do
         stripe_account_id = MetricFlowSpex.Fixtures.agency_stripe_account_id(context.owner_email)
         sub_id = "sub_agency_abc"
 
@@ -32,7 +33,10 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
 
         build_conn()
         |> put_req_header("content-type", "application/json")
-        |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(created_payload))
+        |> put_req_header(
+          "stripe-signature",
+          MetricFlowSpex.SharedGivens.sign_webhook_payload(created_payload)
+        )
         |> post("/billing/webhooks", created_payload)
 
         event_id = "evt_agency_update_#{System.unique_integer([:positive])}"
@@ -57,7 +61,10 @@ defmodule MetricFlowSpex.AgencySubscriptionStatusSyncedViaWebhooksSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.merge(context, %{response: conn, event_id: event_id})}

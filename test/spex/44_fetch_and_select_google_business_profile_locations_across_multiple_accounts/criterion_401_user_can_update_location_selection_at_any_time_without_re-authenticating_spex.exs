@@ -4,26 +4,37 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can update location selection at any time without re-authenticating", fail_on_error_logs: false, criterion: 401 do
+  spex "User can update location selection at any time without re-authenticating",
+    fail_on_error_logs: false,
+    criterion: 401 do
     scenario "user with existing google_business integration can access location selection" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user has a google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_business})
+
+        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
+          provider: :google_business
+        })
+
         {:ok, context}
       end
 
       given_ "the user navigates to the google_business accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the user sees a location selection interface without being prompted to re-authenticate", context do
+      then_ "the user sees a location selection interface without being prompted to re-authenticate",
+            context do
         html = render(context.view)
+
         assert html =~ "location" or html =~ "Location" or
                  html =~ "account" or html =~ "Account" or
                  html =~ "select" or html =~ "Select"
+
         {:ok, context}
       end
 
@@ -36,16 +47,22 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
     end
 
     scenario "user can navigate back to accounts page without triggering OAuth flow" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user has a google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_business})
+
+        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
+          provider: :google_business
+        })
+
         {:ok, context}
       end
 
       given_ "the user visits the google_business accounts page a second time", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -62,21 +79,28 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
                  has_element?(context.view, "[data-role='location-checkbox']") or
                  has_element?(context.view, "[data-role='account-selection']") or
                  has_element?(context.view, "[data-role='location-selection']")
+
         {:ok, context}
       end
     end
 
     scenario "location selection page does not prompt re-connection to google_business" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user has a google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
-        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{provider: :google_business})
+
+        MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
+          provider: :google_business
+        })
+
         {:ok, context}
       end
 
       given_ "the user navigates to the google_business accounts page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -89,9 +113,11 @@ defmodule MetricFlowSpex.UserCanUpdateLocationSelectionAtAnyTimeWithoutReAuthent
 
       then_ "the page shows location or account content for selection", context do
         html = render(context.view)
+
         assert html =~ "location" or html =~ "Location" or
                  html =~ "business" or html =~ "Business" or
                  html =~ "account" or html =~ "Account"
+
         {:ok, context}
       end
     end

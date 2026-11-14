@@ -134,8 +134,11 @@ defmodule MetricFlow.Billing.StripeClient do
     # an account.
     params =
       case Keyword.get(opts, :account_id) do
-        nil -> params
-        account_id -> Map.put(params, "subscription_data[metadata][account_id]", to_string(account_id))
+        nil ->
+          params
+
+        account_id ->
+          Map.put(params, "subscription_data[metadata][account_id]", to_string(account_id))
       end
 
     post("#{@stripe_api_base}/checkout/sessions", URI.encode_query(params), opts)
@@ -249,7 +252,11 @@ defmodule MetricFlow.Billing.StripeClient do
 
   defp api_headers(nil) do
     secret_key = Application.get_env(:metric_flow, :stripe_secret_key, "")
-    [{"authorization", "Bearer #{secret_key}"}, {"content-type", "application/x-www-form-urlencoded"}]
+
+    [
+      {"authorization", "Bearer #{secret_key}"},
+      {"content-type", "application/x-www-form-urlencoded"}
+    ]
   end
 
   defp api_headers(stripe_account_id) do

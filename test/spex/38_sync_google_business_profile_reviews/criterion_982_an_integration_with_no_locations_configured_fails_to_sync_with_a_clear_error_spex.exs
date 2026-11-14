@@ -5,13 +5,17 @@ defmodule MetricFlowSpex.Criterion982NoLocationsConfiguredFailsWithClearErrorSpe
   import MetricFlowSpex.SharedGivens
 
   spex "An integration with no locations configured fails to sync with a clear error",
-       fail_on_error_logs: false,
-       criterion: 982 do
+    fail_on_error_logs: false,
+    criterion: 982 do
     scenario "a Google Business Profile integration has no location configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a Google Business Profile integration has no location configured", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews)
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_business_reviews
+        )
+
         {:ok, context}
       end
 

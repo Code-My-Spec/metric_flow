@@ -20,6 +20,12 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   # Data platforms — each has its own OAuth provider and integration record.
   @data_platforms [
     %{
+      key: :youtube,
+      name: "YouTube",
+      description: "Channel, video, and revenue analytics",
+      provider: :youtube
+    },
+    %{
       key: :google_analytics,
       name: "Google Analytics",
       description: "Website traffic and user behavior analytics",
@@ -59,6 +65,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   # Provider display names for messages.
   @provider_names %{
+    youtube: "YouTube",
     google_analytics: "Google Analytics",
     google_ads: "Google Ads",
     google_search_console: "Google Search Console",
@@ -170,12 +177,35 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                         Never synced
                       <% end %>
                     </p>
-                    <p data-role="next-sync-at" class="text-xs text-base-content/50">
+                    <p
+                      :if={platform.provider != :youtube}
+                      data-role="next-sync-at"
+                      class="text-xs text-base-content/50"
+                    >
                       Next sync {format_datetime(@next_sync_at)}
                     </p>
 
                     <% integration = find_integration(@integrations, platform.provider) %>
                     <%= if integration do %>
+                      <div
+                        :if={platform.provider == :youtube}
+                        id={"youtube-ownership-#{integration.id}"}
+                        class="mt-3 space-y-1 text-sm"
+                      >
+                        <p>Owned by {@active_account_name}</p>
+                        <% channel_count =
+                          length(Map.get(integration.provider_metadata || %{}, "channel_ids", [])) %>
+                        <p>
+                          {channel_count} {if channel_count == 1, do: "channel", else: "channels"} connected
+                        </p>
+                        <.link
+                          id="manage-youtube-channels"
+                          navigate={~p"/app/integrations/connect/youtube/accounts"}
+                          class="inline-flex py-1 font-medium underline"
+                        >
+                          Manage channels
+                        </.link>
+                      </div>
                       <p
                         data-role="integration-connected-date"
                         class="text-xs text-base-content/50 mt-1"
@@ -206,7 +236,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
                   <div class="flex flex-col items-end gap-2 ml-4">
                     <% no_accounts = is_nil(selected_account_display(integration)) %>
                     <button
-                      :if={@can_sync}
+                      :if={@can_sync and platform.provider != :youtube}
                       phx-click="sync"
                       phx-value-platform={Atom.to_string(platform.key)}
                       phx-value-provider={Atom.to_string(platform.provider)}
@@ -342,7 +372,13 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
+    scope =
+      MetricFlow.Users.Scope.put_account_id(
+        socket.assigns.current_scope,
+        socket.assigns.active_account_id
+      )
+
+    socket = assign(socket, :current_scope, scope)
     integrations = notify_expired_integrations(scope, Integrations.list_integrations(scope))
 
     if Phoenix.LiveView.connected?(socket) do
@@ -356,7 +392,12 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
     last_synced_at =
       Map.new(@data_platforms, fn platform ->
-        {platform.provider, DataSync.get_last_successful_sync_at(scope, platform.provider)}
+        last_sync =
+          if platform.provider == :youtube,
+            do: nil,
+            else: DataSync.get_last_successful_sync_at(scope, platform.provider)
+
+        {platform.provider, last_sync}
       end)
 
     socket =
@@ -379,6 +420,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_event("sync", %{"provider" => "youtube"}, socket) do
+    {:noreply,
+     put_flash(socket, :info, "YouTube is connected. Analytics syncing is not available yet.")}
+  end
+
   def handle_event("sync", %{"platform" => platform_str, "provider" => provider_str}, socket) do
     platform_key = String.to_existing_atom(platform_str)
     provider = String.to_existing_atom(provider_str)
@@ -689,6 +735,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   defp logged_in_account(_), do: nil
 
+  defp metadata_key_for_provider(:youtube), do: "channel_ids"
   defp metadata_key_for_provider(:google_analytics), do: "property_id"
   defp metadata_key_for_provider(:google_ads), do: "customer_id"
   defp metadata_key_for_provider(:google_search_console), do: "site_url"

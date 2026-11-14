@@ -516,6 +516,76 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       assert String.length(history.error_message) > 0
     end
 
+    test "persists HTTP diagnostics for auth, permission, and missing-resource failures" do
+      for status <- [401, 403, 404] do
+        {user, scope} = user_with_scope()
+        integration = insert_integration!(user.id)
+        sync_job = insert_sync_job!(user.id, integration.id)
+
+        body = %{
+          "error" => %{
+            "code" => status,
+            "message" => "Provider diagnostic #{status}",
+            "access_token" => integration.access_token
+          }
+        }
+
+        plug = fn conn ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/json")
+          |> Plug.Conn.send_resp(status, Jason.encode!(body))
+        end
+
+        capture_log(fn ->
+          perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id, plug), [])
+        end)
+
+        [history] = SyncHistoryRepository.list_sync_history(scope)
+        assert history.status == :failed
+        assert history.provider_error_detail["status"] == status
+        assert history.provider_error_detail["body"] =~ "Provider diagnostic #{status}"
+        refute history.provider_error_detail["body"] =~ integration.access_token
+        refute history.error_message =~ "provider_http_error"
+      end
+    end
+
+    test "preserves Google Analytics API details in failed sync history" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id)
+      sync_job = insert_sync_job!(user.id, integration.id)
+
+      plug = fn conn ->
+        body =
+          Jason.encode!(%{
+            "error" => %{
+              "code" => 400,
+              "status" => "INVALID_ARGUMENT",
+              "message" => "Requests are limited to 10 metrics"
+            }
+          })
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(400, body)
+      end
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id, plug), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+      assert history.records_synced == 0
+
+      assert history.error_message ==
+               "Google Analytics API HTTP 400 (INVALID_ARGUMENT): Requests are limited to 10 metrics"
+
+      assert history.provider_error_detail["status"] == 400
+
+      assert Jason.decode!(history.provider_error_detail["body"])["error"]["status"] ==
+               "INVALID_ARGUMENT"
+    end
+
     test "includes error message in SyncHistory when token refresh fails" do
       {user, scope} = user_with_scope()
       integration = insert_expired_integration_with_refresh!(user.id)

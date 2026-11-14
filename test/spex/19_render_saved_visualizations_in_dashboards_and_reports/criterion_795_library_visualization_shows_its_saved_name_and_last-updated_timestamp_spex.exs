@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion795LibraryVisualizationShowsNameAndTimestampSp
 
   spex "Library visualization shows its saved name and last-updated timestamp", criterion: 795 do
     scenario "a visualization sourced from the visualization library is displayed with its saved name and last-updated timestamp" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a visualization sourced from the visualization library", context do
         viz =

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion823ClientSeesAgencyBrandingViaAgencySubdomainS
 
   spex "Client sees agency branding via agency subdomain", criterion: 823 do
     scenario "a client whose account was originated by an agency sees that agency's branding on its subdomain" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client whose account was originated by an agency", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)

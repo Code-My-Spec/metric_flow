@@ -199,6 +199,9 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:error, :integration_not_found} ->
         {:error, :integration_not_found}
 
+      {:ok, %Integration{provider: :youtube} = integration} ->
+        run_youtube_sync(scope, integration, sync_job_id, http_plug, started_at)
+
       {:ok, integration} ->
         sync_type = determine_sync_type(integration_id)
         date_range = determine_date_range(scope, integration, sync_type)
@@ -213,6 +216,45 @@ defmodule MetricFlow.DataSync.SyncWorker do
           breakdown,
           started_at
         )
+    end
+  end
+
+  defp run_youtube_sync(scope, integration, sync_job_id, http_plug, started_at) do
+    scope = Scope.put_account_id(scope, integration.account_id)
+    sync_type = determine_sync_type(integration.id)
+
+    result =
+      with {:ok, job} <- SyncJobRepository.get_sync_job(scope, sync_job_id),
+           true <- job.integration_id == integration.id,
+           :ok <- Integrations.authorize_youtube_connection(scope),
+           {:ok, fresh} <- ensure_fresh_tokens(scope, integration) do
+        MetricFlow.DataSync.YouTubeSync.sync(scope, fresh, maybe_put([], :http_plug, http_plug))
+      else
+        false -> {:error, :unauthorized}
+        {:error, _} = error -> error
+      end
+
+    outcome = MetricFlow.DataSync.YouTubeSyncOutcome.summarize(result)
+    record_history(scope, integration, sync_job_id, sync_type, started_at, outcome)
+
+    if outcome.status == :failed do
+      {:error, :youtube_sync_failed}
+    else
+      broadcast_sync_event(
+        scope.user.id,
+        {:sync_completed,
+         %{
+           provider: :youtube,
+           records_synced: outcome.records_synced,
+           completed_at: DateTime.utc_now(),
+           sync_type: sync_type
+         }}
+      )
+
+      case update_job_status(scope, sync_job_id, :completed) do
+        {:ok, _} -> :ok
+        {:error, reason} -> {:error, reason}
+      end
     end
   end
 
@@ -333,7 +375,15 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  defp run_all_providers(scope, integration, sync_job_id, sync_type, provider_mods, opts, started_at) do
+  defp run_all_providers(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         provider_mods,
+         opts,
+         started_at
+       ) do
     date_range = Keyword.get(opts, :date_range)
     results = Enum.map(provider_mods, &fetch_provider_metrics(&1, integration, opts))
 
@@ -354,7 +404,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider,
           status: :failed,
           records_synced: 0,
-          error_message: error_msg
+          error_message: error_msg,
+          provider_error_detail: provider_error_detail(reason)
         })
       end)
 
@@ -387,7 +438,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp fetch_provider_metrics(provider_mod, integration, opts) do
-    case provider_mod.fetch_metrics(integration, opts) do
+    {result, detail} =
+      MetricFlow.DataSync.ProviderHttp.capture(
+        fn -> provider_mod.fetch_metrics(integration, opts) end,
+        [integration.access_token, integration.refresh_token]
+      )
+
+    case result do
       {:ok, metrics} ->
         {:ok, provider_mod, metrics}
 
@@ -397,6 +454,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
             "provider_mod=#{inspect(provider_mod)} reason=#{inspect(reason)}"
         )
 
+        reason = if detail, do: {:provider_http_error, reason, detail}, else: reason
         {:error, provider_mod, reason}
     end
   end
@@ -509,7 +567,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider_name(mod, integration),
           status: :failed,
           records_synced: 0,
-          error_message: format_error(reason, integration, date_range)
+          error_message: format_error(reason, integration, date_range),
+          provider_error_detail: provider_error_detail(reason)
         })
     end)
 
@@ -549,7 +608,15 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end)
   end
 
-  defp record_success_history(scope, integration, sync_job_id, sync_type, started_at, mod, mod_metrics) do
+  defp record_success_history(
+         scope,
+         integration,
+         sync_job_id,
+         sync_type,
+         started_at,
+         mod,
+         mod_metrics
+       ) do
     default_provider = provider_name(mod, integration)
     groups = Enum.group_by(mod_metrics, &Map.get(&1, :provider, default_provider))
 
@@ -667,7 +734,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
   # declared provider is the correct label except for the :google fan-out
   # case, where a single integration produces per-service history entries
   # and the module's own identity is what distinguishes them.
-  defp provider_name(_mod, %Integration{provider: provider}) when provider != :google, do: provider
+  defp provider_name(_mod, %Integration{provider: provider}) when provider != :google,
+    do: provider
 
   defp provider_name(mod, %Integration{provider: :google}) do
     if function_exported?(mod, :provider, 0), do: mod.provider(), else: :google
@@ -682,6 +750,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
       sync_type: sync_type,
       records_synced: outcome.records_synced,
       error_message: outcome.error_message,
+      provider_error_detail: Map.get(outcome, :provider_error_detail),
       started_at: started_at,
       completed_at: DateTime.utc_now()
     }
@@ -715,6 +784,12 @@ defmodule MetricFlow.DataSync.SyncWorker do
     Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
   end
 
+  defp provider_error_detail({:provider_http_error, _reason, detail}), do: detail
+  defp provider_error_detail(_reason), do: nil
+
+  defp format_error({:provider_http_error, reason, _detail}, integration, date_range),
+    do: format_error(reason, integration, date_range)
+
   defp format_error(:missing_site_url, _integration, date_range) do
     "No Search Console site URL configured#{format_date_range(date_range)}. " <>
       "Go to the integration's account selection to choose a site."
@@ -727,7 +802,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
       "It may have been removed or the URL changed."
   end
 
-  defp format_error(:insufficient_permissions, %Integration{provider: :google_search_console} = integration, date_range) do
+  defp format_error(
+         :insufficient_permissions,
+         %Integration{provider: :google_search_console} = integration,
+         date_range
+       ) do
     site = site_url_from(integration) || "the configured site"
 
     "Insufficient permissions to access Search Console site #{site}#{format_date_range(date_range)}. " <>
@@ -799,6 +878,12 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
   defp format_error({:exception, _message}),
     do: "An unexpected error occurred during sync. Please try again."
+
+  defp format_error({:ga4_api_error, status, details}) do
+    api_status = Map.get(details, "status", "UNKNOWN")
+    message = Map.get(details, "message", "Request failed")
+    "Google Analytics API HTTP #{status} (#{api_status}): #{message}"
+  end
 
   defp format_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error(reason) when is_binary(reason), do: reason

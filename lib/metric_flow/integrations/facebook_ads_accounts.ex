@@ -41,7 +41,8 @@ defmodule MetricFlow.Integrations.FacebookAdsAccounts do
     end
   end
 
-  defp handle_response(%Req.Response{status: 200, body: %{"data" => accounts}}) when is_list(accounts) do
+  defp handle_response(%Req.Response{status: 200, body: %{"data" => accounts}})
+       when is_list(accounts) do
     {:ok, extract_accounts(accounts)}
   end
 

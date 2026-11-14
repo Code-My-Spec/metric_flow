@@ -7,9 +7,10 @@ defmodule MetricFlowSpex.Criterion886ClientSendsAnInvitationToAnyEmailAddressSpe
 
   spex "Client sends an invitation to any email address", criterion: 886 do
     scenario "a client account owner sends an invitation to an arbitrary email address" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      when_ "they send an invitation to an email address, whether it belongs to an agency or an individual", context do
+      when_ "they send an invitation to an email address, whether it belongs to an agency or an individual",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.OwnerOrAdminChangesAUsersAccessLevelSpex do
 
   spex "Owner or admin changes a user's access level", criterion: 535 do
     scenario "Alex, an admin, changes a read-only teammate to account manager" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex holds admin access and a teammate holds read-only access", context do
         alex_email = "alex#{System.unique_integer([:positive])}@example.com"
@@ -14,15 +14,20 @@ defmodule MetricFlowSpex.OwnerOrAdminChangesAUsersAccessLevelSpex do
         teammate_email = "teammate#{System.unique_integer([:positive])}@example.com"
         teammate_password = "SecurePassword123!"
 
-        for {email, password} <- [{alex_email, alex_password}, {teammate_email, teammate_password}] do
+        for {email, password} <- [
+              {alex_email, alex_password},
+              {teammate_email, teammate_password}
+            ] do
           {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
           reg_view
-          |> form("#registration_form", user: %{
-            email: email,
-            password: password,
-            account_name: "Personal Account"
-          })
+          |> form("#registration_form",
+            user: %{
+              email: email,
+              password: password,
+              account_name: "Personal Account"
+            }
+          )
           |> render_submit()
         end
 
@@ -39,11 +44,13 @@ defmodule MetricFlowSpex.OwnerOrAdminChangesAUsersAccessLevelSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: alex_email,
-            password: alex_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: alex_email,
+              password: alex_password,
+              remember_me: true
+            }
+          )
 
         alex_conn = build_conn() |> then(&submit_form(login_form, &1)) |> recycle()
 

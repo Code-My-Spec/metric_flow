@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ClickingSyncNowTriggersAnImmediateDataPullSpex do
 
   spex "Clicking Sync Now triggers an immediate data pull", criterion: 582 do
     scenario "clicking Sync Now on a connected, healthy integration starts an immediate pull" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "a connected, healthy integration", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

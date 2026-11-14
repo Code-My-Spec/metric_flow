@@ -6,17 +6,21 @@ defmodule MetricFlowSpex.StatusBadgeReflectsTheSyncedSubscriptionStateSpex do
 
   spex "Status badge reflects the synced subscription state", criterion: 512 do
     scenario "Jordan's subscription status changes from active to past_due via a Stripe webhook" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "Jordan has an active subscription under Acme Agency", context do
         subscription =
-          MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
 
         {:ok, Map.put(context, :jordan_subscription, subscription)}
       end
 
-      when_ "Jordan's subscription status changes from active to past_due via a Stripe webhook", context do
+      when_ "Jordan's subscription status changes from active to past_due via a Stripe webhook",
+            context do
         payload =
           Jason.encode!(%{
             "id" => "evt_status_sync_#{System.unique_integer([:positive])}",
@@ -35,7 +39,10 @@ defmodule MetricFlowSpex.StatusBadgeReflectsTheSyncedSubscriptionStateSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :webhook_response, conn)}

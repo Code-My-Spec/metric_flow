@@ -27,6 +27,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
           sync_type: atom() | nil,
           records_synced: integer() | nil,
           error_message: String.t() | nil,
+          provider_error_detail: map() | nil,
           started_at: DateTime.t() | nil,
           completed_at: DateTime.t() | nil,
           user: User.t() | Ecto.Association.NotLoaded.t(),
@@ -44,6 +45,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
     :google_business,
     :google_business_reviews,
     :facebook_ads,
+    :youtube,
     :quickbooks
   ]
   @statuses [:success, :partial_success, :failed]
@@ -55,6 +57,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
     field :sync_type, Ecto.Enum, values: @sync_types
     field :records_synced, :integer
     field :error_message, :string
+    field :provider_error_detail, :map
     field :started_at, :utc_datetime_usec
     field :completed_at, :utc_datetime_usec
 
@@ -85,6 +88,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
       :sync_type,
       :records_synced,
       :error_message,
+      :provider_error_detail,
       :started_at,
       :completed_at
     ])

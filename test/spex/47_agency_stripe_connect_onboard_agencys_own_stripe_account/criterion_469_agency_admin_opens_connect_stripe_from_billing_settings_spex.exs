@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.AgencyAdminOpensConnectStripeSpex do
 
   spex "Agency admin opens Connect Stripe from Billing settings", criterion: 469 do
     scenario "admin navigates to the Stripe Connect page and sees the connect action" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the admin opens the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

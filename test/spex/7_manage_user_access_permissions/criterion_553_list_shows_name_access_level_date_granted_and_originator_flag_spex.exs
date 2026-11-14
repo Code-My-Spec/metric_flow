@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.ListShowsNameAccessLevelDateGrantedAndOriginatorFlagSpe
 
   spex "List shows name, access level, date granted, and originator flag", criterion: 553 do
     scenario "Jordan views the access list and each entry shows the required fields" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the access list has multiple entries", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "account_manager"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "account_manager"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

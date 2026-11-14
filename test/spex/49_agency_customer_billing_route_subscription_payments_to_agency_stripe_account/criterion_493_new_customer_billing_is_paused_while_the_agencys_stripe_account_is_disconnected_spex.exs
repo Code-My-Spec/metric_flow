@@ -4,12 +4,14 @@ defmodule MetricFlowSpex.NewCustomerBillingIsPausedWhileTheAgencysStripeAccountI
 
   import MetricFlowSpex.SharedGivens
 
-  spex "New customer billing is paused while the agency's Stripe account is disconnected", criterion: 493 do
+  spex "New customer billing is paused while the agency's Stripe account is disconnected",
+    criterion: 493 do
     scenario "a new customer tries to subscribe while the agency's Stripe account is disconnected" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
-      when_ "a new customer visits checkout while the agency has no connected Stripe account", context do
+      when_ "a new customer visits checkout while the agency has no connected Stripe account",
+            context do
         {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
         {:ok, Map.put(context, :view, view)}
       end

@@ -6,11 +6,11 @@ defmodule MetricFlowSpex.IntegrationIsNotSavedWithZeroAccountsSelectedSpex do
 
   spex "Integration is not saved with zero accounts selected", criterion: 952 do
     scenario "attempting to finish connecting with no account selected shows an error and does not save" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user has not yet selected any GMB account", context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

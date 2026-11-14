@@ -6,7 +6,8 @@ defmodule MetricFlowSpex.PaidUsersSeeAllFeaturesSpex do
 
   alias MetricFlow.Billing.BillingRepository
 
-  spex "Paid users and agency customers with active subscriptions see all features without restriction", criterion: 409 do
+  spex "Paid users and agency customers with active subscriptions see all features without restriction",
+    criterion: 409 do
     scenario "paid user navigates to the correlations page and sees the feature content without a paywall" do
       given_(:user_logged_in_as_owner)
 

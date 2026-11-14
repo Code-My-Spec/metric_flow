@@ -5,12 +5,17 @@ defmodule MetricFlowSpex.NoSiteConfiguredFailsClearlyRatherThanSilentlySkippedSp
   import MetricFlowSpex.SharedGivens
 
   spex "An integration with no site configured fails to sync with a clear error rather than being silently skipped",
-       fail_on_error_logs: false, criterion: 995 do
+    fail_on_error_logs: false,
+    criterion: 995 do
     scenario "an integration has no site URL configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "an integration has no site URL configured", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console)
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console
+        )
+
         {:ok, context}
       end
 

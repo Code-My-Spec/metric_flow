@@ -25,7 +25,8 @@ defmodule MetricFlowSpex.Criterion801FollowUpRefinesInRealTimeSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(view)
+
           render(view)
         end)
 
@@ -47,7 +48,8 @@ defmodule MetricFlowSpex.Criterion801FollowUpRefinesInRealTimeSpex do
             "prompt" => "Change the color to green and switch from a bar chart to a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 
