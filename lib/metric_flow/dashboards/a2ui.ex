@@ -130,11 +130,11 @@ defmodule MetricFlow.Dashboards.A2ui do
 
   defp render_from_values("text", values) do
     total = Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)
-    {:stat, format_stat_value(total)}
+    {:stat, format_number(total)}
   end
 
   defp render_from_values("table", values) do
-    {:table, Enum.map(values, fn {date, value} -> {date, format_table_value(value)} end)}
+    {:table, Enum.map(values, fn {date, value} -> {date, format_number(value)} end)}
   end
 
   defp render_from_values(chart_type, values) do
@@ -151,29 +151,32 @@ defmodule MetricFlow.Dashboards.A2ui do
   defp echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
   defp echarts_series(_, data), do: %{"type" => "line", "data" => data}
 
-  # A query's value is a float (the metrics table's column type); a whole
-  # number should read "4005", not an unformatted "4005.0", but a
-  # fractional metric needs its precision kept -- up to 2 decimal places
-  # ("0.03", "12.50"), not rounded away to "0" or "12".
-  defp format_table_value(value) when is_integer(value), do: Integer.to_string(value)
+  @doc """
+  Formats a number for display: thousands separators, a whole number
+  with no trailing decimal, and a fractional value kept to 2 decimal
+  places -- e.g. 125706 -> \"125,706\", 0.034 -> \"0.03\", 12.5 -> \"12.50\".
+  Used by both the stat tile's total and every table cell, so the two
+  can't drift on how a number looks (main's review: the stat tile
+  already did this, table cells didn't, then a first fix rounded a
+  table's fractional values away entirely instead of formatting them).
+  """
+  @spec format_number(number()) :: String.t()
+  def format_number(value) do
+    rounded = Float.round(value * 1.0, 2)
+    whole = trunc(rounded)
+    cents = round((abs(rounded) - abs(whole)) * 100)
+    sign = if rounded < 0, do: "-", else: ""
+    whole_str = sign <> format_with_thousands(abs(whole))
 
-  defp format_table_value(value) when is_float(value) do
-    rounded = Float.round(value, 2)
-
-    if rounded - trunc(rounded) == 0.0 do
-      rounded |> trunc() |> Integer.to_string()
+    if cents == 0 do
+      whole_str
     else
-      :erlang.float_to_binary(rounded, decimals: 2)
+      whole_str <> "." <> String.pad_leading(Integer.to_string(cents), 2, "0")
     end
   end
 
-  defp format_table_value(value), do: value
-
-  @doc "Formats a stat tile's total with thousands separators, e.g. 125706 -> \"125,706\"."
-  @spec format_stat_value(number()) :: String.t()
-  def format_stat_value(value) do
-    value
-    |> round()
+  defp format_with_thousands(int) do
+    int
     |> Integer.to_string()
     |> String.reverse()
     |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
