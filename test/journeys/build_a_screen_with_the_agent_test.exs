@@ -1875,14 +1875,27 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "changing a dashboard's filter on the view page sticks without opening the chat", %{
-    conn: conn
-  } do
+  test "changing a dashboard's filter on the view page re-queries and persists it after a fresh mount",
+       %{conn: conn} do
     stage("Save and reopen", fn ->
       user = user_fixture()
       account = insert_account!(user)
       insert_member!(account, user, :owner)
-      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 100.0,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -1), ~T[00:00:00.000000], "Etc/UTC")
+      })
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 50.0,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
+      })
+
       scope = Scope.for_user(user)
 
       conn = log_in_user(conn, user)
@@ -1894,11 +1907,30 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
 
-      # Story 75, criterion 1079: DashboardLive.Show has no
-      # [data-role='filter-control'] convention (editor.ex's own,
-      # confirmed via grep) -- its only date form today is
-      # update_custom_dates, for the unrelated global metrics view.
       assert has_element?(show_view, "[data-role='filter-control'] form[phx-change]")
+
+      total_at_30_days = show_view |> render() |> stat_tile_total()
+
+      # Main's review (4986f30, 2026-11-14): show.ex's date-range select
+      # has phx-change="dashboard_filter_date_range", but
+      # DashboardLive.Show defines no such handle_event -- changing it
+      # crashes the LiveView process instead of re-querying anything or
+      # persisting the choice. Exercising the real control here, not a
+      # proxy for it: this is expected to crash until the handler
+      # exists, reusing the editor's own persistence (Main's
+      # instruction to the coder).
+      show_view
+      |> element("[data-role='filter-control'] form[phx-change]")
+      |> render_change(%{"range" => "90"})
+
+      total_at_90_days = show_view |> render() |> stat_tile_total()
+
+      assert total_at_90_days > total_at_30_days,
+             "expected the 90-day total (#{total_at_90_days}) to exceed the 30-day total (#{total_at_30_days})"
+
+      {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      assert reopened_html =~ ~s(value="90" selected)
     end)
   end
 
