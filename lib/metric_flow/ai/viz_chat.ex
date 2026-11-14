@@ -59,9 +59,7 @@ defmodule MetricFlow.Ai.VizChat do
     {metric_names, opts} = Keyword.pop(opts, :metric_names, [])
     {current_spec, opts} = Keyword.pop(opts, :current_spec)
     {system_prompt, opts} = Keyword.pop(opts, :system_prompt)
-    {multi_widget, opts} = Keyword.pop(opts, :multi_widget, false)
-
-    system_prompt = system_prompt || build_system_prompt(current_spec, multi_widget)
+    system_prompt = system_prompt || build_system_prompt(current_spec)
 
     run_opts = [
       provider: LlmProvider.chat_provider(opts),
@@ -151,47 +149,16 @@ defmodule MetricFlow.Ai.VizChat do
   improvements. Not every message needs a spec update.
   """
 
-  @multi_widget_guidance """
-  You are building widgets onto a DASHBOARD, not a single chart. A dashboard
-  holds many separate widgets (charts, stat tiles, tables, headings).
-
-  When the user asks for more than one thing (e.g. "a stat tile and a line
-  chart"), call update_spec ONCE PER WIDGET. Do not combine multiple widgets
-  into a single spec with "vconcat", "hconcat", or "concat" -- that produces
-  one widget, not several. Each call to update_spec adds a new widget to the
-  dashboard; it does not replace what you already added this turn.
-
-  When the user doesn't name a date range, default to the last 30 days
-  ending yesterday (today's incomplete data is not included).
-  """
-
-  defp build_system_prompt(current_spec, multi_widget) do
-    base =
-      case current_spec do
-        nil ->
-          String.trim(@base_system_prompt) <>
-            "\n\nNo chart exists yet. When the user asks for a visualization, " <>
-            "create one by calling update_spec."
-
-        spec ->
-          String.trim(@base_system_prompt) <>
-            "\n\n" <> current_spec_label(multi_widget) <> ":\n```json\n" <>
-            Jason.encode!(spec, pretty: true) <>
-            "\n```\n" <> current_spec_instruction(multi_widget)
-      end
-
-    if multi_widget, do: base <> "\n\n" <> String.trim(@multi_widget_guidance), else: base
+  defp build_system_prompt(nil) do
+    String.trim(@base_system_prompt) <>
+      "\n\nNo chart exists yet. When the user asks for a visualization, " <>
+      "create one by calling update_spec."
   end
 
-  defp current_spec_label(true), do: "Existing widgets already on this dashboard"
-  defp current_spec_label(false), do: "Current Vega-Lite spec"
-
-  defp current_spec_instruction(true),
-    do:
-      "Call update_spec to add a new widget. Each widget above has a widget_id. To " <>
-        "change one of these in place, pass back its widget_id along with its " <>
-        "COMPLETE updated spec; omitting widget_id adds a new widget instead."
-
-  defp current_spec_instruction(false),
-    do: "When editing, pass the COMPLETE updated spec to update_spec."
+  defp build_system_prompt(current_spec) do
+    String.trim(@base_system_prompt) <>
+      "\n\nCurrent Vega-Lite spec:\n```json\n" <>
+      Jason.encode!(current_spec, pretty: true) <>
+      "\n```\nWhen editing, pass the COMPLETE updated spec to update_spec."
+  end
 end
