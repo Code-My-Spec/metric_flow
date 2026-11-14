@@ -873,6 +873,16 @@ defmodule MetricFlow.DataSync.SyncWorker do
       "Go to the integration's account selection to choose an account."
   end
 
+  defp format_error(:missing_realm_id) do
+    "No QuickBooks company (realm) configured. " <>
+      "Go to the integration's account selection to choose a company."
+  end
+
+  defp format_error(:missing_account_id) do
+    "No QuickBooks income account configured. " <>
+      "Go to the integration's account selection to choose an account."
+  end
+
   defp format_error(:unauthorized), do: "Authorization expired. Please reconnect the integration."
 
   defp format_error(:token_expired),
