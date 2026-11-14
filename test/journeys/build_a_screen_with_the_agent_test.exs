@@ -2119,4 +2119,69 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert html =~ "Impressions"
     end)
   end
+
+  test "a table widget of a fractional metric shows up to 2 decimal places on both the editor and the view page",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 0.034,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -5), ~T[00:00:00], "Etc/UTC")
+      })
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 12.5,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -10), ~T[00:00:00], "Etc/UTC")
+      })
+
+      scope = Scope.for_user(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+      Application.put_env(
+        :metric_flow,
+        :command_runner,
+        MetricFlowTest.DashboardBuilderStub.generate_table_widget()
+      )
+
+      render_submit(view, "send_dashboard_chat", %{"message" => "show me a table of impressions"})
+
+      refute is_nil(
+               wait_for(fn ->
+                 rendered = render(view)
+                 if rendered =~ "added a table of impressions", do: rendered, else: nil
+               end)
+             ),
+             "the table build never completed"
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      # Main's review (bb0056d, 2026-11-14): A2ui.format_table_value/1
+      # rounds every value with round() |> Integer.to_string() -- a
+      # fractional metric (0.034, 12.5) should show up to 2 decimal
+      # places ("0.03", "12.50"), not be rounded to a whole number.
+      # Editor and Show both render a table widget through the one
+      # shared widget_card component and the one shared
+      # A2ui.render_from_values/2, so checking both pages against the
+      # same seeded data checks the one place this is actually fixed.
+      editor_html = render(view)
+      assert editor_html =~ "0.03"
+      assert editor_html =~ "12.50"
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, _show_view, show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      assert show_html =~ "0.03"
+      assert show_html =~ "12.50"
+    end)
+  end
 end
