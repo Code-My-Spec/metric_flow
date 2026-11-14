@@ -31,6 +31,7 @@ defmodule MetricFlowSpex.Fixtures do
   alias MetricFlow.Billing.BillingRepository
   alias MetricFlow.Correlations.CorrelationJob
   alias MetricFlow.Correlations.CorrelationResult
+  alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Integrations.Integration
@@ -100,6 +101,22 @@ defmodule MetricFlowSpex.Fixtures do
       user_id: user.id,
       vega_spec: %{"chart_type" => "custom"}
     })
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Creates a dashboard owned by the user registered with `email`.
+
+  For specs that need an existing dashboard to exercise view/modify
+  permissions against, without the chat-builder flow to drive -- same
+  need as `create_report_for/2`, for Story 75's dashboards.
+  """
+  @spec create_dashboard_for(String.t(), String.t()) :: Dashboard.t()
+  def create_dashboard_for(email, name) do
+    user = Users.get_user_by_email(email)
+
+    %Dashboard{}
+    |> Dashboard.changeset(%{name: name, user_id: user.id})
     |> Repo.insert!()
   end
 
