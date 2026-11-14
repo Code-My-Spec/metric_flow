@@ -15,6 +15,8 @@
 alias MetricFlow.{Accounts, Repo, Users}
 alias MetricFlow.Users.{Scope, UserToken}
 
+import Ecto.Query
+
 # ---------------------------------------------------------------------------
 # Helper: find or create a confirmed user
 # ---------------------------------------------------------------------------
@@ -61,7 +63,30 @@ IO.puts("\n--- QA Member User ---")
 qa_member = QaSeed.find_or_create_user("qa-member@example.com", "hello world!", "Member Personal")
 
 IO.puts("\n--- QA Empty User (isolated, no team account) ---")
-_qa_empty = QaSeed.find_or_create_user("qa-empty@example.com", "hello world!", "Empty Personal")
+qa_empty = QaSeed.find_or_create_user("qa-empty@example.com", "hello world!", "Empty Personal")
+
+# register_user/1 only inserts the User row -- the registration LiveView's
+# own maybe_create_account/1 step (not this script) is what normally gives a
+# new user their own account, so without this qa-empty has zero memberships
+# and every account-scoped feature (e.g. AI chat) fails with "no account".
+existing_empty_membership =
+  Repo.one(
+    from(m in MetricFlow.Accounts.AccountMember, where: m.user_id == ^qa_empty.id, limit: 1)
+  )
+
+if is_nil(existing_empty_membership) do
+  empty_scope = Scope.for_user(qa_empty)
+
+  {:ok, _empty_account} =
+    Accounts.create_team_account(empty_scope, %{
+      name: qa_empty.account_name,
+      slug: "empty-personal-#{:erlang.unique_integer([:positive])}"
+    })
+
+  IO.puts("  Created isolated account for qa-empty@example.com")
+else
+  IO.puts("  qa-empty@example.com already has an account")
+end
 
 scope = Scope.for_user(qa_user)
 
@@ -71,14 +96,12 @@ scope = Scope.for_user(qa_user)
 
 IO.puts("\n--- Team Account ---")
 
-import Ecto.Query
-
 existing_team_account =
   Repo.one(
     from(a in MetricFlow.Accounts.Account,
       join: m in MetricFlow.Accounts.AccountMember,
       on: m.account_id == a.id and m.user_id == ^qa_user.id,
-      where: a.type == "team" and a.name == "QA Test Account",
+      where: a.name == "QA Test Account",
       limit: 1
     )
   )
