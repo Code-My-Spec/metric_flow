@@ -459,4 +459,80 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       end)
     end
   end
+
+  describe "refining an existing widget by widget_id updates it in place even when the title changes" do
+    test "a tool call that supplies widget_id replaces that specific widget, not either one",
+         %{conn: conn} do
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{metric_name: "impressions"})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.VizChatStub.generate_initial()
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Show me impressions over time as a line chart"
+        })
+
+        Process.sleep(100)
+
+        # generate_initial/0 builds the stat tile first (widget_id 0, "Total
+        # Impressions") then the line chart (widget_id 1, "Impressions Over
+        # Time") -- targeting widget_id 1 explicitly must replace only the
+        # line chart, leaving the stat tile untouched, unlike the
+        # title-fallback case above where either card could satisfy the
+        # assertions.
+        reworded_spec = %{
+          "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+          "data" => %{"name" => "impressions"},
+          "mark" => "area",
+          "encoding" => %{
+            "x" => %{"field" => "date", "type" => "temporal"},
+            "y" => %{"field" => "value", "type" => "quantitative"}
+          },
+          "title" => "Daily Impressions"
+        }
+
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.ClaudeCodeStub.sequence(
+            MetricFlowTest.ClaudeCodeStub.completed_tool_call(
+              "update_spec",
+              %{"vega_lite_json" => Jason.encode!(reworded_spec), "widget_id" => 1},
+              completion_text: "I've changed it to an area chart."
+            )
+          )
+        )
+
+        render_submit(lv, "send_dashboard_chat", %{
+          "message" => "Change Impressions Over Time to an area chart"
+        })
+
+        Process.sleep(100)
+        html = render(lv)
+
+        Application.delete_env(:metric_flow, :command_runner)
+
+        cards =
+          html
+          |> Floki.parse_fragment!()
+          |> Floki.find("[data-role='visualization-card']")
+
+        assert length(cards) == 2
+        assert html =~ "Total Impressions"
+        assert html =~ "Daily Impressions"
+        assert html =~ "badge-ghost badge-sm\">area<"
+        refute html =~ "badge-ghost badge-sm\">line<"
+      end)
+    end
+  end
 end

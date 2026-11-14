@@ -877,7 +877,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # model what is already there, so it can refine or add to it rather than
   # acting as if nothing exists.
   defp existing_widgets_context([]), do: nil
-  defp existing_widgets_context(chart_specs), do: %{"existing_widgets" => chart_specs}
+
+  defp existing_widgets_context(chart_specs) do
+    widgets =
+      chart_specs
+      |> Enum.with_index()
+      |> Enum.map(fn {spec, index} -> Map.put(spec, "widget_id", index) end)
+
+    %{"existing_widgets" => widgets}
+  end
 
   defp append_chat_message(socket, message) do
     assign(socket, :dashboard_chat_messages, socket.assigns.dashboard_chat_messages ++ [message])
@@ -911,14 +919,29 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # each other.
   defp merge_chat_specs(visualizations, chart_specs, specs) do
     titles = Enum.map(chart_specs, &Map.get(&1, "title"))
-    Enum.reduce(specs, visualizations, &merge_chat_spec(&2, titles, &1))
+    max_index = length(chart_specs) - 1
+    Enum.reduce(specs, visualizations, &merge_chat_spec(&2, titles, max_index, &1))
   end
 
-  defp merge_chat_spec(visualizations, titles, spec) do
-    case Map.get(spec, "title") && Enum.find_index(titles, &(&1 == Map.get(spec, "title"))) do
+  defp merge_chat_spec(visualizations, titles, max_index, %{spec: spec, widget_id: widget_id}) do
+    case target_widget_index(spec, titles, max_index, widget_id) do
       nil -> visualizations ++ [new_chat_visualization(spec, length(visualizations))]
       index -> List.update_at(visualizations, index, &update_chat_visualization(&1, spec))
     end
+  end
+
+  # Story 74 rules 2/4 (refining): the model is given a stable widget_id per
+  # existing widget and told to pass it back to target one -- that's the
+  # primary signal. A model that doesn't echo widget_id back (an older
+  # scripted double, or one that just didn't bother) falls back to an exact
+  # title match, same as before this widget_id existed.
+  defp target_widget_index(_spec, _titles, max_index, widget_id)
+       when is_integer(widget_id) and widget_id >= 0 and widget_id <= max_index do
+    widget_id
+  end
+
+  defp target_widget_index(spec, titles, _max_index, _widget_id) do
+    Map.get(spec, "title") && Enum.find_index(titles, &(&1 == Map.get(spec, "title")))
   end
 
   defp new_chat_visualization(spec, position) do

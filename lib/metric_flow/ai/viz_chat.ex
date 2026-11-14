@@ -37,16 +37,23 @@ defmodule MetricFlow.Ai.VizChat do
 
   ## Returns
 
-    * `{:ok, %{text: String.t(), spec: map() | nil, specs: [map()], context: [Alloy.Message.t()]}}`
+    * `{:ok, %{text: String.t(), spec: map() | nil, specs: [%{spec: map(), widget_id: integer() | nil}], context: [Alloy.Message.t()]}}`
       -- `spec` is the last `update_spec` call (single-visualization callers'
       contract, unchanged); `specs` is every `update_spec` call in order, for
-      a caller that can build more than one widget from one message.
+      a caller that can build more than one widget from one message, each
+      paired with the `widget_id` the model targeted (nil if it didn't give one).
     * `{:error, {:unresolvable_metric, [String.t()]}}` — the model referenced a
       metric name that doesn't exist for this account
     * `{:error, term()}`
   """
   @spec send_message([Alloy.Message.t()] | nil, String.t(), keyword()) ::
-          {:ok, %{text: String.t(), spec: map() | nil, specs: [map()], context: [Alloy.Message.t()]}}
+          {:ok,
+           %{
+             text: String.t(),
+             spec: map() | nil,
+             specs: [%{spec: map(), widget_id: integer() | nil}],
+             context: [Alloy.Message.t()]
+           }}
           | {:error, term()}
   def send_message(messages, user_message, opts \\ []) do
     {metric_names, opts} = Keyword.pop(opts, :metric_names, [])
@@ -98,8 +105,11 @@ defmodule MetricFlow.Ai.VizChat do
 
   defp extract_specs(%{tool_calls: tool_calls}) do
     Enum.flat_map(tool_calls, fn
-      %{name: "update_spec", structured_data: %{spec: spec}} -> [spec]
-      _ -> []
+      %{name: "update_spec", structured_data: %{spec: spec} = data} ->
+        [%{spec: spec, widget_id: Map.get(data, :widget_id)}]
+
+      _ ->
+        []
     end)
   end
 
@@ -178,8 +188,9 @@ defmodule MetricFlow.Ai.VizChat do
 
   defp current_spec_instruction(true),
     do:
-      "Call update_spec to add a new widget. To change one of these, pass back its " <>
-        "COMPLETE updated spec."
+      "Call update_spec to add a new widget. Each widget above has a widget_id. To " <>
+        "change one of these in place, pass back its widget_id along with its " <>
+        "COMPLETE updated spec; omitting widget_id adds a new widget instead."
 
   defp current_spec_instruction(false),
     do: "When editing, pass the COMPLETE updated spec to update_spec."

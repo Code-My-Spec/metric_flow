@@ -24,7 +24,11 @@ defmodule MetricFlow.Ai.VizTools.UpdateSpec do
 
   @impl true
   def description,
-    do: "Update the Vega-Lite v5 chart specification. Pass the COMPLETE spec as a JSON string."
+    do:
+      "Update the Vega-Lite v5 chart specification. Pass the COMPLETE spec as a JSON string. " <>
+        "If widget_id is given in the surrounding context for an existing widget you are " <>
+        "changing, pass that same widget_id back to update it in place instead of creating " <>
+        "a new one."
 
   @impl true
   def input_schema do
@@ -34,6 +38,12 @@ defmodule MetricFlow.Ai.VizTools.UpdateSpec do
         vega_lite_json: %{
           type: "string",
           description: "The complete Vega-Lite v5 specification, as a JSON string"
+        },
+        widget_id: %{
+          type: "integer",
+          description:
+            "The widget_id of an existing widget to update in place (from the " <>
+              "existing_widgets list you were given). Omit this to add a new widget."
         }
       },
       required: ["vega_lite_json"]
@@ -44,13 +54,13 @@ defmodule MetricFlow.Ai.VizTools.UpdateSpec do
   def unresolvable_prefix, do: @unresolvable_prefix
 
   @impl true
-  def execute(%{"vega_lite_json" => json}, context) do
+  def execute(%{"vega_lite_json" => json} = args, context) do
     metric_names = Map.get(context, :metric_names, [])
 
     with {:ok, spec} <- Jason.decode(json),
          {:ok, _spec} <- VegaSpecValidator.validate(spec),
          :ok <- validate_metric_names(spec, metric_names) do
-      {:ok, "Spec updated successfully.", %{spec: spec}}
+      {:ok, "Spec updated successfully.", %{spec: spec, widget_id: Map.get(args, "widget_id")}}
     else
       {:error, {:unresolvable_metrics, names}} ->
         {:error, @unresolvable_prefix <> Enum.join(names, ", ")}
