@@ -71,6 +71,18 @@ defmodule MetricFlow.Invitations.InvitationNotifierTest do
       end)
     end
 
+    test "includes the invitee's role/access level in the email body" do
+      InvitationNotifier.deliver_invitation(
+        %Invitation{email: "invitee@example.com", role: :admin},
+        account_name(),
+        acceptance_url()
+      )
+
+      assert_email_sent(fn email ->
+        assert email.text_body =~ "Admin"
+      end)
+    end
+
     test "returns {:ok, email} when delivery succeeds" do
       assert {:ok, email} =
                InvitationNotifier.deliver_invitation(
