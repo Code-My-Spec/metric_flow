@@ -48,6 +48,52 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     |> Repo.insert!()
   end
 
+  # A command_runner scripting exactly one set_dashboard_spec tool call (the
+  # dashboard chat's only write tool, Story 74) followed by its completion text.
+  defp set_dashboard_spec_stub(spec, completion_text \\ "I'll create a line chart showing impressions over time.") do
+    MetricFlowTest.ClaudeCodeStub.sequence(
+      MetricFlowTest.ClaudeCodeStub.completed_tool_call(
+        "set_dashboard_spec",
+        %{"a2ui_json" => Jason.encode!(spec)},
+        completion_text: completion_text
+      )
+    )
+  end
+
+  defp line_chart_spec do
+    %{
+      "components" => [
+        %{
+          "id" => "widget-0",
+          "type" => "chart",
+          "title" => "Impressions Over Time",
+          "chartType" => "line",
+          "query" => %{"metric" => "impressions"}
+        }
+      ]
+    }
+  end
+
+  defp two_widget_spec do
+    %{
+      "components" => [
+        %{
+          "id" => "widget-0",
+          "type" => "stat",
+          "title" => "Total Impressions",
+          "query" => %{"metric" => "impressions"}
+        },
+        %{
+          "id" => "widget-1",
+          "type" => "chart",
+          "title" => "Impressions Over Time",
+          "chartType" => "line",
+          "query" => %{"metric" => "impressions"}
+        }
+      ]
+    }
+  end
+
   # ---------------------------------------------------------------------------
   # Test Assertions from spec
   # ---------------------------------------------------------------------------
@@ -86,7 +132,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   end
 
   describe "inserting a library visualization stored with the plain ad-hoc shape" do
-    test "regenerates a real Vega-Lite spec instead of rendering the literal metric_name/chart_type map",
+    test "regenerates a real ECharts option instead of rendering the literal metric_name/chart_type map",
          %{conn: conn} do
       user = user_fixture()
       conn = log_in_user(conn, user)
@@ -113,16 +159,16 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         |> element("[data-role='library-visualization-option'][phx-value-id='#{library_viz.id}']")
         |> render_click()
 
-        [data_spec_json] =
+        [data_option_json] =
           render(lv)
           |> Floki.parse_document!()
-          |> Floki.find("[data-role='vega-lite-chart']")
-          |> Floki.attribute("data-spec")
+          |> Floki.find("[data-role='echarts-chart']")
+          |> Floki.attribute("data-option")
 
-        decoded = Jason.decode!(data_spec_json)
+        decoded = Jason.decode!(data_option_json)
 
-        assert decoded["$schema"] =~ "vega-lite"
-        assert decoded["mark"] == "area"
+        assert [series] = decoded["series"]
+        assert Map.has_key?(series, "areaStyle")
         refute decoded == %{"metric_name" => "sessions", "chart_type" => "area"}
       end)
     end
@@ -342,11 +388,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.VizChatStub.generate_initial()
-        )
+        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Show me impressions over time as a line chart"
@@ -377,11 +419,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.VizChatStub.generate_initial()
-        )
+        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Show me impressions over time as a line chart"
@@ -407,8 +445,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     end
   end
 
-  describe "refining an existing widget through chat updates it in place" do
-    test "changing an existing widget's chart type replaces it instead of adding a duplicate",
+  describe "refining an existing dashboard through chat replaces it with the model's complete new spec" do
+    test "a refine turn's returned spec becomes the dashboard's new components, not an addition",
          %{conn: conn} do
       user = user_fixture()
       account = insert_account!(user)
@@ -419,101 +457,26 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.VizChatStub.generate_initial()
-        )
+        initial_spec = two_widget_spec()
+
+        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(initial_spec))
 
         render_submit(lv, "send_dashboard_chat", %{
-          "message" => "Show me impressions over time as a line chart"
+          "message" => "Show me impressions, a stat tile and a line chart"
         })
 
         Process.sleep(100)
 
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.VizChatStub.refine_to_area_chart()
-        )
+        # Story 74: set_dashboard_spec always carries the COMPLETE spec, so
+        # a "refine" is nothing but the model returning a new full spec --
+        # there is no id/title matching left on the app side to exercise.
+        # Keeping the stat tile untouched and only changing the chart's
+        # type proves the model's own echo is what makes a refine land
+        # "in place" rather than as a third, additional card.
+        refined_spec =
+          put_in(initial_spec, ["components", Access.at(1), "chartType"], "area")
 
-        render_submit(lv, "send_dashboard_chat", %{
-          "message" => "Change Impressions Over Time to an area chart"
-        })
-
-        Process.sleep(100)
-        html = render(lv)
-
-        Application.delete_env(:metric_flow, :command_runner)
-
-        cards =
-          html
-          |> Floki.parse_fragment!()
-          |> Floki.find("[data-role='visualization-card']")
-
-        # generate_initial/0 built two widgets (a stat tile and the line
-        # chart); the refine must update "Impressions Over Time" in place,
-        # not add a third card.
-        assert length(cards) == 2
-        assert html =~ "Impressions Over Time"
-        assert html =~ "badge-ghost badge-sm\">area<"
-        refute html =~ "badge-ghost badge-sm\">line<"
-      end)
-    end
-  end
-
-  describe "refining an existing widget by widget_id updates it in place even when the title changes" do
-    test "a tool call that supplies widget_id replaces that specific widget, not either one",
-         %{conn: conn} do
-      user = user_fixture()
-      account = insert_account!(user)
-      insert_member!(account, user, :owner)
-      insert_metric!(user, %{metric_name: "impressions"})
-      conn = log_in_user(conn, user)
-
-      capture_log(fn ->
-        {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
-
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.VizChatStub.generate_initial()
-        )
-
-        render_submit(lv, "send_dashboard_chat", %{
-          "message" => "Show me impressions over time as a line chart"
-        })
-
-        Process.sleep(100)
-
-        # generate_initial/0 builds the stat tile first (widget_id 0, "Total
-        # Impressions") then the line chart (widget_id 1, "Impressions Over
-        # Time") -- targeting widget_id 1 explicitly must replace only the
-        # line chart, leaving the stat tile untouched, unlike the
-        # title-fallback case above where either card could satisfy the
-        # assertions.
-        reworded_spec = %{
-          "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
-          "data" => %{"name" => "impressions"},
-          "mark" => "area",
-          "encoding" => %{
-            "x" => %{"field" => "date", "type" => "temporal"},
-            "y" => %{"field" => "value", "type" => "quantitative"}
-          },
-          "title" => "Daily Impressions"
-        }
-
-        Application.put_env(
-          :metric_flow,
-          :command_runner,
-          MetricFlowTest.ClaudeCodeStub.sequence(
-            MetricFlowTest.ClaudeCodeStub.completed_tool_call(
-              "update_spec",
-              %{"vega_lite_json" => Jason.encode!(reworded_spec), "widget_id" => 1},
-              completion_text: "I've changed it to an area chart."
-            )
-          )
-        )
+        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(refined_spec, "I've changed it to an area chart."))
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Change Impressions Over Time to an area chart"
@@ -531,7 +494,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
         assert length(cards) == 2
         assert html =~ "Total Impressions"
-        assert html =~ "Daily Impressions"
+        assert html =~ "Impressions Over Time"
         assert html =~ "badge-ghost badge-sm\">area<"
         refute html =~ "badge-ghost badge-sm\">line<"
       end)

@@ -91,6 +91,8 @@ defmodule MetricFlow.MixProject do
       # LLM integration (ADR: llm_provider)
       {:req_llm, "~> 1.6"},
       {:alloy, git: "https://github.com/Code-My-Spec/alloy.git", branch: "main"},
+      # Dashboard A2UI blob versioning (Story 74)
+      {:paper_trail, "~> 1.0"},
       # MCP server (tool definitions for LLM agent)
       {:anubis_mcp, "~> 1.1.0"},
       # Data providers (ADR: data_provider_apis)

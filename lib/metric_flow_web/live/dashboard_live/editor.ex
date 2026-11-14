@@ -16,7 +16,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Ai
-  alias MetricFlow.Ai.VizChat
+  alias MetricFlow.Ai.DashboardBuilder
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Metrics
@@ -382,41 +382,30 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               >
                 ✕
               </button>
-              <button
-                phx-click="toggle_card_spec_panel"
-                phx-value-index={idx}
-                data-role="open-spec-panel"
-                aria-label="Edit spec"
-                class="btn btn-ghost btn-xs"
-              >
-                Edit Spec
-              </button>
             </div>
           </div>
 
-          <div data-role="chart-preview" class="mt-2 h-32 bg-base-200 rounded overflow-hidden">
+          <%!-- Story 74: "Charts are ECharts"; "Chat only: no hand-edit spec editor." --%>
+          <div
+            data-role="chart-preview"
+            class="mt-2 h-32 bg-base-200 rounded overflow-hidden flex items-center justify-center"
+          >
+            <p
+              :if={elem(Enum.at(@chart_render, idx), 0) == :stat}
+              data-role="stat-tile-value"
+              class="text-3xl font-bold"
+            >
+              {elem(Enum.at(@chart_render, idx), 1)}
+            </p>
             <div
+              :if={elem(Enum.at(@chart_render, idx), 0) == :chart}
               id={"dashboard-chart-#{idx}"}
-              data-role="vega-lite-chart"
-              phx-hook="VegaLite"
-              data-spec={Jason.encode!(Enum.at(@chart_specs, idx))}
+              data-role="echarts-chart"
+              phx-hook="ECharts"
+              data-option={Jason.encode!(elem(Enum.at(@chart_render, idx), 1))}
               class="w-full h-full"
             >
             </div>
-          </div>
-
-          <div :if={@spec_panel_open_index == idx} data-role="spec-panel" class="mt-2">
-            <textarea
-              name="vega_spec"
-              data-role="vega-spec-textarea"
-              phx-blur="update_card_spec"
-              phx-value-index={idx}
-              class={[
-                "textarea textarea-bordered w-full font-mono text-xs min-h-[150px]",
-                @spec_error && "textarea-error"
-              ]}
-            >{Jason.encode!(Enum.at(@chart_specs, idx))}</textarea>
-            <p :if={@spec_error} class="text-sm text-error mt-1">{@spec_error}</p>
           </div>
         </div>
       </div>
@@ -455,6 +444,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:changeset, changeset)
           |> assign(:visualizations, visualizations)
           |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+          |> assign(:chart_render, resolve_chart_render(visualizations, scope))
           |> assign(:picker_open, false)
           |> assign(:picker_selected_metric, nil)
           |> assign(:picker_selected_chart_type, "line")
@@ -464,8 +454,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:chart_types, @chart_types)
           |> assign(:viz_error, nil)
           |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
-          |> assign(:spec_panel_open_index, nil)
-          |> assign(:spec_error, nil)
           |> assign(:dashboard_chat_messages, chat_messages)
           |> assign(:dashboard_chat_generating, false)
           |> assign(:dashboard_chat_error, nil)
@@ -496,6 +484,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:changeset, changeset)
       |> assign(:visualizations, [])
       |> assign(:chart_specs, [])
+      |> assign(:chart_render, [])
       |> assign(:picker_open, false)
       |> assign(:picker_selected_metric, nil)
       |> assign(:picker_selected_chart_type, "line")
@@ -505,8 +494,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:chart_types, @chart_types)
       |> assign(:viz_error, nil)
       |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
-      |> assign(:spec_panel_open_index, nil)
-      |> assign(:spec_error, nil)
       |> assign(:dashboard_chat_messages, [])
       |> assign(:dashboard_chat_generating, false)
       |> assign(:dashboard_chat_error, nil)
@@ -585,6 +572,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       socket
       |> assign(:visualizations, visualizations)
       |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+      |> assign(:chart_render, resolve_chart_render(visualizations, scope))
       |> assign(:picker_open, false)
       |> assign(:picker_selected_metric, nil)
       |> assign(:picker_selected_chart_type, "line")
@@ -670,6 +658,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           socket
           |> assign(:visualizations, visualizations)
           |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+          |> assign(:chart_render, resolve_chart_render(visualizations, scope))
           |> assign(:picker_open, false)
           |> assign(:viz_error, nil)
 
@@ -677,40 +666,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
       {:error, :not_found} ->
         {:noreply, put_flash(socket, :error, "Visualization not found.")}
-    end
-  end
-
-  def handle_event("toggle_card_spec_panel", %{"index" => index_str}, socket) do
-    index = String.to_integer(index_str)
-    current = socket.assigns.spec_panel_open_index
-    new_index = if current == index, do: nil, else: index
-
-    {:noreply, assign(socket, spec_panel_open_index: new_index, spec_error: nil)}
-  end
-
-  def handle_event("update_card_spec", %{"index" => index_str, "value" => json}, socket) do
-    index = String.to_integer(index_str)
-
-    case Jason.decode(json) do
-      {:ok, spec} when is_map(spec) ->
-        visualizations =
-          List.update_at(socket.assigns.visualizations, index, &Map.put(&1, :vega_spec, spec))
-
-        chart_specs = List.replace_at(socket.assigns.chart_specs, index, spec)
-
-        socket =
-          socket
-          |> assign(:visualizations, visualizations)
-          |> assign(:chart_specs, chart_specs)
-          |> assign(:spec_error, nil)
-
-        {:noreply, socket}
-
-      {:ok, _} ->
-        {:noreply, assign(socket, :spec_error, "Spec must be a JSON object")}
-
-      {:error, _} ->
-        {:noreply, assign(socket, :spec_error, "Invalid JSON")}
     end
   end
 
@@ -738,17 +693,20 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         dashboard = socket.assigns.dashboard
         visualizations = visualizations_from_version(version)
 
-        case Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
-          :ok ->
-            socket =
-              socket
-              |> assign_visualizations(visualizations)
-              |> record_dashboard_version(dashboard, visualizations)
+        with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
+             {:ok, dashboard} <-
+               Dashboards.update_dashboard(scope, dashboard, %{
+                 "a2ui_spec" => build_a2ui_spec(visualizations)
+               }) do
+          socket =
+            socket
+            |> assign(:dashboard, dashboard)
+            |> assign_visualizations(visualizations)
+            |> record_dashboard_version(dashboard, visualizations)
 
-            {:noreply, socket}
-
-          {:error, _} ->
-            {:noreply, socket}
+          {:noreply, socket}
+        else
+          _ -> {:noreply, socket}
         end
     end
   end
@@ -779,7 +737,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info({ref, {:ok, %{text: text, specs: specs, context: updated_context}}}, socket)
+  def handle_info({ref, {:ok, %{text: text, spec: a2ui_spec, context: updated_context}}}, socket)
       when is_reference(ref) do
     Process.demonitor(ref, [:flush])
 
@@ -791,7 +749,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> append_chat_message(assistant_msg)
       |> assign(:dashboard_chat_context, updated_context)
       |> assign(:dashboard_chat_generating, false)
-      |> add_visualizations_from_chat_specs(specs)
+      |> apply_a2ui_spec(a2ui_spec)
       |> persist_dashboard_chat_turn(user_text, text)
 
     {:noreply, socket}
@@ -847,16 +805,15 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
       metric_names ->
         context = socket.assigns.dashboard_chat_context
-        current_spec = existing_widgets_context(socket.assigns.chart_specs)
+        current_spec = socket.assigns.dashboard && socket.assigns.dashboard.a2ui_spec
         runner = Application.get_env(:metric_flow, :command_runner)
 
         Task.async(fn ->
-          VizChat.send_message(
+          DashboardBuilder.send_message(
             context,
             trimmed,
             metric_names: metric_names,
             command_runner: runner,
-            multi_widget: true,
             current_spec: current_spec
           )
         end)
@@ -872,21 +829,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  # Story 74 rule 4: a message sent on an already-built dashboard (fresh
-  # /new build or a reopened one via "Edit with agent") should tell the
-  # model what is already there, so it can refine or add to it rather than
-  # acting as if nothing exists.
-  defp existing_widgets_context([]), do: nil
-
-  defp existing_widgets_context(chart_specs) do
-    widgets =
-      chart_specs
-      |> Enum.with_index()
-      |> Enum.map(fn {spec, index} -> Map.put(spec, "widget_id", index) end)
-
-    %{"existing_widgets" => widgets}
-  end
-
   defp append_chat_message(socket, message) do
     assign(socket, :dashboard_chat_messages, socket.assigns.dashboard_chat_messages ++ [message])
   end
@@ -898,69 +840,53 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> assign(:dashboard_chat_error, error_msg)
   end
 
-  defp add_visualizations_from_chat_specs(socket, []), do: socket
+  # Story 74: set_dashboard_spec always returns the dashboard's complete
+  # A2UI spec, so there's nothing to merge widget-by-widget -- it replaces
+  # the whole canvas outright. A turn that never calls the tool (a
+  # question, a halted/unresolvable-metric turn) leaves the canvas as-is.
+  defp apply_a2ui_spec(socket, nil), do: socket
 
-  defp add_visualizations_from_chat_specs(socket, specs) do
-    visualizations =
-      merge_chat_specs(socket.assigns.visualizations, socket.assigns.chart_specs, specs)
+  defp apply_a2ui_spec(socket, a2ui_spec) do
+    visualizations = visualizations_from_a2ui_spec(a2ui_spec)
 
     socket
     |> assign_visualizations(visualizations)
     |> autosave_draft_dashboard(visualizations)
   end
 
-  # Story 74 rule 4 (refining): the model is told to pass back a widget's
-  # COMPLETE spec to change it, and a title is the only identifier it's
-  # given for an existing widget (see existing_widgets_context/1). A
-  # returned spec whose title matches an existing widget's current title
-  # is that widget updated in place; anything else is a genuinely new
-  # widget appended to the end. Matched against the titles as they were
-  # *before* this turn's edits, so two specs in one turn can't shadow
-  # each other.
-  defp merge_chat_specs(visualizations, chart_specs, specs) do
-    titles = Enum.map(chart_specs, &Map.get(&1, "title"))
-    max_index = length(chart_specs) - 1
-    Enum.reduce(specs, visualizations, &merge_chat_spec(&2, titles, max_index, &1))
+  defp visualizations_from_a2ui_spec(%{"components" => components}) do
+    components
+    |> Enum.with_index()
+    |> Enum.map(fn {component, position} ->
+      %{
+        metric_name: a2ui_component_title(component),
+        chart_type: a2ui_component_chart_type(component),
+        position: position,
+        vega_spec: component
+      }
+    end)
   end
 
-  defp merge_chat_spec(visualizations, titles, max_index, %{spec: spec, widget_id: widget_id}) do
-    case target_widget_index(spec, titles, max_index, widget_id) do
-      nil -> visualizations ++ [new_chat_visualization(spec, length(visualizations))]
-      index -> List.update_at(visualizations, index, &update_chat_visualization(&1, spec))
-    end
-  end
+  defp visualizations_from_a2ui_spec(_a2ui_spec), do: []
 
-  # Story 74 rules 2/4 (refining): the model is given a stable widget_id per
-  # existing widget and told to pass it back to target one -- that's the
-  # primary signal. A model that doesn't echo widget_id back (an older
-  # scripted double, or one that just didn't bother) falls back to an exact
-  # title match, same as before this widget_id existed.
-  defp target_widget_index(_spec, _titles, max_index, widget_id)
-       when is_integer(widget_id) and widget_id >= 0 and widget_id <= max_index do
-    widget_id
-  end
+  defp a2ui_component_title(%{"title" => title}) when is_binary(title), do: title
+  defp a2ui_component_title(component), do: get_in(component, ["query", "metric"]) || "Untitled"
 
-  defp target_widget_index(spec, titles, _max_index, _widget_id) do
-    Map.get(spec, "title") && Enum.find_index(titles, &(&1 == Map.get(spec, "title")))
-  end
+  defp a2ui_component_chart_type(component), do: a2ui_component_chart_type_or_nil(component) || "line"
 
-  defp new_chat_visualization(spec, position) do
-    %{
-      metric_name: extract_chat_metric_name(spec),
-      chart_type: extract_chart_type_from_spec(spec),
-      position: position,
-      vega_spec: custom_spec(spec)
-    }
-  end
+  # Returns nil (rather than defaulting) for anything that doesn't look like
+  # an A2UI component at all, so a caller juggling both shapes -- a
+  # reloaded Visualization row can hold either, depending on whether it was
+  # built via chat (A2UI) or the old template/library/manual paths
+  # (Vega-Lite) -- can fall through to its own Vega-Lite-specific handling.
+  defp a2ui_component_chart_type_or_nil(%{"type" => "stat"}), do: "text"
 
-  defp update_chat_visualization(viz, spec) do
-    %{
-      viz
-      | metric_name: extract_chat_metric_name(spec),
-        chart_type: extract_chart_type_from_spec(spec),
-        vega_spec: custom_spec(spec)
-    }
-  end
+  defp a2ui_component_chart_type_or_nil(%{"type" => "chart", "chartType" => type})
+       when is_binary(type),
+       do: type
+
+  defp a2ui_component_chart_type_or_nil(%{"type" => "chart"}), do: "line"
+  defp a2ui_component_chart_type_or_nil(_component), do: nil
 
   # Story 74, rule 1: the first thing the agent builds is saved as a draft
   # with no explicit Save -- once a dashboard already exists we just keep
@@ -971,17 +897,23 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations) do
     scope = socket.assigns.current_scope
 
-    case Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
-      :ok -> record_dashboard_version(socket, dashboard, visualizations)
-      {:error, _} -> socket
+    with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
+         {:ok, dashboard} <-
+           Dashboards.update_dashboard(scope, dashboard, %{"a2ui_spec" => build_a2ui_spec(visualizations)}) do
+      socket
+      |> assign(:dashboard, dashboard)
+      |> record_dashboard_version(dashboard, visualizations)
+    else
+      _ -> socket
     end
   end
 
   defp autosave_draft_dashboard(socket, visualizations) do
     scope = socket.assigns.current_scope
     name = draft_dashboard_name(socket.assigns.changeset)
+    a2ui_spec = build_a2ui_spec(visualizations)
 
-    with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name}),
+    with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name, "a2ui_spec" => a2ui_spec}),
          :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
       socket
       |> assign(:dashboard, dashboard)
@@ -991,6 +923,33 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       _ -> socket
     end
   end
+
+  # Story 74's notes: the builder agent's one write tool sets an A2UI blob
+  # ("components") on the dashboard; each chart/stat component binds to a
+  # metric via a "query", never inline data/values -- data is fetched at
+  # render time (see resolve_chart_render/2), so this never carries any.
+  defp build_a2ui_spec(visualizations) do
+    %{
+      "components" => Enum.map(visualizations, &build_a2ui_component/1)
+    }
+  end
+
+  defp build_a2ui_component(viz) do
+    base = %{
+      "id" => "widget-#{viz.position}",
+      "type" => a2ui_component_type(viz.chart_type),
+      "title" => viz.metric_name,
+      "query" => %{"metric" => chart_metric_key(viz)}
+    }
+
+    case viz.chart_type do
+      "text" -> base
+      chart_type -> Map.put(base, "chartType", chart_type)
+    end
+  end
+
+  defp a2ui_component_type("text"), do: "stat"
+  defp a2ui_component_type(_chart_type), do: "chart"
 
   defp record_dashboard_version(socket, dashboard, visualizations) do
     case Dashboards.create_dashboard_version(dashboard, visualizations) do
@@ -1071,16 +1030,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  defp extract_chat_metric_name(%{"title" => title}) when is_binary(title), do: title
-
-  defp extract_chat_metric_name(spec) do
-    case extract_chat_named_sources(spec) do
-      [name | _] -> name
-      [] -> "Custom"
-    end
-  end
-
   defp extract_chat_named_sources(%{"data" => %{"name" => name}}), do: [name]
+
+  # Story 74: an A2UI component binds to a metric via "query" rather than
+  # Vega-Lite's named "data" source -- stashed as the vega_spec field for
+  # a chat-built widget so chart_metric_key/1 can reach it the same way.
+  defp extract_chat_named_sources(%{"query" => %{"metric" => metric}}), do: [metric]
 
   defp extract_chat_named_sources(%{"layer" => layers}) when is_list(layers) do
     Enum.flat_map(layers, fn
@@ -1136,10 +1091,14 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> Enum.sort_by(& &1.position)
     |> Enum.map(fn dv ->
       vega_spec = dv.visualization.vega_spec || %{}
-      metric_name = Map.get(vega_spec, "metric_name") || dv.visualization.name
+
+      metric_name =
+        Map.get(vega_spec, "metric_name") || Map.get(vega_spec, "title") || dv.visualization.name
 
       chart_type =
-        Map.get(vega_spec, "chart_type") || extract_chart_type_from_spec(vega_spec)
+        Map.get(vega_spec, "chart_type") ||
+          a2ui_component_chart_type_or_nil(vega_spec) ||
+          extract_chart_type_from_spec(vega_spec)
 
       %{
         metric_name: metric_name,
@@ -1185,6 +1144,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     socket
     |> assign(:visualizations, visualizations)
     |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
+    |> assign(:chart_render, resolve_chart_render(visualizations, scope))
   end
 
   defp resolve_chart_specs(visualizations, scope) do
@@ -1195,6 +1155,66 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       end
     end)
   end
+
+  # Story 74: "Charts are ECharts"; "data is fetched at render time and never
+  # pasted into the spec." Builds the render-time payload for each card
+  # straight from its metric key and chart_type -- not from whatever the
+  # stored vega_spec's "data" happens to say -- so this works the same for
+  # a chat-built widget (named data source, no embedded values) and an
+  # older template/library/manual one (embedded values, or none at all).
+  defp resolve_chart_render(visualizations, scope) do
+    Enum.map(visualizations, &build_chart_render(&1, scope))
+  end
+
+  defp build_chart_render(%{chart_type: "text"} = viz, scope) do
+    {:stat, stat_tile_value(viz, scope)}
+  end
+
+  defp build_chart_render(viz, scope) do
+    {:chart, build_echarts_option(viz, scope)}
+  end
+
+  # A template/library-inserted visualization carries no :vega_spec key at
+  # all (not even nil) -- Map.get, not a struct-shaped match, so both that
+  # and an explicit nil fall through to the plain metric_name.
+  defp chart_metric_key(%{metric_name: metric_name} = viz) do
+    case Map.get(viz, :vega_spec) do
+      nil -> metric_name
+      vega_spec ->
+        case extract_chat_named_sources(vega_spec) do
+          [name | _] -> name
+          [] -> metric_name
+        end
+    end
+  end
+
+  defp query_metric_values(viz, scope) do
+    {start_date, end_date} = Dashboards.default_date_range()
+
+    scope
+    |> Metrics.query_time_series(chart_metric_key(viz), date_range: {start_date, end_date})
+    |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
+  end
+
+  defp stat_tile_value(viz, scope) do
+    viz
+    |> query_metric_values(scope)
+    |> Enum.reduce(0, fn {_date, value}, acc -> acc + value end)
+  end
+
+  defp build_echarts_option(viz, scope) do
+    values = query_metric_values(viz, scope)
+
+    %{
+      "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
+      "yAxis" => %{"type" => "value"},
+      "series" => [echarts_series(viz.chart_type, Enum.map(values, &elem(&1, 1)))]
+    }
+  end
+
+  defp echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
+  defp echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
+  defp echarts_series(_, data), do: %{"type" => "line", "data" => data}
 
   # A stored vega_spec in the plain `%{"metric_name" => _, "chart_type" => _}` shape is an
   # ad-hoc entry meant to be regenerated live from current metric data on every load, as it

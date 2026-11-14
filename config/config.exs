@@ -24,6 +24,9 @@ config :metric_flow,
   ecto_repos: [MetricFlow.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Story 74: versions the dashboard A2UI blob (restore creates a new version)
+config :paper_trail, repo: MetricFlow.Repo
+
 # Gates every paywall/subscription check in the app. Overridden to false
 # in dev so gated features are usable without a subscription.
 config :metric_flow, :paywall_enabled, true

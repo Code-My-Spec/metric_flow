@@ -126,7 +126,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
 
     %Dashboard{}
     |> Dashboard.changeset(attrs_with_user)
-    |> Repo.insert()
+    |> paper_trail_save(&PaperTrail.insert/1)
   end
 
   # ---------------------------------------------------------------------------
@@ -141,7 +141,20 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   def update_dashboard(%Dashboard{} = dashboard, attrs) do
     dashboard
     |> Dashboard.changeset(attrs)
-    |> Repo.update()
+    |> paper_trail_save(&PaperTrail.update/1)
+  end
+
+  # Story 74: versions the dashboard A2UI blob via paper_trail -- every
+  # create/update of a Dashboard record gets a row in paper_trail's
+  # `versions` table, including "restore creates a new version."
+  # PaperTrail.insert/update return {:ok, %{model:, version:}} rather than
+  # {:ok, struct} on success, so this adapts it to the plain Repo.insert/2
+  # and Repo.update/2 shape this module's callers already expect.
+  defp paper_trail_save(changeset, paper_trail_fun) do
+    case paper_trail_fun.(changeset) do
+      {:ok, %{model: dashboard}} -> {:ok, dashboard}
+      {:error, changeset} -> {:error, changeset}
+    end
   end
 
   # ---------------------------------------------------------------------------
