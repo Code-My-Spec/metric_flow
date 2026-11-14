@@ -58,7 +58,7 @@ defmodule MetricFlow.Accounts.AccountNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "noreply@metric-flow.app"})
+      |> from({"Anderson BI", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 

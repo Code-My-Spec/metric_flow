@@ -16,7 +16,7 @@ defmodule MetricFlow.Users.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "noreply@metric-flow.app"})
+      |> from({"Anderson BI", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 
@@ -61,7 +61,7 @@ defmodule MetricFlow.Users.UserNotifier do
 
     Hi #{user.email},
 
-    Use the link below to reset your MetricFlow password. It expires in 15 minutes.
+    Use the link below to reset your Anderson BI password. It expires in 15 minutes.
 
     #{url}
 

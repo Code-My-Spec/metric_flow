@@ -13,7 +13,7 @@ defmodule MetricFlowWeb.UserLive.Login do
               <%= if @current_scope do %>
                 You need to reauthenticate to perform sensitive actions on your account.
               <% else %>
-                Welcome back to MetricFlow.
+                Welcome back to Anderson BI.
               <% end %>
             </p>
           </div>
@@ -96,7 +96,7 @@ defmodule MetricFlowWeb.UserLive.Login do
             </.button>
           </.form>
           <p :if={!@current_scope} class="mt-8 text-center text-sm text-base-content/70">
-            New to MetricFlow?
+            New to Anderson BI?
             <.link
               navigate={~p"/users/register"}
               id="register-link"

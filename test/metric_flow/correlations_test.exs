@@ -375,6 +375,39 @@ defmodule MetricFlow.CorrelationsTest do
       assert summary.results == []
       assert summary.no_data == true
     end
+
+    test "keeps showing the most recent completed job that has real data, not a later empty-window completion" do
+      {_user, scope} = user_with_scope()
+
+      real_job =
+        insert_completed_correlation_job!(scope, %{
+          data_window_start: Date.utc_today() |> Date.add(-90),
+          data_window_end: Date.utc_today(),
+          data_points: 91,
+          completed_at:
+            DateTime.utc_now() |> DateTime.add(-3600, :second) |> DateTime.truncate(:microsecond)
+        })
+
+      insert_correlation_result!(scope, real_job)
+
+      # Mirrors persist_results/5's nil-data-window clause (empty goal-metric
+      # series on a later "Run Now"): marks :completed with results_count: 0,
+      # but never sets data_window_start/end or data_points, and inserts no
+      # CorrelationResult rows.
+      {:ok, _empty_window_job} =
+        CorrelationsRepository.create_correlation_job(scope, %{
+          goal_metric_name: real_job.goal_metric_name,
+          status: :completed,
+          results_count: 0,
+          completed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+        })
+
+      summary = Correlations.get_latest_correlation_summary(scope)
+
+      refute summary.data_points_count == 0
+      refute summary.data_window == {nil, nil}
+      assert summary.results != []
+    end
   end
 
   # ---------------------------------------------------------------------------

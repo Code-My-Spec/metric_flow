@@ -4,6 +4,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
+  import Swoosh.TestAssertions
 
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
@@ -50,6 +51,10 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
   defp future_expires_at do
     DateTime.add(DateTime.utc_now(), 3_600, :second)
+  end
+
+  defp past_expires_at do
+    DateTime.add(DateTime.utc_now(), -3_600, :second)
   end
 
   defp insert_integration!(user_id, provider, overrides \\ %{}) do
@@ -125,6 +130,27 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
                )
 
         refute html =~ "Connected Platforms"
+      end)
+    end
+  end
+
+  describe "does not send a reconnection email for a non-platform integration like codemyspec" do
+    test "does not email the user when the unrelated codemyspec integration expires", %{
+      conn: conn
+    } do
+      user = user_fixture()
+
+      insert_integration!(user.id, :codemyspec, %{
+        expires_at: past_expires_at(),
+        reconnection_notified_at: nil
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, _html} = live(conn, ~p"/app/integrations")
+
+        refute_email_sent(subject: "Reconnect your Codemyspec integration")
       end)
     end
   end

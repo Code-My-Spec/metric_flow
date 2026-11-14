@@ -110,7 +110,7 @@ defmodule MetricFlow.Correlations do
   """
   @spec get_latest_correlation_summary(Scope.t()) :: map()
   def get_latest_correlation_summary(%Scope{} = scope) do
-    case CorrelationsRepository.get_latest_completed_job(scope) do
+    case CorrelationsRepository.get_latest_completed_job_with_data_window(scope) do
       nil ->
         %{
           results: [],
