@@ -6,14 +6,15 @@ defmodule MetricFlowWeb.UserLive.AiHomeSubscriptionGateTest do
   import MetricFlowTest.AiFixtures
 
   @moduledoc """
-  QA finding on issue b7b4f72d: a typical account holder (personal account,
-  no subscription) logging in is redirected to /app/chat, the new default
-  home, but RequireSubscriptionHook gates that route and renders the
-  upgrade paywall instead of the AI greeting. Only an account-less user
-  (as in the issue's own reproduction fixture) sees the greeting today.
+  Regression for QA finding on issue b7b4f72d: a typical account holder
+  (personal account, no subscription) logging in was redirected to
+  /app/chat, the default home, but RequireSubscriptionHook gated that
+  route and rendered the upgrade paywall instead of the AI greeting. The
+  chat route no longer sits behind :require_subscription, so every
+  authenticated user sees the greeting regardless of subscription status.
   """
 
-  test "a user with a personal account but no subscription sees the paywall, not the AI greeting, after login",
+  test "a user with a personal account but no subscription sees the AI greeting, not the paywall, after login",
        %{conn: conn} do
     {user, _scope} = user_with_scope()
     user = set_password(user)
@@ -30,7 +31,7 @@ defmodule MetricFlowWeb.UserLive.AiHomeSubscriptionGateTest do
 
     {:ok, _home_view, home_html} = live(conn, redirected_to(conn))
 
-    refute home_html =~ "What can I help you with today?"
-    assert home_html =~ "Upgrade to access AI features"
+    assert home_html =~ "What can I help you with today?"
+    refute home_html =~ "Upgrade to access AI features"
   end
 end

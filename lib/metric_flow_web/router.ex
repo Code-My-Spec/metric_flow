@@ -119,6 +119,12 @@ defmodule MetricFlowWeb.Router do
       live "/reports/new", ReportLive.Index, :new
       live "/reports/generate", AiLive.ReportGenerator, :index
       live "/reports/:id", ReportLive.Show, :show
+
+      # AI chat routes -- the default authenticated home screen (issue
+      # b7b4f72d). Not paywalled: every logged-in user can chat before
+      # subscribing; other AI features stay behind :require_subscription.
+      live "/chat", AiLive.Chat, :index
+      live "/chat/:id", AiLive.Chat, :show
     end
 
     # Paywalled routes — require active subscription for AI features
@@ -140,8 +146,6 @@ defmodule MetricFlowWeb.Router do
 
       # AI routes
       live "/insights", AiLive.Insights, :index
-      live "/chat", AiLive.Chat, :index
-      live "/chat/:id", AiLive.Chat, :show
     end
 
     # OAuth provider integration routes (controller — handles session_params)
