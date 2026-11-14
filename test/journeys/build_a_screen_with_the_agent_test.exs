@@ -160,6 +160,20 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end
   end
 
+  # Queries paper_trail's own versions table directly rather than
+  # Dashboards.list_dashboard_versions/1 -- main's review (10fd033,
+  # 2026-11-14) has the coder removing that hand-rolled DashboardVersion
+  # table/repo function entirely in favor of paper_trail.
+  defp paper_trail_version_count(dashboard_id) do
+    %{rows: [[count]]} =
+      Repo.query!(
+        "select count(*) from versions where item_type = 'Dashboard' and item_id = $1",
+        [dashboard_id]
+      )
+
+    count
+  end
+
   defp stat_tile_total(html) do
     text =
       html
@@ -1206,12 +1220,14 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "restoring a dashboard version adds a row to paper_trail's versions table", %{conn: conn} do
+  test "the listed versions are exactly the paper_trail versions, by count and order, and a restore adds exactly one",
+       %{conn: conn} do
     stage("Save and reopen", fn ->
       user = user_fixture()
       account = insert_account!(user)
       insert_member!(account, user, :owner)
       insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 10.0})
       scope = Scope.for_user(user)
 
       conn = log_in_user(conn, user)
@@ -1221,34 +1237,91 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       assert [dashboard] = Dashboards.list_dashboards(scope)
 
-      # Story 74's notes (get_story 74): versioning uses the paper_trail
-      # dependency on the dashboard blob; restore creates a new version.
-      # paper_trail is not a dependency yet (confirmed: no match in
-      # mix.lock/mix.exs), so its "versions" table cannot exist either.
-      # to_regclass returns NULL for a missing relation rather than
-      # raising, so this fails as a clear assertion, not a crash.
-      result = Repo.query!("select to_regclass('versions')")
-      assert [[regclass]] = result.rows
-
-      refute is_nil(regclass),
-             "expected a paper_trail 'versions' table to exist (dependency not yet added)"
-
-      # Unreachable until the guard above passes: restoring an earlier
-      # version should insert a new paper_trail version row scoped to
-      # this dashboard.
       {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
 
-      edit_view
-      |> element("[data-role='restore-version']")
-      |> render_click()
+      Application.put_env(
+        :metric_flow,
+        :command_runner,
+        MetricFlowTest.DashboardBuilderStub.generate_followup()
+      )
 
-      %{rows: [[count]]} =
+      render_submit(edit_view, "send_dashboard_chat", %{
+        "message" => "Add clicks as a second chart"
+      })
+
+      # wait_for_chart/1 only polls for *any* existing chart element,
+      # already true from the first build -- it would return
+      # immediately without waiting for this refine's async result.
+      # Wait for the stub's own reply text instead (same fix applied
+      # elsewhere in this file for the same reason).
+      refute is_nil(
+               wait_for(fn ->
+                 rendered = render(edit_view)
+                 if rendered =~ "added clicks as a second chart", do: rendered, else: nil
+               end)
+             ),
+             "the refine chat turn never completed"
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      before_restore_count = paper_trail_version_count(dashboard.id)
+      assert before_restore_count >= 2, "expected at least two versions after a build and a refine"
+
+      # Main's review (10fd033, 2026-11-14): the editor's version list
+      # and restore still run entirely on the hand-rolled
+      # DashboardVersion table -- @dashboard_versions comes from
+      # Dashboards.list_dashboard_versions/1, never paper_trail's own
+      # versions table at all, even though Story 74 says versioning
+      # uses paper_trail. A plain count match isn't decisive here: every
+      # autosave writes one row to BOTH tables today, so their counts
+      # always agree regardless of which one the UI actually reads from.
+      # The ids don't -- DashboardVersion and PaperTrail.Version are
+      # separate tables with separate sequences -- so compare the
+      # rendered rows' own phx-value-id values against paper_trail's
+      # real version ids, in the same order (most recent first).
+      paper_trail_version_ids =
         Repo.query!(
-          "select count(*) from versions where item_type = 'Dashboard' and item_id = $1",
+          "select id from versions where item_type = 'Dashboard' and item_id = $1 order by id desc",
           [dashboard.id]
-        )
+        ).rows
+        |> List.flatten()
 
-      assert count > 0
+      rendered_versions =
+        edit_view
+        |> render()
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='dashboard-version']")
+
+      rendered_version_ids =
+        Enum.map(rendered_versions, fn row ->
+          row
+          |> Floki.find("button")
+          |> Floki.attribute("phx-value-id")
+          |> List.first()
+          |> String.to_integer()
+        end)
+
+      assert rendered_version_ids == paper_trail_version_ids,
+             "expected the rendered version ids to be paper_trail's own version ids, in the same order"
+
+      # Restore the oldest listed version specifically (not whichever
+      # [data-role='restore-version'] button element/2 happens to find
+      # first -- there are now several, one per row) by reading its own
+      # phx-value-id straight out of the rendered row and dispatching
+      # the event directly.
+      oldest_version_id =
+        rendered_versions
+        |> List.last()
+        |> Floki.find("button")
+        |> Floki.attribute("phx-value-id")
+        |> List.first()
+
+      render_click(edit_view, "restore_version", %{"id" => oldest_version_id})
+
+      after_restore_count = paper_trail_version_count(dashboard.id)
+
+      assert after_restore_count == before_restore_count + 1,
+             "expected a restore to add exactly one paper_trail version, got #{before_restore_count} -> #{after_restore_count}"
     end)
   end
 
@@ -1525,7 +1598,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       build_chart_via_chat(view)
 
       assert [dashboard] = Dashboards.list_dashboards(scope)
-      assert Dashboards.list_dashboard_versions(dashboard) != []
+      assert paper_trail_version_count(dashboard.id) > 0
 
       {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
 
@@ -1546,7 +1619,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       # on_delete), and the AI chat session is looked up separately by
       # (scope, :dashboard, id) -- Dashboards.delete_dashboard/2 just
       # does Repo.delete(dashboard), with no cleanup of either.
-      assert Dashboards.list_dashboard_versions(dashboard) == [],
+      assert paper_trail_version_count(dashboard.id) == 0,
              "expected the dashboard's versions to be deleted along with it"
 
       assert Ai.get_chat_session_by_context(scope, :dashboard, dashboard.id) == {:error, :not_found},
@@ -1845,7 +1918,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       build_chart_via_chat(view)
 
       assert [dashboard] = Dashboards.list_dashboards(scope)
-      assert Dashboards.list_dashboard_versions(dashboard) != []
+      assert paper_trail_version_count(dashboard.id) > 0
 
       {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
 
