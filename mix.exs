@@ -35,7 +35,7 @@ defmodule MetricFlow.MixProject do
   defp compilers(:test),
     do: [:diagnostics, :phoenix_live_view, :erlang, :elixir, :app]
 
-  defp compilers(_), do: [:phoenix_live_view, :erlang, :elixir, :app]
+  defp compilers(_), do: [:diagnostics, :phoenix_live_view, :erlang, :elixir, :app]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support", "test/spex"]
@@ -115,7 +115,7 @@ defmodule MetricFlow.MixProject do
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:client_utils, "~> 0.1"},
+      {:client_utils, "~> 0.4.0"},
       {:code_my_spec_generators, "~> 0.2", only: :dev},
       {:sexy_spex,
        git: "https://github.com/Code-My-Spec/spex.git",
