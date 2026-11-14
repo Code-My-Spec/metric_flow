@@ -883,10 +883,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp apply_a2ui_spec(socket, a2ui_spec) do
     visualizations = visualizations_from_a2ui_spec(a2ui_spec)
+    spec_title = Map.get(a2ui_spec, "title")
 
     socket
     |> assign_visualizations(visualizations)
-    |> autosave_draft_dashboard(visualizations, socket.assigns.dashboard_chat_pending_message)
+    |> autosave_draft_dashboard(visualizations, spec_title, socket.assigns.dashboard_chat_pending_message)
   end
 
   defp visualizations_from_a2ui_spec(%{"components" => components}) do
@@ -929,7 +930,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # Story 74, rule 1: the first build saves a draft with no explicit Save.
   # Story 74, rule 7: every later change -- including this first one -- is
   # recorded as a version.
-  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations, _request_text) do
+  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations, _spec_title, _request_text) do
     scope = socket.assigns.current_scope
 
     with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
@@ -943,9 +944,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  defp autosave_draft_dashboard(socket, visualizations, request_text) do
+  defp autosave_draft_dashboard(socket, visualizations, spec_title, request_text) do
     scope = socket.assigns.current_scope
-    name = draft_dashboard_name(socket.assigns.changeset, request_text)
+    name = draft_dashboard_name(socket.assigns.changeset, spec_title, request_text)
     a2ui_spec = build_a2ui_spec(visualizations)
 
     with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name, "a2ui_spec" => a2ui_spec}),
@@ -1011,14 +1012,24 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   end
 
   # Story 75, criterion 1068: a draft the agent builds (no name typed) is
-  # titled from Dana's own chat request rather than left as a fixed
-  # placeholder; an explicitly typed name always wins.
-  defp draft_dashboard_name(changeset, request_text) do
+  # titled from the model's own chosen title (set_dashboard_spec's "title"),
+  # not Dana's raw request text -- the request only stands in when the
+  # model gives no title at all. An explicitly typed name always wins.
+  defp draft_dashboard_name(changeset, spec_title, request_text) do
     case extract_name(changeset) do
-      "" -> title_from_request(request_text)
+      "" -> title_from_spec_or_request(spec_title, request_text)
       name -> name
     end
   end
+
+  defp title_from_spec_or_request(spec_title, request_text) when is_binary(spec_title) do
+    case String.trim(spec_title) do
+      "" -> title_from_request(request_text)
+      trimmed -> trimmed
+    end
+  end
+
+  defp title_from_spec_or_request(_spec_title, request_text), do: title_from_request(request_text)
 
   defp title_from_request(nil), do: "Untitled Dashboard"
 

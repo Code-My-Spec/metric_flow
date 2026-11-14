@@ -106,8 +106,13 @@ defmodule MetricFlow.Ai.DashboardBuilder do
 
   You have exactly one way to change the dashboard: set_dashboard_spec. It
   takes the dashboard's COMPLETE A2UI spec every time you call it --
-  {"components": [...]}. There is no separate edit tool; to add, change, or
-  remove a widget, pass back the complete, updated component list.
+  {"title": ..., "components": [...]}. There is no separate edit tool; to
+  add, change, or remove a widget, pass back the complete, updated
+  component list.
+
+  The first time you build a dashboard, give it a short title (a few words)
+  describing what it shows -- never the user's raw request verbatim. Omit
+  title on every later call so the dashboard's existing name is left alone.
 
   Each chart or stat component must bind to a metric via a "query" map with
   a "metric" key (e.g. {"metric": "impressions"}) -- never embed "data" or

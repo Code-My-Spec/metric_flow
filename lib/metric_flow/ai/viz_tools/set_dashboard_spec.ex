@@ -23,11 +23,14 @@ defmodule MetricFlow.Ai.VizTools.SetDashboardSpec do
   def description,
     do:
       "Set the dashboard's COMPLETE A2UI spec. Pass the whole spec every time -- there is " <>
-        ~s(no separate edit tool. Shape: {"components": [...]}. Each "chart" or "stat" ) <>
-        ~s(component must carry a "query" map with a "metric" key naming an available ) <>
-        ~s(metric -- never embed "data" or "values"; real values are fetched at render ) <>
-        "time. Filters are ordinary components bound to the dashboard's data model. When " <>
-        "the user asks for several widgets, put all of them in this one call's components " <>
+        "no separate edit tool. Shape: {\"title\": ..., \"components\": [...]}. The first " <>
+        "time you build a dashboard, give it a short title describing what it shows -- a " <>
+        "few words, never the user's raw request verbatim. Omit title on a later call to " <>
+        "leave the dashboard's existing name alone. Each \"chart\" or \"stat\" component " <>
+        "must carry a \"query\" map with a \"metric\" key naming an available metric -- " <>
+        "never embed \"data\" or \"values\"; real values are fetched at render time. " <>
+        "Filters are ordinary components bound to the dashboard's data model. When the " <>
+        "user asks for several widgets, put all of them in this one call's components " <>
         "list -- never call this tool more than once for a single message."
 
   @impl true
@@ -38,8 +41,10 @@ defmodule MetricFlow.Ai.VizTools.SetDashboardSpec do
         a2ui_json: %{
           type: "string",
           description:
-            ~s(The complete A2UI spec as a JSON string: {"components": [...]}. Always the ) <>
-              "full spec, including every component that should remain."
+            "The complete A2UI spec as a JSON string: {\"title\": ..., \"components\": [...]}. " <>
+              "\"title\" is a short name you choose for the dashboard -- set it the first time " <>
+              "you build one, omit it on later calls to leave the existing name alone. " <>
+              "Always the full \"components\" list, including every component that should remain."
         }
       },
       required: ["a2ui_json"]
