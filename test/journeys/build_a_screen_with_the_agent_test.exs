@@ -83,7 +83,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     Application.put_env(
       :metric_flow,
       :command_runner,
-      MetricFlowTest.VizChatStub.generate_initial()
+      MetricFlowTest.DashboardBuilderStub.generate_initial()
     )
 
     render_submit(view, "send_dashboard_chat", %{
@@ -168,28 +168,38 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     |> Jason.decode!()
   end
 
+  # Story 74 rule 2 / main's call (2026-11-14): under set_dashboard_spec
+  # there's no "call it again per widget" mechanism to tell the model
+  # about -- there's one tool and one call. What has to be said instead
+  # is the one-call equivalent: a request for several widgets means
+  # several components in that one complete spec. Live testing (pre-A2UI,
+  # same gap under VizChat) showed the model doesn't do this reliably
+  # without being told explicitly, so this reads the real DashboardBuilder
+  # payload (not a scripted response) and requires both halves to be
+  # spelled out somewhere in the system prompt or set_dashboard_spec's own
+  # description: that multiple widgets are possible, and that they belong
+  # in one call/spec together.
   defp multi_widget_guidance_present?(payload) do
-    update_spec_tool = Enum.find(payload["available_tools"], &(&1["name"] == "update_spec"))
-
-    other_tool_names =
-      payload["available_tools"]
-      |> Enum.map(& &1["name"])
-      |> Enum.reject(&(&1 == "update_spec"))
+    set_dashboard_spec_tool =
+      Enum.find(payload["available_tools"] || [], &(&1["name"] == "set_dashboard_spec"))
 
     system_prompt_text = payload["system_prompt"] || ""
-    update_spec_description = update_spec_tool["description"]
-    combined_text = system_prompt_text <> "\n" <> update_spec_description
+    tool_description = (set_dashboard_spec_tool && set_dashboard_spec_tool["description"]) || ""
+    combined_text = system_prompt_text <> "\n" <> tool_description
 
-    has_dedicated_widget_tool =
-      Enum.any?(other_tool_names, &String.contains?(String.downcase(&1), "widget"))
-
-    mentions_multi_call =
+    mentions_several_widgets =
       Regex.match?(
-        ~r/update_spec.{0,160}(more than once|multiple times|once per widget|again for (a|another) widget|separate (dashboard )?element)/is,
+        ~r/(multiple|several|more than one|two or more)\s+(widgets|components)/i,
         combined_text
       )
 
-    has_dedicated_widget_tool or mentions_multi_call
+    mentions_one_call =
+      Regex.match?(
+        ~r/(one|a single|the same)\s+(call|set_dashboard_spec call|spec)/i,
+        combined_text
+      )
+
+    mentions_several_widgets and mentions_one_call
   end
 
   test "describing a dashboard in chat builds a visualization onto the canvas", %{conn: conn} do
@@ -261,7 +271,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.generate_initial()
+        MetricFlowTest.DashboardBuilderStub.generate_initial()
       )
 
       render_submit(view, "send_dashboard_chat", %{
@@ -352,7 +362,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.generate_initial()
+        MetricFlowTest.DashboardBuilderStub.generate_initial()
       )
 
       render_submit(view, "send_dashboard_chat", %{
@@ -373,7 +383,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "the dashboard chat tells the model it can call update_spec once per widget", %{
+  test "the dashboard chat tells the model that several widgets go in one complete spec", %{
     conn: conn
   } do
     stage("Ask for a dashboard", fn ->
@@ -404,13 +414,17 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       payload = decode_prompt_payload(args)
 
       # Story 74 rule 2: a multi-widget request should produce separate
-      # dashboard elements. The backend mechanism exists (two update_spec
-      # calls -> two elements, confirmed by the test above). This asserts on
-      # the actual prompt/tool text the dashboard chat sends on this path --
-      # via a capturing command_runner driven through the same LiveView event
-      # the live app uses, not a scripted response -- so it only passes once
-      # that guidance (or a dedicated add-widget tool) genuinely reaches the
-      # model here.
+      # dashboard elements. The backend mechanism exists (one
+      # set_dashboard_spec call carrying several components -> several
+      # elements, confirmed by the DashboardBuilderStub-backed test above).
+      # This asserts on the actual prompt/tool text the dashboard chat sends
+      # on this path -- via a capturing command_runner driven through the
+      # same LiveView event the live app uses, not a scripted response -- so
+      # it only passes once the model is explicitly told that several
+      # widgets means several components in that one call, matching the
+      # same gap found under VizChat before the A2UI rebuild (main,
+      # 2026-11-14): the model doesn't reach for that mechanism reliably
+      # without being told.
       assert multi_widget_guidance_present?(payload)
     end)
   end
@@ -468,7 +482,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.generate_followup()
+        MetricFlowTest.DashboardBuilderStub.generate_followup()
       )
 
       render_submit(edit_view, "send_dashboard_chat", %{
@@ -510,7 +524,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.generate_followup()
+        MetricFlowTest.DashboardBuilderStub.generate_followup()
       )
 
       render_submit(edit_view, "send_dashboard_chat", %{
@@ -763,12 +777,14 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "refining an existing widget replaces it instead of duplicating it", %{conn: conn} do
+  test "the model's next complete spec, naming the same component id, updates that widget in place",
+       %{conn: conn} do
     stage("Refine the dashboard", fn ->
       user = user_fixture()
       account = insert_account!(user)
       insert_member!(account, user, :owner)
       insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
 
       conn = log_in_user(conn, user)
 
@@ -783,7 +799,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.refine_to_area_chart()
+        MetricFlowTest.DashboardBuilderStub.refine_to_area_chart()
       )
 
       render_submit(view, "send_dashboard_chat", %{
@@ -807,19 +823,16 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       cards_after =
         html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
 
-      # Story 74 rules 2/4 (refining an existing widget): confirmed live
-      # by main (2026-11-14, 5ee7d7c on dashboard 11): asked to change
-      # "Impressions Over Time" from a line chart to an area chart, the
-      # agent replied it changed it, but the canvas gained a THIRD card
-      # (was 2) -- both the original line-chart card and a new area-chart
-      # card remained. Root cause: add_visualizations_from_chat_specs/2
-      # unconditionally appends every update_spec call's result;
-      # update_spec's own input_schema has no id/index/target parameter at
-      # all, so the only signal available to identify "the existing
-      # widget" is the spec's own "title" (extract_chat_metric_name/1).
-      # The stub here reproduces exactly what the real model does: calls
-      # update_spec once with a new spec sharing the existing widget's
-      # title ("Impressions Over Time") but a different mark.
+      # Story 74 rules 2/4 (refining an existing widget): under
+      # set_dashboard_spec there's no per-widget merge step left to break
+      # (apply_a2ui_spec/2 replaces the whole canvas from whatever
+      # components the model's latest call names) -- so the thing that
+      # actually has to hold is that the model's next complete spec names
+      # the SAME component id for the widget it's changing, rather than a
+      # new one. Check both: the user-facing canvas still shows exactly
+      # one "Impressions Over Time"/area card (not a duplicate), and the
+      # stored a2ui_spec's "widget-1" component -- the chart's original id
+      # -- is the one that now carries chartType "area".
       assert length(cards_after) == 2
 
       impressions_card = Enum.find(cards_after, &(Floki.text(&1) =~ "Impressions Over Time"))
@@ -827,17 +840,24 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       badge_text = impressions_card |> Floki.find(".badge") |> Floki.text() |> String.trim()
       assert badge_text == "area"
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+      components = dashboard.a2ui_spec["components"] || []
+
+      chart_widget = Enum.find(components, &(&1["id"] == "widget-1"))
+      refute is_nil(chart_widget), "expected component id widget-1 to still be present"
+      assert chart_widget["chartType"] == "area"
     end)
   end
 
-  test "refining an existing widget replaces it even when the model rewords its title", %{
-    conn: conn
-  } do
+  test "the model's next complete spec updates the same component id in place even when it rewords the title",
+       %{conn: conn} do
     stage("Refine the dashboard", fn ->
       user = user_fixture()
       account = insert_account!(user)
       insert_member!(account, user, :owner)
       insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
 
       conn = log_in_user(conn, user)
 
@@ -852,7 +872,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.put_env(
         :metric_flow,
         :command_runner,
-        MetricFlowTest.VizChatStub.refine_to_area_chart_with_reworded_title()
+        MetricFlowTest.DashboardBuilderStub.refine_to_area_chart_with_reworded_title()
       )
 
       render_submit(view, "send_dashboard_chat", %{
@@ -872,17 +892,16 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       cards_after =
         html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
 
-      # Story 74 rules 2/4, criterion 1062: refining an existing widget
-      # should update it in place, not duplicate it, even when the model
-      # renames it in the same response. merge_chat_specs/3 (8b62d9c)
-      # matched only by exact title, so a rename alone would have missed
-      # and duplicated -- that gap is why this test originally existed.
-      # df2bd49 added a stable widget_id per existing widget specifically
-      # so a rename can't break the match; this stub now supplies
-      # widget_id: 1 (the line chart's position) alongside the reworded
-      # title, modeling a model that does what it's told. See the
-      # capture-based test below for whether the model is actually told
-      # to do that.
+      # Story 74 rules 2/4, criterion 1062: there's no title-matching merge
+      # step left to fool by renaming a widget -- set_dashboard_spec always
+      # replaces the whole canvas from the model's latest components list.
+      # What has to hold is that the model's next complete spec keeps the
+      # SAME component id for the widget it's renaming, so it's still
+      # recognizable as the same widget rather than a duplicate under a
+      # new name. Checked both ways: the canvas still shows exactly one
+      # renamed card (not a second, orphaned "Impressions Over Time" one),
+      # and the stored a2ui_spec's "widget-1" component -- the chart's
+      # original id -- is the one now carrying the new title and chartType.
       assert length(cards_after) == 2
 
       reworded_card = Enum.find(cards_after, &(Floki.text(&1) =~ "Daily Impressions"))
@@ -890,12 +909,19 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       badge_text = reworded_card |> Floki.find(".badge") |> Floki.text() |> String.trim()
       assert badge_text == "area"
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+      components = dashboard.a2ui_spec["components"] || []
+
+      chart_widget = Enum.find(components, &(&1["id"] == "widget-1"))
+      refute is_nil(chart_widget), "expected component id widget-1 to still be present"
+      assert chart_widget["title"] == "Daily Impressions"
+      assert chart_widget["chartType"] == "area"
     end)
   end
 
-  test "existing widgets are given a stable id, and the model is told to use it", %{
-    conn: conn
-  } do
+  test "the existing widget's own component id is visible to the model, and the tool's contract makes it the key to update in place",
+       %{conn: conn} do
     stage("Refine the dashboard", fn ->
       user = user_fixture()
       account = insert_account!(user)
@@ -921,25 +947,30 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       payload = decode_prompt_payload(args)
 
-      # Story 74 rules 2/4, criterion 1062 (widget_id mechanism, df2bd49):
-      # a rename alone can't break the merge if the model is told to pass
-      # back the widget_id it was given for the widget it's changing.
-      # Asserts on the real payload the dashboard chat sends -- not a
-      # scripted response -- so this only passes once (a) each existing
-      # widget in the prompt actually carries a widget_id, and (b)
-      # update_spec's own tool description tells the model to pass that
-      # widget_id back to update in place.
+      # Story 74 rules 2/4, criterion 1062: set_dashboard_spec has no
+      # separate widget_id mechanism -- there's no per-widget edit tool at
+      # all, only one tool that always takes the complete spec. What has
+      # to hold instead (main, 2026-11-14): the model is shown the
+      # dashboard's current spec, with each existing widget's own
+      # component id (assigned at build time -- "widget-1" for the line
+      # chart built by DashboardBuilderStub.generate_initial/0) still in
+      # it, and the tool's own description states the full-replace
+      # contract -- so reusing that id in the next call is how a widget
+      # stays "the same widget" rather than becoming a new one.
       system_prompt_text = payload["system_prompt"] || ""
 
-      assert system_prompt_text =~ ~r/widget_id/,
-             "expected the existing widgets in the system prompt to carry a widget_id"
+      assert system_prompt_text =~ "widget-1",
+             "expected the existing chart widget's own component id to appear in the current spec shown to the model"
 
-      update_spec_tool = Enum.find(payload["available_tools"], &(&1["name"] == "update_spec"))
-      update_spec_description = update_spec_tool["description"] || ""
+      set_dashboard_spec_tool =
+        Enum.find(payload["available_tools"], &(&1["name"] == "set_dashboard_spec"))
 
-      assert Regex.match?(~r/widget_id.{0,120}(update|change).{0,20}in place/is, update_spec_description) or
-               Regex.match?(~r/(update|change).{0,20}in place.{0,120}widget_id/is, update_spec_description),
-             "expected update_spec's description to tell the model to pass widget_id to update a widget in place"
+      refute is_nil(set_dashboard_spec_tool), "expected set_dashboard_spec to be offered"
+
+      description = set_dashboard_spec_tool["description"] || ""
+
+      assert Regex.match?(~r/complete.{0,30}spec every time|no separate edit tool/i, description),
+             "expected set_dashboard_spec's description to state the full-replace contract"
     end)
   end
 
@@ -1205,6 +1236,61 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
         )
 
       assert count > 0
+    end)
+  end
+
+  test "a widget whose metric has no data in the queried range shows a clear message, not a silent 0 or blank chart",
+       %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+
+      # Story 74 (main, live walk of a7ba770, 2026-11-14): a widget whose
+      # query resolves to zero data points in the default 30-day range
+      # should show a clear message, not silently render a 0 stat or an
+      # empty chart. The metric still has to exist -- recorded 60 days
+      # ago, outside the lookback -- so the dashboard chat can resolve it
+      # rather than halting on an unresolvable-metric error. Today,
+      # build_echarts_option/query_metric_values (editor.ex) just sum an
+      # empty list to 0 and render an empty series/xAxis, with nothing
+      # telling Dana there's no data here.
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 100.0,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00], "Etc/UTC")
+      })
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+      Application.put_env(
+        :metric_flow,
+        :command_runner,
+        MetricFlowTest.DashboardBuilderStub.generate_initial()
+      )
+
+      render_submit(view, "send_dashboard_chat", %{
+        "message" => "Show me impressions over time as a line chart"
+      })
+
+      html =
+        wait_for(fn ->
+          if has_element?(view, "[data-role='no-data-message']") do
+            render(view)
+          else
+            nil
+          end
+        end)
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      refute is_nil(html),
+             "expected a [data-role='no-data-message'] element for a widget with zero data points in range"
+
+      assert html =~ "No data for this period"
     end)
   end
 end
