@@ -160,6 +160,19 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end
   end
 
+  defp stat_tile_total(html) do
+    text =
+      html
+      |> Floki.parse_fragment!()
+      |> Floki.find("[data-role='stat-tile-value']")
+      |> Floki.text()
+      |> String.trim()
+      |> String.replace(",", "")
+
+    {value, _} = Float.parse(text)
+    value
+  end
+
   defp decode_prompt_payload(args) do
     args
     |> List.last()
@@ -1291,6 +1304,112 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
              "expected a [data-role='no-data-message'] element for a widget with zero data points in range"
 
       assert html =~ "No data for this period"
+    end)
+  end
+
+  test "the echarts-chart container is marked phx-update='ignore' so a LiveView patch can't wipe its canvas",
+       %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      # Main's live walk (a7ba770 + seeds, 2026-11-14): after any live
+      # update (a chat refine, a filter change), the chart's <canvas> is
+      # gone until a full reload -- LiveView's own patch wipes the DOM
+      # the ECharts hook drew into, since nothing tells LiveView to leave
+      # that element alone. A real browser is the only way to see the
+      # canvas itself disappear; phx-update="ignore" on the hook
+      # container is the structural fix this depends on and the one
+      # thing checkable here without a browser.
+      assert has_element?(view, "[data-role='echarts-chart'][phx-update='ignore']")
+    end)
+  end
+
+  test "switching the date-range filter to 90 days changes the queried data, not just its label", %{
+    conn: conn
+  } do
+    stage("Refine the dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 100.0,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -1), ~T[00:00:00.000000], "Etc/UTC")
+      })
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 50.0,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
+      })
+
+      scope = Scope.for_user(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      total_at_30_days = edit_view |> render() |> stat_tile_total()
+
+      edit_view
+      |> element("[data-role='filter-control'] form[phx-change]")
+      |> render_change(%{"range" => "90"})
+
+      total_at_90_days = edit_view |> render() |> stat_tile_total()
+
+      # Main's live walk (a7ba770 + seeds, 2026-11-14): at 90 days, both
+      # charts still had the same 31 points and the stat was the same
+      # 125706.0 as at 30 days, including after reopening -- the filter
+      # only assigns :dashboard_date_range; resolve_chart_render/2
+      # (editor.ex) queries Dashboards.default_date_range/0
+      # unconditionally, so nothing ever re-queries on a wider range.
+      # The 60-day-old row above only falls inside the 90-day window, so
+      # a correct re-query must raise the total once the filter changes.
+      assert total_at_90_days > total_at_30_days,
+             "expected the 90-day total (#{total_at_90_days}) to exceed the 30-day total (#{total_at_30_days})"
+    end)
+  end
+
+  test "a stat tile's total renders as a thousands-separated number, not a raw float", %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 125_706.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      stat_text =
+        view
+        |> render()
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='stat-tile-value']")
+        |> Floki.text()
+        |> String.trim()
+
+      # Main's live walk (a7ba770 + seeds, 2026-11-14): the stat rendered
+      # the raw summed float "125706.0" instead of "125,706" --
+      # build_chart_render (editor.ex) interpolates the sum with no
+      # formatting at all.
+      assert stat_text == "125,706"
     end)
   end
 end
