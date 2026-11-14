@@ -71,9 +71,10 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
 
     refute has_element?(lv, "[phx-click='refresh_status']")
 
-    assert_raise(FunctionClauseError, fn ->
-      render_hook(lv, "refresh_status", %{})
-    end)
+    Process.flag(:trap_exit, true)
+    catch_exit(render_hook(lv, "refresh_status", %{}))
+
+    refute Process.alive?(lv.pid)
   end
 
   test "shows not connected status when no Stripe account exists", %{conn: conn} do
