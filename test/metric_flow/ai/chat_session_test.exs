@@ -278,9 +278,7 @@ defmodule MetricFlow.Ai.ChatSessionTest do
       {user, account} = user_and_account_fixture()
 
       session =
-        insert_session!(
-          valid_attrs(user.id, account.id) |> Map.put(:status, :archived)
-        )
+        insert_session!(valid_attrs(user.id, account.id) |> Map.put(:status, :archived))
 
       changeset = ChatSession.archive_changeset(session)
 

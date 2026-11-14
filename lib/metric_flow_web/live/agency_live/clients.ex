@@ -20,83 +20,85 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto">
-      <.header>
-        Clients
-        <:subtitle>Client accounts managed by your agency</:subtitle>
-        <:actions>
-          <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
-            How Account Connections Work
-          </.link>
-          <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
-            Add Client
-          </button>
-        </:actions>
-      </.header>
+      <div class="mx-auto">
+        <.header>
+          Clients
+          <:subtitle>Client accounts managed by your agency</:subtitle>
+          <:actions>
+            <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
+              How Account Connections Work
+            </.link>
+            <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
+              Add Client
+            </button>
+          </:actions>
+        </.header>
 
-      <div :if={@referral_url} class="alert mt-4">
-        <div class="w-full">
-          <p class="font-medium mb-2">
-            Share this link with your client — signing up through it connects them to your agency automatically.
-          </p>
-          <input
-            type="text"
-            readonly
-            value={@referral_url}
-            onclick="this.select()"
-            class="input input-bordered w-full font-mono text-sm"
-          />
-        </div>
-      </div>
-
-      <div class="mt-8 space-y-6">
-        <div class="stats shadow w-full">
-          <div class="stat">
-            <div class="stat-title">Total Clients</div>
-            <div class="stat-value">{length(@grants)}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-title">Originated</div>
-            <div class="stat-value">{Enum.count(@grants, &(&1.origination_status == :originator))}</div>
+        <div :if={@referral_url} class="alert mt-4">
+          <div class="w-full">
+            <p class="font-medium mb-2">
+              Share this link with your client — signing up through it connects them to your agency automatically.
+            </p>
+            <input
+              type="text"
+              readonly
+              value={@referral_url}
+              onclick="this.select()"
+              class="input input-bordered w-full font-mono text-sm"
+            />
           </div>
         </div>
 
-        <div :if={@grants == []} class="text-base-content/60 text-sm">
-          No client accounts yet.
-        </div>
+        <div class="mt-8 space-y-6">
+          <div class="stats shadow w-full">
+            <div class="stat">
+              <div class="stat-title">Total Clients</div>
+              <div class="stat-value">{length(@grants)}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-title">Originated</div>
+              <div class="stat-value">
+                {Enum.count(@grants, &(&1.origination_status == :originator))}
+              </div>
+            </div>
+          </div>
 
-        <div class="overflow-x-auto">
-          <table :if={@grants != []} class="table w-full">
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Slug</th>
-                <th>Access Level</th>
-                <th>Origination</th>
-                <th>Since</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr :for={grant <- @grants} class="hover">
-                <td class="font-medium">{grant.client_account.name}</td>
-                <td class="font-mono text-sm text-base-content/60">{grant.client_account.slug}</td>
-                <td>
-                  <span class={access_level_badge_class(grant.access_level)}>
-                    {access_level_label(grant.access_level)}
-                  </span>
-                </td>
-                <td>
-                  <span class={origination_badge_class(grant.origination_status)}>
-                    {origination_label(grant.origination_status)}
-                  </span>
-                </td>
-                <td class="text-sm text-base-content/60">{format_date(grant.inserted_at)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div :if={@grants == []} class="text-base-content/60 text-sm">
+            No client accounts yet.
+          </div>
+
+          <div class="overflow-x-auto">
+            <table :if={@grants != []} class="table w-full">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Slug</th>
+                  <th>Access Level</th>
+                  <th>Origination</th>
+                  <th>Since</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :for={grant <- @grants} class="hover">
+                  <td class="font-medium">{grant.client_account.name}</td>
+                  <td class="font-mono text-sm text-base-content/60">{grant.client_account.slug}</td>
+                  <td>
+                    <span class={access_level_badge_class(grant.access_level)}>
+                      {access_level_label(grant.access_level)}
+                    </span>
+                  </td>
+                  <td>
+                    <span class={origination_badge_class(grant.origination_status)}>
+                      {origination_label(grant.origination_status)}
+                    </span>
+                  </td>
+                  <td class="text-sm text-base-content/60">{format_date(grant.inserted_at)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -132,7 +134,8 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
         {:noreply, assign(socket, :referral_url, url)}
 
       {:error, :unauthorized} ->
-        {:noreply, put_flash(socket, :error, "You are not authorized to generate a referral link")}
+        {:noreply,
+         put_flash(socket, :error, "You are not authorized to generate a referral link")}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Unable to generate a referral link")}

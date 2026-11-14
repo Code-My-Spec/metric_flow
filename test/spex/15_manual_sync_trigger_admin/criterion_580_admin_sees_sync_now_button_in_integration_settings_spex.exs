@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AdminSeesSyncNowButtonInIntegrationSettingsSpex do
 
   spex "Admin sees Sync Now button in integration settings", criterion: 580 do
     scenario "admin with admin access to the account sees a Sync Now button on an integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       when_ "they open an integration's settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

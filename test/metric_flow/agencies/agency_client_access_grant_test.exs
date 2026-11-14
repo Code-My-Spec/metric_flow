@@ -84,7 +84,12 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
     test "validates agency_account_id is required" do
       agency = account_fixture()
       client = account_fixture()
-      attrs = Map.delete(valid_agency_client_access_grant_attrs(agency.id, client.id), :agency_account_id)
+
+      attrs =
+        Map.delete(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :agency_account_id
+        )
 
       changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -95,7 +100,12 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
     test "validates client_account_id is required" do
       agency = account_fixture()
       client = account_fixture()
-      attrs = Map.delete(valid_agency_client_access_grant_attrs(agency.id, client.id), :client_account_id)
+
+      attrs =
+        Map.delete(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :client_account_id
+        )
 
       changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -106,7 +116,9 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
     test "validates access_level is required" do
       agency = account_fixture()
       client = account_fixture()
-      attrs = Map.delete(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level)
+
+      attrs =
+        Map.delete(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level)
 
       changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -134,7 +146,11 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
 
       for level <- [:read_only, :account_manager, :admin] do
         attrs =
-          Map.put(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level, level)
+          Map.put(
+            valid_agency_client_access_grant_attrs(agency.id, client.id),
+            :access_level,
+            level
+          )
 
         changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -147,7 +163,11 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
       client = account_fixture()
 
       attrs_owner =
-        Map.put(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level, :owner)
+        Map.put(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :access_level,
+          :owner
+        )
 
       changeset_owner = AgencyClientAccessGrant.changeset(new_grant(), attrs_owner)
 
@@ -155,7 +175,11 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
       assert %{access_level: [_]} = errors_on(changeset_owner)
 
       attrs_viewer =
-        Map.put(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level, :viewer)
+        Map.put(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :access_level,
+          :viewer
+        )
 
       changeset_viewer = AgencyClientAccessGrant.changeset(new_grant(), attrs_viewer)
 
@@ -168,7 +192,11 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
       client = account_fixture()
 
       attrs =
-        Map.put(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level, :read_only)
+        Map.put(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :access_level,
+          :read_only
+        )
 
       changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -198,7 +226,11 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
       client = account_fixture()
 
       attrs =
-        Map.put(valid_agency_client_access_grant_attrs(agency.id, client.id), :access_level, :admin)
+        Map.put(
+          valid_agency_client_access_grant_attrs(agency.id, client.id),
+          :access_level,
+          :admin
+        )
 
       changeset = AgencyClientAccessGrant.changeset(new_grant(), attrs)
 
@@ -400,7 +432,8 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrantTest do
       client = account_fixture()
       grant = insert_grant!(valid_agency_client_access_grant_attrs(agency.id, client.id))
 
-      changeset = AgencyClientAccessGrant.originator_changeset(grant, %{origination_status: :originator})
+      changeset =
+        AgencyClientAccessGrant.originator_changeset(grant, %{origination_status: :originator})
 
       assert changeset.valid?
     end

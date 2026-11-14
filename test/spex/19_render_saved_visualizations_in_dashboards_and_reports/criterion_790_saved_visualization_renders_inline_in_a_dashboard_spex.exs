@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion790SavedVisualizationRendersInlineInDashboardS
 
   spex "Saved visualization renders inline in a dashboard", criterion: 790 do
     scenario "a user views a dashboard that includes a saved visualization" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a dashboard saved with one visualization", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/dashboards/new")
@@ -40,7 +40,9 @@ defmodule MetricFlowSpex.Criterion790SavedVisualizationRendersInlineInDashboardS
       end
 
       when_ "the user views that dashboard", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/#{context.dashboard_id}/edit")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/dashboards/#{context.dashboard_id}/edit")
+
         {:ok, Map.put(context, :view, view)}
       end
 

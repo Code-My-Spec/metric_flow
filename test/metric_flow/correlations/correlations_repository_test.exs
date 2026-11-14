@@ -118,7 +118,8 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       insert_result!(account_id, job.id, %{goal_metric_name: "revenue"})
       insert_result!(account_id, job2.id, %{metric_name: "clicks", goal_metric_name: "leads"})
 
-      results = CorrelationsRepository.list_correlation_results(scope, goal_metric_name: "revenue")
+      results =
+        CorrelationsRepository.list_correlation_results(scope, goal_metric_name: "revenue")
 
       assert length(results) == 1
       assert hd(results).goal_metric_name == "revenue"
@@ -218,7 +219,8 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       other_job = insert_job!(other_account_id)
       other_result = insert_result!(other_account_id, other_job.id)
 
-      assert {:error, :not_found} = CorrelationsRepository.get_correlation_result(scope, other_result.id)
+      assert {:error, :not_found} =
+               CorrelationsRepository.get_correlation_result(scope, other_result.id)
     end
   end
 
@@ -348,7 +350,8 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       other_account_id = Accounts.get_personal_account_id(other_scope)
       other_job = insert_job!(other_account_id)
 
-      assert {:error, :not_found} = CorrelationsRepository.get_correlation_job(scope, other_job.id)
+      assert {:error, :not_found} =
+               CorrelationsRepository.get_correlation_job(scope, other_job.id)
     end
   end
 
@@ -360,7 +363,9 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
     test "returns ok tuple with created job" do
       {_user, scope} = user_with_scope()
 
-      assert {:ok, job} = CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+      assert {:ok, job} =
+               CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+
       assert job.id != nil
       assert job.goal_metric_name == "revenue"
     end
@@ -369,14 +374,18 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       {_user, scope} = user_with_scope()
       account_id = Accounts.get_personal_account_id(scope)
 
-      assert {:ok, job} = CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+      assert {:ok, job} =
+               CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+
       assert job.account_id == account_id
     end
 
     test "defaults status to :pending" do
       {_user, scope} = user_with_scope()
 
-      assert {:ok, job} = CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+      assert {:ok, job} =
+               CorrelationsRepository.create_correlation_job(scope, %{goal_metric_name: "revenue"})
+
       assert job.status == :pending
     end
 
@@ -398,7 +407,9 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       job = insert_job!(account_id)
 
-      assert {:ok, updated} = CorrelationsRepository.update_correlation_job(scope, job, %{status: :running})
+      assert {:ok, updated} =
+               CorrelationsRepository.update_correlation_job(scope, job, %{status: :running})
+
       assert updated.id == job.id
       assert updated.status == :running
     end
@@ -408,7 +419,9 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       account_id = Accounts.get_personal_account_id(scope)
       job = insert_job!(account_id, %{status: :pending})
 
-      assert {:ok, updated} = CorrelationsRepository.update_correlation_job(scope, job, %{status: :completed})
+      assert {:ok, updated} =
+               CorrelationsRepository.update_correlation_job(scope, job, %{status: :completed})
+
       assert updated.status == :completed
     end
 
@@ -467,11 +480,19 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
       {_user, scope} = user_with_scope()
       account_id = Accounts.get_personal_account_id(scope)
 
-      older_completed_at = DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+      older_completed_at =
+        DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:microsecond)
+
       newer_completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       insert_job!(account_id, %{status: :completed, completed_at: older_completed_at})
-      newer = insert_job!(account_id, %{goal_metric_name: "leads", status: :completed, completed_at: newer_completed_at})
+
+      newer =
+        insert_job!(account_id, %{
+          goal_metric_name: "leads",
+          status: :completed,
+          completed_at: newer_completed_at
+        })
 
       result = CorrelationsRepository.get_latest_completed_job(scope)
 
@@ -503,7 +524,13 @@ defmodule MetricFlow.Correlations.CorrelationsRepositoryTest do
 
       completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
       insert_job!(other_account_id, %{status: :completed, completed_at: completed_at})
-      own_job = insert_job!(account_id, %{goal_metric_name: "leads", status: :completed, completed_at: completed_at})
+
+      own_job =
+        insert_job!(account_id, %{
+          goal_metric_name: "leads",
+          status: :completed,
+          completed_at: completed_at
+        })
 
       result = CorrelationsRepository.get_latest_completed_job(scope)
 

@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.DisconnectingStripeTakesEffectImmediatelySpex do
 
   spex "Disconnecting Stripe takes effect immediately", criterion: 477 do
     scenario "admin disconnects and the page reflects not-connected without a reload" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "the admin is on the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

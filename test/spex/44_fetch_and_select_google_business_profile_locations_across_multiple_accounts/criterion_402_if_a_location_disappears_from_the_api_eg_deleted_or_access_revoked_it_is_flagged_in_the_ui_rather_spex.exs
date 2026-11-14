@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
   import MetricFlowSpex.SharedGivens
 
   spex "If a location disappears from the API (e.g. deleted or access revoked), it is flagged in the UI rather than silently removed from sync config",
-       fail_on_error_logs: false, criterion: 402 do
+    fail_on_error_logs: false,
+    criterion: 402 do
     scenario "a previously selected location no longer returned by the API is flagged in the UI" do
-      given_ "a user registered with a google_business integration that has a now-missing selected location", context do
+      given_ "a user registered with a google_business integration that has a now-missing selected location",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -58,11 +60,14 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page shows a visual warning or flag for the missing location rather than silently removing it", context do
+      then_ "the page shows a visual warning or flag for the missing location rather than silently removing it",
+            context do
         html = render(context.view)
 
         flagged =
@@ -87,7 +92,8 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
     end
 
     scenario "the missing location warning does not silently drop the location from config" do
-      given_ "a user registered with a google_business integration that references a deleted location", context do
+      given_ "a user registered with a google_business integration that references a deleted location",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -138,11 +144,14 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
       end
 
       given_ "the user visits the location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/locations")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page still renders the previously configured location ID in some form rather than being absent", context do
+      then_ "the page still renders the previously configured location ID in some form rather than being absent",
+            context do
         html = render(context.view)
 
         # The location should appear in the rendered HTML in some form —
@@ -154,7 +163,10 @@ defmodule MetricFlowSpex.IfALocationDisappearsFromTheApiItIsFlaggedInTheUiRather
             has_element?(context.view, "[data-role='missing-location']") or
             has_element?(context.view, "[data-role='location-warning']") or
             has_element?(context.view, "[data-role='stale-location']") or
-            has_element?(context.view, "[data-location-id='accounts/123/locations/deleted-loc-1']")
+            has_element?(
+              context.view,
+              "[data-location-id='accounts/123/locations/deleted-loc-1']"
+            )
 
         assert location_present,
                "Expected the previously configured location to be visible in the UI with a flag, but it was absent entirely. HTML: #{html}"

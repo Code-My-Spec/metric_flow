@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.CorrelationDailyAggregatedDataSpex do
 
   spex "Correlation calculations use daily aggregated data", criterion: 185 do
     scenario "user sees that correlations are based on daily data" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -33,8 +33,8 @@ defmodule MetricFlowSpex.CorrelationDailyAggregatedDataSpex do
     end
 
     scenario "correlation results display the date range used for calculation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserCreatesAReportFromABlankCanvasSpex do
 
   spex "User creates a report from a blank canvas", criterion: 923 do
     scenario "choosing a blank canvas gives an empty report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user starting a new report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

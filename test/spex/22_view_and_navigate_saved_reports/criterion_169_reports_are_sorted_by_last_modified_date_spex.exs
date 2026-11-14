@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion169ReportsSortedByLastModifiedSpex do
 
   spex "Reports are sorted by last modified date", criterion: 169 do
     scenario "a report edited after another still-newer report appears first" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the user saves an older report, then a newer report", context do
         {:ok, first_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -47,7 +47,10 @@ defmodule MetricFlowSpex.Criterion169ReportsSortedByLastModifiedSpex do
         html = render(index_view)
 
         pairs =
-          Regex.scan(~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s, html)
+          Regex.scan(
+            ~r/data-report-id="(\d+)"[^>]*>.*?<p class="font-semibold">([^<]+)<\/p>/s,
+            html
+          )
 
         [older_id, _] = Enum.find(pairs, fn [_, _id, name] -> name == "Older Report" end) |> tl()
 
@@ -65,7 +68,8 @@ defmodule MetricFlowSpex.Criterion169ReportsSortedByLastModifiedSpex do
         {:ok, context}
       end
 
-      then_ "the reports are ordered by last modified date, with the just-edited report first", context do
+      then_ "the reports are ordered by last modified date, with the just-edited report first",
+            context do
         {:ok, index_view, html} = live(context.owner_conn, "/app/reports")
         older_index = :binary.match(html, "Older Report") |> elem(0)
         newer_index = :binary.match(html, "Newer Report") |> elem(0)

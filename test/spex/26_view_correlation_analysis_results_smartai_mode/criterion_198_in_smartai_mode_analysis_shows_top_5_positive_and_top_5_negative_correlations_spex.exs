@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.SmartModeTop5PositiveNegativeCorrelationsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "In Smart/AI mode: analysis shows top 5 positive and top 5 negative correlations", criterion: 198 do
+  spex "In Smart/AI mode: analysis shows top 5 positive and top 5 negative correlations",
+    criterion: 198 do
     scenario "user switches to Smart mode and sees top positive and negative correlations" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

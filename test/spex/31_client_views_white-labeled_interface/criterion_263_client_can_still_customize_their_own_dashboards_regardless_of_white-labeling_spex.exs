@@ -4,19 +4,22 @@ defmodule MetricFlowSpex.ClientCanCustomizeDashboardsRegardlessOfWhiteLabelingSp
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Client can still customize their own dashboards regardless of white-labeling", criterion: 263 do
+  spex "Client can still customize their own dashboards regardless of white-labeling",
+    criterion: 263 do
     scenario "client can use dashboard filters even with agency white-labeling active" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the client's account is originated by an agency with white-label branding", context do
+      given_ "the client's account is originated by an agency with white-label branding",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "customizable",
-          logo_url: "https://example.com/agency-logo.png",
-          primary_color: "#CC0000",
-          secondary_color: "#0000CC"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "customizable",
+            logo_url: "https://example.com/agency-logo.png",
+            primary_color: "#CC0000",
+            secondary_color: "#0000CC"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -47,17 +50,18 @@ defmodule MetricFlowSpex.ClientCanCustomizeDashboardsRegardlessOfWhiteLabelingSp
     end
 
     scenario "dashboard functionality remains intact under white-label branding" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the client's account has white-labeling from an originating agency", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "customizable2",
-          logo_url: "https://example.com/agency-logo.png",
-          primary_color: "#DD0000",
-          secondary_color: "#0000DD"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "customizable2",
+            logo_url: "https://example.com/agency-logo.png",
+            primary_color: "#DD0000",
+            secondary_color: "#0000DD"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 

@@ -19,7 +19,11 @@ defmodule MetricFlowWeb.AccountTransferLive.Accept do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.content
+      flash={@flash}
+      current_scope={@current_scope}
+      active_account_name={assigns[:active_account_name]}
+    >
       <div class="mf-content flex items-center justify-center min-h-[80vh]">
         <div class="mf-card p-8 w-full max-w-md">
           <h2 class="text-xl font-semibold text-center">Confirm Ownership Transfer</h2>

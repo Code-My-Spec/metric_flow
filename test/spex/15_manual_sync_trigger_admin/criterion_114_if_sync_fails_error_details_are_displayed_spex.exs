@@ -6,18 +6,24 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
 
   spex "If sync fails, error details are displayed", criterion: 114 do
     scenario "when an async sync fails the user sees an error message with the failure reason" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the user is on the integrations page with a connected Google integration", context do
+      given_ "the user is on the integrations page with a connected Google integration",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
       when_ "the async sync failure message is received by the LiveView", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google,
-          reason: "API rate limit exceeded"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google,
+             reason: "API rate limit exceeded"
+           }}
+        )
 
         # Allow the LiveView to process the message
         :timer.sleep(100)
@@ -41,9 +47,10 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
     end
 
     scenario "after a sync failure the Syncing indicator disappears and the button is re-enabled" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the user is on the integrations page and a sync is in progress for Google", context do
+      given_ "the user is on the integrations page and a sync is in progress for Google",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
 
         # Trigger sync to put the platform into the syncing state
@@ -63,10 +70,15 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
       end
 
       when_ "the async sync failure message is received by the LiveView", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google,
-          reason: "API rate limit exceeded"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google,
+             reason: "API rate limit exceeded"
+           }}
+        )
 
         # Allow the LiveView to process the message
         :timer.sleep(100)
@@ -85,10 +97,10 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
 
       then_ "the Sync Now button is re-enabled so the user can retry", context do
         refute has_element?(
-          context.view,
-          "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
-        ),
-        "Expected the Sync Now button to be re-enabled after sync failed, but it was still disabled"
+                 context.view,
+                 "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
+               ),
+               "Expected the Sync Now button to be re-enabled after sync failed, but it was still disabled"
 
         {:ok, context}
       end

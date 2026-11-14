@@ -4,19 +4,22 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "If agency is account originator white-labeling is always applied for that client", criterion: 262 do
+  spex "If agency is account originator white-labeling is always applied for that client",
+    criterion: 262 do
     scenario "client originated by an agency always sees agency branding on agency subdomain" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "the client's account was originated by an agency with white-label branding", context do
+      given_ "the client's account was originated by an agency with white-label branding",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "originator",
-          logo_url: "https://example.com/originator-logo.png",
-          primary_color: "#DEADBE",
-          secondary_color: "#BEEFCA"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "originator",
+            logo_url: "https://example.com/originator-logo.png",
+            primary_color: "#DEADBE",
+            secondary_color: "#BEEFCA"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -30,7 +33,8 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the agency branding is visible because originator status ensures white-labeling", context do
+      then_ "the agency branding is visible because originator status ensures white-labeling",
+            context do
         html = render(context.view)
 
         has_originator_branding =
@@ -48,17 +52,18 @@ defmodule MetricFlowSpex.AgencyOriginatorWhiteLabelingAlwaysAppliedSpex do
     end
 
     scenario "originator branding persists across different pages" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account was originated by an agency with branding", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "originator2",
-          logo_url: "https://example.com/persistent-logo.png",
-          primary_color: "#112233",
-          secondary_color: "#445566"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "originator2",
+            logo_url: "https://example.com/persistent-logo.png",
+            primary_color: "#112233",
+            secondary_color: "#445566"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserSelectsLocationsToIncludeInSyncingSpex do
 
   spex "User selects locations to include in syncing", criterion: 936 do
     scenario "selecting a subset of the merged location list saves it for syncing" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user viewing the full merged location list", context do
         plug = fn conn ->

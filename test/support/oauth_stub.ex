@@ -106,20 +106,24 @@ defmodule MetricFlowTest.OAuthStub do
 
       case find_interaction(interactions, method, uri) do
         nil ->
-          Plug.Conn.send_resp(conn, 404, Jason.encode!(%{
-            "error" => "no_cassette_match",
-            "method" => method,
-            "uri" => uri,
-            # A map per interaction, not a tuple: `Jason.Encoder` is not implemented
-            # for Tuple, so this clause raised `Protocol.UndefinedError` instead of
-            # producing the 404 it exists to produce — the no-match diagnostic
-            # could never be seen, and a missing interaction surfaced as an
-            # encoding crash from inside Assent.
-            "available" =>
-              Enum.map(interactions, fn i ->
-                %{"method" => i["request"]["method"], "uri" => i["request"]["uri"]}
-              end)
-          }))
+          Plug.Conn.send_resp(
+            conn,
+            404,
+            Jason.encode!(%{
+              "error" => "no_cassette_match",
+              "method" => method,
+              "uri" => uri,
+              # A map per interaction, not a tuple: `Jason.Encoder` is not implemented
+              # for Tuple, so this clause raised `Protocol.UndefinedError` instead of
+              # producing the 404 it exists to produce — the no-match diagnostic
+              # could never be seen, and a missing interaction surfaced as an
+              # encoding crash from inside Assent.
+              "available" =>
+                Enum.map(interactions, fn i ->
+                  %{"method" => i["request"]["method"], "uri" => i["request"]["uri"]}
+                end)
+            })
+          )
 
         interaction ->
           response = interaction["response"]

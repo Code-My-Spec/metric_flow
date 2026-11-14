@@ -5,10 +5,10 @@ defmodule MetricFlowSpex.Criterion1015BackfillReturnsLessThan548DaysWhenAccountH
   import MetricFlowSpex.SharedGivens
 
   spex "Backfill returns less than 548 days of data when the account itself has less history available",
-       criterion: 1015 do
+    criterion: 1015 do
     scenario "a QuickBooks account with a shorter history than 548 days still completes its first sync" do
-      given_ :user_logged_in_as_owner
-      given_ :with_quickbooks_sync_stub
+      given_(:user_logged_in_as_owner)
+      given_(:with_quickbooks_sync_stub)
 
       given_ "a QuickBooks account has less than 548 days of history available", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,
@@ -25,7 +25,8 @@ defmodule MetricFlowSpex.Criterion1015BackfillReturnsLessThan548DaysWhenAccountH
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "only the available history is backfilled rather than erroring on the shortfall", context do
+      then_ "only the available history is backfilled rather than erroring on the shortfall",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

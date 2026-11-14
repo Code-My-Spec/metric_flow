@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.CorrelationTimeLagDetectionSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System tests multiple time lags 0-30 days for each metric to automatically find optimal lag", criterion: 183 do
+  spex "System tests multiple time lags 0-30 days for each metric to automatically find optimal lag",
+    criterion: 183 do
     scenario "user sees optimal lag displayed for each correlation result" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -32,8 +33,8 @@ defmodule MetricFlowSpex.CorrelationTimeLagDetectionSpex do
     end
 
     scenario "user sees the lag range that was tested" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

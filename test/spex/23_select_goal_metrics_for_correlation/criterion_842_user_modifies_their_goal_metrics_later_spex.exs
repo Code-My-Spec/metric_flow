@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion842UserModifiesTheirGoalMetricsLaterSpex do
 
   spex "User modifies their goal metrics later", criterion: 842 do
     scenario "a user with previously selected goal metrics returns and changes the selection" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has previously selected goal metrics", context do
         yesterday = Date.add(Date.utc_today(), -1)

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.OauthAuthenticatesTheUserAndGrantsFinancialDataAccessSp
 
   spex "OAuth authenticates the user and grants financial data access", criterion: 914 do
     scenario "completing the QuickBooks OAuth prompts grants the system access to financial data" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user completes the QuickBooks OAuth prompts", context do
         {:ok, context}

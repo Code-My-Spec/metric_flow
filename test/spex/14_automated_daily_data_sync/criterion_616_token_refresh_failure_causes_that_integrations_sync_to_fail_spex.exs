@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.TokenRefreshFailureCausesThatIntegrationsSyncToFailSpex
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Token refresh failure causes that integration's sync to fail", fail_on_error_logs: false, criterion: 616 do
+  spex "Token refresh failure causes that integration's sync to fail",
+    fail_on_error_logs: false,
+    criterion: 616 do
     scenario "an integration whose refresh token is no longer honored fails its sync for the cycle" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "an integration's OAuth refresh token has been revoked", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
@@ -24,7 +26,11 @@ defmodule MetricFlowSpex.TokenRefreshFailureCausesThatIntegrationsSyncToFailSpex
       end
 
       then_ "the refresh fails and that integration's sync for the cycle fails", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='failed']"
+               )
+
         {:ok, context}
       end
     end

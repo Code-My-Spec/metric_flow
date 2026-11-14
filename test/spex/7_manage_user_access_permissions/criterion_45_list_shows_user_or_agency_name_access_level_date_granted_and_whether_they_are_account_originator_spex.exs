@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
 
   import MetricFlowSpex.SharedGivens
 
-  spex "List shows user or agency name, access level, date granted, and whether they are account originator", criterion: 45 do
+  spex "List shows user or agency name, access level, date granted, and whether they are account originator",
+    criterion: 45 do
     scenario "member row displays the user email as the user name" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -20,7 +21,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
     end
 
     scenario "member row displays the access level role badge" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -39,7 +40,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
     end
 
     scenario "member row displays the date the access was granted" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -61,7 +62,7 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
     end
 
     scenario "account originator is identified by the owner role badge" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -73,7 +74,8 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         {:ok, context}
       end
 
-      then_ "the owner row displays the owner role label indicating account originator status", context do
+      then_ "the owner row displays the owner role label indicating account originator status",
+            context do
         # The account originator (the user who created the account) has the :owner role.
         # The members table renders the role as a badge with the text "owner".
         html = render(context.view)
@@ -83,17 +85,19 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
     end
 
     scenario "invited member row shows all required fields alongside originator" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user as a member", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -112,7 +116,8 @@ defmodule MetricFlowSpex.ListShowsUserOrAgencyNameAccessLevelDateGrantedAndWheth
         {:ok, context}
       end
 
-      then_ "the owner is identified with the owner role while the invited member is not", context do
+      then_ "the owner is identified with the owner role while the invited member is not",
+            context do
         html = render(context.view)
         # Owner badge text appears
         assert html =~ "owner"

@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.ClientIsNotifiedWhenAUserSelfRevokesSpex do
 
   spex "Client is notified when a user self-revokes", criterion: 910 do
     scenario "the account owner is emailed when a member revokes their own access" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the member switches into the owner's account", context do
         {:ok, accounts_view, _html} = live(context.member_conn, "/app/accounts")

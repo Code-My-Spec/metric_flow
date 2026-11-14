@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ReviewsAndPerformanceMetricsSyncAcrossAllConnectedAccou
 
   spex "Reviews and performance metrics sync across all connected accounts", criterion: 941 do
     scenario "a sync requests both performance and review data for locations from every connected account" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a customer has locations across multiple connected GBP accounts", context do
         {:ok, agent} = Agent.start_link(fn -> MapSet.new() end)
@@ -50,7 +50,8 @@ defmodule MetricFlowSpex.ReviewsAndPerformanceMetricsSyncAcrossAllConnectedAccou
         {:ok, context}
       end
 
-      then_ "both cover locations from all of the customer's connected accounts, not just one", context do
+      then_ "both cover locations from all of the customer's connected accounts, not just one",
+            context do
         requests = Agent.get(context.requests_agent, & &1)
 
         assert Enum.any?(requests, &String.contains?(&1, "loc-a")),

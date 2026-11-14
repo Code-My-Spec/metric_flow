@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.EachDayWithAReviewHasDailyCountRunningTotalAndRollingAv
   import MetricFlowSpex.SharedGivens
 
   spex "For each day that has at least one review, three values are available: how many reviews arrived that day, the running total of all reviews to date, and the rolling average rating to date",
-       criterion: 990 do
+    criterion: 990 do
     scenario "two days with reviews each show their own daily count, running total, and rolling average" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "reviews arrive on two separate days", context do
         yesterday = Date.add(Date.utc_today(), -1)

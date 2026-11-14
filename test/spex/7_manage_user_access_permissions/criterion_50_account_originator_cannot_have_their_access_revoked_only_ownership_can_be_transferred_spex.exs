@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Account originator cannot have their access revoked, only ownership can be transferred", criterion: 50 do
+  spex "Account originator cannot have their access revoked, only ownership can be transferred",
+    criterion: 50 do
     scenario "the sole account owner has no remove button on their own member row" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to the account members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -37,17 +38,19 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
     end
 
     scenario "the remove button appears for another member but not for the sole owner" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user as a member", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -55,35 +58,37 @@ defmodule MetricFlowSpex.AccountOriginatorCannotHaveTheirAccessRevokedOnlyOwners
 
       then_ "a remove button exists for the invited member", context do
         assert has_element?(
-          context.view,
-          "[data-role='remove-member'][data-user-email='#{context.second_user_email}']"
-        )
+                 context.view,
+                 "[data-role='remove-member'][data-user-email='#{context.second_user_email}']"
+               )
 
         {:ok, context}
       end
 
       then_ "no remove button exists for the sole account owner", context do
         refute has_element?(
-          context.view,
-          "[data-role='remove-member'][data-user-email='#{context.owner_email}']"
-        )
+                 context.view,
+                 "[data-role='remove-member'][data-user-email='#{context.owner_email}']"
+               )
 
         {:ok, context}
       end
     end
 
     scenario "ownership can be transferred to another member via account settings" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user as a member before transfer", context do
         {:ok, members_view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         members_view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :members_view, members_view)}

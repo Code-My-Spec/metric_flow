@@ -179,6 +179,29 @@ defmodule MetricFlowWeb.CoreComponents do
     |> input()
   end
 
+  def input(%{type: "checkbox", multiple: true} = assigns) do
+    assigns = assign_new(assigns, :checked, fn -> false end)
+
+    ~H"""
+    <label for={@id} class="flex cursor-pointer items-center gap-3">
+      <input
+        type="checkbox"
+        id={@id}
+        name={@name}
+        value={@value}
+        checked={@checked}
+        class={
+          @class ||
+            "size-4 rounded border-gray-300 accent-indigo-600 focus:ring-2 focus:ring-indigo-500"
+        }
+        {@rest}
+      />
+      <span>{@label}</span>
+    </label>
+    <.error :for={msg <- @errors}>{msg}</.error>
+    """
+  end
+
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->

@@ -11,8 +11,8 @@ defmodule MetricFlowSpex.Criterion66OnlyCurrentAccountOwnerCanInitiateOwnershipT
 
   spex "Only current account owner can initiate ownership transfer", criterion: 66 do
     scenario "a non-owner member does not see a way to initiate an ownership transfer" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       when_ "the member views the account settings page", context do
         {:ok, view, _html} = live(context.member_conn, "/app/accounts/settings")

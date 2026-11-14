@@ -5,12 +5,18 @@ defmodule MetricFlowSpex.SyncFailuresLoggedWithSiteAndDateRangeVisibleInSyncHist
   import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with enough detail to diagnose them, including which site and date range were being synced, and are visible in Sync History",
-       fail_on_error_logs: false, criterion: 1001 do
+    fail_on_error_logs: false,
+    criterion: 1001 do
     scenario "a Search Console sync fails for a property because no site URL is configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a Search Console sync fails for a property because no site URL is configured", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console)
+      given_ "a Search Console sync fails for a property because no site URL is configured",
+             context do
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console
+        )
+
         {:ok, context}
       end
 

@@ -14,7 +14,7 @@ defmodule MetricFlowSpex.SelectingMultipleIncomeAccountsSumsTheirDebitsAndCredit
 
   spex "Selecting multiple income accounts sums their debits and credits", criterion: 916 do
     scenario "a user selects more than one income account and the system tracks all of them" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user is on the QuickBooks account selection page", context do
         {:ok, view, _html} =

@@ -3,10 +3,11 @@ defmodule MetricFlowSpex.PlanCreatesStripeProductSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Creating a plan creates a Stripe Product and Price on the agency's account", criterion: 422 do
+  spex "Creating a plan creates a Stripe Product and Price on the agency's account",
+    criterion: 422 do
     scenario "plan creation syncs to Stripe" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "the admin is on the plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "User can select ONE OR MORE GMB accounts — multi-select required",
-       fail_on_error_logs: false, criterion: 386 do
+    fail_on_error_logs: false,
+    criterion: 386 do
     scenario "Google Business account selection page uses checkboxes, not radio buttons" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -39,7 +40,10 @@ defmodule MetricFlowSpex.Criterion4846UserCanSelectMultipleGMBAccountsSpex do
           {:ok, view, _html} =
             live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
-          assert has_element?(view, "input[type='checkbox'][name='google_business_account_ids[]']")
+          assert has_element?(
+                   view,
+                   "input[type='checkbox'][name='google_business_account_ids[]']"
+                 )
         end)
 
         {:ok, context}

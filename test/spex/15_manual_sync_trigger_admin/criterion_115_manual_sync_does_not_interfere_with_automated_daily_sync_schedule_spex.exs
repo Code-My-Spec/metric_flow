@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
 
   spex "Manual sync does not interfere with automated daily sync schedule", criterion: 115 do
     scenario "after a manual sync completes, the integration still shows Connected status" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the user is on the integrations page with a connected Google integration", context do
+      given_ "the user is on the integrations page with a connected Google integration",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
@@ -22,11 +23,16 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
       end
 
       when_ "the manual sync completes successfully", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 10,
-          completed_at: DateTime.utc_now()
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 10,
+             completed_at: DateTime.utc_now()
+           }}
+        )
 
         # Allow the LiveView to process the completion message
         :timer.sleep(100)
@@ -34,7 +40,8 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         {:ok, context}
       end
 
-      then_ "the integration still shows the Connected badge indicating automated syncing remains active", context do
+      then_ "the integration still shows the Connected badge indicating automated syncing remains active",
+            context do
         html = render(context.view)
 
         assert html =~ "Connected",
@@ -47,25 +54,26 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         # Check the connected Google integration card specifically — not the whole page,
         # since available platforms legitimately show "Not connected".
         refute has_element?(
-          context.view,
-          "[data-role='integration-card'][data-platform='google_analytics'] [data-status='disconnected']"
-        ),
-        "Expected the connected Google Analytics integration NOT to show a disconnected status after manual sync"
+                 context.view,
+                 "[data-role='integration-card'][data-platform='google_analytics'] [data-status='disconnected']"
+               ),
+               "Expected the connected Google Analytics integration NOT to show a disconnected status after manual sync"
 
         assert has_element?(
-          context.view,
-          "[data-role='integration-card'][data-platform='google_analytics'] [data-status='connected']"
-        ),
-        "Expected the connected Google Analytics integration to still show 'Connected' status"
+                 context.view,
+                 "[data-role='integration-card'][data-platform='google_analytics'] [data-status='connected']"
+               ),
+               "Expected the connected Google Analytics integration to still show 'Connected' status"
 
         {:ok, context}
       end
     end
 
     scenario "after a manual sync completes, the Sync Now button is available again for future syncs" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the user is on the integrations page with a connected Google integration", context do
+      given_ "the user is on the integrations page with a connected Google integration",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
@@ -78,23 +86,29 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         {:ok, context}
       end
 
-      then_ "the Sync Now button is temporarily disabled while the manual sync is in progress", context do
+      then_ "the Sync Now button is temporarily disabled while the manual sync is in progress",
+            context do
         assert has_element?(
-          context.view,
-          "[data-platform='google_analytics'] button[phx-click='sync'][disabled]",
-          "Sync Now"
-        ),
-        "Expected the Sync Now button to be disabled while sync is in progress"
+                 context.view,
+                 "[data-platform='google_analytics'] button[phx-click='sync'][disabled]",
+                 "Sync Now"
+               ),
+               "Expected the Sync Now button to be disabled while sync is in progress"
 
         {:ok, context}
       end
 
       when_ "the manual sync completes successfully", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 10,
-          completed_at: DateTime.utc_now()
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 10,
+             completed_at: DateTime.utc_now()
+           }}
+        )
 
         # Allow the LiveView to process the completion message
         :timer.sleep(100)
@@ -102,23 +116,25 @@ defmodule MetricFlowSpex.ManualSyncDoesNotInterfereWithAutomatedDailySyncSchedul
         {:ok, context}
       end
 
-      then_ "the Sync Now button is re-enabled so future manual and automated syncs can coexist", context do
+      then_ "the Sync Now button is re-enabled so future manual and automated syncs can coexist",
+            context do
         refute has_element?(
-          context.view,
-          "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
-        ),
-        "Expected the Sync Now button to be re-enabled after manual sync completed, but it was still disabled"
+                 context.view,
+                 "[data-platform='google_analytics'] button[phx-click='sync'][disabled]"
+               ),
+               "Expected the Sync Now button to be re-enabled after manual sync completed, but it was still disabled"
 
         {:ok, context}
       end
 
-      then_ "the Sync Now button is present and available for the user to trigger another sync", context do
+      then_ "the Sync Now button is present and available for the user to trigger another sync",
+            context do
         assert has_element?(
-          context.view,
-          "button[phx-click='sync']",
-          "Sync Now"
-        ),
-        "Expected the Sync Now button to still be present on the page after sync completed"
+                 context.view,
+                 "button[phx-click='sync']",
+                 "Sync Now"
+               ),
+               "Expected the Sync Now button to still be present on the page after sync completed"
 
         {:ok, context}
       end

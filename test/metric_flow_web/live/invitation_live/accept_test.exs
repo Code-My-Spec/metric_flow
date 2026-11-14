@@ -19,7 +19,12 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   defp unique_slug, do: "account-#{System.unique_integer([:positive])}"
 
   defp insert_account!(user, attrs) do
-    defaults = %{name: "Test Account", slug: unique_slug(), type: "client", originator_user_id: user.id}
+    defaults = %{
+      name: "Test Account",
+      slug: unique_slug(),
+      type: "client",
+      originator_user_id: user.id
+    }
 
     %Account{}
     |> Account.creation_changeset(Map.merge(defaults, attrs))
@@ -74,7 +79,8 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
   # ---------------------------------------------------------------------------
 
   describe "renders invitation details with account name, inviting user, and role for authenticated user" do
-    test "renders invitation details with account name, inviting user, and role for authenticated user", %{conn: conn} do
+    test "renders invitation details with account name, inviting user, and role for authenticated user",
+         %{conn: conn} do
       owner = user_fixture()
       account = account_fixture(owner, %{name: "Acme Corp"})
       invitee = user_fixture()

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
 
   spex "User can enable AI Suggestions option in Smart mode", criterion: 204 do
     scenario "user in Smart mode sees the Enable AI Suggestions option" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -16,6 +16,7 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
 
       when_ "the user switches to Smart mode", context do
         view = context.view
+
         view
         |> element("[data-role='mode-smart']")
         |> render_click()
@@ -39,8 +40,8 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
     end
 
     scenario "user in Raw mode does not see the AI suggestions option" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page in Raw mode", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -58,8 +59,8 @@ defmodule MetricFlowSpex.UserCanEnableAiSuggestionsOptionInSmartModeSpex do
     end
 
     scenario "user toggles AI suggestions on in Smart mode and sees confirmation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

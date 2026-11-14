@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion792BoundToDeletedMetricsShowsClearErrorStateSp
 
   spex "Visualization bound to deleted metrics shows a clear error state", criterion: 792 do
     scenario "a user views a dashboard or report whose visualization is bound to a metric that no longer exists" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a visualization bound to a metric that no longer has any data", context do
         viz =

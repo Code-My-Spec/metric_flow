@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.AgencyAdminsCannotSeeOtherAgenciesDataSpex do
 
   spex "Agency admins cannot see or modify other agencies' customer data", criterion: 446 do
     scenario "agency admin views subscriptions page which only shows their own agency's data" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
+      given_(:second_user_registered)
 
       when_ "the first admin navigates to the agency subscriptions page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/subscriptions")

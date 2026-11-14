@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4085NameAndSaveReportSpex do
 
   spex "User can name and save report", criterion: 153 do
     scenario "user names a dashboard, adds a visualization, and saves" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user is on the new dashboard page with a template selected", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

@@ -6,14 +6,15 @@ defmodule MetricFlowSpex.IntegrationEntryShowsNameConnectedDateAndSyncStatusSpex
 
   spex "Integration entry shows name, connected date, and sync status", criterion: 570 do
     scenario "the user views the integrations list for a connected integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user views the integrations list", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the entry shows the platform name, the connected date, and the sync status", context do
+      then_ "the entry shows the platform name, the connected date, and the sync status",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='integration-row'] [data-role='integration-platform-name']"

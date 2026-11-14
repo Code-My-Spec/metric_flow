@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.RevokedAccountDisappearsFromTheUsersAccountListSpex do
 
   spex "Revoked account disappears from the user's account list", criterion: 909 do
     scenario "after revoking access, the client account no longer appears in the account list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the member switches into the owner's account", context do
         {:ok, accounts_view, _html} = live(context.member_conn, "/app/accounts")

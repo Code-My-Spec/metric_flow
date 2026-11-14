@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.PlatformInitiatesStripeConnectOauthSpex do
 
   spex "Platform initiates Stripe Connect OAuth flow and redirects to Stripe", criterion: 414 do
     scenario "admin clicks connect and is redirected to Stripe onboarding" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the admin is on the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

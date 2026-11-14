@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion789SavingAReportPersistsChartSettingsSpex do
 
   spex "Saving a report persists each chart's settings", criterion: 789 do
     scenario "a dashboard's chart settings are persisted and restored the next time it is viewed" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a dashboard containing charts with specific types and layout", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/dashboards/new")

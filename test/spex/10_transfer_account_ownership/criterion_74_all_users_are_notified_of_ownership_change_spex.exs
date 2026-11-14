@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion74AllUsersAreNotifiedOfOwnershipChangeSpex do
 
   spex "All users are notified of ownership change", criterion: 74 do
     scenario "an ownership transfer completes" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the owner transfers ownership to the member and the member confirms", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

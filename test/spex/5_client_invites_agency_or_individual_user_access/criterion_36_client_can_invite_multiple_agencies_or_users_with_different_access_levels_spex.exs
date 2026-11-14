@@ -8,7 +8,7 @@ defmodule MetricFlowSpex.Criterion36ClientCanInviteMultipleAgenciesOrUsersWithDi
   spex "Client can invite multiple agencies or users with different access levels",
     criterion: 36 do
     scenario "the owner sends two invitations at different access levels and both appear pending" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner invites one party as account manager", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

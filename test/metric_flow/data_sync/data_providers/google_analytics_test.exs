@@ -259,11 +259,42 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
     })
   end
 
+  defp response_for_request(body, request) do
+    decoded = Jason.decode!(body)
+
+    case decoded do
+      %{"rows" => rows} when is_list(rows) ->
+        names = Enum.map(request["metrics"], & &1["name"])
+        all_names = Enum.map(Jason.decode!(valid_api_response())["metricHeaders"], & &1["name"])
+        indices = Enum.map(names, fn name -> Enum.find_index(all_names, &(&1 == name)) end)
+
+        decoded
+        |> Map.put("metricHeaders", Enum.map(names, &%{"name" => &1}))
+        |> Map.put(
+          "rows",
+          Enum.map(rows, fn row ->
+            Map.update!(row, "metricValues", fn values ->
+              Enum.map(indices, &Enum.at(values, &1))
+            end)
+          end)
+        )
+        |> Jason.encode!()
+
+      _ ->
+        body
+    end
+  end
+
   defp build_stub_plug(status, body) do
     fn conn ->
+      {:ok, request_body, conn} = Plug.Conn.read_body(conn)
+
+      response =
+        if status == 200, do: response_for_request(body, Jason.decode!(request_body)), else: body
+
       conn
       |> Plug.Conn.put_resp_content_type("application/json")
-      |> Plug.Conn.send_resp(status, body)
+      |> Plug.Conn.send_resp(status, response)
     end
   end
 
@@ -274,7 +305,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
 
       conn
       |> Plug.Conn.put_resp_content_type("application/json")
-      |> Plug.Conn.send_resp(200, valid_api_response())
+      |> Plug.Conn.send_resp(200, response_for_request(valid_api_response(), Jason.decode!(body)))
     end
   end
 
@@ -383,17 +414,27 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       assert date_range["startDate"] == Date.to_iso8601(expected_start)
     end
 
-    test "requests all 11 core GA4 metrics" do
-      test_pid = self()
-      plug = capture_request_plug(test_pid)
+    test "requests all 11 core GA4 metrics in batches of at most 10" do
+      plug = capture_request_plug(self())
 
-      capture_log(fn ->
-        GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
-      end)
+      assert {:ok, metrics} = GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
 
-      assert_receive {:request, _conn, body}
-      {:ok, decoded} = Jason.decode(body)
-      metric_names = Enum.map(decoded["metrics"], & &1["name"])
+      assert_receive {:request, _conn, first_body}
+      assert_receive {:request, _conn, second_body}
+      requests = Enum.map([first_body, second_body], &Jason.decode!/1)
+      assert Enum.map(requests, &length(&1["metrics"])) == [10, 1]
+      assert Enum.all?(requests, &(&1["keepEmptyRows"] == true))
+
+      metric_names =
+        Enum.flat_map(requests, fn request -> Enum.map(request["metrics"], & &1["name"]) end)
+
+      assert length(Enum.uniq(metric_names)) == 11
+      assert length(metrics) == 22
+
+      assert Enum.map(Enum.filter(metrics, &(&1.metric_name == "scrolledUsers")), & &1.value) == [
+               600,
+               950
+             ]
 
       assert "activeUsers" in metric_names
       assert "active7DayUsers" in metric_names
@@ -624,58 +665,78 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
                GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
     end
 
-    test "respects pagination with pageToken when result set is large" do
-      plug = build_stub_plug(200, paginated_first_page_response())
-
-      assert {:ok, metrics} =
-               GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
-
-      assert is_list(metrics)
-    end
-
-    test "fetches multiple pages when nextPageToken present in response" do
-      page_count = :counters.new(1, [:atomics])
+    test "paginates each metric batch independently using offsets" do
       test_pid = self()
 
-      multi_page_plug = fn conn ->
-        count = :counters.get(page_count, 1) + 1
-        :counters.put(page_count, 1, count)
-        send(test_pid, {:page_request, count})
+      plug = fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        request = Jason.decode!(body)
+        offset = request["offset"]
+        names = Enum.map(request["metrics"], & &1["name"])
+        send(test_pid, {:batch_page, names, offset})
+        assert request["limit"] == "10000"
+        refute Map.has_key?(request, "pageToken")
 
-        body =
-          if count == 1 do
-            paginated_first_page_response()
+        fixture =
+          if offset == "0",
+            do: paginated_first_page_response(),
+            else: paginated_second_page_response()
+
+        response =
+          fixture
+          |> Jason.decode!()
+          |> Map.delete("nextPageToken")
+          |> Map.put("rowCount", 2)
+          |> Jason.encode!()
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, response_for_request(response, request))
+      end
+
+      assert {:ok, metrics} = GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
+      assert length(metrics) == 22
+      assert_receive {:batch_page, first_names, "0"}
+      assert_receive {:batch_page, ^first_names, "1"}
+      assert_receive {:batch_page, ["scrolledUsers"], "0"}
+      assert_receive {:batch_page, ["scrolledUsers"], "1"}
+      refute_receive {:batch_page, _, _}
+
+      assert Enum.map(Enum.filter(metrics, &(&1.metric_name == "scrolledUsers")), & &1.value) == [
+               220,
+               280
+             ]
+    end
+
+    test "returns the second batch API error instead of partial success" do
+      plug = fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        request = Jason.decode!(body)
+
+        {status, response} =
+          if request["metrics"] == [%{"name" => "scrolledUsers"}] do
+            {400,
+             Jason.encode!(%{
+               "error" => %{
+                 "code" => 400,
+                 "status" => "INVALID_ARGUMENT",
+                 "message" => "Invalid metric combination"
+               }
+             })}
           else
-            paginated_second_page_response()
+            {200, response_for_request(valid_api_response(), request)}
           end
 
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
-        |> Plug.Conn.send_resp(200, body)
+        |> Plug.Conn.send_resp(status, response)
       end
 
-      assert {:ok, _metrics} =
-               GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: multi_page_plug)
+      assert {:error, {:ga4_api_error, 400, details}} =
+               GoogleAnalytics.fetch_metrics(valid_integration(), http_plug: plug)
 
-      assert_receive {:page_request, 1}
-
-      # When the module supports pagination, it should fetch at least page 1.
-      # If it also follows nextPageToken it will fire {:page_request, 2}.
-      # We assert at least one page was fetched; a full pagination implementation
-      # will satisfy the stronger assertion below automatically.
-      received_page_2 =
-        receive do
-          {:page_request, 2} -> true
-        after
-          100 -> false
-        end
-
-      total_pages = :counters.get(page_count, 1)
-      assert total_pages >= 1
-
-      if received_page_2 do
-        assert total_pages >= 2
-      end
+      assert details["status"] == "INVALID_ARGUMENT"
+      assert details["message"] == "Invalid metric combination"
     end
   end
 
@@ -764,7 +825,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       if context[:skip], do: flunk("GA4_TEST_PROPERTY_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "ga4_fetch_metrics", cassette_opts("ga4_fetch_metrics"), fn plug ->
+        with_cassette("ga4_fetch_metrics", cassette_opts("ga4_fetch_metrics"), fn plug ->
           assert {:ok, metrics} =
                    GoogleAnalytics.fetch_metrics(context.integration,
                      http_plug: plug,
@@ -781,7 +842,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
             assert %DateTime{} = metric.recorded_at
             assert is_map(metric.dimensions)
           end
-        end
+        end)
       end)
     end
 
@@ -789,7 +850,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
       if context[:skip], do: flunk("GA4_TEST_PROPERTY_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "ga4_unauthorized", cassette_opts("ga4_unauthorized"), fn plug ->
+        with_cassette("ga4_unauthorized", cassette_opts("ga4_unauthorized"), fn plug ->
           bad_token = %{context.integration | access_token: "invalid-token"}
 
           assert {:error, reason} =
@@ -799,7 +860,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAnalyticsTest do
                    )
 
           assert reason in [:unauthorized, :insufficient_permissions, :property_not_found]
-        end
+        end)
       end)
     end
   end

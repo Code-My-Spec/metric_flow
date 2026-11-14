@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion867UserSelectsADifferentTimeWindowForAnalysisS
 
   spex "User selects a different time window for analysis", criterion: 867 do
     scenario "a user viewing correlation results for the default time window selects a different one" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing correlation results for the default time window", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

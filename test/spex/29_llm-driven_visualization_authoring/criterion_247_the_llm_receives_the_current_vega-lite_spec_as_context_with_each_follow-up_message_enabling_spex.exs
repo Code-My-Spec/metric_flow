@@ -31,7 +31,8 @@ defmodule MetricFlowSpex.Criterion5078LlmReceivesCurrentSpecAsContextSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 
@@ -43,7 +44,8 @@ defmodule MetricFlowSpex.Criterion5078LlmReceivesCurrentSpecAsContextSpex do
             "prompt" => "Now add clicks as a second series and make it a layered chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 

@@ -6,11 +6,11 @@ defmodule MetricFlowSpex.ConfirmationShowsAccountCountAndPromptsLocationSelectio
 
   spex "Confirmation shows account count and prompts location selection", criterion: 954 do
     scenario "after confirming accounts, the user sees how many connected and is sent to pick locations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user is confirming one or more GMB accounts", context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

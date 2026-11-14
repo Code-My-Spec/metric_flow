@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserInitiatesTheQuickbooksOauthFlowSpex do
 
   spex "User initiates the QuickBooks OAuth flow", criterion: 913 do
     scenario "a user wants to connect QuickBooks and starts the connection process" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user wants to connect QuickBooks", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")

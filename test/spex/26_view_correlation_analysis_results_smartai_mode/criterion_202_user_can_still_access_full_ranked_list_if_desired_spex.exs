@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion202UserCanAccessFullRankedListSpex do
 
   spex "User can still access full ranked list if desired", criterion: 202 do
     scenario "a user viewing curated Smart mode results switches to the full ranked list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing the curated Smart/AI results", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AccountOriginatorCannotSelfRevokeSpex do
 
   spex "Account originator cannot self-revoke", criterion: 912 do
     scenario "the account's originator and owner sees no self-revoke option" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the originator navigates to account settings", context do
         {:ok, settings_view, _html} = live(context.owner_conn, "/app/accounts/settings")

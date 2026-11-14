@@ -5,9 +5,9 @@ defmodule MetricFlowSpex.Criterion973DataQueriedPerCampaignByDefaultAdsetBreakdo
   import MetricFlowSpex.SharedGivens
 
   spex "Data is queried per day and, by default, per campaign; an ad-set-level breakdown is also available",
-       criterion: 973 do
+    criterion: 973 do
     scenario "a user opts into ad-set-level breakdown when syncing a Facebook Ads account" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client has a connected Facebook Ads account", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads,
@@ -18,9 +18,10 @@ defmodule MetricFlowSpex.Criterion973DataQueriedPerCampaignByDefaultAdsetBreakdo
         {:ok, Map.put(context, :view, view)}
       end
 
-      given_ :with_facebook_ads_sync_stub
+      given_(:with_facebook_ads_sync_stub)
 
-      when_ "they choose to sync with an ad-set-level breakdown instead of the campaign-level default", context do
+      when_ "they choose to sync with an ad-set-level breakdown instead of the campaign-level default",
+            context do
         assert has_element?(context.view, "[data-role='facebook-adset-breakdown-toggle']"),
                "Expected a control to opt into ad-set-level breakdown for Facebook Ads syncs"
 
@@ -30,7 +31,8 @@ defmodule MetricFlowSpex.Criterion973DataQueriedPerCampaignByDefaultAdsetBreakdo
         {:ok, context}
       end
 
-      then_ "the sync completes using the ad-set-level breakdown rather than the campaign-level default", context do
+      then_ "the sync completes using the ad-set-level breakdown rather than the campaign-level default",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

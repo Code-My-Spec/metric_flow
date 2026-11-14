@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion851CorrelationTreatsFinancialAndMarketingMetri
 
   spex "Correlation treats financial and marketing metrics uniformly", criterion: 851 do
     scenario "both a financial metric and a marketing metric appear as correlation results" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "both financial metrics (e.g., QuickBooks revenue) and marketing metrics (e.g., ad clicks) are available",
              context do
@@ -63,7 +63,10 @@ defmodule MetricFlowSpex.Criterion851CorrelationTreatsFinancialAndMarketingMetri
 
       then_ "it calculates correlations for both kinds of metrics the same way, without treating either category specially",
             context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='expenses']"),
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='expenses']"
+               ),
                "Expected the financial metric (expenses) to appear in correlation results"
 
         assert has_element?(context.view, "[data-role='correlation-row'][data-metric='clicks']"),

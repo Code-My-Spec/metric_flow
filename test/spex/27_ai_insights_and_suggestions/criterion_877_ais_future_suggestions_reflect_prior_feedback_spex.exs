@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion877AisFutureSuggestionsReflectPriorFeedbackSpe
 
   spex "AI's future suggestions reflect prior feedback", criterion: 877 do
     scenario "a user has previously marked similar suggestions as not helpful" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has previously marked similar suggestions as not helpful", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

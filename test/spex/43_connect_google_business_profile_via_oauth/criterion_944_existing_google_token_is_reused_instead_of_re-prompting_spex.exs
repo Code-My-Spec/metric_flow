@@ -6,10 +6,10 @@ defmodule MetricFlowSpex.ExistingGoogleTokenIsReusedInsteadOfRePromptingSpex do
 
   spex "Existing Google token is reused instead of re-prompting", criterion: 944 do
     scenario "connecting Google Business Profile with a token that already carries the business.manage scope skips a fresh authorization" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user's existing Google Ads token already carries the Business Profile scope, from a prior GBP authorization that Google's incremental consent carried forward",
-            context do
+             context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
 
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{

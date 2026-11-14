@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion176UserCanSelectOneOrMoreMetricsAsGoalsSpex do
 
   spex "User can select one or more metrics as goals", criterion: 176 do
     scenario "a user selects a single metric as a goal" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user has enough historical metric data for correlation to run", context do
         yesterday = Date.add(Date.utc_today(), -1)
@@ -53,8 +53,8 @@ defmodule MetricFlowSpex.Criterion176UserCanSelectOneOrMoreMetricsAsGoalsSpex do
     end
 
     scenario "a user attempts to select multiple metrics as goals" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user has multiple available metrics", context do
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{metric_name: "revenue"})

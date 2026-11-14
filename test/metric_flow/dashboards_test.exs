@@ -156,7 +156,9 @@ defmodule MetricFlow.DashboardsTest do
     test "applies platform filter to both time_series and summary_stats, excluding metrics from other providers" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id, :google)
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_analytics, value: 50.0})
+
       insert_metric!(user.id, %{metric_name: "sessions", provider: :google_ads, value: 999.0})
 
       assert {:ok, data} =
@@ -173,13 +175,24 @@ defmodule MetricFlow.DashboardsTest do
     test "applies date_range filter to both time_series and summary_stats, excluding metrics outside the range" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
-      insert_metric!(user.id, %{metric_name: "sessions", value: 90.0, recorded_at: valid_recorded_at(60)})
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(5)
+      })
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 90.0,
+        recorded_at: valid_recorded_at(60)
+      })
 
       start_date = Date.utc_today() |> Date.add(-10)
       end_date = Date.utc_today()
 
-      assert {:ok, data} = Dashboards.get_dashboard_data(scope, date_range: {start_date, end_date})
+      assert {:ok, data} =
+               Dashboards.get_dashboard_data(scope, date_range: {start_date, end_date})
 
       sessions_stats = Enum.find(data.summary_stats, &(&1.metric_name == "sessions"))
       assert sessions_stats.stats.sum == 10.0
@@ -202,7 +215,12 @@ defmodule MetricFlow.DashboardsTest do
     test "uses default_date_range/0 when no date_range option is provided" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id)
-      insert_metric!(user.id, %{metric_name: "sessions", value: 10.0, recorded_at: valid_recorded_at(5)})
+
+      insert_metric!(user.id, %{
+        metric_name: "sessions",
+        value: 10.0,
+        recorded_at: valid_recorded_at(5)
+      })
 
       assert {:ok, data} = Dashboards.get_dashboard_data(scope, [])
 

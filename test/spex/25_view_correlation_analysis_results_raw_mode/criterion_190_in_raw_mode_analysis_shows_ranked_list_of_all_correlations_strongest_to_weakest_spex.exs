@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion190InRawModeAnalysisShowsRankedListOfAllCorrel
   spex "In Raw mode: analysis shows ranked list of ALL correlations (strongest to weakest)",
     criterion: 190 do
     scenario "Raw mode lists every calculated correlation ordered from strongest to weakest" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "correlations of varying strength have been calculated", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

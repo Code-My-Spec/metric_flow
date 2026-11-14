@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion32InvitationIncludesClientAccountNameAndAccess
 
   spex "Invitation includes client account name and access level being granted", criterion: 32 do
     scenario "the invitation acceptance page shows the inviting account's name and the granted access level" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user as account manager", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

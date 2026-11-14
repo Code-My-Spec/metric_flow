@@ -5,12 +5,17 @@ defmodule MetricFlowSpex.SuccessfulAuthenticationReturnsUserToPlatformSelectionS
 
   spex "Successful authentication returns user to platform selection", criterion: 562 do
     scenario "Dana successfully authenticates with Google Analytics and returns to platform selection" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       when_ "Dana successfully authenticates with Google Analytics", context do
-        conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
-          MetricFlowTest.OAuthStub.valid_callback_params())
+        conn =
+          get(
+            context.owner_conn,
+            "/app/integrations/oauth/callback/google",
+            MetricFlowTest.OAuthStub.valid_callback_params()
+          )
+
         {:ok, Map.put(context, :callback_conn, conn)}
       end
 

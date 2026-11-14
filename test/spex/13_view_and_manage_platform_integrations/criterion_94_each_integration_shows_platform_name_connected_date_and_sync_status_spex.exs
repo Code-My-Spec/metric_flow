@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
 
   spex "Each integration shows platform name, connected date, and sync status", criterion: 94 do
     scenario "the integrations page renders a platform name for each integration entry" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page shows a connected date for each integration entry" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -34,7 +34,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page shows a sync status for each integration entry" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -48,7 +48,7 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
     end
 
     scenario "the integrations page groups platform name, connected date, and sync status per integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -61,7 +61,11 @@ defmodule MetricFlowSpex.EachIntegrationShowsPlatformNameConnectedDateAndSyncSta
       end
 
       then_ "each integration row shows the platform name within the row", context do
-        assert has_element?(context.view, "[data-role='integration-row'] [data-role='integration-platform-name']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='integration-row'] [data-role='integration-platform-name']"
+               )
+
         {:ok, context}
       end
     end

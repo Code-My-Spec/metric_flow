@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion863UserSortsTheListByCorrelationStrengthSpex d
 
   spex "User sorts the list by correlation strength", criterion: 863 do
     scenario "a user sorts the Raw mode list by correlation strength" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the Raw mode correlation list", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

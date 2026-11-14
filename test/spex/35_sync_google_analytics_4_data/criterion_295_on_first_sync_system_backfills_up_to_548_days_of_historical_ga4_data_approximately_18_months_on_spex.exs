@@ -4,16 +4,18 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
 
   import MetricFlowSpex.SharedGivens
 
-  spex "On first sync, system backfills up to 548 days of historical GA4 data (approximately 18 months); on subsequent syncs, fetches from the day after the last stored metric date", criterion: 295 do
+  spex "On first sync, system backfills up to 548 days of historical GA4 data (approximately 18 months); on subsequent syncs, fetches from the day after the last stored metric date",
+    criterion: 295 do
     scenario "the sync history page describes historical backfill behavior in the schedule section" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the schedule section explains that historical data is backfilled on first sync", context do
+      then_ "the schedule section explains that historical data is backfilled on first sync",
+            context do
         html = render(context.view)
 
         assert html =~ "backfill" or html =~ "historical",
@@ -26,11 +28,13 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
         assert has_element?(context.view, "[data-role='sync-schedule']"),
                "Expected a [data-role='sync-schedule'] section describing the sync schedule"
 
-        schedule_html = context.view
+        schedule_html =
+          context.view
           |> element("[data-role='sync-schedule']")
           |> render()
 
-        assert schedule_html =~ "first sync" or schedule_html =~ "backfill" or schedule_html =~ "historical",
+        assert schedule_html =~ "first sync" or schedule_html =~ "backfill" or
+                 schedule_html =~ "historical",
                "Expected the schedule section to mention first sync backfill behavior, got: #{schedule_html}"
 
         {:ok, context}
@@ -38,7 +42,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
     end
 
     scenario "an initial sync completion event for a GA4 property is labeled as an initial sync" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -46,12 +50,17 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
       end
 
       when_ "a GA4 initial backfill sync completion event is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 548,
-          completed_at: DateTime.utc_now(),
-          sync_type: :initial
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 548,
+             completed_at: DateTime.utc_now(),
+             sync_type: :initial
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -89,7 +98,7 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
     end
 
     scenario "a subsequent daily sync completion event appears in sync history without the initial sync label" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -97,18 +106,24 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
       end
 
       when_ "a regular (non-initial) GA4 sync completion event is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
       end
 
-      then_ "the sync history shows a Google Analytics success entry without the Initial Sync label", context do
+      then_ "the sync history shows a Google Analytics success entry without the Initial Sync label",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",
@@ -125,14 +140,15 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
     end
 
     scenario "the empty state on the sync history page references the initial sync concept" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user is on the sync history page with no prior syncs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the empty state mentions that the initial sync will backfill historical data", context do
+      then_ "the empty state mentions that the initial sync will backfill historical data",
+            context do
         html = render(context.view)
 
         assert html =~ "No sync history yet" or html =~ "no sync history" or

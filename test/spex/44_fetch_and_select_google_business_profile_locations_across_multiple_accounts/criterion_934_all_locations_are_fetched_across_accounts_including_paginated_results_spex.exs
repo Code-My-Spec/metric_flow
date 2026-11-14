@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AllLocationsAreFetchedAcrossAccountsIncludingPaginatedR
 
   spex "All locations are fetched across accounts, including paginated results", criterion: 934 do
     scenario "locations from a paginated account and a single-page account both appear" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a customer has two connected GBP accounts, one with enough locations to require multiple pages of API results",
              context do
@@ -21,7 +21,9 @@ defmodule MetricFlowSpex.AllLocationsAreFetchedAcrossAccountsIncludingPaginatedR
                     conn,
                     200,
                     Jason.encode!(%{
-                      "locations" => [%{"name" => "locations/page1-loc", "title" => "Page One Location"}],
+                      "locations" => [
+                        %{"name" => "locations/page1-loc", "title" => "Page One Location"}
+                      ],
                       "nextPageToken" => "page-2-token"
                     })
                   )
@@ -31,7 +33,9 @@ defmodule MetricFlowSpex.AllLocationsAreFetchedAcrossAccountsIncludingPaginatedR
                     conn,
                     200,
                     Jason.encode!(%{
-                      "locations" => [%{"name" => "locations/page2-loc", "title" => "Page Two Location"}]
+                      "locations" => [
+                        %{"name" => "locations/page2-loc", "title" => "Page Two Location"}
+                      ]
                     })
                   )
               end
@@ -41,7 +45,9 @@ defmodule MetricFlowSpex.AllLocationsAreFetchedAcrossAccountsIncludingPaginatedR
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/single-loc", "title" => "Single Account Location"}]
+                  "locations" => [
+                    %{"name" => "locations/single-loc", "title" => "Single Account Location"}
+                  ]
                 })
               )
 

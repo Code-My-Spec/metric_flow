@@ -37,7 +37,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
     account
   end
 
-  defp subscription_fixture(account, attrs \\ %{}) do
+  defp subscription_fixture(account, attrs) do
     defaults = %{
       stripe_subscription_id: "sub_#{System.unique_integer([:positive])}",
       stripe_customer_id: "cus_#{System.unique_integer([:positive])}",
@@ -59,6 +59,17 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
 
       {:ok, _lv, html} = live(conn, "/app/correlations")
       assert html =~ "Correlation"
+    end
+
+    test "permits visualization QA route for the selected subscribed account", %{conn: conn} do
+      user = user_fixture()
+      account = account_fixture(user)
+      subscription_fixture(account, %{status: :active})
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/visualizations")
+      assert has_element?(view, "[data-role='empty-visualizations']")
+      refute has_element?(view, "[data-role='paywall']")
     end
 
     test "continues for accounts with trialing subscription", %{conn: conn} do
@@ -113,11 +124,23 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
 
     test "continues when no current scope is present", %{conn: conn} do
       user = user_fixture()
-      _account = account_fixture(user)
-      subscription_fixture(_account, %{status: :active})
+      account = account_fixture(user)
+      subscription_fixture(account, %{status: :active})
       conn = log_in_user(conn, user)
 
       {:ok, _lv, _html} = live(conn, "/app/correlations")
+    end
+
+    test "bypasses the paywall for free users when :paywall_enabled is false", %{conn: conn} do
+      Application.put_env(:metric_flow, :paywall_enabled, false)
+      on_exit(fn -> Application.put_env(:metric_flow, :paywall_enabled, true) end)
+
+      user = user_fixture()
+      _account = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      refute has_element?(view, "[data-role='paywall']")
     end
   end
 end

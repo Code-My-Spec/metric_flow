@@ -4,14 +4,17 @@ defmodule MetricFlowSpex.BackfillIsLimitedToWhatThePlatformsApiAllowsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Backfill is limited to what the platform's API allows", fail_on_error_logs: false, criterion: 612 do
+  spex "Backfill is limited to what the platform's API allows",
+    fail_on_error_logs: false,
+    criterion: 612 do
     scenario "a platform with a limited historical window backfills only what it allows, and says so" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a platform's API only exposes a limited historical window", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
           provider_metadata: %{"customer_id" => "1234567890"}
         )
+
         {:ok, context}
       end
 
@@ -22,7 +25,8 @@ defmodule MetricFlowSpex.BackfillIsLimitedToWhatThePlatformsApiAllowsSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "only data within the platform's allowed window is backfilled, and the limitation is noted", context do
+      then_ "only data within the platform's allowed window is backfilled, and the limitation is noted",
+            context do
         assert has_element?(context.view, "[data-sync-type='initial']")
         assert has_element?(context.view, "[data-role='backfill-limit-notice']")
         {:ok, context}

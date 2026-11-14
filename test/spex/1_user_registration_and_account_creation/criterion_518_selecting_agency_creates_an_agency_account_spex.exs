@@ -12,12 +12,14 @@ defmodule MetricFlowSpex.SelectingAgencyCreatesAgencyAccountSpex do
 
       when_ "he selects Agency as his account type", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "agency_alex@example.com",
-          password: "SecurePassword123!",
-          account_name: "Alex Agency Co",
-          account_type: "agency"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "agency_alex@example.com",
+            password: "SecurePassword123!",
+            account_name: "Alex Agency Co",
+            account_type: "agency"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

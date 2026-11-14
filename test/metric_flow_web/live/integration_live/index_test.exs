@@ -117,7 +117,13 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "No platforms connected yet."
-        assert has_element?(lv, "a[href='/app/integrations/connect']", "Connect your first platform")
+
+        assert has_element?(
+                 lv,
+                 "a[href='/app/integrations/connect']",
+                 "Connect your first platform"
+               )
+
         refute html =~ "Connected Platforms"
       end)
     end
@@ -142,7 +148,8 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   end
 
   describe "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms" do
-    test "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms", %{conn: conn} do
+    test "shows Sync Now, Edit Accounts, Manage, and Disconnect buttons for connected platforms",
+         %{conn: conn} do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       insert_integration!(user.id, :google_ads)
@@ -179,7 +186,15 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "triggers sync and shows success flash on Sync Now click", %{conn: conn} do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
-      insert_integration!(user.id, :google_ads, %{provider_metadata: %{"provider_user_id" => "stub-user-id", "email" => "stub@example.com", "customer_id" => "1234567890"}})
+
+      insert_integration!(user.id, :google_ads, %{
+        provider_metadata: %{
+          "provider_user_id" => "stub-user-id",
+          "email" => "stub@example.com",
+          "customer_id" => "1234567890"
+        }
+      })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->

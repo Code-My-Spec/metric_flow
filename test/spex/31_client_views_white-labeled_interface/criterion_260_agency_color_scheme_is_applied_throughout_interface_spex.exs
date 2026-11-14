@@ -6,17 +6,18 @@ defmodule MetricFlowSpex.AgencyColorSchemeAppliedThroughoutInterfaceSpex do
 
   spex "Agency color scheme is applied throughout interface", criterion: 260 do
     scenario "client sees agency color scheme when white-labeling is active" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account is originated by an agency with custom colors", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "colortest",
-          logo_url: "https://example.com/logo.png",
-          primary_color: "#FF0000",
-          secondary_color: "#00FF00"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "colortest",
+            logo_url: "https://example.com/logo.png",
+            primary_color: "#FF0000",
+            secondary_color: "#00FF00"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -50,17 +51,18 @@ defmodule MetricFlowSpex.AgencyColorSchemeAppliedThroughoutInterfaceSpex do
     end
 
     scenario "agency colors are reflected in the navigation and content areas" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account has an originating agency with colors configured", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "colortest2",
-          logo_url: "https://example.com/logo.png",
-          primary_color: "#334455",
-          secondary_color: "#667788"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "colortest2",
+            logo_url: "https://example.com/logo.png",
+            primary_color: "#334455",
+            secondary_color: "#667788"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 

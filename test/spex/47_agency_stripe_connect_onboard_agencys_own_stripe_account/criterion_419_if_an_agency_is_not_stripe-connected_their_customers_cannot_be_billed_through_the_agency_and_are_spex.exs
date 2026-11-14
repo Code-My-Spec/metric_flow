@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.UnconnectedAgencyCustomersUseDefaultBillingSpex do
 
   spex "Unconnected agency customers are prompted for default billing", criterion: 419 do
     scenario "customer under unconnected agency sees platform billing" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the checkout page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/subscriptions/checkout")
@@ -17,6 +17,7 @@ defmodule MetricFlowSpex.UnconnectedAgencyCustomersUseDefaultBillingSpex do
         # Page shows "Subscribe" button when plans exist, or "No plans available" as fallback
         assert html =~ "Subscribe" or html =~ "No plans available" or
                  html =~ "Choose Your Plan" or html =~ "MetricFlow Pro"
+
         {:ok, context}
       end
     end

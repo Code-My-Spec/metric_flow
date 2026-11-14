@@ -31,97 +31,97 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div>
-      <%!-- Page header --%>
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">Goal Metric</h1>
-        <p class="text-base-content/60">Choose the metric the correlation engine targets.</p>
-      </div>
-
-      <%!-- Empty state (shown above form when no metrics available) --%>
-      <div :if={@metric_names == []} class="mf-card p-6 mb-6">
-        <p class="text-base-content/60">
-          No metrics available. Connect your integrations and sync data before configuring a goal.
-        </p>
-        <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
-          Connect Integrations
-        </.link>
-      </div>
-
-      <%!-- Goal metric form --%>
-      <.form for={%{}} id="goal-metric-form" phx-submit="save_goal">
-        <div class="mf-card p-6">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Goal Metric</span>
-            </label>
-            <select
-              name="goal_metric_name"
-              phx-change="select_goal"
-              class="select select-bordered w-full"
-              disabled={@metric_names == []}
-            >
-              <option :if={@metric_names == []} value="" disabled>
-                No metrics available — sync data first
-              </option>
-              <option
-                :for={name <- @metric_names}
-                value={name}
-                selected={name == @selected_goal}
-              >
-                {name}
-              </option>
-            </select>
-          </div>
-
-          <div class="flex gap-2 mt-6">
-            <button
-              type="submit"
-              data-role="save-goal"
-              disabled={@metric_names == []}
-              class="btn btn-primary"
-            >
-              Save Goal
-            </button>
-            <button
-              type="button"
-              phx-click="cancel"
-              data-role="cancel"
-              class="btn btn-ghost"
-            >
-              Cancel
-            </button>
-          </div>
+      <div>
+        <%!-- Page header --%>
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold">Goal Metric</h1>
+          <p class="text-base-content/60">Choose the metric the correlation engine targets.</p>
         </div>
-      </.form>
 
-      <%!-- Queue multiple goals: runs the first immediately, queues the rest
+        <%!-- Empty state (shown above form when no metrics available) --%>
+        <div :if={@metric_names == []} class="mf-card p-6 mb-6">
+          <p class="text-base-content/60">
+            No metrics available. Connect your integrations and sync data before configuring a goal.
+          </p>
+          <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
+            Connect Integrations
+          </.link>
+        </div>
+
+        <%!-- Goal metric form --%>
+        <.form for={%{}} id="goal-metric-form" phx-submit="save_goal">
+          <div class="mf-card p-6">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Goal Metric</span>
+              </label>
+              <select
+                name="goal_metric_name"
+                phx-change="select_goal"
+                class="select select-bordered w-full"
+                disabled={@metric_names == []}
+              >
+                <option :if={@metric_names == []} value="" disabled>
+                  No metrics available — sync data first
+                </option>
+                <option
+                  :for={name <- @metric_names}
+                  value={name}
+                  selected={name == @selected_goal}
+                >
+                  {name}
+                </option>
+              </select>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+              <button
+                type="submit"
+                data-role="save-goal"
+                disabled={@metric_names == []}
+                class="btn btn-primary"
+              >
+                Save Goal
+              </button>
+              <button
+                type="button"
+                phx-click="cancel"
+                data-role="cancel"
+                class="btn btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </.form>
+
+        <%!-- Queue multiple goals: runs the first immediately, queues the rest
            to run automatically as each prior analysis finishes, since only
            one correlation job can be in flight per account at a time. --%>
-      <div :if={@metric_names != []} class="mf-card p-6 mt-6">
-        <h2 class="text-lg font-semibold mb-1">Queue Multiple Goals</h2>
-        <p class="text-sm text-base-content/60 mb-4">
-          Select several metrics to analyze one after another. The first starts
-          immediately; the rest run automatically once each prior analysis finishes.
-        </p>
-        <.form for={%{}} phx-submit="queue_goals">
-          <div class="flex flex-col gap-2 mb-4">
-            <label :for={name <- @metric_names} class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="goal_metric_names[]"
-                value={name}
-                class="checkbox checkbox-sm"
-              />
-              <span>{name}</span>
-            </label>
-          </div>
-          <button type="submit" data-role="queue-goals" class="btn btn-secondary">
-            Queue Selected Goals
-          </button>
-        </.form>
+        <div :if={@metric_names != []} class="mf-card p-6 mt-6">
+          <h2 class="text-lg font-semibold mb-1">Queue Multiple Goals</h2>
+          <p class="text-sm text-base-content/60 mb-4">
+            Select several metrics to analyze one after another. The first starts
+            immediately; the rest run automatically once each prior analysis finishes.
+          </p>
+          <.form for={%{}} phx-submit="queue_goals">
+            <div class="flex flex-col gap-2 mb-4">
+              <label :for={name <- @metric_names} class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="goal_metric_names[]"
+                  value={name}
+                  class="checkbox checkbox-sm"
+                />
+                <span>{name}</span>
+              </label>
+            </div>
+            <button type="submit" data-role="queue-goals" class="btn btn-secondary">
+              Queue Selected Goals
+            </button>
+          </.form>
+        </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end

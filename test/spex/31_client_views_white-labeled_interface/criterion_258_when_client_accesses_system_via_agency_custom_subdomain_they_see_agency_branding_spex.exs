@@ -4,19 +4,22 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "When client accesses system via agency custom subdomain they see agency branding", criterion: 258 do
+  spex "When client accesses system via agency custom subdomain they see agency branding",
+    criterion: 258 do
     scenario "authenticated client visiting via agency subdomain sees agency branding" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "the client's account is originated by an agency with white-label branding configured", context do
+      given_ "the client's account is originated by an agency with white-label branding configured",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "testbrand",
-          logo_url: "https://example.com/agency-logo.png",
-          primary_color: "#FF5733",
-          secondary_color: "#33FF57"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "testbrand",
+            logo_url: "https://example.com/agency-logo.png",
+            primary_color: "#FF5733",
+            secondary_color: "#33FF57"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -50,7 +53,9 @@ defmodule MetricFlowSpex.ClientSeesAgencyBrandingViaSubdomainSpex do
             flunk("Expected dashboard to load with agency branding but was redirected to #{path}")
 
           {:error, {:live_redirect, %{to: path}}} ->
-            flunk("Expected dashboard to load with agency branding but was live-redirected to #{path}")
+            flunk(
+              "Expected dashboard to load with agency branding but was live-redirected to #{path}"
+            )
         end
 
         {:ok, context}

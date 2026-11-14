@@ -9,9 +9,9 @@ defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
 
   spex "Chat history is saved per user", criterion: 216 do
     scenario "a user returns to the chat in a later session" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user has previously chatted with the AI", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/chat")
@@ -27,11 +27,12 @@ defmodule MetricFlowSpex.Criterion216ChatHistoryIsSavedPerUserSpex do
 
         capture_log(fn ->
           view
-          |> form("form[phx-submit='send_message']", %{"content" => "How are my metrics trending?"})
+          |> form("form[phx-submit='send_message']", %{
+            "content" => "How are my metrics trending?"
+          })
           |> render_submit()
 
-          Process.sleep(100)
-          render(view)
+          await_assistant_message(view)
         end)
 
         Application.delete_env(:metric_flow, :test_llm_options)

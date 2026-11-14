@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Users can have different access levels: owner, admin, account manager, read-only", criterion: 17 do
+  spex "Users can have different access levels: owner, admin, account manager, read-only",
+    criterion: 17 do
     scenario "invite form shows all available role options" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -24,8 +25,8 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
     end
 
     scenario "owner can invite a user with admin role" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner is on the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -34,10 +35,12 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
 
       when_ "the owner invites a user as admin", context do
         context.view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -52,7 +55,7 @@ defmodule MetricFlowSpex.UsersCanHaveDifferentAccessLevelsSpex do
     end
 
     scenario "members list displays each user's role" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")

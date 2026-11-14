@@ -35,7 +35,9 @@ defmodule MetricFlowWeb.Journeys.AccountAdministrationAndTeamManagementTest do
     |> Repo.insert!()
   end
 
-  test "owner manages members, invitations, and settings; non-owner sees restrictions", %{conn: conn} do
+  test "owner manages members, invitations, and settings; non-owner sees restrictions", %{
+    conn: conn
+  } do
     owner = user_fixture()
     account = insert_account!(owner)
     insert_member!(account, owner, :owner)
@@ -70,14 +72,24 @@ defmodule MetricFlowWeb.Journeys.AccountAdministrationAndTeamManagementTest do
       |> render_submit()
 
     assert html =~ "Invitation sent to journey2-invitee@example.com"
-    assert has_element?(invite_lv, "[data-role='invitation-email']", "journey2-invitee@example.com")
+
+    assert has_element?(
+             invite_lv,
+             "[data-role='invitation-email']",
+             "journey2-invitee@example.com"
+           )
 
     html =
       invite_lv
       |> element("[data-role='cancel-invitation']")
       |> render_click()
 
-    refute has_element?(invite_lv, "[data-role='invitation-email']", "journey2-invitee@example.com")
+    refute has_element?(
+             invite_lv,
+             "[data-role='invitation-email']",
+             "journey2-invitee@example.com"
+           )
+
     assert html =~ "cancelled"
 
     # Step 10-11: edit account settings

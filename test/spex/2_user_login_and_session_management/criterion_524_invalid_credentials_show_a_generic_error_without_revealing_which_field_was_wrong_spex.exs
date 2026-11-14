@@ -7,7 +7,7 @@ defmodule MetricFlowSpex.InvalidCredentialsShowGenericErrorSpex do
   spex "Invalid credentials show a generic error without revealing which field was wrong",
     criterion: 524 do
     scenario "a real email with the wrong password shows the same error as an unknown email" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
@@ -16,10 +16,12 @@ defmodule MetricFlowSpex.InvalidCredentialsShowGenericErrorSpex do
 
       when_ "Dana submits her real email with the wrong password", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: "WrongPassword999!"
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: "WrongPassword999!"
+            }
+          )
 
         render_submit(form)
         wrong_password_conn = follow_trigger_action(form, context.conn)
@@ -30,10 +32,12 @@ defmodule MetricFlowSpex.InvalidCredentialsShowGenericErrorSpex do
         {:ok, view, _html} = live(build_conn(), "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: "nonexistent@example.com",
-            password: "SomePassword123!"
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: "nonexistent@example.com",
+              password: "SomePassword123!"
+            }
+          )
 
         render_submit(form)
         unknown_email_conn = follow_trigger_action(form, build_conn())

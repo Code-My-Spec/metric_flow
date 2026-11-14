@@ -9,9 +9,9 @@ defmodule MetricFlowSpex.Criterion882AiDrawsOnAllMetricsAndCorrelationDataToAnsw
 
   spex "AI draws on all metrics and correlation data to answer", criterion: 882 do
     scenario "a question spans metrics beyond the current view" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user opens AI chat from a specific visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -28,7 +28,9 @@ defmodule MetricFlowSpex.Criterion882AiDrawsOnAllMetricsAndCorrelationDataToAnsw
               chat_view
 
             _ ->
-              flunk("Expected opening AI chat from the visualization to navigate to the chat interface")
+              flunk(
+                "Expected opening AI chat from the visualization to navigate to the chat interface"
+              )
           end
 
         {:ok, Map.put(context, :chat_view, chat_view)}
@@ -52,8 +54,7 @@ defmodule MetricFlowSpex.Criterion882AiDrawsOnAllMetricsAndCorrelationDataToAnsw
           })
           |> render_submit()
 
-          Process.sleep(100)
-          render(context.chat_view)
+          await_assistant_message(context.chat_view)
         end)
 
         Application.delete_env(:metric_flow, :test_llm_options)
@@ -61,7 +62,8 @@ defmodule MetricFlowSpex.Criterion882AiDrawsOnAllMetricsAndCorrelationDataToAnsw
         {:ok, context}
       end
 
-      then_ "it draws on the full set of available metrics and correlation data, not just the current view", context do
+      then_ "it draws on the full set of available metrics and correlation data, not just the current view",
+            context do
         assert has_element?(context.chat_view, "[data-role='assistant-message']")
         {:ok, context}
       end

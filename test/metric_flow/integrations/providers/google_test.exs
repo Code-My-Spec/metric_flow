@@ -95,7 +95,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     @describetag :integration
 
     test "returns keyword list with required OAuth configuration keys" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -109,7 +110,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes client_id from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -122,7 +124,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes client_secret from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -135,7 +138,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes redirect_uri built from Endpoint.url()" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -148,7 +152,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes authorization_params with email, profile, and analytics.edit scopes" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -163,7 +168,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes access_type \"offline\" for refresh token support" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -174,7 +180,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     end
 
     test "includes prompt \"consent\" to force consent screen" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Google.config()
@@ -209,7 +216,6 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
         capture_log(fn -> Google.config() end)
       end
     end
-
   end
 
   # ---------------------------------------------------------------------------
@@ -230,10 +236,12 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
     @describetag :integration
 
     test "generates a valid Google authorization URL using real config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
-        with_cassette "google_authorize_url",
+        with_cassette(
+          "google_authorize_url",
           [
             cassette_dir: @cassette_dir,
             match_requests_on: [:method, :uri],
@@ -253,6 +261,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleTest do
             assert String.contains?(url, "email")
             assert is_map(session_params)
           end
+        )
       end)
     end
   end

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
 
   spex "User can select from multiple chart types in the visualization editor", criterion: 136 do
     scenario "editor page displays multiple chart type options" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user navigates to the visualization editor", context do
         {:ok, view, html} = live(context.owner_conn, "/app/visualizations/new")
@@ -28,8 +28,8 @@ defmodule MetricFlowSpex.Criterion4076ChartTypeSelectionSpex do
     end
 
     scenario "user can select each chart type" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user is on the visualization editor", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

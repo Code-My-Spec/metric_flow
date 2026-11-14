@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserNamesAndSavesAReportSpex do
 
   spex "User names and saves a report", criterion: 926 do
     scenario "naming and saving a built report persists it under that name" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has built a report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

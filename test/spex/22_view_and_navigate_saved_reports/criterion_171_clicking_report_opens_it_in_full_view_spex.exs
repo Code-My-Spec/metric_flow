@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion171ClickingReportOpensFullViewSpex do
 
   spex "Clicking report opens it in full view", criterion: 171 do
     scenario "clicking a report in the list opens its full view" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved report and the user viewing the reports list", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -46,6 +46,7 @@ defmodule MetricFlowSpex.Criterion171ClickingReportOpensFullViewSpex do
           {:error, {:live_redirect, %{to: path}}} ->
             assert path == "/app/visualizations/#{context.report_id}/edit"
             {:ok, view, _html} = live(context.owner_conn, path)
+
             assert has_element?(view, "[data-role='chart-preview-section']") or
                      has_element?(view, "[data-role='vega-lite-chart']")
 

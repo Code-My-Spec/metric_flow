@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.DisconnectRequestFailsSpex do
 
   spex "Disconnect request to Stripe fails", criterion: 478 do
     scenario "disconnecting an account that is already gone reports a failure" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "two Stripe Connect pages are open for the same agency", context do
         {:ok, view_a, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

@@ -68,6 +68,31 @@ defmodule MetricFlow.Accounts.AccountRepositoryTest do
   # list_accounts/1
   # ---------------------------------------------------------------------------
 
+  describe "get_personal_account_id/1" do
+    test "returns nil without memberships" do
+      {_user, scope} = user_fixture_with_scope()
+      assert is_nil(AccountRepository.get_personal_account_id(scope))
+    end
+
+    test "retains the first membership after grants and account switches" do
+      {user, scope} = user_fixture_with_scope()
+      first = account_fixture(scope)
+      second = account_fixture(scope)
+      third = account_fixture(scope)
+
+      # Force equal timestamps to exercise the stable membership-ID tie breaker.
+      timestamp = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      from(m in AccountMember, where: m.user_id == ^user.id)
+      |> Repo.update_all(set: [inserted_at: timestamp])
+
+      for selected <- [second, third, first] do
+        assert :ok = AccountRepository.touch_membership(scope, selected.id)
+        assert AccountRepository.get_personal_account_id(scope) == first.id
+      end
+    end
+  end
+
   describe "list_accounts/1" do
     test "returns an empty list when the user has no accounts" do
       {_user, scope} = user_fixture_with_scope()

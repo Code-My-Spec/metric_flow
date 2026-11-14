@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.PaywallStatesTheUnlockingPlanAndItsPriceSpex do
 
   spex "Paywall states the unlocking plan and its price", criterion: 497 do
     scenario "Dana is shown the paywall modal for an AI feature" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Dana is shown the paywall modal for an AI feature", context do
         result = live(context.owner_conn, "/app/correlations")
@@ -41,7 +41,9 @@ defmodule MetricFlowSpex.PaywallStatesTheUnlockingPlanAndItsPriceSpex do
           context.html =~ "/month" or context.html =~ "per month" or context.html =~ "/mo" or
             context.html =~ "$"
 
-        assert has_price, "Expected the paywall modal to show a monthly price. Got: #{context.html}"
+        assert has_price,
+               "Expected the paywall modal to show a monthly price. Got: #{context.html}"
+
         {:ok, context}
       end
     end

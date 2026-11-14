@@ -4,16 +4,18 @@ defmodule MetricFlowSpex.FreeUsersSeePaswallOnAiFeaturesSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Free users who navigate to correlations, intelligence, or visualizations see a paywall/upgrade modal instead of the feature content", criterion: 406 do
+  spex "Free users who navigate to correlations, intelligence, or visualizations see a paywall/upgrade modal instead of the feature content",
+    criterion: 406 do
     scenario "free user navigates to correlations and sees an upgrade prompt instead of correlation data" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates to the correlations page", context do
         result = live(context.owner_conn, "/app/correlations")
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the user sees a paywall or upgrade prompt instead of correlation feature content", context do
+      then_ "the user sees a paywall or upgrade prompt instead of correlation feature content",
+            context do
         case context.result do
           {:ok, view, _html} ->
             html = render(view)

@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion172SetReportAsFavoriteSpex do
 
   spex "User can set report as favorite for quick access", criterion: 172 do
     scenario "marking a report as a favorite makes it available for quick access" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved report and the user viewing the reports list", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")

@@ -5,19 +5,19 @@ defmodule MetricFlowSpex.CoreMetricsStoredDailyClicksImpressionsCtrPositionSpex 
   import MetricFlowSpex.SharedGivens
 
   spex "Core metrics are stored daily: clicks, impressions, click-through rate, and average search position",
-       criterion: 996 do
+    criterion: 996 do
     scenario "a property with search traffic completes its daily sync" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a property with search traffic", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console,
-          provider_metadata: %{"site_url" => "https://example.com/"}
-        )
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console, provider_metadata: %{"site_url" => "https://example.com/"})
 
         {:ok, context}
       end
 
-      given_ :with_google_search_console_sync_stub
+      given_(:with_google_search_console_sync_stub)
 
       when_ "the daily sync runs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")

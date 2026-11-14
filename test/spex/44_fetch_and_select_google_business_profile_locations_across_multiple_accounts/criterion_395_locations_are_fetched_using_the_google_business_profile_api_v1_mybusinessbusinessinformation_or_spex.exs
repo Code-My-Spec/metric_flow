@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
   import MetricFlowSpex.SharedGivens
 
   spex "Locations are fetched using the Google Business Profile API v1 with fields: name, title, storeCode, storefrontAddress, websiteUri, regularHours, primaryCategory",
-       fail_on_error_logs: false, criterion: 395 do
+    fail_on_error_logs: false,
+    criterion: 395 do
     scenario "the location selection page displays rich location details from the GBP API fields" do
-      given_ "an owner with a google_business integration configured with an account ID", context do
+      given_ "an owner with a google_business integration configured with an account ID",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -15,14 +17,17 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -30,6 +35,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
@@ -46,11 +52,13 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -59,7 +67,9 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -90,7 +100,8 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
     end
 
     scenario "location rows display address information from storefrontAddress field" do
-      given_ "an owner with a google_business integration configured with an account ID", context do
+      given_ "an owner with a google_business integration configured with an account ID",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -98,14 +109,17 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -113,6 +127,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
@@ -129,11 +144,13 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -142,7 +159,9 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -161,7 +180,8 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
     end
 
     scenario "location rows display category information from primaryCategory field" do
-      given_ "an owner with a google_business integration configured with an account ID", context do
+      given_ "an owner with a google_business integration configured with an account ID",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -169,14 +189,17 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -184,6 +207,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
@@ -200,11 +224,13 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -213,11 +239,14 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "location entries show the business category from the primaryCategory field", context do
+      then_ "location entries show the business category from the primaryCategory field",
+            context do
         html = render(context.view)
 
         assert has_element?(context.view, "[data-field='primaryCategory']") or
@@ -232,7 +261,8 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
     end
 
     scenario "location rows show store code when storeCode is present" do
-      given_ "an owner with a google_business integration configured with an account ID", context do
+      given_ "an owner with a google_business integration configured with an account ID",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -240,14 +270,17 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -255,6 +288,7 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
@@ -271,11 +305,13 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -284,7 +320,9 @@ defmodule MetricFlowSpex.LocationsAreFetchedUsingGoogleBusinessProfileApiV1WithR
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 

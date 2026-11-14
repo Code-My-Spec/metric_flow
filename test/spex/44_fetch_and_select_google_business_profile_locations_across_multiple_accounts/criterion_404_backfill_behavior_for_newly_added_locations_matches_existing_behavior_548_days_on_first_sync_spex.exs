@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
   import MetricFlowSpex.SharedGivens
 
   spex "Backfill behavior for newly added locations matches existing behavior: 548 days on first sync",
-       fail_on_error_logs: false, criterion: 404 do
+    fail_on_error_logs: false,
+    criterion: 404 do
     scenario "location selection page shows backfill information for new locations" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user has a google business integration and is logged in", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.registered_email)
@@ -65,7 +66,8 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
         end
       end
 
-      then_ "the location selection page displays backfill information for newly added locations", context do
+      then_ "the location selection page displays backfill information for newly added locations",
+            context do
         {:ok, view, _html} = context.page_result
         html = render(view)
 
@@ -81,7 +83,7 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
     end
 
     scenario "backfill notice appears when user is selecting new locations to add" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user has a google business integration and is logged in", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.registered_email)
@@ -113,11 +115,14 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
       end
 
       given_ "the user is on the google business accounts page", context do
-        {:ok, view, _html} = live(context.authed_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.authed_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page communicates that new locations will sync historical data matching the existing 548-day backfill", context do
+      then_ "the page communicates that new locations will sync historical data matching the existing 548-day backfill",
+            context do
         html = render(context.view)
 
         # Backfill notice may not be implemented in UI yet — accept any location selection page content
@@ -136,7 +141,8 @@ defmodule MetricFlowSpex.BackfillBehaviorForNewlyAddedLocationsMatchesExistingBe
     end
 
     scenario "unauthenticated user cannot access the google business location selection page" do
-      given_ "an unauthenticated user navigates to the google business location selection page", context do
+      given_ "an unauthenticated user navigates to the google business location selection page",
+             context do
         result = live(build_conn(), "/app/integrations/connect/google_business/accounts")
         {:ok, Map.put(context, :result, result)}
       end

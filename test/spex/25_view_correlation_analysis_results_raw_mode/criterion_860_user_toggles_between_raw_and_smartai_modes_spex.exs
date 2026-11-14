@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion860UserTogglesBetweenRawAndSmartAiModesSpex do
 
   spex "User toggles between Raw and Smart/AI modes", criterion: 860 do
     scenario "a user viewing Smart mode toggles to Raw mode" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing correlation analysis in Smart/AI mode", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

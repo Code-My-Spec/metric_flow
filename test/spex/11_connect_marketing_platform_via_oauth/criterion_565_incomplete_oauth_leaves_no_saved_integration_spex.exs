@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.IncompleteOAuthLeavesNoSavedIntegrationSpex do
 
   spex "Incomplete OAuth leaves no saved integration", criterion: 565 do
     scenario "Dana abandons the Google Ads OAuth flow before completing it" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Dana starts connecting Google Ads", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_ads")

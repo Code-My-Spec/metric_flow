@@ -277,7 +277,9 @@ defmodule MetricFlow.Ai do
 
   defp stream_assistant_response(scope, session, caller, opts) do
     {:ok, loaded_session} = AiRepository.get_chat_session(scope, session.id)
-    system_prompt = LlmClient.base_system_prompt() <> "\n\n" <> build_data_context(scope, loaded_session)
+
+    system_prompt =
+      LlmClient.base_system_prompt() <> "\n\n" <> build_data_context(scope, loaded_session)
 
     messages =
       Enum.map(loaded_session.chat_messages, fn msg ->

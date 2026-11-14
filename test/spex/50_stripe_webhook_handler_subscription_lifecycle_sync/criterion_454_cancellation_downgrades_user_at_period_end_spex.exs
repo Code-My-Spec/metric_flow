@@ -23,7 +23,8 @@ defmodule MetricFlowSpex.CancellationDowngradesUserAtPeriodEndSpex do
             current_period_end: DateTime.utc_now()
           })
 
-        {:ok, context |> Map.put(:subscription_id, subscription_id) |> Map.put(:account_id, account_id)}
+        {:ok,
+         context |> Map.put(:subscription_id, subscription_id) |> Map.put(:account_id, account_id)}
       end
 
       when_ "a subscription cancelled via customer.subscription.deleted is delivered", context do
@@ -46,7 +47,10 @@ defmodule MetricFlowSpex.CancellationDowngradesUserAtPeriodEndSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}

@@ -9,10 +9,12 @@ defmodule MetricFlowWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {MetricFlowWeb.Layouts, :root}
     plug :protect_from_forgery
+
     plug :put_secure_browser_headers, %{
       "content-security-policy" =>
         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
     }
+
     plug ClientUtils.PreviewFraming, otp_app: :metric_flow
     plug :fetch_current_scope_for_user
     plug MetricFlowWeb.Plugs.WhiteLabel
@@ -117,6 +119,12 @@ defmodule MetricFlowWeb.Router do
       live "/reports/new", ReportLive.Index, :new
       live "/reports/generate", AiLive.ReportGenerator, :index
       live "/reports/:id", ReportLive.Show, :show
+
+      # AI chat routes -- the default authenticated home screen (issue
+      # b7b4f72d). Not paywalled: every logged-in user can chat before
+      # subscribing; other AI features stay behind :require_subscription.
+      live "/chat", AiLive.Chat, :index
+      live "/chat/:id", AiLive.Chat, :show
     end
 
     # Paywalled routes — require active subscription for AI features
@@ -138,8 +146,6 @@ defmodule MetricFlowWeb.Router do
 
       # AI routes
       live "/insights", AiLive.Insights, :index
-      live "/chat", AiLive.Chat, :index
-      live "/chat/:id", AiLive.Chat, :show
     end
 
     # OAuth provider integration routes (controller — handles session_params)
@@ -167,6 +173,8 @@ defmodule MetricFlowWeb.Router do
       on_mount: [{MetricFlowWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
+      live "/users/forgot-password", UserLive.ForgotPassword, :new
+      live "/users/reset-password/:token", UserLive.ResetPassword, :edit
       live "/users/log-in/:token", UserLive.Confirmation, :new
 
       # Invitation acceptance — accessible to both authenticated and unauthenticated users
@@ -175,6 +183,10 @@ defmodule MetricFlowWeb.Router do
       # Ownership transfer confirmation — accessible to both authenticated and unauthenticated users
       live "/account_transfers/:token", AccountTransferLive.Accept, :new
     end
+
+    # Social login: unauthenticated, identity scopes only
+    get "/auth/google/login", GoogleLoginController, :login
+    get "/auth/google/callback", GoogleLoginController, :callback
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete

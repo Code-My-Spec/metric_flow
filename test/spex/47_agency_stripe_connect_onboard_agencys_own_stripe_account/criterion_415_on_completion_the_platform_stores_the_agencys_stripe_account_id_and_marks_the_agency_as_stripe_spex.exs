@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.PlatformStoresStripeAccountIdSpex do
 
   spex "On completion, platform stores stripe_account_id and marks connected", criterion: 415 do
     scenario "after Stripe onboarding completion, status shows connected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the admin visits the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

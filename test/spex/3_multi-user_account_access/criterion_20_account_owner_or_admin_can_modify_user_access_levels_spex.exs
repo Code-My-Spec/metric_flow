@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanModifyUserAccessLevelsSpex do
 
   spex "Account owner or admin can modify user access levels", criterion: 20 do
     scenario "owner changes a member's role from read-only to admin" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a second user has been invited as read-only", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -44,7 +46,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanModifyUserAccessLevelsSpex do
     end
 
     scenario "owner cannot demote the last owner" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")

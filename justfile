@@ -135,6 +135,7 @@ init-worktree name target:
     mix deps.get
     MIX_ENV=dev mix deps.compile
     MIX_ENV=test mix deps.compile
+    if [ -f assets/package-lock.json ]; then npm ci --prefix assets --no-audit --no-fund; fi
 
     echo "→ {{target}} ready: deps compiled for dev and test, dotenv copied where present"
 

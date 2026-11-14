@@ -155,7 +155,11 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
 
       token =
         extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(%{user | email: new_email}, user.email, url)
+          Users.deliver_user_update_email_instructions(
+            %{user | email: new_email},
+            user.email,
+            url
+          )
         end)
 
       {:error, redirect} = live(conn, ~p"/app/users/settings/confirm-email/#{token}")
@@ -181,6 +185,5 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
       assert message == "Email change link is invalid or it has expired."
       assert Users.get_user_by_email(user.email)
     end
-
   end
 end

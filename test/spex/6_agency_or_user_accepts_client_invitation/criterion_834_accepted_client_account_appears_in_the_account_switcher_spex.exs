@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion834AcceptedClientAccountAppearsInTheAccountSwi
 
   spex "Accepted client account appears in the account switcher", criterion: 834 do
     scenario "after accepting, the client account shows up in the invitee's account switcher" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -50,7 +50,8 @@ defmodule MetricFlowSpex.Criterion834AcceptedClientAccountAppearsInTheAccountSwi
       end
 
       when_ "the second user accepts the invitation", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/invitations/#{context.invitation_token}")
+        {:ok, view, _html} =
+          live(context.invitee_conn, "/invitations/#{context.invitation_token}")
 
         view
         |> element("[data-role=accept-btn]")

@@ -11,9 +11,10 @@ defmodule MetricFlowSpex.AgencyWithNoConfiguredPlansShowsNothingToSubscribeToSpe
 
   spex "Agency with no configured plans shows nothing to subscribe to", criterion: 485 do
     scenario "a customer of an agency with no plans visits checkout" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      when_ "a platform default plan exists, and the customer signs up via an agency with no plans of its own", context do
+      when_ "a platform default plan exists, and the customer signs up via an agency with no plans of its own",
+            context do
         {:ok, _platform_plan} =
           BillingRepository.create_plan(%{
             name: "Platform Default",
@@ -24,7 +25,9 @@ defmodule MetricFlowSpex.AgencyWithNoConfiguredPlansShowsNothingToSubscribeToSpe
             stripe_price_id: "price_test_#{System.unique_integer([:positive])}"
           })
 
-        owner_scope = Scope.for_user(MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email))
+        owner_scope =
+          Scope.for_user(MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email))
+
         owner_account_id = Accounts.get_personal_account_id(owner_scope)
         token = Agencies.generate_referral_token(owner_account_id)
 
@@ -54,7 +57,8 @@ defmodule MetricFlowSpex.AgencyWithNoConfiguredPlansShowsNothingToSubscribeToSpe
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "no purchasable plan is shown, and the platform's own default plan is not offered instead", context do
+      then_ "no purchasable plan is shown, and the platform's own default plan is not offered instead",
+            context do
         html = render(context.view)
         refute html =~ "subscribe-button"
         refute html =~ "$49.99"

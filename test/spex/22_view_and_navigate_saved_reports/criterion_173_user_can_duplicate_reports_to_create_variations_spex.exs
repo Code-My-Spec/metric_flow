@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion173DuplicateReportsSpex do
 
   spex "User can duplicate reports to create variations", criterion: 173 do
     scenario "duplicating a report creates an independent copy" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a saved report and the user viewing the reports list", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -42,7 +42,8 @@ defmodule MetricFlowSpex.Criterion173DuplicateReportsSpex do
         {:ok, context}
       end
 
-      then_ "a new independent copy is created that can be modified without affecting the original", context do
+      then_ "a new independent copy is created that can be modified without affecting the original",
+            context do
         {:ok, _view, html} = live(context.owner_conn, "/app/reports")
 
         assert length(Regex.scan(~r/data-report-id="(\d+)"/, html)) == 2,

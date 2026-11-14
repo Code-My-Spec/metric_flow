@@ -6,16 +6,18 @@ defmodule MetricFlowSpex.InactiveSessionExpiresAndRequiresReLoginSpex do
 
   spex "Inactive session expires and requires re-login", criterion: 527 do
     scenario "Dana returns in a new browsing session after logging in without Remember me" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "Dana logged in without choosing Remember me", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :logged_in_conn, logged_in_conn)}

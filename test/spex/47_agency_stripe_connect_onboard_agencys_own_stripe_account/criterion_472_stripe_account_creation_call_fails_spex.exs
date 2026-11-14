@@ -5,13 +5,16 @@ defmodule MetricFlowSpex.StripeAccountCreationCallFailsSpex do
 
   spex "Stripe account creation call fails", criterion: 472 do
     scenario "admin clicks connect and Stripe rejects the account creation" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Stripe rejects the account creation call", context do
         Application.put_env(:metric_flow, :stripe_test_plug, fn conn ->
           conn
           |> Plug.Conn.put_resp_content_type("application/json")
-          |> Plug.Conn.send_resp(402, Jason.encode!(%{"error" => %{"message" => "card_declined"}}))
+          |> Plug.Conn.send_resp(
+            402,
+            Jason.encode!(%{"error" => %{"message" => "card_declined"}})
+          )
         end)
 
         {:ok, context}

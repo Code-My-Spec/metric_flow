@@ -12,9 +12,10 @@ defmodule MetricFlowSpex.SystemSyncsAllCoreGa4MetricsAsDailyValuesSpex do
   """
 
   spex "System syncs the following GA4 metrics as core daily values: activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers",
-       fail_on_error_logs: false, criterion: 293 do
+    fail_on_error_logs: false,
+    criterion: 293 do
     scenario "a daily sync records a value for every core metric" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a connected GA4 property with normal traffic", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
@@ -33,7 +34,12 @@ defmodule MetricFlowSpex.SystemSyncsAllCoreGa4MetricsAsDailyValuesSpex do
 
       then_ "the sync entry reports records synced covering all #{length(@core_metrics)} core metrics for the day",
             context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'] [data-role='sync-provider']", "Google Analytics")
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'] [data-role='sync-provider']",
+                 "Google Analytics"
+               )
+
         {:ok, context}
       end
     end

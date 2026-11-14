@@ -6,12 +6,20 @@ defmodule MetricFlowSpex.SummaryViewShowsActiveSubscribersAndMrrFromLocalDataSpe
 
   spex "Summary view shows active subscribers and MRR from local data", criterion: 506 do
     scenario "Acme Agency has several active customer subscriptions stored locally" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "Acme Agency has two active customer subscriptions", context do
-        MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
-        MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+        MetricFlowSpex.Fixtures.agency_customer_subscription!(
+          context.owner_email,
+          context.agency_plan
+        )
+
+        MetricFlowSpex.Fixtures.agency_customer_subscription!(
+          context.owner_email,
+          context.agency_plan
+        )
+
         {:ok, context}
       end
 
@@ -29,6 +37,7 @@ defmodule MetricFlowSpex.SummaryViewShowsActiveSubscribersAndMrrFromLocalDataSpe
 
         expected_dollars = context.agency_plan.price_cents * 2 / 100
         expected_formatted = "$" <> :erlang.float_to_binary(expected_dollars, decimals: 2)
+
         assert html =~ expected_formatted,
                "Expected MRR to be computed locally as #{expected_formatted}. Got: #{html}"
 

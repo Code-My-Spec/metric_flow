@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.NonAdminUserDoesNotSeeTheSyncNowButtonSpex do
 
   spex "Non-admin user does not see the Sync Now button", criterion: 581 do
     scenario "a plain member without admin access does not see a Sync Now button" do
-      given_ :owner_with_integrations
-      given_ :agency_member_registered
+      given_(:owner_with_integrations)
+      given_(:agency_member_registered)
 
       when_ "they open an integration's settings", context do
         {:ok, view, _html} = live(context.member_conn, "/app/integrations")

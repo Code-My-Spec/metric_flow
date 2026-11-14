@@ -56,7 +56,13 @@ defmodule MetricFlow.IntegrationsTest do
       }
 
       token = Map.merge(token_base, Keyword.get(config, :token_overrides, %{}))
-      user = Keyword.get(config, :user_override, %{"sub" => "stub-user-id", "email" => "stub@example.com"})
+
+      user =
+        Keyword.get(config, :user_override, %{
+          "sub" => "stub-user-id",
+          "email" => "stub@example.com"
+        })
+
       {:ok, %{token: token, user: user}}
     end
 
@@ -642,7 +648,8 @@ defmodule MetricFlow.IntegrationsTest do
         do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
-        with_cassette "google_authorize_url",
+        with_cassette(
+          "google_authorize_url",
           [
             cassette_dir: @cassette_dir,
             mode: :replay,
@@ -660,6 +667,7 @@ defmodule MetricFlow.IntegrationsTest do
             assert String.contains?(url, "scope=")
             assert is_map(session_params)
           end
+        )
       end)
     end
   end

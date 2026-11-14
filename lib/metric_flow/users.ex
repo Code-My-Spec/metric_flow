@@ -92,6 +92,28 @@ defmodule MetricFlow.Users do
   end
 
   @doc """
+  Finds the user for a verified OAuth sign-in by email, or registers a
+  passwordless, already-confirmed one. Returns `{:ok, user, :existing | :new}`.
+  """
+  def find_or_register_oauth_user(%{email: email} = profile) when is_binary(email) do
+    case get_user_by_email(email) do
+      %User{} = user ->
+        {:ok, user, :existing}
+
+      nil ->
+        name = profile[:name]
+        account_name = if is_binary(name) and name != "", do: name, else: email
+
+        with {:ok, user} <-
+               %User{}
+               |> User.oauth_changeset(%{email: email, account_name: account_name})
+               |> Repo.insert() do
+          {:ok, user, :new}
+        end
+    end
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking user registration changes.
 
   See `MetricFlow.Users.User.registration_changeset/3` for a list of supported options.
@@ -282,6 +304,36 @@ defmodule MetricFlow.Users do
     {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
+  end
+
+  @doc "Sends a short-lived password reset link to a confirmed user."
+  def deliver_password_reset_instructions(%User{confirmed_at: confirmed_at} = user, url_fun)
+      when not is_nil(confirmed_at) and is_function(url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
+    Repo.insert!(user_token)
+    UserNotifier.deliver_password_reset_instructions(user, url_fun.(encoded_token))
+  end
+
+  @doc "Returns the user for a valid password reset link."
+  def get_user_by_password_reset_token(token) do
+    with {:ok, query} <- UserToken.verify_password_reset_token_query(token),
+         {user, _user_token} <- Repo.one(query) do
+      user
+    else
+      _ -> nil
+    end
+  end
+
+  @doc "Resets the password and revokes all existing sessions and reset links."
+  def reset_user_password(token, attrs) do
+    with {:ok, query} <- UserToken.verify_password_reset_token_query(token),
+         {user, _user_token} <- Repo.one(query) do
+      user
+      |> User.password_changeset(attrs)
+      |> update_user_and_delete_all_tokens()
+    else
+      _ -> {:error, :invalid_token}
+    end
   end
 
   @doc """

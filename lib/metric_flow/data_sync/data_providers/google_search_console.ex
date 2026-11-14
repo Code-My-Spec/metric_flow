@@ -70,7 +70,9 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsole do
 
   defp resolve_date_range(opts) do
     case Keyword.get(opts, :date_range) do
-      {start_date, end_date} -> {start_date, end_date}
+      {start_date, end_date} ->
+        {start_date, end_date}
+
       nil ->
         today = Date.utc_today()
         {Date.add(today, -548), Date.add(today, -1)}
@@ -85,13 +87,29 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsole do
     {:ok, accumulated}
   end
 
-  defp fetch_all_rows(integration, site_url, start_date, end_date, opts, offset, accumulated, pages_remaining) do
+  defp fetch_all_rows(
+         integration,
+         site_url,
+         start_date,
+         end_date,
+         opts,
+         offset,
+         accumulated,
+         pages_remaining
+       ) do
     case execute_request(integration, site_url, start_date, end_date, opts, offset) do
       {:ok, rows} when is_list(rows) and length(rows) == @rows_per_page ->
         metrics = transform_rows(rows)
+
         fetch_all_rows(
-          integration, site_url, start_date, end_date, opts,
-          offset + @rows_per_page, accumulated ++ metrics, pages_remaining - 1
+          integration,
+          site_url,
+          start_date,
+          end_date,
+          opts,
+          offset + @rows_per_page,
+          accumulated ++ metrics,
+          pages_remaining - 1
         )
 
       {:ok, rows} when is_list(rows) ->
@@ -129,7 +147,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsole do
       |> maybe_put_plug(opts)
 
     try do
-      response = Req.request!(req_opts)
+      response = MetricFlow.DataSync.ProviderHttp.request!(req_opts)
       handle_response(response)
     rescue
       e ->

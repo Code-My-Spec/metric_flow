@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.TheLastRemainingOwnerCannotBeRemovedSpex do
 
   spex "The last remaining owner cannot be removed", criterion: 538 do
     scenario "Alex is the only owner and cannot be removed or demoted" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex is on the members page as the only owner", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")

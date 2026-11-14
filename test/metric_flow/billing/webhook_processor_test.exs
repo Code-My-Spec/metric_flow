@@ -95,7 +95,9 @@ defmodule MetricFlow.Billing.WebhookProcessorTest do
 
       assert :ok = WebhookProcessor.process_event(event)
 
-      updated = BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+      updated =
+        BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+
       assert updated.status == :past_due
     end
 
@@ -114,7 +116,9 @@ defmodule MetricFlow.Billing.WebhookProcessorTest do
 
       assert :ok = WebhookProcessor.process_event(event)
 
-      updated = BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+      updated =
+        BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+
       assert updated.status == :cancelled
       assert updated.cancelled_at != nil
     end
@@ -132,7 +136,9 @@ defmodule MetricFlow.Billing.WebhookProcessorTest do
 
       assert :ok = WebhookProcessor.process_event(event)
 
-      updated = BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+      updated =
+        BillingRepository.get_subscription_by_stripe_id(subscription.stripe_subscription_id)
+
       assert updated.status == :past_due
     end
 

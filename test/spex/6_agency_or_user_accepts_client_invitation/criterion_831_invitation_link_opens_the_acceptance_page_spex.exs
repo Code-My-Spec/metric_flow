@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion831InvitationLinkOpensTheAcceptancePageSpex do
 
   spex "Invitation link opens the acceptance page", criterion: 831 do
     scenario "clicking a valid invitation link opens the acceptance page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation to the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -50,7 +50,9 @@ defmodule MetricFlowSpex.Criterion831InvitationLinkOpensTheAcceptancePageSpex do
       end
 
       when_ "the invitee opens the invitation link", context do
-        {:ok, view, _html} = live(context.invitee_conn, "/invitations/#{context.invitation_token}")
+        {:ok, view, _html} =
+          live(context.invitee_conn, "/invitations/#{context.invitation_token}")
+
         {:ok, Map.put(context, :view, view)}
       end
 

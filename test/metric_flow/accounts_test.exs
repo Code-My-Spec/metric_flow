@@ -501,7 +501,12 @@ defmodule MetricFlow.AccountsTest do
       insert_member!(account, target_user, :read_only)
 
       assert {:ok, member} =
-               Accounts.update_user_role(admin_scope, target_user.id, account.id, :account_manager)
+               Accounts.update_user_role(
+                 admin_scope,
+                 target_user.id,
+                 account.id,
+                 :account_manager
+               )
 
       assert member.role == :account_manager
     end
@@ -632,7 +637,8 @@ defmodule MetricFlow.AccountsTest do
       account = account_fixture(scope)
       new_user = user_fixture()
 
-      assert {:ok, member} = Accounts.add_user_to_account(scope, new_user.id, account.id, :read_only)
+      assert {:ok, member} =
+               Accounts.add_user_to_account(scope, new_user.id, account.id, :read_only)
 
       assert member.user_id == new_user.id
       assert member.account_id == account.id
@@ -760,7 +766,8 @@ defmodule MetricFlow.AccountsTest do
       new_user_scope = Scope.for_user(new_user)
       Accounts.subscribe_member(new_user_scope)
 
-      assert {:ok, member} = Accounts.add_user_to_account(scope, new_user.id, account.id, :read_only)
+      assert {:ok, member} =
+               Accounts.add_user_to_account(scope, new_user.id, account.id, :read_only)
 
       assert_receive {:created, ^member}
     end

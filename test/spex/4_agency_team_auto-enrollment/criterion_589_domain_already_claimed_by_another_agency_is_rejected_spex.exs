@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.DomainAlreadyClaimedByAnotherAgencyIsRejectedSpex do
 
   spex "Domain already claimed by another agency is rejected", criterion: 589 do
     scenario "a second agency cannot configure a domain already claimed by another agency" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
-      given_ "an email domain is already configured for auto-enrollment by a different agency", context do
+      given_ "an email domain is already configured for auto-enrollment by a different agency",
+             context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view

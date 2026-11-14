@@ -120,39 +120,56 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
             "Header" => %{
               "ColData" => [
                 %{"id" => "1", "value" => "Test Customer"},
-                %{"value" => ""}, %{"value" => ""}, %{"value" => ""},
-                %{"value" => ""}, %{"value" => ""}, %{"value" => ""},
-                %{"value" => ""}, %{"value" => ""}
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""}
               ]
             },
             "Rows" => %{
               "Row" => [
                 %{
                   "ColData" => [
-                    %{"value" => "2026-01-15"}, %{"value" => "Invoice"},
-                    %{"value" => "1001"}, %{"value" => "Yes"},
-                    %{"value" => "Test Customer"}, %{"value" => "Widget sale"},
-                    %{"value" => "Accounts Receivable"}, %{"value" => "-Split-"},
+                    %{"value" => "2026-01-15"},
+                    %{"value" => "Invoice"},
+                    %{"value" => "1001"},
+                    %{"value" => "Yes"},
+                    %{"value" => "Test Customer"},
+                    %{"value" => "Widget sale"},
+                    %{"value" => "Accounts Receivable"},
+                    %{"value" => "-Split-"},
                     %{"value" => "500.00"}
                   ],
                   "type" => "Data"
                 },
                 %{
                   "ColData" => [
-                    %{"value" => "2026-01-15"}, %{"value" => "Invoice"},
-                    %{"value" => "1002"}, %{"value" => "Yes"},
-                    %{"value" => "Another Customer"}, %{"value" => "Service"},
-                    %{"value" => "Accounts Receivable"}, %{"value" => "-Split-"},
+                    %{"value" => "2026-01-15"},
+                    %{"value" => "Invoice"},
+                    %{"value" => "1002"},
+                    %{"value" => "Yes"},
+                    %{"value" => "Another Customer"},
+                    %{"value" => "Service"},
+                    %{"value" => "Accounts Receivable"},
+                    %{"value" => "-Split-"},
                     %{"value" => "250.00"}
                   ],
                   "type" => "Data"
                 },
                 %{
                   "ColData" => [
-                    %{"value" => "2026-01-20"}, %{"value" => "Expense"},
-                    %{"value" => ""}, %{"value" => "Yes"},
-                    %{"value" => ""}, %{"value" => "Adjustment"},
-                    %{"value" => "Checking"}, %{"value" => "Dues"},
+                    %{"value" => "2026-01-20"},
+                    %{"value" => "Expense"},
+                    %{"value" => ""},
+                    %{"value" => "Yes"},
+                    %{"value" => ""},
+                    %{"value" => "Adjustment"},
+                    %{"value" => "Checking"},
+                    %{"value" => "Dues"},
                     %{"value" => "-100.00"}
                   ],
                   "type" => "Data"
@@ -162,9 +179,14 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
             "Summary" => %{
               "ColData" => [
                 %{"value" => "Total for Test Customer"},
-                %{"value" => ""}, %{"value" => ""}, %{"value" => ""},
-                %{"value" => ""}, %{"value" => ""}, %{"value" => ""},
-                %{"value" => ""}, %{"value" => "650.00"}
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => ""},
+                %{"value" => "650.00"}
               ]
             },
             "type" => "Section"
@@ -294,8 +316,11 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
           # 6 days × 2 metrics (credits + debits) = 12
           assert length(metrics) == 12
 
-          credit_metrics = Enum.filter(metrics, &(&1.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_CREDITS"))
-          debit_metrics = Enum.filter(metrics, &(&1.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_DEBITS"))
+          credit_metrics =
+            Enum.filter(metrics, &(&1.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_CREDITS"))
+
+          debit_metrics =
+            Enum.filter(metrics, &(&1.metric_name == "QUICKBOOKS_ACCOUNT_DAILY_DEBITS"))
 
           assert length(credit_metrics) == 6
           assert length(debit_metrics) == 6
@@ -333,7 +358,11 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
           )
 
         metric_names = metrics |> Enum.map(& &1.metric_name) |> Enum.uniq() |> Enum.sort()
-        assert metric_names == ["QUICKBOOKS_ACCOUNT_DAILY_CREDITS", "QUICKBOOKS_ACCOUNT_DAILY_DEBITS"]
+
+        assert metric_names == [
+                 "QUICKBOOKS_ACCOUNT_DAILY_CREDITS",
+                 "QUICKBOOKS_ACCOUNT_DAILY_DEBITS"
+               ]
       end)
     end
 
@@ -463,7 +492,10 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       plug = capture_request_plug(test_pid, transaction_list_response())
 
       capture_log(fn ->
-        QuickBooks.fetch_metrics(valid_integration(), http_plug: plug, date_range: {~D[2026-01-15], ~D[2026-01-15]})
+        QuickBooks.fetch_metrics(valid_integration(),
+          http_plug: plug,
+          date_range: {~D[2026-01-15], ~D[2026-01-15]}
+        )
       end)
 
       assert_receive {:request, conn}
@@ -476,7 +508,10 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       plug = capture_request_plug(test_pid, transaction_list_response())
 
       capture_log(fn ->
-        QuickBooks.fetch_metrics(valid_integration(), http_plug: plug, date_range: {~D[2026-01-15], ~D[2026-01-15]})
+        QuickBooks.fetch_metrics(valid_integration(),
+          http_plug: plug,
+          date_range: {~D[2026-01-15], ~D[2026-01-15]}
+        )
       end)
 
       assert_receive {:request, conn}
@@ -542,7 +577,12 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       end)
 
       assert_receive {:request, conn}
-      assert String.contains?(conn.query_string, "end_date=#{Date.to_iso8601(Date.add(today, -1))}")
+
+      assert String.contains?(
+               conn.query_string,
+               "end_date=#{Date.to_iso8601(Date.add(today, -1))}"
+             )
+
       assert String.contains?(conn.query_string, "start_date=#{Date.to_iso8601(expected_start)}")
     end
 
@@ -848,7 +888,10 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
           "43" ->
             conn
             |> Plug.Conn.put_resp_content_type("application/json")
-            |> Plug.Conn.send_resp(401, ~s({"Fault":{"Error":[{"Message":"AuthenticationFailed"}]}}))
+            |> Plug.Conn.send_resp(
+              401,
+              ~s({"Fault":{"Error":[{"Message":"AuthenticationFailed"}]}})
+            )
         end
       end
 
@@ -882,24 +925,28 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       if context[:skip], do: flunk("QUICKBOOKS_TEST_REALM_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "quickbooks_fetch_metrics", cassette_opts("quickbooks_fetch_metrics"), fn plug ->
-          assert {:ok, metrics} =
-                   QuickBooks.fetch_metrics(context.integration,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+        with_cassette(
+          "quickbooks_fetch_metrics",
+          cassette_opts("quickbooks_fetch_metrics"),
+          fn plug ->
+            assert {:ok, metrics} =
+                     QuickBooks.fetch_metrics(context.integration,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert is_list(metrics)
+            assert is_list(metrics)
 
-          for metric <- metrics do
-            assert metric.provider == :quickbooks
-            assert is_binary(metric.metric_type)
-            assert is_binary(metric.metric_name)
-            assert is_number(metric.value)
-            assert %DateTime{} = metric.recorded_at
-            assert is_map(metric.metadata)
+            for metric <- metrics do
+              assert metric.provider == :quickbooks
+              assert is_binary(metric.metric_type)
+              assert is_binary(metric.metric_name)
+              assert is_number(metric.value)
+              assert %DateTime{} = metric.recorded_at
+              assert is_map(metric.metadata)
+            end
           end
-        end
+        )
       end)
     end
 
@@ -907,17 +954,21 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooksTest do
       if context[:skip], do: flunk("QUICKBOOKS_TEST_REALM_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "quickbooks_unauthorized", cassette_opts("quickbooks_unauthorized"), fn plug ->
-          bad_token = %{context.integration | access_token: "invalid-token"}
+        with_cassette(
+          "quickbooks_unauthorized",
+          cassette_opts("quickbooks_unauthorized"),
+          fn plug ->
+            bad_token = %{context.integration | access_token: "invalid-token"}
 
-          assert {:error, reason} =
-                   QuickBooks.fetch_metrics(bad_token,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+            assert {:error, reason} =
+                     QuickBooks.fetch_metrics(bad_token,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert reason in [:unauthorized, :insufficient_permissions, :company_not_found]
-        end
+            assert reason in [:unauthorized, :insufficient_permissions, :company_not_found]
+          end
+        )
       end)
     end
   end

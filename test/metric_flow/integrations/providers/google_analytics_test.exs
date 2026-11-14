@@ -92,7 +92,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     @describetag :integration
 
     test "returns keyword list with required OAuth configuration keys" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -106,7 +107,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     end
 
     test "includes client_id from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -119,7 +121,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     end
 
     test "includes client_secret from application config" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -132,7 +135,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     end
 
     test "includes redirect_uri pointing to the google_analytics callback path" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -140,12 +144,17 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/google_analytics")
+
+        assert String.ends_with?(
+                 redirect_uri,
+                 "/app/integrations/oauth/callback/google_analytics"
+               )
       end)
     end
 
     test "includes authorization_params with email, profile, and analytics.readonly scopes" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -160,7 +169,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     end
 
     test "includes access_type \"offline\" for refresh token support" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()
@@ -171,7 +181,8 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
     end
 
     test "includes prompt \"consent\" to force consent screen" do
-      if not has_google_credentials?(), do: flunk("Google OAuth credentials not configured in .env.test")
+      if not has_google_credentials?(),
+        do: flunk("Google OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = GoogleAnalytics.config()

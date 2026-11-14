@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion845SystemCalculatesCorrelationsAgainstASelecte
 
   spex "System calculates correlations against a selected goal metric", criterion: 845 do
     scenario "a user with a selected goal metric triggers correlation analysis" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has selected a goal metric", context do
         yesterday = Date.add(Date.utc_today(), -1)
@@ -53,7 +53,8 @@ defmodule MetricFlowSpex.Criterion845SystemCalculatesCorrelationsAgainstASelecte
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the system calculates a correlation between that goal metric and every other available metric", context do
+      then_ "the system calculates a correlation between that goal metric and every other available metric",
+            context do
         assert has_element?(context.view, "[data-role='correlation-row'][data-metric='clicks']"),
                "Expected a correlation result between the goal metric and clicks"
 

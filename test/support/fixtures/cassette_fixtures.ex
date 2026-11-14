@@ -33,7 +33,9 @@ defmodule MetricFlowTest.CassetteFixtures do
   """
   def google_ads_integration do
     case test_cred(:google_ads_customer_id) do
-      nil -> nil
+      nil ->
+        nil
+
       customer_id ->
         metadata = %{"customer_id" => customer_id}
 
@@ -53,7 +55,9 @@ defmodule MetricFlowTest.CassetteFixtures do
   """
   def google_analytics_integration do
     case test_cred(:ga4_property_id) do
-      nil -> nil
+      nil ->
+        nil
+
       property_id ->
         build_integration(:google_analytics, %{
           "property_id" => property_id
@@ -67,7 +71,9 @@ defmodule MetricFlowTest.CassetteFixtures do
   """
   def facebook_ads_integration do
     case test_cred(:facebook_ad_account_id) do
-      nil -> nil
+      nil ->
+        nil
+
       ad_account_id ->
         build_integration(:facebook_ads, %{
           "ad_account_id" => ad_account_id
@@ -81,7 +87,9 @@ defmodule MetricFlowTest.CassetteFixtures do
   """
   def quickbooks_integration do
     case test_cred(:quickbooks_realm_id) do
-      nil -> nil
+      nil ->
+        nil
+
       realm_id ->
         build_integration(:quickbooks, %{
           "realm_id" => realm_id,

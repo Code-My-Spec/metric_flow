@@ -15,6 +15,7 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
               |> put_req_header("content-type", "application/json")
               |> put_req_header("stripe-signature", "test_signature")
               |> post("/billing/webhooks", "not valid json")
+
             {:ok, conn}
           rescue
             _e -> {:error, :parse_error}
@@ -27,10 +28,12 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
         case context.response do
           {:ok, conn} ->
             assert conn.status in [400, 422]
+
           {:error, :parse_error} ->
             # ParseError raised before controller — treated as 400-equivalent
             {:ok, context}
         end
+
         {:ok, context}
       end
     end
@@ -47,7 +50,10 @@ defmodule MetricFlowSpex.WebhookFailuresCapturedSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}

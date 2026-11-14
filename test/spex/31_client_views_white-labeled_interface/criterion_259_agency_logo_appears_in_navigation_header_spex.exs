@@ -6,17 +6,18 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
 
   spex "Agency logo appears in navigation header", criterion: 259 do
     scenario "client sees agency logo in the navigation header when white-labeling is active" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account is originated by an agency with a logo configured", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "logotest",
-          logo_url: "https://example.com/my-agency-logo.png",
-          primary_color: "#112233",
-          secondary_color: "#445566"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "logotest",
+            logo_url: "https://example.com/my-agency-logo.png",
+            primary_color: "#112233",
+            secondary_color: "#445566"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -47,17 +48,18 @@ defmodule MetricFlowSpex.AgencyLogoAppearsInNavigationHeaderSpex do
     end
 
     scenario "agency logo replaces or accompanies the default logo in the header" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the client's account has an originating agency with branding", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "logotest2",
-          logo_url: "https://example.com/agency-brand.png",
-          primary_color: "#AABB00",
-          secondary_color: "#00BBAA"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "logotest2",
+            logo_url: "https://example.com/agency-brand.png",
+            primary_color: "#AABB00",
+            secondary_color: "#00BBAA"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 

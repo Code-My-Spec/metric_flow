@@ -5,12 +5,13 @@ defmodule MetricFlowSpex.Criterion1010SyncFetchesCreditsAndDebitsViaExistingOAut
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches daily credit and debit totals for the configured QuickBooks income account, using the account's existing QuickBooks OAuth authorization -- no separate financial-platform connection step required",
-       criterion: 1010 do
+    criterion: 1010 do
     scenario "a client with a connected QuickBooks company and income account syncs daily credit and debit totals" do
-      given_ :user_logged_in_as_owner
-      given_ :with_quickbooks_sync_stub
+      given_(:user_logged_in_as_owner)
+      given_(:with_quickbooks_sync_stub)
 
-      given_ "a client has a connected QuickBooks company with an income account configured", context do
+      given_ "a client has a connected QuickBooks company with an income account configured",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,
           provider_metadata: %{"realm_id" => "123456789", "income_account_id" => "79"}
         )
@@ -25,7 +26,8 @@ defmodule MetricFlowSpex.Criterion1010SyncFetchesCreditsAndDebitsViaExistingOAut
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "daily credit and debit totals are fetched using the account's own QuickBooks OAuth authorization", context do
+      then_ "daily credit and debit totals are fetched using the account's own QuickBooks OAuth authorization",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

@@ -5,7 +5,8 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
   import MetricFlowSpex.SharedGivens
 
   spex "Pagination is handled — system follows nextPageToken until all locations are retrieved for each account",
-       fail_on_error_logs: false, criterion: 396 do
+    fail_on_error_logs: false,
+    criterion: 396 do
     scenario "authenticated user sees all locations without manual pagination" do
       given_ "a user is registered and has a google_business integration", context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
@@ -15,14 +16,17 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -30,9 +34,11 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
           provider: :google_business,
           provider_metadata: %{
@@ -45,11 +51,13 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -68,17 +76,22 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
             {:ok, context}
 
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
-            flunk("Expected the location selection page to be accessible to an authenticated user, but was redirected to login")
+            flunk(
+              "Expected the location selection page to be accessible to an authenticated user, but was redirected to login"
+            )
 
           {:error, {:redirect, %{to: path}}} ->
             flunk("Expected the location selection page to load but was redirected to #{path}")
 
           {:error, {:live_redirect, %{to: path}}} ->
-            flunk("Expected the location selection page to load but was live-redirected to #{path}")
+            flunk(
+              "Expected the location selection page to load but was live-redirected to #{path}"
+            )
         end
       end
 
-      then_ "the page presents all locations in a single list with no load more button required", context do
+      then_ "the page presents all locations in a single list with no load more button required",
+            context do
         case context.location_page_result do
           {:ok, view, _html} ->
             html = render(view)
@@ -111,14 +124,17 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Owner Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Owner Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -126,9 +142,11 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
           provider: :google_business,
           provider_metadata: %{
@@ -141,11 +159,13 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -161,7 +181,9 @@ defmodule MetricFlowSpex.PaginationIsHandledSystemFollowsNextPageTokenUntilAllLo
       then_ "the page does not redirect the authenticated user away", context do
         case context.page_result do
           {:error, {:redirect, %{to: "/users/log-in"}}} ->
-            flunk("Authenticated user was redirected to login — integration or session may not be set up correctly")
+            flunk(
+              "Authenticated user was redirected to login — integration or session may not be set up correctly"
+            )
 
           {:error, {:redirect, %{to: _}}} ->
             {:ok, context}

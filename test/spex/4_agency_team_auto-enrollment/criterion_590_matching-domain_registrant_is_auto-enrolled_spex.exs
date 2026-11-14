@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.MatchingDomainRegistrantIsAutoEnrolledSpex do
 
   spex "Matching-domain registrant is auto-enrolled", criterion: 590 do
     scenario "a new user registering on the exact configured domain is auto-enrolled" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "an agency has configured auto-enrollment for a domain", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

@@ -48,7 +48,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
     @describetag :integration
 
     test "returns keyword list with required OAuth configuration keys" do
-      if not has_facebook_credentials?(), do: flunk("Facebook OAuth credentials not configured in .env.test")
+      if not has_facebook_credentials?(),
+        do: flunk("Facebook OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Facebook.config()
@@ -62,7 +63,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
     end
 
     test "includes client_id from application config" do
-      if not has_facebook_credentials?(), do: flunk("Facebook OAuth credentials not configured in .env.test")
+      if not has_facebook_credentials?(),
+        do: flunk("Facebook OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Facebook.config()
@@ -75,7 +77,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
     end
 
     test "includes client_secret from application config" do
-      if not has_facebook_credentials?(), do: flunk("Facebook OAuth credentials not configured in .env.test")
+      if not has_facebook_credentials?(),
+        do: flunk("Facebook OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Facebook.config()
@@ -88,7 +91,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
     end
 
     test "includes redirect_uri pointing to the facebook_ads callback path" do
-      if not has_facebook_credentials?(), do: flunk("Facebook OAuth credentials not configured in .env.test")
+      if not has_facebook_credentials?(),
+        do: flunk("Facebook OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Facebook.config()
@@ -100,7 +104,8 @@ defmodule MetricFlow.Integrations.Providers.FacebookTest do
     end
 
     test "includes authorization_params with ads_read scope" do
-      if not has_facebook_credentials?(), do: flunk("Facebook OAuth credentials not configured in .env.test")
+      if not has_facebook_credentials?(),
+        do: flunk("Facebook OAuth credentials not configured in .env.test")
 
       capture_log(fn ->
         config = Facebook.config()

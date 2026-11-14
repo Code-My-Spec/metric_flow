@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.FinancialDataAppearsAsAMetricAvailableForCorrelationSpe
 
   spex "Financial data appears as a metric available for correlation", criterion: 921 do
     scenario "a synced QuickBooks metric appears alongside a marketing metric in the goal picker" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "QuickBooks financial data has been synced", context do
         dt = DateTime.new!(Date.add(Date.utc_today(), -1), ~T[00:00:00], "Etc/UTC")
@@ -34,7 +34,8 @@ defmodule MetricFlowSpex.FinancialDataAppearsAsAMetricAvailableForCorrelationSpe
         {:ok, Map.put(context, :goals_view, goals_view)}
       end
 
-      then_ "the financial data appears as just another metric, alongside marketing metrics", context do
+      then_ "the financial data appears as just another metric, alongside marketing metrics",
+            context do
         html = render(context.goals_view)
         assert html =~ "revenue"
         assert html =~ "clicks"

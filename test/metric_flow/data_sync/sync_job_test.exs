@@ -390,8 +390,11 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "returns duration in seconds when job is completed" do
-      started_at = DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond)
-      completed_at = DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond)
+
+      completed_at =
+        DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -404,8 +407,11 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "returns duration in seconds when job is failed" do
-      started_at = DateTime.add(DateTime.utc_now(), -90, :second) |> DateTime.truncate(:microsecond)
-      completed_at = DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -90, :second) |> DateTime.truncate(:microsecond)
+
+      completed_at =
+        DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -418,8 +424,11 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "returns duration in seconds when job is cancelled" do
-      started_at = DateTime.add(DateTime.utc_now(), -45, :second) |> DateTime.truncate(:microsecond)
-      completed_at = DateTime.add(DateTime.utc_now(), -15, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -45, :second) |> DateTime.truncate(:microsecond)
+
+      completed_at =
+        DateTime.add(DateTime.utc_now(), -15, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -432,7 +441,8 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "returns elapsed time in seconds when job is running (no completed_at)" do
-      started_at = DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -30, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -448,8 +458,11 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "calculates duration using DateTime.diff/2 with :second unit" do
-      started_at = DateTime.add(DateTime.utc_now(), -300, :second) |> DateTime.truncate(:microsecond)
-      completed_at = DateTime.add(DateTime.utc_now(), -0, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -300, :second) |> DateTime.truncate(:microsecond)
+
+      completed_at =
+        DateTime.add(DateTime.utc_now(), -0, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -464,8 +477,11 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "returns positive integer for valid time ranges" do
-      started_at = DateTime.add(DateTime.utc_now(), -100, :second) |> DateTime.truncate(:microsecond)
-      completed_at = DateTime.add(DateTime.utc_now(), -10, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -100, :second) |> DateTime.truncate(:microsecond)
+
+      completed_at =
+        DateTime.add(DateTime.utc_now(), -10, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,
@@ -494,7 +510,8 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "uses current UTC time for running jobs without completed_at" do
-      started_at = DateTime.add(DateTime.utc_now(), -10, :second) |> DateTime.truncate(:microsecond)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -10, :second) |> DateTime.truncate(:microsecond)
 
       sync_job =
         struct!(SyncJob,

@@ -56,7 +56,8 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     Map.merge(
       %{
         "summary" => "Sessions strongly predict revenue",
-        "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+        "content" =>
+          "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
         "suggestion_type" => "budget_increase",
         "confidence" => 0.85
       },
@@ -95,50 +96,55 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
 
   describe "build_user_content/2" do
     test "includes metric names from correlation results" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_multiple_results(),
-        available_metric_names()
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_multiple_results(),
+          available_metric_names()
+        )
 
       assert String.contains?(content, "sessions")
       assert String.contains?(content, "ad_spend")
     end
 
     test "includes correlation coefficients" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_multiple_results(),
-        available_metric_names()
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_multiple_results(),
+          available_metric_names()
+        )
 
       assert String.contains?(content, "0.85")
       assert String.contains?(content, "0.72")
     end
 
     test "includes optimal lag values" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_multiple_results(),
-        available_metric_names()
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_multiple_results(),
+          available_metric_names()
+        )
 
       assert String.contains?(content, "3")
       assert String.contains?(content, "7")
     end
 
     test "includes data window dates" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_multiple_results(),
-        available_metric_names()
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_multiple_results(),
+          available_metric_names()
+        )
 
       assert String.contains?(content, "2025-11-01")
       assert String.contains?(content, "2026-01-31")
     end
 
     test "includes available metric names" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_multiple_results(),
-        ["sessions", "revenue", "pageviews"]
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_multiple_results(),
+          ["sessions", "revenue", "pageviews"]
+        )
 
       assert String.contains?(content, "sessions")
       assert String.contains?(content, "revenue")
@@ -146,10 +152,11 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "handles single correlation result" do
-      content = InsightsGenerator.build_user_content(
-        correlation_data_with_single_result(),
-        available_metric_names()
-      )
+      content =
+        InsightsGenerator.build_user_content(
+          correlation_data_with_single_result(),
+          available_metric_names()
+        )
 
       assert String.contains?(content, "sessions")
       assert String.contains?(content, "0.91")
@@ -240,7 +247,10 @@ defmodule MetricFlow.Ai.InsightsGeneratorTest do
     end
 
     test "handles single correlation result" do
-      runner = ClaudeCodeStub.tool_call("emit_insights", %{"insights" => [insight(%{"summary" => "Sessions predict revenue"})]})
+      runner =
+        ClaudeCodeStub.tool_call("emit_insights", %{
+          "insights" => [insight(%{"summary" => "Sessions predict revenue"})]
+        })
 
       result =
         InsightsGenerator.generate(

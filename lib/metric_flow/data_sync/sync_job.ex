@@ -44,6 +44,7 @@ defmodule MetricFlow.DataSync.SyncJob do
     :google_business,
     :google_business_reviews,
     :facebook_ads,
+    :youtube,
     :quickbooks
   ]
   @statuses [:pending, :running, :completed, :failed, :cancelled]

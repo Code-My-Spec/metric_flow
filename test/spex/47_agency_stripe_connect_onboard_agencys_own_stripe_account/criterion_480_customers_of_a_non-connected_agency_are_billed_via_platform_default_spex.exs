@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.NonConnectedAgencyCustomersUsePlatformDefaultBillingSpe
 
   spex "Customers of a non-connected agency are billed via platform default", criterion: 480 do
     scenario "a customer under a non-connected agency reaches the platform's own checkout" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the agency has no Stripe account connected", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")
@@ -17,7 +17,8 @@ defmodule MetricFlowSpex.NonConnectedAgencyCustomersUsePlatformDefaultBillingSpe
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the agency is confirmed not connected and the platform checkout is reachable", context do
+      then_ "the agency is confirmed not connected and the platform checkout is reachable",
+            context do
         assert render(context.stripe_connect_view) =~ "Not connected"
         assert is_binary(render(context.view))
         {:ok, context}

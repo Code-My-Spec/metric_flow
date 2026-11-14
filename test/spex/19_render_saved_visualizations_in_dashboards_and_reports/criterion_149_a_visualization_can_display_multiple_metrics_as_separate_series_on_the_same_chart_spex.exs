@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion149MultipleMetricsAsSeparateSeriesSpex do
   spex "A visualization can display multiple metrics as separate series on the same chart",
     criterion: 149 do
     scenario "binding two metrics produces a layered spec with one series per metric" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the user opens the visualization editor and selects two metrics", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -29,7 +29,8 @@ defmodule MetricFlowSpex.Criterion149MultipleMetricsAsSeparateSeriesSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the spec contains one series per bound metric rather than a single merged series", context do
+      then_ "the spec contains one series per bound metric rather than a single merged series",
+            context do
         spec_text =
           context.view
           |> element("[data-role='vega-spec-textarea']")

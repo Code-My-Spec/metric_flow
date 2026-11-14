@@ -4,13 +4,15 @@ defmodule MetricFlowSpex.Criterion797SameTemplateRendersDifferentDataPerBindingS
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Same spec template renders different data for different metric bindings", criterion: 797 do
+  spex "Same spec template renders different data for different metric bindings",
+    criterion: 797 do
     scenario "two visualizations built from the same chart type but bound to different metrics render their own data" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
-      given_ "two visualizations sharing the same spec template, bound to different metrics via the join table", context do
+      given_ "two visualizations sharing the same spec template, bound to different metrics via the join table",
+             context do
         {:ok, view_a, _html} = live(context.owner_conn, "/app/visualizations/new")
 
         view_a
@@ -41,7 +43,9 @@ defmodule MetricFlowSpex.Criterion797SameTemplateRendersDifferentDataPerBindingS
 
         {:ok, index_view, _html} = live(context.owner_conn, "/app/visualizations")
         html = render(index_view)
-        [id_a, id_b] = Regex.scan(~r/data-visualization-id="(\d+)"/, html) |> Enum.map(&Enum.at(&1, 1))
+
+        [id_a, id_b] =
+          Regex.scan(~r/data-visualization-id="(\d+)"/, html) |> Enum.map(&Enum.at(&1, 1))
 
         {:ok, Map.merge(context, %{id_a: id_a, id_b: id_b})}
       end
@@ -52,7 +56,8 @@ defmodule MetricFlowSpex.Criterion797SameTemplateRendersDifferentDataPerBindingS
         {:ok, Map.merge(context, %{view_a: view_a, view_b: view_b})}
       end
 
-      then_ "each displays the data for its own bound metric rather than shared or embedded data", context do
+      then_ "each displays the data for its own bound metric rather than shared or embedded data",
+            context do
         chart_a =
           context.view_a
           |> element("[data-role='vega-lite-chart']")

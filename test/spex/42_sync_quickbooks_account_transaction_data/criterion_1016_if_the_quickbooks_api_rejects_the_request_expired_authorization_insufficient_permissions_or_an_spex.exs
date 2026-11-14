@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.Criterion1016QuickbooksApiRejectionFailsSyncWithErrorSu
   import MetricFlowSpex.SharedGivens
 
   spex "If the QuickBooks API rejects the request (expired authorization, insufficient permissions, or an unrecognized company) the sync for that integration fails with the error surfaced",
-       fail_on_error_logs: false, criterion: 1016 do
+    fail_on_error_logs: false,
+    criterion: 1016 do
     scenario "the QuickBooks API rejects a sync request because the integration's authorization has expired" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a QuickBooks integration's authorization has expired", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,

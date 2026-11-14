@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.LocationsFromMultipleAccountsMergeIntoOneListSpex do
 
   spex "Locations from multiple accounts merge into one list", criterion: 935 do
     scenario "locations fetched from two accounts appear together in a single flat list" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "locations have been fetched from two connected accounts", context do
         plug = fn conn ->
@@ -16,7 +16,9 @@ defmodule MetricFlowSpex.LocationsFromMultipleAccountsMergeIntoOneListSpex do
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/first-acct-loc", "title" => "First Account Location"}]
+                  "locations" => [
+                    %{"name" => "locations/first-acct-loc", "title" => "First Account Location"}
+                  ]
                 })
               )
 
@@ -25,7 +27,9 @@ defmodule MetricFlowSpex.LocationsFromMultipleAccountsMergeIntoOneListSpex do
                 conn,
                 200,
                 Jason.encode!(%{
-                  "locations" => [%{"name" => "locations/second-acct-loc", "title" => "Second Account Location"}]
+                  "locations" => [
+                    %{"name" => "locations/second-acct-loc", "title" => "Second Account Location"}
+                  ]
                 })
               )
 

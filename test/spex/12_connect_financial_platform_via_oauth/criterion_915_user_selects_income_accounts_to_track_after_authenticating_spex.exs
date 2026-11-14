@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserSelectsIncomeAccountsToTrackAfterAuthenticatingSpex
 
   spex "User selects income accounts to track after authenticating", criterion: 915 do
     scenario "a successfully authenticated user is shown their available income accounts and can select one" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user has successfully authenticated with QuickBooks", context do
         {:ok, context}

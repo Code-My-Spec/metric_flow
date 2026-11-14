@@ -110,7 +110,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
     result =
       try do
-        Req.request(req_opts)
+        MetricFlow.DataSync.ProviderHttp.request(req_opts)
       rescue
         e -> {:error, {:network_error, e}}
       end
@@ -138,7 +138,7 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAds do
 
     result =
       try do
-        Req.request(page_opts)
+        MetricFlow.DataSync.ProviderHttp.request(page_opts)
       rescue
         e -> {:error, {:network_error, e}}
       end

@@ -34,15 +34,29 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
 
     case account_ids do
       [] ->
-        # No account IDs stored — fetch them from the Account Management API
-        case fetch_accounts(integration, opts) do
-          {:ok, []} -> {:error, :no_accounts_configured}
-          {:ok, fetched_ids} -> collect_locations(integration, fetched_ids, opts)
-          {:error, reason} -> {:error, reason}
+        # No account IDs stored — fetch them from the Account Management API.
+        # Reuse the same response for account names, so the locations it
+        # returns can show a real accountName instead of a derived label.
+        case fetch_raw_accounts(integration, opts) do
+          {:ok, []} ->
+            {:error, :no_accounts_configured}
+
+          {:ok, raw_accounts} ->
+            fetched_ids = Enum.map(raw_accounts, &Map.get(&1, "name"))
+
+            account_names =
+              Map.new(raw_accounts, fn account ->
+                {Map.get(account, "name"), Map.get(account, "accountName")}
+              end)
+
+            collect_locations(integration, fetched_ids, account_names, opts)
+
+          {:error, reason} ->
+            {:error, reason}
         end
 
       ids ->
-        collect_locations(integration, ids, opts)
+        collect_locations(integration, ids, %{}, opts)
     end
   end
 
@@ -79,6 +93,34 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     end
   end
 
+  # Classify only documented Google ErrorInfo reasons. Preserve the legacy
+  # fallback for unknown 403 responses; PERMISSION_DENIED alone says nothing
+  # about whether the user owns a Business Profile.
+  defp classify_forbidden(%{"error" => %{"details" => details}}) when is_list(details) do
+    reasons =
+      for %{
+            "@type" => "type.googleapis.com/google.rpc.ErrorInfo",
+            "domain" => "googleapis.com",
+            "reason" => reason
+          } <- details,
+          do: reason
+
+    cond do
+      "SERVICE_DISABLED" in reasons -> :service_disabled
+      "ACCESS_TOKEN_SCOPE_INSUFFICIENT" in reasons -> :insufficient_scope
+      true -> :api_disabled
+    end
+  end
+
+  defp classify_forbidden(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> classify_forbidden(decoded)
+      {:error, _} -> :api_disabled
+    end
+  end
+
+  defp classify_forbidden(_body), do: :api_disabled
+
   defp fetch_raw_accounts(%Integration{} = integration, opts) do
     url = "#{@accounts_api_base}/accounts"
     headers = [{"authorization", "Bearer #{integration.access_token}"}]
@@ -100,9 +142,12 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         %Req.Response{status: 401} ->
           {:error, :unauthorized}
 
-        %Req.Response{status: 403} ->
-          Logger.warning("GBP Account Management API returned 403 — API may not be enabled")
-          {:error, :api_disabled}
+        %Req.Response{status: 403, body: body} ->
+          Logger.warning(
+            "GBP Account Management API returned 403 — API may not be enabled or scope insufficient: #{inspect(body)}"
+          )
+
+          {:error, classify_forbidden(body)}
 
         %Req.Response{status: status} ->
           Logger.warning("GBP Account Management API returned unexpected status: #{status}")
@@ -137,9 +182,9 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
   #
   # Anything genuinely per-account still degrades to a skip, because that is what
   # the multi-account story wants: one unreachable account must not hide the rest.
-  defp collect_locations(integration, account_ids, opts) do
+  defp collect_locations(integration, account_ids, account_names, opts) do
     Enum.reduce_while(account_ids, {:ok, []}, fn account_id, {:ok, acc} ->
-      case fetch_locations_for_account(integration, account_id, opts) do
+      case fetch_locations_for_account(integration, account_id, account_names, opts) do
         {:ok, locations} ->
           {:cont, {:ok, acc ++ locations}}
 
@@ -153,11 +198,11 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     end)
   end
 
-  defp fetch_locations_for_account(integration, account_id, opts) do
-    fetch_all_pages(integration, account_id, nil, [], opts)
+  defp fetch_locations_for_account(integration, account_id, account_names, opts) do
+    fetch_all_pages(integration, account_id, account_names, nil, [], opts)
   end
 
-  defp fetch_all_pages(integration, account_id, page_token, acc, opts) do
+  defp fetch_all_pages(integration, account_id, account_names, page_token, acc, opts) do
     url = build_url(account_id, page_token)
     headers = [{"authorization", "Bearer #{integration.access_token}"}]
 
@@ -167,7 +212,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
 
     try do
       response = Req.request!(req_opts)
-      handle_response(response, integration, account_id, acc, opts)
+      handle_response(response, integration, account_id, account_names, acc, opts)
     rescue
       # A body that arrives with `content-type: application/json` and is not JSON
       # is decoded by Req's own `decode_body` step, which raises before
@@ -192,18 +237,32 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     build_url(account_id, nil) <> "&pageToken=#{page_token}"
   end
 
-  defp handle_response(%Req.Response{status: 200, body: body}, integration, account_id, acc, opts)
+  defp handle_response(
+         %Req.Response{status: 200, body: body},
+         integration,
+         account_id,
+         account_names,
+         acc,
+         opts
+       )
        when is_map(body) do
-    locations = extract_locations(body, account_id)
+    locations = extract_locations(body, account_id, account_names)
     all = acc ++ locations
 
     case Map.get(body, "nextPageToken") do
       nil -> {:ok, all}
-      token -> fetch_all_pages(integration, account_id, token, all, opts)
+      token -> fetch_all_pages(integration, account_id, account_names, token, all, opts)
     end
   end
 
-  defp handle_response(%Req.Response{status: 200, body: body}, integration, account_id, acc, opts)
+  defp handle_response(
+         %Req.Response{status: 200, body: body},
+         integration,
+         account_id,
+         account_names,
+         acc,
+         opts
+       )
        when is_binary(body) do
     case Jason.decode(body) do
       {:ok, decoded} ->
@@ -211,6 +270,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
           %Req.Response{status: 200, body: decoded},
           integration,
           account_id,
+          account_names,
           acc,
           opts
         )
@@ -220,22 +280,32 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     end
   end
 
-  defp handle_response(%Req.Response{status: 401}, _int, _aid, _acc, _opts),
+  defp handle_response(%Req.Response{status: 401}, _int, _aid, _names, _acc, _opts),
     do: {:error, :unauthorized}
 
-  defp handle_response(%Req.Response{status: 403}, _int, _aid, _acc, _opts) do
-    Logger.warning("GBP API returned 403 — API may not be enabled or access revoked")
+  defp handle_response(%Req.Response{status: 403, body: body}, _int, aid, _names, _acc, _opts) do
+    Logger.warning(
+      "GBP API returned 403 for #{aid} — API may not be enabled or access revoked: #{inspect(body)}"
+    )
+
     {:error, :api_disabled}
   end
 
-  defp handle_response(%Req.Response{status: status, body: body}, _int, aid, _acc, _opts) do
+  defp handle_response(
+         %Req.Response{status: status, body: body},
+         _int,
+         aid,
+         _names,
+         _acc,
+         _opts
+       ) do
     Logger.warning("GBP Locations API returned status #{status} for #{aid}: #{inspect(body)}")
     {:error, :bad_request}
   end
 
-  defp extract_locations(%{"locations" => locations}, account_id) when is_list(locations) do
-    # Derive a human-readable account name from the account_id
-    account_name = derive_account_name(account_id)
+  defp extract_locations(%{"locations" => locations}, account_id, account_names)
+       when is_list(locations) do
+    account_name = Map.get(account_names, account_id) || derive_account_name(account_id)
 
     Enum.map(locations, fn loc ->
       # The location "name" from the API is like "locations/abc123"
@@ -256,7 +326,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
     end)
   end
 
-  defp extract_locations(_body, _account_id), do: []
+  defp extract_locations(_body, _account_id, _account_names), do: []
 
   defp derive_account_name(account_id) do
     # "accounts/123" -> "Account 123"

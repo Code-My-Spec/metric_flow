@@ -5,12 +5,15 @@ defmodule MetricFlowSpex.ExpiredTokenOrApiRejectionFailsTheSyncClearlySpex do
   import MetricFlowSpex.SharedGivens
 
   spex "If the token has expired and can't be refreshed, or the Search Console API rejects the request, the sync for that integration fails clearly with the error surfaced",
-       fail_on_error_logs: false, criterion: 1000 do
+    fail_on_error_logs: false,
+    criterion: 1000 do
     scenario "a property's token has expired and the refresh attempt fails" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a property's token has expired", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console,
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console,
           provider_metadata: %{"site_url" => "https://example.com/"},
           expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)
         )
@@ -25,7 +28,8 @@ defmodule MetricFlowSpex.ExpiredTokenOrApiRejectionFailsTheSyncClearlySpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync fails clearly and the error is surfaced rather than retried silently", context do
+      then_ "the sync fails clearly and the error is surfaced rather than retried silently",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='failed'] [data-role='sync-provider']",

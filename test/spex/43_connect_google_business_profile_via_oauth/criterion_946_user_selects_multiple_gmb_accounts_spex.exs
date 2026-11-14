@@ -6,11 +6,11 @@ defmodule MetricFlowSpex.UserSelectsMultipleGmbAccountsSpex do
 
   spex "User selects multiple GMB accounts", criterion: 946 do
     scenario "selecting two GBP accounts accepts both as part of the same connection" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a business has access to two GBP accounts", context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

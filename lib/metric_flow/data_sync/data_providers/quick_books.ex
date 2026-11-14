@@ -46,7 +46,14 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
 
       fetch_results =
         Enum.map(account_ids, fn account_id ->
-          fetch_transaction_list(integration, realm_id, account_id, start_date, end_date, http_plug)
+          fetch_transaction_list(
+            integration,
+            realm_id,
+            account_id,
+            start_date,
+            end_date,
+            http_plug
+          )
         end)
 
       build_metrics_from_results(fetch_results, account_ids, start_date, end_date)
@@ -139,7 +146,7 @@ defmodule MetricFlow.DataSync.DataProviders.QuickBooks do
       |> maybe_add_plug(http_plug)
 
     try do
-      response = Req.get!(req_opts)
+      response = MetricFlow.DataSync.ProviderHttp.get!(req_opts)
       handle_response(response)
     rescue
       e in Req.TransportError ->

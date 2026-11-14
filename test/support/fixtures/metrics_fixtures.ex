@@ -55,18 +55,20 @@ defmodule MetricFlowTest.MetricsFixtures do
   def insert_editor_test_metrics!(user) do
     yesterday = Date.add(Date.utc_today(), -1)
 
-    sessions = insert_metric!(user, %{
-      metric_name: "sessions",
-      metric_type: "traffic",
-      recorded_at: DateTime.new!(yesterday, ~T[00:00:00], "Etc/UTC")
-    })
+    sessions =
+      insert_metric!(user, %{
+        metric_name: "sessions",
+        metric_type: "traffic",
+        recorded_at: DateTime.new!(yesterday, ~T[00:00:00], "Etc/UTC")
+      })
 
-    clicks = insert_metric!(user, %{
-      metric_name: "clicks",
-      metric_type: "advertising",
-      provider: :google_ads,
-      recorded_at: DateTime.new!(yesterday, ~T[00:00:00], "Etc/UTC")
-    })
+    clicks =
+      insert_metric!(user, %{
+        metric_name: "clicks",
+        metric_type: "advertising",
+        provider: :google_ads,
+        recorded_at: DateTime.new!(yesterday, ~T[00:00:00], "Etc/UTC")
+      })
 
     {sessions, clicks}
   end

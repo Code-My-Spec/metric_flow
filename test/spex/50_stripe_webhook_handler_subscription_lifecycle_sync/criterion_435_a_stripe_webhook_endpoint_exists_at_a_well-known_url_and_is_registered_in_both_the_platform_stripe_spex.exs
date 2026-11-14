@@ -20,7 +20,10 @@ defmodule MetricFlowSpex.StripeWebhookEndpointExistsSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload)
+          )
           |> post("/billing/webhooks", context.payload)
 
         {:ok, Map.put(context, :response, conn)}

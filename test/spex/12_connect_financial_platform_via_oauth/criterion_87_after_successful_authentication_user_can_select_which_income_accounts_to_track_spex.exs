@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
 
   import MetricFlowSpex.SharedGivens
 
-  spex "After successful authentication, user can select which income accounts to track", criterion: 87 do
+  spex "After successful authentication, user can select which income accounts to track",
+    criterion: 87 do
     scenario "the account selection page displays available income accounts" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
@@ -28,7 +29,7 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
     end
 
     scenario "the account selection page shows a list of selectable accounts" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =
@@ -41,12 +42,13 @@ defmodule MetricFlowSpex.AfterSuccessfulAuthenticationUserCanSelectWhichIncomeAc
         assert has_element?(context.view, "[data-role='account-checkbox']") or
                  has_element?(context.view, "[data-role='manual-property-input']") or
                  has_element?(context.view, "[data-role='manual-entry']")
+
         {:ok, context}
       end
     end
 
     scenario "the user can save their account selection" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user navigates to the QuickBooks account selection page", context do
         {:ok, view, _html} =

@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion836AlreadyAcceptedInvitationCannotBeReusedSpex
 
   spex "Already-accepted invitation cannot be reused", criterion: 836 do
     scenario "revisiting an already-accepted invitation link fails with a clear message" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")

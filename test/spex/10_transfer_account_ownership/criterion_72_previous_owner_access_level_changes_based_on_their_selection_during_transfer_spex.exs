@@ -11,10 +11,11 @@ defmodule MetricFlowSpex.Criterion72PreviousOwnerAccessLevelChangesBasedOnTheirS
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Previous owner access level changes based on their selection during transfer", criterion: 72 do
+  spex "Previous owner access level changes based on their selection during transfer",
+    criterion: 72 do
     scenario "the previous owner chose to remain as admin" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the owner transfers ownership and chooses to remain as admin", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
@@ -38,7 +39,8 @@ defmodule MetricFlowSpex.Criterion72PreviousOwnerAccessLevelChangesBasedOnTheirS
       end
 
       when_ "the new owner confirms the transfer", context do
-        {:ok, view, _html} = live(context.member_conn, "/account_transfers/#{context.transfer_token}")
+        {:ok, view, _html} =
+          live(context.member_conn, "/account_transfers/#{context.transfer_token}")
 
         view
         |> element("[data-role='accept-transfer-btn']")

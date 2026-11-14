@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion828WhiteLabelingAlwaysAppliesForAgencyOriginat
 
   spex "White-labeling always applies for an agency-originated client", criterion: 828 do
     scenario "an agency-originated client always sees white-labeling through the agency subdomain, regardless of other settings" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client whose account was originated by an agency", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
@@ -31,7 +31,8 @@ defmodule MetricFlowSpex.Criterion828WhiteLabelingAlwaysAppliesForAgencyOriginat
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "white-labeling is always applied for that client, regardless of other settings", context do
+      then_ "white-labeling is always applied for that client, regardless of other settings",
+            context do
         assert has_element?(context.view, "[data-role='agency-logo']") or
                  render(context.view) =~ "branded828-logo.png",
                "Expected white-labeling to always be applied for an agency-originated client"

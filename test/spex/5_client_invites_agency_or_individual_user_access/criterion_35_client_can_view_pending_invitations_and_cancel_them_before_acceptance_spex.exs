@@ -7,16 +7,18 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
 
   spex "Client can view pending invitations and cancel them before acceptance", criterion: 35 do
     scenario "pending invitation appears in the invitations list after being sent" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page and sends an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: "pending@agency.com",
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: "pending@agency.com",
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -34,16 +36,18 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
     end
 
     scenario "owner can cancel a pending invitation before it is accepted" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page and sends an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: "tocancel@agency.com",
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: "tocancel@agency.com",
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -58,7 +62,12 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
       end
 
       then_ "the cancelled invitation no longer appears in the pending list", context do
-        refute has_element?(context.view, "[data-role='pending-invitation-row'] [data-role='invitation-email']", "tocancel@agency.com")
+        refute has_element?(
+                 context.view,
+                 "[data-role='pending-invitation-row'] [data-role='invitation-email']",
+                 "tocancel@agency.com"
+               )
+
         {:ok, context}
       end
 
@@ -69,16 +78,18 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
     end
 
     scenario "pending invitations section is visible to the owner on the members page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner sends an invitation from the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: "listed@agency.com",
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: "listed@agency.com",
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -91,17 +102,19 @@ defmodule MetricFlowSpex.ClientCanViewPendingInvitationsAndCancelThemBeforeAccep
     end
 
     scenario "a cancelled invitation link is invalidated and cannot be accepted" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation and then cancels it", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =

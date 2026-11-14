@@ -15,6 +15,11 @@ defmodule MetricFlow.DataSync.DataProviders.Behaviour do
   - Transforming raw provider responses into unified metric maps
   - Handling HTTP errors and network failures with appropriate error atoms
 
+  HTTP requests go through `MetricFlow.DataSync.ProviderHttp`, allowing
+  SyncWorker to capture redacted response diagnostics for one synchronous
+  provider invocation. This does not change the error tuples returned by
+  `fetch_metrics/2`; persisted diagnostics are separate from user-facing errors.
+
   ## Unified Metric Format
 
   Each metric map returned by `fetch_metrics/2` must contain:

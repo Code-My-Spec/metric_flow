@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion901UnverifiedAcceptanceAttemptIsBlockedSpex do
 
   spex "Unverified acceptance attempt is blocked", criterion: 901 do
     scenario "someone attempts to accept a transfer invitation without authenticating" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "a transfer invitation link exists", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
@@ -35,7 +35,8 @@ defmodule MetricFlowSpex.Criterion901UnverifiedAcceptanceAttemptIsBlockedSpex do
         {:ok, Map.put(context, :transfer_token, token)}
       end
 
-      when_ "someone attempts to accept it without authenticating or verifying identity", context do
+      when_ "someone attempts to accept it without authenticating or verifying identity",
+            context do
         {:ok, view, _html} = live(build_conn(), "/account_transfers/#{context.transfer_token}")
         {:ok, Map.put(context, :view, view)}
       end

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.ReportEditorIncludesTheCannedVegaLiteSpecEditorSpex do
 
   spex "Report editor includes the canned Vega-Lite spec editor", criterion: 932 do
     scenario "opening a chart's spec editor from the report editor shows the canned spec editor" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user editing a report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

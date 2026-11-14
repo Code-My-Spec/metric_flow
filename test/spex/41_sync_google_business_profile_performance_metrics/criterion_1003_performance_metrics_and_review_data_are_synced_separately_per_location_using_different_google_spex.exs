@@ -5,10 +5,10 @@ defmodule MetricFlowSpex.Criterion1003PerformanceAndReviewsSyncedSeparatelySpex 
   import MetricFlowSpex.SharedGivens
 
   spex "Performance metrics and review data are synced separately per location, using different Google Business Profile APIs",
-       criterion: 1003 do
+    criterion: 1003 do
     scenario "a location's performance metrics and reviews appear as separate sync history entries" do
-      given_ :user_logged_in_as_owner
-      given_ :with_google_business_sync_stub
+      given_(:user_logged_in_as_owner)
+      given_(:with_google_business_sync_stub)
 
       given_ "a client has a connected Google Business Profile location", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
@@ -25,7 +25,8 @@ defmodule MetricFlowSpex.Criterion1003PerformanceAndReviewsSyncedSeparatelySpex 
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "performance metrics and reviews appear as separate, independent sync history entries", context do
+      then_ "performance metrics and reviews appear as separate, independent sync history entries",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'] [data-role='sync-provider']",

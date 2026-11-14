@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
   import MetricFlowSpex.SharedGivens
 
   spex "All locations from all accounts are merged into a single flat list for display and selection",
-       fail_on_error_logs: false, criterion: 397 do
+    fail_on_error_logs: false,
+    criterion: 397 do
     scenario "the locations page shows a single unified list, not grouped by account" do
-      given_ "a user is registered and has a google_business integration with multiple account IDs", context do
+      given_ "a user is registered and has a google_business integration with multiple account IDs",
+             context do
         email = "gbp_user#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -15,14 +17,17 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "GBP Test Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "GBP Test Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -30,9 +35,11 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
           provider: :google_business,
           provider_metadata: %{
@@ -45,11 +52,13 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -58,11 +67,14 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       end
 
       given_ "the user navigates to the Google Business Profile locations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page renders a single location selection interface, not multiple account sections", context do
+      then_ "the page renders a single location selection interface, not multiple account sections",
+            context do
         html = render(context.view)
         assert html =~ "location" or html =~ "Location"
         {:ok, context}
@@ -70,8 +82,10 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
 
       then_ "there is no per-account grouping or tab switcher", context do
         html = render(context.view)
+
         refute html =~ "accounts/123" and html =~ "accounts/456" and
                  has_element?(context.view, "[data-role='account-tab']")
+
         {:ok, context}
       end
 
@@ -81,12 +95,14 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
                  has_element?(context.view, "[data-role='account-list']") or
                  has_element?(context.view, "input[type='checkbox']") or
                  has_element?(context.view, "[data-role='location-checkbox']")
+
         {:ok, context}
       end
     end
 
     scenario "locations from all GBP accounts appear in one flat list without requiring tab switching" do
-      given_ "a user is registered and has a google_business integration with multiple account IDs", context do
+      given_ "a user is registered and has a google_business integration with multiple account IDs",
+             context do
         email = "gbp_user#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -94,14 +110,17 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "GBP Test Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "GBP Test Account"
+          }
+        )
         |> render_submit()
 
         Process.sleep(50)
+
         drain = fn drain_fn ->
           receive do
             {:email, _} -> drain_fn.(drain_fn)
@@ -109,9 +128,11 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
             0 -> :ok
           end
         end
+
         drain.(drain)
 
         user = MetricFlowTest.UsersFixtures.get_user_by_email(email)
+
         MetricFlowTest.IntegrationsFixtures.integration_fixture(user, %{
           provider: :google_business,
           provider_metadata: %{
@@ -124,11 +145,13 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -137,7 +160,9 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
       end
 
       given_ "the user navigates to the Google Business Profile locations page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -153,6 +178,7 @@ defmodule MetricFlowSpex.AllLocationsFromAllAccountsAreMergedIntoASingleFlatList
                  has_element?(context.view, "button", "Confirm") or
                  has_element?(context.view, "button", "Save Selection") or
                  has_element?(context.view, "[data-role='account-selection']")
+
         {:ok, context}
       end
     end

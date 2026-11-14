@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
 
   spex "Clicking sync triggers immediate data pull for that integration", criterion: 111 do
     scenario "clicking Sync Now on a connected integration shows a flash confirming sync was started" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -29,7 +29,7 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
     end
 
     scenario "after clicking Sync Now the button becomes disabled to prevent duplicate syncs" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -44,8 +44,14 @@ defmodule MetricFlowSpex.ClickingSyncTriggersImmediateDataPullForThatIntegration
         {:ok, context}
       end
 
-      then_ "the Sync Now button is disabled so the user cannot trigger a duplicate sync", context do
-        assert has_element?(context.view, "[data-platform='google_analytics'] button[phx-click='sync'][disabled]", "Sync Now")
+      then_ "the Sync Now button is disabled so the user cannot trigger a duplicate sync",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-platform='google_analytics'] button[phx-click='sync'][disabled]",
+                 "Sync Now"
+               )
+
         {:ok, context}
       end
     end

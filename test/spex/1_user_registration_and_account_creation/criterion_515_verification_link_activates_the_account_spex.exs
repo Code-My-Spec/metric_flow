@@ -8,11 +8,13 @@ defmodule MetricFlowSpex.VerificationLinkActivatesAccountSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "activate_dana@example.com",
-          password: "SecurePassword123!",
-          account_name: "Dana Activation Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "activate_dana@example.com",
+            password: "SecurePassword123!",
+            account_name: "Dana Activation Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

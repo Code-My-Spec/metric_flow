@@ -63,10 +63,12 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
     {status, body} =
       case {conn.method, conn.request_path} do
         {"POST", "/v1/products"} ->
-          {200, %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
+          {200,
+           %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
 
         {"POST", "/v1/prices"} ->
-          {200, %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
+          {200,
+           %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
       end
 
     conn
@@ -265,7 +267,14 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       user = user_fixture()
       account = agency_fixture(user)
       stripe_account_fixture(account)
-      plan = plan_fixture(account, %{name: "Rotates", price_cents: 4900, stripe_price_id: "price_original"})
+
+      plan =
+        plan_fixture(account, %{
+          name: "Rotates",
+          price_cents: 4900,
+          stripe_price_id: "price_original"
+        })
+
       conn = log_in_user(conn, user)
 
       Application.put_env(:metric_flow, :stripe_test_plug, &price_rotation_stub_plug/1)

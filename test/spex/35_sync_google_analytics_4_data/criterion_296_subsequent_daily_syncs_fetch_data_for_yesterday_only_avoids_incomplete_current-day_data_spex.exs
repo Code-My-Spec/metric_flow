@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.SubsequentDailySyncsFetchDataForYesterdayOnlySpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Subsequent daily syncs fetch data for yesterday only (avoids incomplete current-day data)",
-       fail_on_error_logs: false, criterion: 296 do
+    fail_on_error_logs: false,
+    criterion: 296 do
     scenario "a property that already completed its first sync only fetches yesterday's data on the next sync" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a GA4 property has already completed its first sync", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,

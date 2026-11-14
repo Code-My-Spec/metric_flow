@@ -4,19 +4,22 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
 
   import MetricFlowSpex.SharedGivens
 
-  spex "When access is revoked, user immediately loses ability to view client data", criterion: 48 do
+  spex "When access is revoked, user immediately loses ability to view client data",
+    criterion: 48 do
     scenario "removed member can no longer access the account members page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user to their account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :members_view, view)}
@@ -27,11 +30,13 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: "SecurePassword123!",
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: "SecurePassword123!",
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         member_conn = recycle(logged_in_conn)
@@ -41,6 +46,7 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
 
       when_ "the owner removes the second user from the account", context do
         html = render(context.members_view)
+
         [member_row | _] =
           html
           |> Floki.parse_document!()
@@ -86,17 +92,19 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
     end
 
     scenario "access revocation takes effect immediately without requiring re-login" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner invites the second user to their account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :members_view, view)}
@@ -107,11 +115,13 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: "SecurePassword123!",
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: "SecurePassword123!",
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         member_conn = recycle(logged_in_conn)
@@ -132,7 +142,8 @@ defmodule MetricFlowSpex.WhenAccessIsRevokedUserImmediatelyLosesAbilityToViewCli
         {:ok, context}
       end
 
-      then_ "the second user can no longer see the shared account data on their next request", context do
+      then_ "the second user can no longer see the shared account data on their next request",
+            context do
         result = live(context.member_conn, "/app/accounts/members")
 
         case result do

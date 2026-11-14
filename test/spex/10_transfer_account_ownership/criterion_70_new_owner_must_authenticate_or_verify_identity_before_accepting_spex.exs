@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion70NewOwnerMustAuthenticateOrVerifyIdentityBefo
 
   spex "New owner must authenticate or verify identity before accepting", criterion: 70 do
     scenario "an unauthenticated recipient visits the transfer confirmation link" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "a transfer invitation has been sent to the existing member", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

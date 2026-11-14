@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AgencyAdminViewsAndManagesAutoEnrolledTeamMembersSpex d
 
   spex "Agency admin views and manages auto-enrolled team members", criterion: 593 do
     scenario "the agency admin opens the team management view and sees auto-enrolled members" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the agency has auto-enrolled team members", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

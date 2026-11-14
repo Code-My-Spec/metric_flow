@@ -88,8 +88,11 @@ defmodule MetricFlowWeb.BillingWebhookController do
         # a separate endpoint secret from the platform's own — try it before
         # giving up, rather than assuming every event is a direct/platform one.
         case Application.get_env(:metric_flow, :stripe_connect_webhook_secret) do
-          nil -> {:error, :signature_mismatch}
-          connect_secret -> StripeClient.verify_webhook_signature(raw_body, signature, connect_secret)
+          nil ->
+            {:error, :signature_mismatch}
+
+          connect_secret ->
+            StripeClient.verify_webhook_signature(raw_body, signature, connect_secret)
         end
 
       other ->

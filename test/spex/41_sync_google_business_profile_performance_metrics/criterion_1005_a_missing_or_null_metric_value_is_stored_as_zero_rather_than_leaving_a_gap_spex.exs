@@ -4,11 +4,13 @@ defmodule MetricFlowSpex.Criterion1005MissingOrNullMetricValueStoredAsZeroSpex d
 
   import MetricFlowSpex.SharedGivens
 
-  spex "A missing or null metric value is stored as zero rather than leaving a gap", criterion: 1005 do
+  spex "A missing or null metric value is stored as zero rather than leaving a gap",
+    criterion: 1005 do
     scenario "a Google Business Profile location's API response omits a metric value for a day" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a Google Business Profile location's performance response is missing a metric value for a day", context do
+      given_ "a Google Business Profile location's performance response is missing a metric value for a day",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )

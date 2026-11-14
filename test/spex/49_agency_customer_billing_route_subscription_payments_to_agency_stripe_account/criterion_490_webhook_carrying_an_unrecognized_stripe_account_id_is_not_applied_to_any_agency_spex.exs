@@ -1,7 +1,8 @@
 defmodule MetricFlowSpex.WebhookCarryingAnUnrecognizedStripeAccountIdIsNotAppliedToAnyAgencySpex do
   use MetricFlowSpex.Case
 
-  spex "Webhook carrying an unrecognized stripe_account_id is not applied to any agency", criterion: 490 do
+  spex "Webhook carrying an unrecognized stripe_account_id is not applied to any agency",
+    criterion: 490 do
     scenario "a webhook event arrives with a stripe_account_id that matches no agency" do
       when_ "the event is posted with an unrecognized connected account", context do
         payload =
@@ -23,7 +24,10 @@ defmodule MetricFlowSpex.WebhookCarryingAnUnrecognizedStripeAccountIdIsNotApplie
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}

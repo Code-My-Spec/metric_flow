@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System automatically calculates correlations between all metrics and selected goal metrics", criterion: 181 do
+  spex "System automatically calculates correlations between all metrics and selected goal metrics",
+    criterion: 181 do
     scenario "user sees computed correlation results on the correlations page" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -42,8 +43,8 @@ defmodule MetricFlowSpex.AutoCorrelationCalculationSpex do
     end
 
     scenario "correlations page shows goal metric selection" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn

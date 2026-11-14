@@ -41,7 +41,12 @@ defmodule MetricFlow.Accounts.AccountOwnershipTransferNotifier do
   """
   @spec deliver_transfer_completed(String.t(), String.t(), String.t(), String.t()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_transfer_completed(recipient_email, account_name, previous_owner_email, new_owner_email) do
+  def deliver_transfer_completed(
+        recipient_email,
+        account_name,
+        previous_owner_email,
+        new_owner_email
+      ) do
     deliver_email(recipient_email, "Ownership of #{account_name} has transferred", """
 
     ==============================

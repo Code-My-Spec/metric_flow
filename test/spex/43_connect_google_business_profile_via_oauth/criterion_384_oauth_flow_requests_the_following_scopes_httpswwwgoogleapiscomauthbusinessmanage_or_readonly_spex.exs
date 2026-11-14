@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
 
   import MetricFlowSpex.SharedGivens
 
-  spex "OAuth flow requests business.manage scope and reuses existing Google OAuth token if already connected", criterion: 384 do
+  spex "OAuth flow requests business.manage scope and reuses existing Google OAuth token if already connected",
+    criterion: 384 do
     scenario "Google Business connect detail page renders an OAuth entry point for new users" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       then_ "the connect detail page renders an OAuth entry point (button or not-configured notice)",
             context do
@@ -24,7 +25,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
     end
 
     scenario "Google Business is listed distinctly from Google Analytics and Google Ads" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       then_ "the connect page shows Google Business as its own distinct provider card", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -34,7 +35,7 @@ defmodule MetricFlowSpex.Criterion4844OAuthFlowRequestsBusinessManageScopeSpex d
     end
 
     scenario "connected Google Business integration shows connected status and select-accounts link" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)

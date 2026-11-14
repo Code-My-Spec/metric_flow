@@ -4,7 +4,8 @@ defmodule MetricFlowSpex.ClickingAiButtonShowsContextSpecificInsightsOrOpensChat
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Clicking AI button shows context-specific insights or opens chat about that metric", criterion: 207 do
+  spex "Clicking AI button shows context-specific insights or opens chat about that metric",
+    criterion: 207 do
     scenario "clicking the AI info button on a visualization opens an insights panel or chat" do
       given_(:user_logged_in_as_owner)
 

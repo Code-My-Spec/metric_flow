@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4848SelectedGMBAccountIdsSavedAsArraySpex do
   ]
 
   spex "Selected GMB account IDs saved as array in integration config",
-       fail_on_error_logs: false, criterion: 388 do
+    fail_on_error_logs: false,
+    criterion: 388 do
     scenario "selecting a location and submitting the form redirects with success" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -39,7 +40,7 @@ defmodule MetricFlowSpex.Criterion4848SelectedGMBAccountIdsSavedAsArraySpex do
 
       then_ "submitting the selection form with a location ID redirects to the detail page",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -59,7 +60,7 @@ defmodule MetricFlowSpex.Criterion4848SelectedGMBAccountIdsSavedAsArraySpex do
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end

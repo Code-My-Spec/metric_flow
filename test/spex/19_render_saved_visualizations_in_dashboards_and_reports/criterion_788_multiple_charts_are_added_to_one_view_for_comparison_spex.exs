@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion788MultipleChartsAddedForComparisonSpex do
 
   spex "Multiple charts are added to one view for comparison", criterion: 788 do
     scenario "a user adds a second chart alongside the first on a dashboard" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a dashboard view with one chart already added", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

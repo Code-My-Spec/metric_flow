@@ -27,119 +27,119 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mf-content">
-      <div class="flex items-center gap-4 mb-6">
-        <a href="/app/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
-      </div>
-
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">Invite Members</h1>
-        <p class="text-base-content/60">{@account.name}</p>
-      </div>
-
-      <%!-- Send Invitation section --%>
-      <div class="mf-card p-6 mb-6" data-role="invite-form-section">
-        <h2 class="text-lg font-semibold mb-4">Send an Invitation</h2>
-        <p class="text-sm text-base-content/60 mb-4">
-          The recipient will receive an email with a secure link. The link expires in 7 days and can only be used once.
-        </p>
-
-        <form
-          id="invite_member_form"
-          phx-submit="send_invitation"
-          phx-change="validate"
-        >
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Email address</span>
-            </label>
-            <input
-              type="email"
-              class="input w-full"
-              name="invitation[email]"
-              value={@invitation_form.params["email"] || ""}
-              placeholder="colleague@example.com"
-              phx-debounce="500"
-            />
-            <p :if={form_has_error?(@invitation_form, :email)} class="text-sm text-error mt-1">
-              {form_first_error(@invitation_form, :email)}
-            </p>
-          </div>
-
-          <div class="form-control mt-4">
-            <label class="label">
-              <span class="label-text">Access level</span>
-            </label>
-            <select class="select w-full" name="invitation[role]">
-              <option
-                :for={role <- invite_roles(@current_user_role)}
-                value={role}
-                selected={
-                  selected_role(@invitation_form, role) ||
-                    (role == "read_only" and is_nil(@invitation_form.params["role"]))
-                }
-              >
-                {role_label(String.to_existing_atom(role))}
-              </option>
-            </select>
-            <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error mt-1">
-              {form_first_error(@invitation_form, :role)}
-            </p>
-          </div>
-
-          <div class="flex justify-end mt-6">
-            <button type="submit" class="btn btn-primary w-full sm:w-auto" data-role="submit-invite">
-              Send Invitation
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <%!-- Pending Invitations section --%>
-      <div class="mf-card p-6" data-role="pending-invitations">
-        <h2 class="text-lg font-semibold mb-4">Pending Invitations</h2>
-
-        <div :if={@pending_invitations == []}>
-          <p class="text-base-content/50 text-center py-4">No pending invitations.</p>
+      <div class="mf-content">
+        <div class="flex items-center gap-4 mb-6">
+          <a href="/app/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
         </div>
 
-        <div :if={@pending_invitations != []}>
-          <div
-            :for={invitation <- @pending_invitations}
-            class="flex items-center justify-between gap-4 py-3 border-b border-base-300/30 last:border-0"
-            data-role="pending-invitation-row"
-            data-invitation-id={invitation.id}
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold">Invite Members</h1>
+          <p class="text-base-content/60">{@account.name}</p>
+        </div>
+
+        <%!-- Send Invitation section --%>
+        <div class="mf-card p-6 mb-6" data-role="invite-form-section">
+          <h2 class="text-lg font-semibold mb-4">Send an Invitation</h2>
+          <p class="text-sm text-base-content/60 mb-4">
+            The recipient will receive an email with a secure link. The link expires in 7 days and can only be used once.
+          </p>
+
+          <form
+            id="invite_member_form"
+            phx-submit="send_invitation"
+            phx-change="validate"
           >
-            <div>
-              <div class="font-medium" data-role="invitation-email">{invitation.email}</div>
-              <div class="mt-1">
-                <span class={role_badge_class(invitation.role)}>
-                  {role_label(invitation.role)}
-                </span>
-              </div>
-              <div class="text-xs text-base-content/50 mt-1">
-                Sent {format_relative(invitation.inserted_at)}
-              </div>
-              <div class="text-xs text-base-content/40">
-                Expires {format_date(invitation.expires_at)}
-              </div>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Email address</span>
+              </label>
+              <input
+                type="email"
+                class="input w-full"
+                name="invitation[email]"
+                value={@invitation_form.params["email"] || ""}
+                placeholder="colleague@example.com"
+                phx-debounce="500"
+              />
+              <p :if={form_has_error?(@invitation_form, :email)} class="text-sm text-error mt-1">
+                {form_first_error(@invitation_form, :email)}
+              </p>
             </div>
 
-            <div>
-              <button
-                class="btn btn-ghost btn-xs btn-error"
-                phx-click="cancel_invitation"
-                phx-value-id={invitation.id}
-                data-role="cancel-invitation"
-                data-email={invitation.email}
-              >
-                Cancel
+            <div class="form-control mt-4">
+              <label class="label">
+                <span class="label-text">Access level</span>
+              </label>
+              <select class="select w-full" name="invitation[role]">
+                <option
+                  :for={role <- invite_roles(@current_user_role)}
+                  value={role}
+                  selected={
+                    selected_role(@invitation_form, role) ||
+                      (role == "read_only" and is_nil(@invitation_form.params["role"]))
+                  }
+                >
+                  {role_label(String.to_existing_atom(role))}
+                </option>
+              </select>
+              <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error mt-1">
+                {form_first_error(@invitation_form, :role)}
+              </p>
+            </div>
+
+            <div class="flex justify-end mt-6">
+              <button type="submit" class="btn btn-primary w-full sm:w-auto" data-role="submit-invite">
+                Send Invitation
               </button>
             </div>
+          </form>
+        </div>
+
+        <%!-- Pending Invitations section --%>
+        <div class="mf-card p-6" data-role="pending-invitations">
+          <h2 class="text-lg font-semibold mb-4">Pending Invitations</h2>
+
+          <div :if={@pending_invitations == []}>
+            <p class="text-base-content/50 text-center py-4">No pending invitations.</p>
+          </div>
+
+          <div :if={@pending_invitations != []}>
+            <div
+              :for={invitation <- @pending_invitations}
+              class="flex items-center justify-between gap-4 py-3 border-b border-base-300/30 last:border-0"
+              data-role="pending-invitation-row"
+              data-invitation-id={invitation.id}
+            >
+              <div>
+                <div class="font-medium" data-role="invitation-email">{invitation.email}</div>
+                <div class="mt-1">
+                  <span class={role_badge_class(invitation.role)}>
+                    {role_label(invitation.role)}
+                  </span>
+                </div>
+                <div class="text-xs text-base-content/50 mt-1">
+                  Sent {format_relative(invitation.inserted_at)}
+                </div>
+                <div class="text-xs text-base-content/40">
+                  Expires {format_date(invitation.expires_at)}
+                </div>
+              </div>
+
+              <div>
+                <button
+                  class="btn btn-ghost btn-xs btn-error"
+                  phx-click="cancel_invitation"
+                  phx-value-id={invitation.id}
+                  data-role="cancel-invitation"
+                  data-email={invitation.email}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end
@@ -223,7 +223,8 @@ defmodule MetricFlowWeb.InvitationLive.Send do
         {:noreply, put_flash(socket, :error, "You do not have permission to send invitations.")}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, :invitation_form, build_invitation_form(changeset, params, true))}
+        {:noreply,
+         assign(socket, :invitation_form, build_invitation_form(changeset, params, true))}
     end
   end
 

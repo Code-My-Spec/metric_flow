@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.ReportIncludesMetricsFromMultipleConnectedPlatformsSpex
 
   spex "Report includes metrics from multiple connected platforms", criterion: 930 do
     scenario "the metric picker offers metrics from both marketing and financial platforms" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has both marketing and financial platforms connected", context do
         dt = DateTime.new!(Date.add(Date.utc_today(), -1), ~T[00:00:00], "Etc/UTC")

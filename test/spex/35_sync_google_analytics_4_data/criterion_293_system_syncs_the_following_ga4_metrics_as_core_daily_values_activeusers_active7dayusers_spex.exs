@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System syncs the following GA4 metrics as core daily values: activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers", criterion: 293 do
+  spex "System syncs the following GA4 metrics as core daily values: activeUsers, active7DayUsers, active28DayUsers, newUsers, engagedSessions, sessions, userEngagementDuration, screenPageViews, eventCount, keyEvents, scrolledUsers",
+    criterion: 293 do
     scenario "sync history shows a completed Google Analytics sync entry with records synced count" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,12 +15,17 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       end
 
       when_ "a GA4 sync completion event is broadcast with the expected records count", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -42,14 +48,15 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
     end
 
     scenario "sync history page describes Google Analytics as a covered marketing provider" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the schedule section lists Google Analytics as a covered marketing provider", context do
+      then_ "the schedule section lists Google Analytics as a covered marketing provider",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",
@@ -63,7 +70,7 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
     end
 
     scenario "a partial sync failure for GA4 metrics is surfaced in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -71,10 +78,15 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       end
 
       when_ "a GA4 sync failure event is broadcast due to a metric fetch error", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "Failed to fetch metrics: quota exceeded"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "Failed to fetch metrics: quota exceeded"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}

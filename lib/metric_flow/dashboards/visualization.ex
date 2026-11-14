@@ -53,7 +53,14 @@ defmodule MetricFlow.Dashboards.Visualization do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(visualization, attrs) do
     visualization
-    |> cast(attrs, [:name, :user_id, :vega_spec, :shareable, :is_favorite, :last_viewed_date_range])
+    |> cast(attrs, [
+      :name,
+      :user_id,
+      :vega_spec,
+      :shareable,
+      :is_favorite,
+      :last_viewed_date_range
+    ])
     |> validate_required([:name, :user_id, :vega_spec])
     |> validate_length(:name, min: 1, max: 255)
     |> assoc_constraint(:user)

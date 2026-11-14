@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion794UserExpandsVisualizationWithinReportLayoutS
 
   spex "User expands a visualization within the report layout", criterion: 794 do
     scenario "a user expands a visualization displayed in a report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a visualization displayed in a report", context do
         viz =

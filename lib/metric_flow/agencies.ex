@@ -19,12 +19,14 @@ defmodule MetricFlow.Agencies do
 
   import Ecto.Query, only: [from: 2]
 
+  alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Agencies.AgenciesRepository
   alias MetricFlow.Agencies.AgencyClientAccessGrant
   alias MetricFlow.Agencies.AutoEnrollmentRule
   alias MetricFlow.Agencies.WhiteLabelConfig
   alias MetricFlow.Repo
+  alias MetricFlow.Storage
   alias MetricFlow.Users.Scope
   alias MetricFlow.Users.User
 
@@ -127,7 +129,8 @@ defmodule MetricFlow.Agencies do
 
   Returns `{:ok, token}` on success or `{:error, :unauthorized}`.
   """
-  @spec generate_referral_link(Scope.t(), integer()) :: {:ok, String.t()} | {:error, :unauthorized}
+  @spec generate_referral_link(Scope.t(), integer()) ::
+          {:ok, String.t()} | {:error, :unauthorized}
   def generate_referral_link(%Scope{} = scope, agency_id) do
     with :ok <- authorize(scope, :admin, agency_id) do
       {:ok, generate_referral_token(agency_id)}
@@ -156,7 +159,9 @@ defmodule MetricFlow.Agencies do
         {:ok, _grant} =
           AgenciesRepository.grant_client_access(agency_account_id, client_account_id, :read_only)
 
-        {:ok, _grant} = AgenciesRepository.mark_as_originator(agency_account_id, client_account_id)
+        {:ok, _grant} =
+          AgenciesRepository.mark_as_originator(agency_account_id, client_account_id)
+
         {:ok, agency_account_id}
 
       {:error, _reason} ->
@@ -330,9 +335,16 @@ defmodule MetricFlow.Agencies do
   """
   @spec grant_client_account_access(Scope.t(), integer(), integer(), atom(), boolean()) ::
           {:ok, AgencyClientAccessGrant.t()} | {:error, Ecto.Changeset.t() | :unauthorized}
-  def grant_client_account_access(%Scope{} = scope, agency_id, client_account_id, access_level, is_originator) do
+  def grant_client_account_access(
+        %Scope{} = scope,
+        agency_id,
+        client_account_id,
+        access_level,
+        is_originator
+      ) do
     with :ok <- authorize(scope, :admin, agency_id),
-         {:ok, grant} <- do_grant_client_access(agency_id, client_account_id, access_level, is_originator) do
+         {:ok, grant} <-
+           do_grant_client_access(agency_id, client_account_id, access_level, is_originator) do
       propagate_client_access_to_team(agency_id, client_account_id, access_level)
       {:ok, grant}
     end
@@ -365,7 +377,8 @@ defmodule MetricFlow.Agencies do
   Requires read access to the client account. Returns a list of maps with
   agency account name, access level, and origination status.
   """
-  @spec list_grants_for_client_account(Scope.t(), integer()) :: list(map()) | {:error, :unauthorized}
+  @spec list_grants_for_client_account(Scope.t(), integer()) ::
+          list(map()) | {:error, :unauthorized}
   def list_grants_for_client_account(%Scope{} = scope, client_account_id) do
     with :ok <- authorize(scope, :read, client_account_id) do
       AgenciesRepository.list_grants_for_client_account(client_account_id)
@@ -380,10 +393,21 @@ defmodule MetricFlow.Agencies do
   Propagates access to all agency team members.
   """
   @spec grant_agency_access_from_client(Scope.t(), integer(), integer(), atom()) ::
-          {:ok, AgencyClientAccessGrant.t()} | {:error, Ecto.Changeset.t() | :unauthorized | :agency_not_found}
-  def grant_agency_access_from_client(%Scope{} = scope, client_account_id, agency_account_id, access_level) do
+          {:ok, AgencyClientAccessGrant.t()}
+          | {:error, Ecto.Changeset.t() | :unauthorized | :agency_not_found}
+  def grant_agency_access_from_client(
+        %Scope{} = scope,
+        client_account_id,
+        agency_account_id,
+        access_level
+      ) do
     with :ok <- authorize(scope, :admin, client_account_id),
-         {:ok, grant} <- AgenciesRepository.grant_client_access(agency_account_id, client_account_id, access_level) do
+         {:ok, grant} <-
+           AgenciesRepository.grant_client_access(
+             agency_account_id,
+             client_account_id,
+             access_level
+           ) do
       propagate_client_access_to_team(agency_account_id, client_account_id, access_level)
       {:ok, grant}
     end
@@ -400,7 +424,8 @@ defmodule MetricFlow.Agencies do
   def revoke_agency_access_from_client(%Scope{} = scope, client_account_id, agency_account_id) do
     with :ok <- authorize(scope, :admin, client_account_id),
          :ok <- check_not_originator(agency_account_id, client_account_id),
-         {:ok, grant} <- AgenciesRepository.revoke_client_access(agency_account_id, client_account_id) do
+         {:ok, grant} <-
+           AgenciesRepository.revoke_client_access(agency_account_id, client_account_id) do
       revoke_team_client_access(agency_account_id, client_account_id)
       {:ok, grant}
     end
@@ -489,6 +514,16 @@ defmodule MetricFlow.Agencies do
     with :ok <- authorize(scope, :admin, agency_id) do
       attrs = maybe_clear_custom_domain_verification(agency_id, attrs)
       AgenciesRepository.upsert_white_label_config(agency_id, attrs)
+    end
+  end
+
+  @doc "Authorizes an agency administrator before signing a branding logo upload."
+  def presign_logo_upload(%Scope{} = scope, agency_id, entry) do
+    with :ok <- authorize(scope, :admin, agency_id) do
+      case Repo.get(Account, agency_id) do
+        %Account{type: :agency} -> Storage.presign_logo_upload(entry)
+        _ -> {:error, :unauthorized}
+      end
     end
   end
 
@@ -795,7 +830,8 @@ defmodule MetricFlow.Agencies do
     new_domain = Map.get(attrs, :custom_domain)
 
     case AgenciesRepository.get_white_label_config(agency_id) do
-      %WhiteLabelConfig{custom_domain: existing} when existing != new_domain and not is_nil(new_domain) ->
+      %WhiteLabelConfig{custom_domain: existing}
+      when existing != new_domain and not is_nil(new_domain) ->
         Map.put(attrs, :custom_domain_verified_at, nil)
 
       _ ->

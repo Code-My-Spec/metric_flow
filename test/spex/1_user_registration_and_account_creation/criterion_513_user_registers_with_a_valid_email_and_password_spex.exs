@@ -12,11 +12,13 @@ defmodule MetricFlowSpex.UserRegistersWithValidEmailAndPasswordSpex do
 
       when_ "Dana submits a valid email and password on the registration form", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "dana@example.com",
-          password: "SecurePassword123!",
-          account_name: "Dana's Company"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "dana@example.com",
+            password: "SecurePassword123!",
+            account_name: "Dana's Company"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

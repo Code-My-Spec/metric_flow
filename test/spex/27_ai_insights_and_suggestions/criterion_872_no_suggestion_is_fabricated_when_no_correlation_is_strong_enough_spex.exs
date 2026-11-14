@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion872NoSuggestionIsFabricatedWhenNoCorrelationIs
 
   spex "No suggestion is fabricated when no correlation is strong enough", criterion: 872 do
     scenario "none of the account's correlations are strong enough to support a confident recommendation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "none of the account's correlations are strong enough to support a confident recommendation",
              context do
@@ -34,8 +34,12 @@ defmodule MetricFlowSpex.Criterion872NoSuggestionIsFabricatedWhenNoCorrelationIs
         {:ok, context}
       end
 
-      then_ "no suggestion is presented rather than a fabricated or low-confidence recommendation", context do
-        refute has_element?(context.view, "[data-role='ai-recommendations'] [data-role='correlation-row']"),
+      then_ "no suggestion is presented rather than a fabricated or low-confidence recommendation",
+            context do
+        refute has_element?(
+                 context.view,
+                 "[data-role='ai-recommendations'] [data-role='correlation-row']"
+               ),
                "Expected no fabricated recommendation when no correlation is strong enough"
 
         {:ok, context}

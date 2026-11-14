@@ -11,12 +11,14 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "onboarding_user@example.com",
-          password: "SecurePassword123!",
-          account_name: "Onboarding Co",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "onboarding_user@example.com",
+            password: "SecurePassword123!",
+            account_name: "Onboarding Co",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -62,6 +64,7 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
       then_ "the user sees an onboarding setup experience with a welcome message", context do
         {:ok, view, _html} = context.onboarding_result
         html = render(view)
+
         assert html =~ "welcome" or html =~ "Welcome" or html =~ "get started" or
                  html =~ "Get started" or html =~ "Getting Started" or html =~ "onboarding" or
                  html =~ "Onboarding",
@@ -80,12 +83,14 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
       when_ "the user submits a valid registration form", context do
         result =
           context.view
-          |> form("#registration_form", user: %{
-            email: "direct_login@example.com",
-            password: "SecurePassword123!",
-            account_name: "Direct Login Inc",
-            account_type: "client"
-          })
+          |> form("#registration_form",
+            user: %{
+              email: "direct_login@example.com",
+              password: "SecurePassword123!",
+              account_name: "Direct Login Inc",
+              account_type: "client"
+            }
+          )
           |> render_submit()
 
         {:ok, Map.put(context, :submit_result, result)}
@@ -104,7 +109,8 @@ defmodule MetricFlowSpex.PostRegistrationOnboardingRedirectSpex do
         {:ok, context}
       end
 
-      then_ "the post-registration view confirms the user's account setup journey has begun", context do
+      then_ "the post-registration view confirms the user's account setup journey has begun",
+            context do
         html = render(context.view)
         # The confirmation message should indicate next steps toward onboarding,
         # not simply an email-sent notice that dead-ends the user.

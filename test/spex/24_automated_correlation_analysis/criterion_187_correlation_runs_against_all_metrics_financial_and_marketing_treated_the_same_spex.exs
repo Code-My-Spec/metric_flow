@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Correlation runs against ALL metrics financial and marketing treated the same", criterion: 187 do
+  spex "Correlation runs against ALL metrics financial and marketing treated the same",
+    criterion: 187 do
     scenario "correlation results include both financial and marketing metrics" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -34,8 +35,8 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
     end
 
     scenario "no separate sections for financial vs marketing correlations" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         conn = context.owner_conn
@@ -43,7 +44,8 @@ defmodule MetricFlowSpex.CorrelationAllMetricsUnifiedSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "there is no separation between financial and marketing metrics in the results", context do
+      then_ "there is no separation between financial and marketing metrics in the results",
+            context do
         html = render(context.view)
 
         # Ensure there are no separate sections that divide metrics by type

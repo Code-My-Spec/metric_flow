@@ -25,7 +25,8 @@ defmodule MetricFlowSpex.Criterion807ReopeningShowsFullHistorySpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(new_view)
+
           render(new_view)
         end)
 

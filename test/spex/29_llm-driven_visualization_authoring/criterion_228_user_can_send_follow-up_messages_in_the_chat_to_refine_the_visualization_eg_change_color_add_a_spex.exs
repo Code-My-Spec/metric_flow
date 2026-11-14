@@ -31,8 +31,8 @@ defmodule MetricFlowSpex.Criterion5050FollowUpMessagesRefineVizSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          # Flush the LiveView mailbox so it processes the Task result
-          Process.sleep(100)
+          # Wait until the generated reply has reached the LiveView.
+          await_chat_completion(context.view)
           render(context.view)
         end)
 
@@ -45,7 +45,8 @@ defmodule MetricFlowSpex.Criterion5050FollowUpMessagesRefineVizSpex do
             "prompt" => "Now add clicks as a second series and make it a layered chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 

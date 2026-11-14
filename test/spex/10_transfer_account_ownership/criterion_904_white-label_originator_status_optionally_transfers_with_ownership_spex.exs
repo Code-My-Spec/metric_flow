@@ -18,12 +18,19 @@ defmodule MetricFlowSpex.Criterion904WhiteLabelOriginatorStatusOptionallyTransfe
 
   spex "White-label originator status optionally transfers with ownership", criterion: 904 do
     scenario "the owner transfers ownership and opts to carry over originator status" do
-      given_ :agency_owner_logged_in
-      given_ :agency_member_registered
+      given_(:agency_owner_logged_in)
+      given_(:agency_member_registered)
 
       given_ "the agency account is the originator for a client account", context do
         client = MetricFlowSpex.Fixtures.client_account_fixture("Originated Client")
-        :ok = MetricFlowSpex.Fixtures.grant_client_account_access(context.owner_email, client.id, :admin, true)
+
+        :ok =
+          MetricFlowSpex.Fixtures.grant_client_account_access(
+            context.owner_email,
+            client.id,
+            :admin,
+            true
+          )
 
         # client_account_fixture/1 creates its owning user via user_fixture/1,
         # which delivers a real login-instructions email as a side effect of
@@ -38,7 +45,9 @@ defmodule MetricFlowSpex.Criterion904WhiteLabelOriginatorStatusOptionallyTransfe
       given_ "the owner transfers ownership and opts to transfer originator status", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
         account_id = MetricFlowSpex.Fixtures.personal_account_id(context.owner_email)
-        {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings?account_id=#{account_id}")
+
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/accounts/settings?account_id=#{account_id}")
 
         view
         |> form("#transfer-ownership-form", %{
@@ -58,7 +67,8 @@ defmodule MetricFlowSpex.Criterion904WhiteLabelOriginatorStatusOptionallyTransfe
       end
 
       when_ "the new owner confirms the transfer", context do
-        {:ok, view, _html} = live(context.member_conn, "/account_transfers/#{context.transfer_token}")
+        {:ok, view, _html} =
+          live(context.member_conn, "/account_transfers/#{context.transfer_token}")
 
         view
         |> element("[data-role='accept-transfer-btn']")

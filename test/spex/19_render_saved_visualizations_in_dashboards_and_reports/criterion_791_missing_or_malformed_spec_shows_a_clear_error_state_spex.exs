@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion791MissingSpecShowsClearErrorStateSpex do
 
   spex "Missing or malformed spec shows a clear error state", criterion: 791 do
     scenario "a report whose visualization has a malformed spec shows a clear error state instead of a blank panel" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a visualization with a malformed spec", context do
         # A nil vega_spec cannot be persisted at all -- the column has a

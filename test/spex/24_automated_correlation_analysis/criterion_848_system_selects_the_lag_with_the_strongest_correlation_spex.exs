@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion848SystemSelectsTheLagWithTheStrongestCorrelat
 
   spex "System selects the lag with the strongest correlation", criterion: 848 do
     scenario "a metric with a strong negative correlation is still selected over weaker positive ones" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a metric tested across multiple time lags, including a negative correlation stronger than any positive one",
              context do
@@ -57,7 +57,10 @@ defmodule MetricFlowSpex.Criterion848SystemSelectsTheLagWithTheStrongestCorrelat
 
       then_ "it chooses the lag with the highest absolute correlation value, regardless of whether the correlation is positive or negative",
             context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='complaints']"),
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='complaints']"
+               ),
                "Expected the strongly (negatively) correlated metric to appear in the results despite the negative sign"
 
         {:ok, context}

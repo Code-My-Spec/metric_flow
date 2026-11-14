@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
   import MetricFlowSpex.SharedGivens
 
   spex "Integration is saved only after successful OAuth completion",
-       fail_on_error_logs: false, criterion: 89 do
+    fail_on_error_logs: false,
+    criterion: 89 do
     scenario "before OAuth completion the integrations list does not show QuickBooks as connected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -23,22 +24,29 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
     end
 
     scenario "a failed OAuth callback does not create an integration" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the OAuth callback returns with an error", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/quickbooks",
-            MetricFlowTest.OAuthStub.denied_callback_params())
+          _callback_conn =
+            get(
+              context.owner_conn,
+              "/app/integrations/oauth/callback/quickbooks",
+              MetricFlowTest.OAuthStub.denied_callback_params()
+            )
         end)
+
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")
         {:ok, Map.put(context, :view, view)}
       end
 
       then_ "the callback page shows an error status", context do
         html = render(context.view)
+
         assert html =~ "denied" or html =~ "Failed" or html =~ "error" or html =~ "Error" or
                  html =~ "not connected" or html =~ "Not connected"
+
         {:ok, context}
       end
 
@@ -55,7 +63,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOauthCompletionSpe
     end
 
     scenario "a successful OAuth callback creates the integration" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       when_ "the user navigates to the QuickBooks detail page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")

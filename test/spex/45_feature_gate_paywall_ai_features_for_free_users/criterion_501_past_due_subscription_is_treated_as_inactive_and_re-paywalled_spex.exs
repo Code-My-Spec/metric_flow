@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.PastDueSubscriptionIsTreatedAsInactiveAndRePaywalledSpe
 
   spex "Past_due subscription is treated as inactive and re-paywalled", criterion: 501 do
     scenario "Dana's subscription status changes from subscribed to past_due" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_subscription_past_due
+      given_(:user_logged_in_as_owner)
+      given_(:owner_subscription_past_due)
 
       when_ "Dana navigates to Correlations", context do
         result = live(context.owner_conn, "/app/correlations")

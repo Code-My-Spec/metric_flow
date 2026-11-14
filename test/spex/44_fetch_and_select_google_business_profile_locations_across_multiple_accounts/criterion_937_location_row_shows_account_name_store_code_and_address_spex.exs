@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.LocationRowShowsAccountNameStoreCodeAndAddressSpex do
 
   spex "Location row shows account, name, store code, and address", criterion: 937 do
     scenario "a location's row displays its account, name, store code, and address" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a location appears in the merged list", context do
         plug = fn conn ->

@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.SessionPersistsWhenOpeningNewBrowserTabSpex do
 
   spex "Session persists when opening a new browser tab", criterion: 525 do
     scenario "Dana stays logged in when she opens the app in a new tab" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "Dana is logged in", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :logged_in_conn, logged_in_conn)}

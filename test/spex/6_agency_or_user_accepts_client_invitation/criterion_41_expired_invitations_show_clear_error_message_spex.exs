@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
 
   spex "Expired invitations show clear error message", criterion: 41 do
     scenario "user visits an expired invitation link and sees an error" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation that is then expired", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -46,17 +48,19 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
     end
 
     scenario "unauthenticated user visits an expired invitation link and sees an error" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "an invitation has been sent and expired", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -86,17 +90,19 @@ defmodule MetricFlowSpex.ExpiredInvitationsShowClearErrorMessageSpex do
     end
 
     scenario "expired invitation page suggests re-requesting an invitation" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner sends an invitation that is then expired", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =

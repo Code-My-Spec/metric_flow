@@ -6,16 +6,18 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
   spex "Agency admin can disable auto-enrollment if desired", criterion: 27 do
     scenario "agency admin sees a disable button or toggle when auto-enrollment is active" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario1-#{System.unique_integer([:positive])}.com"
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: domain
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: domain
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :settings_view, view)}
@@ -23,25 +25,32 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
 
       then_ "the settings page shows a control to disable auto-enrollment", context do
         html = render(context.settings_view)
-        has_disable_button = has_element?(context.settings_view, "[data-role='disable-auto-enrollment']")
+
+        has_disable_button =
+          has_element?(context.settings_view, "[data-role='disable-auto-enrollment']")
+
         has_disable_text = html =~ "Disable" or html =~ "disable"
+
         assert has_disable_button or has_disable_text,
-          "Expected a disable auto-enrollment control to be present on the settings page"
+               "Expected a disable auto-enrollment control to be present on the settings page"
+
         {:ok, context}
       end
     end
 
     scenario "agency admin can disable auto-enrollment from the settings page" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner has configured auto-enrollment for a unique domain", context do
         domain = "scenario2-#{System.unique_integer([:positive])}.com"
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: domain
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: domain
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :settings_view, view)}
@@ -62,16 +71,19 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
     end
 
     scenario "after disabling auto-enrollment, a new user with matching domain is not auto-added" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
-      given_ "the owner has configured and then disabled auto-enrollment for a unique domain", context do
+      given_ "the owner has configured and then disabled auto-enrollment for a unique domain",
+             context do
         domain = "scenario3-#{System.unique_integer([:positive])}.com"
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: domain
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: domain
+          }
+        )
         |> render_submit()
 
         view
@@ -81,18 +93,21 @@ defmodule MetricFlowSpex.AgencyAdminCanDisableAutoEnrollmentIfDesiredSpex do
         {:ok, context |> Map.put(:settings_view, view) |> Map.put(:enrollment_domain, domain)}
       end
 
-      when_ "a new user registers with an email matching the previously configured domain", context do
+      when_ "a new user registers with an email matching the previously configured domain",
+            context do
         newbie_email = "newbie#{System.unique_integer([:positive])}@#{context.enrollment_domain}"
 
         reg_conn = build_conn()
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: newbie_email,
-          password: "SecurePassword123!",
-          account_name: "Newbie Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: newbie_email,
+            password: "SecurePassword123!",
+            account_name: "Newbie Account"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :newbie_email, newbie_email)}

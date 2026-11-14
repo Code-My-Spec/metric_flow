@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.QuickbooksUsesTheSameIntegrationUiAsMarketingPlatformsS
 
   spex "QuickBooks uses the same integration UI as marketing platforms", criterion: 579 do
     scenario "a connected QuickBooks integration and a connected marketing platform integration" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       given_ "the user also has a connected marketing platform integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)

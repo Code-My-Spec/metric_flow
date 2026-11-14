@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4087EditSavedReportsSpex do
 
   spex "User can edit saved reports", criterion: 155 do
     scenario "user creates a dashboard then edits it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user creates and saves a dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

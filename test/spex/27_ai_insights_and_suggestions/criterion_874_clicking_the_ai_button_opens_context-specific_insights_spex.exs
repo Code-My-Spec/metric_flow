@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion874ClickingTheAiButtonOpensContextSpecificInsi
 
   spex "Clicking the AI button opens context-specific insights", criterion: 874 do
     scenario "a user viewing a chart with an AI info button clicks it" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "a user viewing a chart with an AI info button", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

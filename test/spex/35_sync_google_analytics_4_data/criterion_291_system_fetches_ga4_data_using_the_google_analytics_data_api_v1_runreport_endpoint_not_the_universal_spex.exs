@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
 
   import MetricFlowSpex.SharedGivens
 
-  spex "System fetches GA4 data using the Google Analytics Data API v1 (runReport endpoint), not the Universal Analytics API", criterion: 291 do
+  spex "System fetches GA4 data using the Google Analytics Data API v1 (runReport endpoint), not the Universal Analytics API",
+    criterion: 291 do
     scenario "the sync history page displays Google Analytics sync results, indicating the GA4 API was used" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,11 +15,16 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       end
 
       when_ "a GA4 sync completion event is broadcast to the LiveView", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now()
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now()
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -47,7 +53,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
     end
 
     scenario "the sync history page shows the automated sync schedule including Google Analytics" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -77,7 +83,7 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
     end
 
     scenario "a failed GA4 sync is surfaced in sync history with an error message" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -85,10 +91,15 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       end
 
       when_ "a GA4 sync failure event is broadcast with an API error", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "GA4 Data API error: INVALID_ARGUMENT"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "GA4 Data API error: INVALID_ARGUMENT"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}

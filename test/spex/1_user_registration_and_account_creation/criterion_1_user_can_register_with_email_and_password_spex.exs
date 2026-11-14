@@ -13,11 +13,13 @@ defmodule MetricFlowSpex.UserCanRegisterWithEmailAndPasswordSpex do
 
       when_ "the user fills in email and password and submits the form", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "newuser@example.com",
-          password: "SecurePassword123!",
-          account_name: "New User Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "newuser@example.com",
+            password: "SecurePassword123!",
+            account_name: "New User Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

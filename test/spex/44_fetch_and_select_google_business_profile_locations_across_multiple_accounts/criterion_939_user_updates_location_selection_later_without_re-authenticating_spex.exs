@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserUpdatesLocationSelectionLaterWithoutReAuthenticatin
 
   spex "User updates location selection later without re-authenticating", criterion: 939 do
     scenario "changing a previously saved location selection takes effect without reconnecting" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user previously selected locations to sync", context do
         plug = fn conn ->

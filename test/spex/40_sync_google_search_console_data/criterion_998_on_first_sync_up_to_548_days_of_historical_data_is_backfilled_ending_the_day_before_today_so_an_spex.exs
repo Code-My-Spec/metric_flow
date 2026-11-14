@@ -5,14 +5,15 @@ defmodule MetricFlowSpex.FirstSyncBackfills548DaysEndingYesterdaySubsequentSyncs
   import MetricFlowSpex.SharedGivens
 
   spex "On first sync, up to 548 days of historical data is backfilled, ending the day before today; subsequent daily syncs fetch only data since the last successful sync",
-       fail_on_error_logs: false, criterion: 998 do
+    fail_on_error_logs: false,
+    criterion: 998 do
     scenario "a property was just connected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a property was just connected", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_search_console,
-          provider_metadata: %{"site_url" => "https://example.com/"}
-        )
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_search_console, provider_metadata: %{"site_url" => "https://example.com/"})
 
         {:ok, context}
       end
@@ -24,7 +25,8 @@ defmodule MetricFlowSpex.FirstSyncBackfills548DaysEndingYesterdaySubsequentSyncs
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "it backfills up to 548 days ending the day before today, marked as an initial sync", context do
+      then_ "it backfills up to 548 days ending the day before today, marked as an initial sync",
+            context do
         assert has_element?(context.view, "[data-sync-type='initial']")
 
         {:ok, context}

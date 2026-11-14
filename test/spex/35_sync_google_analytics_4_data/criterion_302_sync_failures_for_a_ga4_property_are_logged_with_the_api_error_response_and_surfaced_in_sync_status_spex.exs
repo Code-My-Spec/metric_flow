@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Sync failures for a GA4 property are logged with the API error response and surfaced in Sync Status and History", criterion: 302 do
+  spex "Sync failures for a GA4 property are logged with the API error response and surfaced in Sync Status and History",
+    criterion: 302 do
     scenario "a GA4 sync failure event is displayed in the sync history page with the error message" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,10 +15,15 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       when_ "a GA4 sync failure event with an API error response is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "GA4 API error: 403 PERMISSION_DENIED — Property access denied"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "GA4 API error: 403 PERMISSION_DENIED — Property access denied"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -54,25 +60,36 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
     end
 
     scenario "multiple GA4 sync failures with different API errors all appear in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "two different GA4 sync failure events with distinct API errors are broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "GA4 API error: 429 RESOURCE_EXHAUSTED"
-        }})
+      when_ "two different GA4 sync failure events with distinct API errors are broadcast",
+            context do
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "GA4 API error: 429 RESOURCE_EXHAUSTED"
+           }}
+        )
 
         :timer.sleep(50)
 
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "GA4 API error: 500 INTERNAL — runReport failed"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "GA4 API error: 500 INTERNAL — runReport failed"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -94,7 +111,8 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       then_ "the Failed filter shows only the failed entries", context do
-        html = context.view
+        html =
+          context.view
           |> element("[data-role='filter-failed']", "Failed")
           |> render_click()
 
@@ -106,7 +124,7 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
     end
 
     scenario "a GA4 sync failure is visible when filtering sync history by Failed status" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -114,10 +132,15 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedWithTheApiErrorResp
       end
 
       when_ "a GA4 API failure event is broadcast", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_failed, %{
-          provider: :google_analytics,
-          reason: "runReport endpoint returned error: INVALID_ARGUMENT"
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_failed,
+           %{
+             provider: :google_analytics,
+             reason: "runReport endpoint returned error: INVALID_ARGUMENT"
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}

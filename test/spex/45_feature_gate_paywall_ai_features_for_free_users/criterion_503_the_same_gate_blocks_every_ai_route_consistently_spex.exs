@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.TheSameGateBlocksEveryAiRouteConsistentlySpex do
 
   spex "The same gate blocks every AI route consistently", criterion: 503 do
     scenario "Dana on the free plan requests Correlations, Intelligence, and Visualizations in turn" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "she requests Correlations, Intelligence, and Visualizations in turn", context do
         results = %{

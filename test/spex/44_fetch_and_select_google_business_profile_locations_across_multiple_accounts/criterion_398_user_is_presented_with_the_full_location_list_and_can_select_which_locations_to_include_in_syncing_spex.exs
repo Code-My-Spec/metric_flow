@@ -5,7 +5,8 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
   import MetricFlowSpex.SharedGivens
 
   spex "User is presented with the full location list and can select which locations to include in syncing (includedLocations config)",
-       fail_on_error_logs: false, criterion: 398 do
+    fail_on_error_logs: false,
+    criterion: 398 do
     scenario "location list page shows checkboxes or toggles for each location" do
       given_ "a user registered and a google_business integration created", context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
@@ -57,16 +58,23 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page displays a location list with selectable inputs for each location", context do
+      then_ "the page displays a location list with selectable inputs for each location",
+            context do
         assert has_element?(context.view, "input[type='checkbox']") or
-                 has_element?(context.view, "input[type='checkbox'][data-role='location-checkbox']") or
+                 has_element?(
+                   context.view,
+                   "input[type='checkbox'][data-role='location-checkbox']"
+                 ) or
                  has_element?(context.view, "[data-role='location-toggle']") or
                  has_element?(context.view, "[data-role='location-list']") or
                  has_element?(context.view, "[data-role='account-selection']")
+
         {:ok, context}
       end
     end
@@ -122,7 +130,9 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
       end
 
       given_ "the user is on the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -133,6 +143,7 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
                  has_element?(context.view, "button", "Save Selection") or
                  has_element?(context.view, "button", "Save Locations") or
                  has_element?(context.view, "button", "Start Syncing")
+
         {:ok, context}
       end
     end
@@ -188,7 +199,9 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
       end
 
       given_ "the user is on the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -223,13 +236,15 @@ defmodule MetricFlowSpex.UserIsPresentedWithTheFullLocationListAndCanSelectWhich
           else
             try do
               html = render(context.view)
+
               html =~ "saved" or html =~ "Saved" or
                 html =~ "success" or html =~ "Success" or
                 html =~ "updated" or html =~ "Updated" or
                 html =~ "confirmed" or html =~ "Confirmed" or
                 html =~ "location" or html =~ "Location"
             rescue
-              _ -> true  # Process died due to navigate — treat as redirected
+              # Process died due to navigate — treat as redirected
+              _ -> true
             catch
               :exit, _ -> true
             end

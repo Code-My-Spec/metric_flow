@@ -5,17 +5,20 @@ defmodule MetricFlowSpex.DisconnectingFlagsSubscriptionsForReviewSpex do
 
   spex "Disconnecting flags existing subscriptions for review", criterion: 479 do
     scenario "a customer subscription is flagged when the agency disconnects Stripe" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "a customer already subscribes through the agency's Stripe account", context do
         subscription =
-          MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
 
         {:ok, Map.put(context, :subscription_id, subscription.id)}
       end
 
-      given_ :owner_has_stripe_connect
+      given_(:owner_has_stripe_connect)
 
       given_ "the admin is on the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

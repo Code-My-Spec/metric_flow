@@ -5,12 +5,13 @@ defmodule MetricFlowSpex.Criterion1012CreditsAndDebitsStoredAsTwoSeparateDailyMe
   import MetricFlowSpex.SharedGivens
 
   spex "Credits (money in) and debits (money out) for each day are stored as two separate daily metrics, so revenue and spend can each be correlated independently",
-       criterion: 1012 do
+    criterion: 1012 do
     scenario "a QuickBooks account with both credit and debit transactions completes its sync" do
-      given_ :user_logged_in_as_owner
-      given_ :with_quickbooks_sync_stub
+      given_(:user_logged_in_as_owner)
+      given_(:with_quickbooks_sync_stub)
 
-      given_ "a client has a connected QuickBooks account with both credit and debit transactions", context do
+      given_ "a client has a connected QuickBooks account with both credit and debit transactions",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,
           provider_metadata: %{"realm_id" => "123456789", "income_account_id" => "79"}
         )
@@ -25,7 +26,8 @@ defmodule MetricFlowSpex.Criterion1012CreditsAndDebitsStoredAsTwoSeparateDailyMe
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "credits and debits are stored as two separate daily metrics rather than a single net figure", context do
+      then_ "credits and debits are stored as two separate daily metrics rather than a single net figure",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

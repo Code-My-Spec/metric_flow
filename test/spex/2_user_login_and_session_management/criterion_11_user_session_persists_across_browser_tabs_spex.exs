@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
 
   spex "User session persists across browser tabs", criterion: 11 do
     scenario "logged-in user can access authenticated pages in a new tab" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user is logged in", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :logged_in_conn, logged_in_conn)}
@@ -36,17 +38,19 @@ defmodule MetricFlowSpex.UserSessionPersistsAcrossBrowserTabsSpex do
     end
 
     scenario "logged-in user can navigate to another authenticated page" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the user is logged in", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
 
         form =
-          form(view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: context.registered_password,
-            remember_me: true
-          })
+          form(view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: context.registered_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(form, context.conn)
         {:ok, Map.put(context, :logged_in_conn, logged_in_conn)}

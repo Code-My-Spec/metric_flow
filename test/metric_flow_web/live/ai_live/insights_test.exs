@@ -59,8 +59,11 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
   end
 
   describe "displays insight cards with summary, type badge, confidence badge, and content" do
-    test "displays insight cards with summary, type badge, confidence badge, and content", %{conn: conn} do
+    test "displays insight cards with summary, type badge, confidence badge, and content", %{
+      conn: conn
+    } do
       {user, account_id} = user_with_account()
+
       insert_insight!(account_id, %{
         summary: "Increase Google Ads budget",
         content: "Based on strong correlation with revenue growth.",
@@ -86,6 +89,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
     test "filters insights by type when filter button is clicked", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
+
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
 
       capture_log(fn ->
@@ -133,6 +137,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
     test "clears filter and shows all insights when Show All is clicked", %{conn: conn} do
       {user, account_id} = user_with_account()
       insert_insight!(account_id, %{suggestion_type: :budget_increase, summary: "Increase spend"})
+
       insert_insight!(account_id, %{suggestion_type: :optimization, summary: "Optimize targeting"})
 
       capture_log(fn ->

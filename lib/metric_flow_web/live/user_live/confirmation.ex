@@ -6,7 +6,11 @@ defmodule MetricFlowWeb.UserLive.Confirmation do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.content flash={@flash} current_scope={@current_scope} active_account_name={assigns[:active_account_name]}>
+    <Layouts.content
+      flash={@flash}
+      current_scope={@current_scope}
+      active_account_name={assigns[:active_account_name]}
+    >
       <div class="mx-auto max-w-sm">
         <div class="text-center">
           <.header>Welcome {@user.email}</.header>

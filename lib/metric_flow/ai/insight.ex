@@ -105,7 +105,9 @@ defmodule MetricFlow.Ai.Insight do
     confidence >= @high_confidence_threshold
   end
 
-  defp maybe_constrain_correlation_result(%Ecto.Changeset{changes: %{correlation_result_id: id}} = changeset)
+  defp maybe_constrain_correlation_result(
+         %Ecto.Changeset{changes: %{correlation_result_id: id}} = changeset
+       )
        when not is_nil(id) do
     assoc_constraint(changeset, :correlation_result)
   end

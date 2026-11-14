@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserCreatesAReportFromATemplateSpex do
 
   spex "User creates a report from a template", criterion: 922 do
     scenario "choosing a template pre-populates the report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user starting a new report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
 
   spex "Admin users see Sync Now button in integration settings", criterion: 110 do
     scenario "connected integration shows a Sync Now button" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -20,7 +20,7 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
     end
 
     scenario "available (not connected) integration does NOT show a Sync Now button" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -29,16 +29,17 @@ defmodule MetricFlowSpex.AdminUsersSeesSyncNowButtonInIntegrationSettingsSpex do
 
       then_ "the available platform card does not contain a Sync Now button", context do
         refute has_element?(
-          context.view,
-          "[data-role='integration-card'][data-status='available'] button",
-          "Sync Now"
-        )
+                 context.view,
+                 "[data-role='integration-card'][data-status='available'] button",
+                 "Sync Now"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "the Sync Now button is clickable (not disabled) when no sync is in progress" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

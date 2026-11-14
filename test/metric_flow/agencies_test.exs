@@ -213,7 +213,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       attrs = %{email_domain: domain, default_access_level: :read_only, enabled: true}
       assert {:ok, _rule} = Agencies.configure_auto_enrollment(scope, agency.id, attrs)
@@ -287,7 +293,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       {new_user, _} = user_with_scope()
 
@@ -398,14 +410,22 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       {target_user, _} = user_with_scope()
 
       assert {:ok, _member} =
                Agencies.add_agency_team_member(scope, agency.id, target_user.id, :read_only)
 
-      inherited = Repo.get_by(AccountMember, account_id: client_account.id, user_id: target_user.id)
+      inherited =
+        Repo.get_by(AccountMember, account_id: client_account.id, user_id: target_user.id)
+
       assert inherited != nil
 
       assert {:ok, _deleted} =
@@ -474,7 +494,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       results = Agencies.list_agency_client_accounts(scope, agency.id)
 
@@ -505,7 +531,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, true)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 true
+               )
 
       [result] = Agencies.list_agency_client_accounts(scope, agency.id)
 
@@ -516,7 +548,8 @@ defmodule MetricFlow.AgenciesTest do
       {agency, _} = agency_with_admin_scope()
       {_other_user, other_scope} = user_with_scope()
 
-      assert {:error, :unauthorized} = Agencies.list_agency_client_accounts(other_scope, agency.id)
+      assert {:error, :unauthorized} =
+               Agencies.list_agency_client_accounts(other_scope, agency.id)
     end
 
     test "orders by most recently created" do
@@ -525,10 +558,22 @@ defmodule MetricFlow.AgenciesTest do
       client2 = account_fixture()
 
       assert {:ok, _} =
-               Agencies.grant_client_account_access(scope, agency.id, client1.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client1.id,
+                 :read_only,
+                 false
+               )
 
       assert {:ok, _} =
-               Agencies.grant_client_account_access(scope, agency.id, client2.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client2.id,
+                 :read_only,
+                 false
+               )
 
       results = Agencies.list_agency_client_accounts(scope, agency.id)
       result_client_ids = Enum.map(results, & &1.client_account_id)
@@ -549,7 +594,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 false
+               )
 
       assert {:ok, metadata} =
                Agencies.get_client_account_access(scope, agency.id, client_account.id)
@@ -562,7 +613,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 false
+               )
 
       assert {:ok, metadata} =
                Agencies.get_client_account_access(scope, agency.id, client_account.id)
@@ -576,7 +633,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, true)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 true
+               )
 
       assert {:ok, metadata} =
                Agencies.get_client_account_access(scope, agency.id, client_account.id)
@@ -590,7 +653,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 false
+               )
 
       assert {:ok, metadata} =
                Agencies.get_client_account_access(scope, agency.id, client_account.id)
@@ -616,7 +685,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 false
+               )
 
       {_other_user, other_scope} = user_with_scope()
 
@@ -669,7 +744,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, true)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 true
+               )
 
       assert grant.origination_status == :originator
     end
@@ -683,7 +764,13 @@ defmodule MetricFlow.AgenciesTest do
                Agencies.add_agency_team_member(scope, agency.id, team_member_user.id, :read_only)
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       membership =
         Repo.get_by(AccountMember, account_id: client_account.id, user_id: team_member_user.id)
@@ -710,10 +797,22 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, original_grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       assert {:ok, updated_grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 false
+               )
 
       assert updated_grant.id == original_grant.id
       assert updated_grant.access_level == :admin
@@ -730,7 +829,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       {_other_user, other_scope} = user_with_scope()
 
@@ -743,7 +848,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :read_only, false)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :read_only,
+                 false
+               )
 
       assert {:ok, revoked} =
                Agencies.revoke_client_account_access(scope, agency.id, client_account.id)
@@ -762,7 +873,13 @@ defmodule MetricFlow.AgenciesTest do
       client_account = account_fixture()
 
       assert {:ok, _grant} =
-               Agencies.grant_client_account_access(scope, agency.id, client_account.id, :admin, true)
+               Agencies.grant_client_account_access(
+                 scope,
+                 agency.id,
+                 client_account.id,
+                 :admin,
+                 true
+               )
 
       assert {:error, :cannot_revoke_originator} =
                Agencies.revoke_client_account_access(scope, agency.id, client_account.id)
@@ -830,8 +947,11 @@ defmodule MetricFlow.AgenciesTest do
       unique = System.unique_integer([:positive])
       shared_subdomain = "shared-#{unique}"
 
-      attrs1 = Map.merge(valid_white_label_config_attrs(agency1.id), %{subdomain: shared_subdomain})
-      attrs2 = Map.merge(valid_white_label_config_attrs(agency2.id), %{subdomain: shared_subdomain})
+      attrs1 =
+        Map.merge(valid_white_label_config_attrs(agency1.id), %{subdomain: shared_subdomain})
+
+      attrs2 =
+        Map.merge(valid_white_label_config_attrs(agency2.id), %{subdomain: shared_subdomain})
 
       assert {:ok, _config} = Agencies.update_white_label_config(scope1, agency1.id, attrs1)
 

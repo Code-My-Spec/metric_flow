@@ -18,9 +18,7 @@ defmodule MetricFlow.Integrations.Providers.Facebook do
     client_secret = Application.fetch_env!(:metric_flow, :facebook_app_secret)
     redirect_uri = build_redirect_uri()
 
-    Logger.debug(
-      "Facebook OAuth config: client_id=#{client_id}, redirect_uri=#{redirect_uri}"
-    )
+    Logger.debug("Facebook OAuth config: client_id=#{client_id}, redirect_uri=#{redirect_uri}")
 
     [
       client_id: client_id,

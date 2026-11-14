@@ -21,7 +21,7 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
   """
   @spec deliver_invitation(Invitation.t(), String.t(), String.t()) ::
           {:ok, Swoosh.Email.t()} | {:error, term()}
-  def deliver_invitation(%Invitation{email: email}, account_name, acceptance_url)
+  def deliver_invitation(%Invitation{email: email, role: role}, account_name, acceptance_url)
       when is_binary(acceptance_url) do
     deliver_email(email, "You've been invited to #{account_name}", """
 
@@ -29,7 +29,7 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
 
     Hi #{email},
 
-    You have been invited to join #{account_name} on MetricFlow.
+    You have been invited to join #{account_name} on MetricFlow as a #{role_label(role)}.
 
     Click the link below to accept your invitation:
 
@@ -42,6 +42,16 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
     ==============================
     """)
   end
+
+  # Mirrors InvitationLive.Accept's role_label/1 so the email and acceptance
+  # page describe the same role the same way.
+  defp role_label(:owner), do: "Owner"
+  defp role_label(:admin), do: "Admin"
+  defp role_label(:account_manager), do: "Account Manager"
+  defp role_label(:read_only), do: "Read Only"
+
+  defp role_label(role) when is_atom(role),
+    do: role |> Atom.to_string() |> String.replace("_", " ") |> String.capitalize()
 
   defp deliver_email(recipient, subject, body) do
     email =

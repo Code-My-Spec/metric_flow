@@ -30,7 +30,10 @@ defmodule MetricFlowSpex.WebhookProcessesSubscriptionEventsSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}
@@ -61,7 +64,10 @@ defmodule MetricFlowSpex.WebhookProcessesSubscriptionEventsSpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.put(context, :response, conn)}

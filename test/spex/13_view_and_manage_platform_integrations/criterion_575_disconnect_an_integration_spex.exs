@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.DisconnectAnIntegrationSpex do
 
   spex "Disconnect an integration", criterion: 575 do
     scenario "a connected integration is disconnected" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the integrations page with a connected integration", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

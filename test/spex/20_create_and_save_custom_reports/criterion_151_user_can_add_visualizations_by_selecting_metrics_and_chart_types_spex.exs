@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4083AddVisualizationsSpex do
 
   spex "User can add visualizations by selecting metrics and chart types", criterion: 151 do
     scenario "user adds a visualization via the metric picker" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user is on the new dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

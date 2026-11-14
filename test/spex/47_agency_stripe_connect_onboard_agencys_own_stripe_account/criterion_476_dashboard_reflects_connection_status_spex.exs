@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.DashboardReflectsConnectionStatusSpex do
 
   spex "Dashboard reflects connection status", criterion: 476 do
     scenario "not-connected agency sees the not-connected badge" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "the admin views the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")
@@ -20,8 +20,8 @@ defmodule MetricFlowSpex.DashboardReflectsConnectionStatusSpex do
     end
 
     scenario "connected agency sees the connected badge" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       when_ "the admin views the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

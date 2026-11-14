@@ -12,12 +12,14 @@ defmodule MetricFlowSpex.SelectingClientCreatesClientAccountSpex do
 
       when_ "she selects Client as her account type", context do
         context.view
-        |> form("#registration_form", user: %{
-          email: "client_dana@example.com",
-          password: "SecurePassword123!",
-          account_name: "Dana Client Co",
-          account_type: "client"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "client_dana@example.com",
+            password: "SecurePassword123!",
+            account_name: "Dana Client Co",
+            account_type: "client"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

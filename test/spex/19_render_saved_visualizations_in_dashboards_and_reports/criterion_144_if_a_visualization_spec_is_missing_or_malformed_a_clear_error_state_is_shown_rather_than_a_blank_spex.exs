@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
 
   spex "Malformed or missing visualization spec shows a clear error state", criterion: 144 do
     scenario "submitting a non-object JSON spec shows an error" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has the spec editor open", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -41,8 +41,8 @@ defmodule MetricFlowSpex.Criterion5058MalformedSpecShowsErrorSpex do
     end
 
     scenario "when no metric is selected, a placeholder message is shown instead of a blank chart" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       when_ "user loads the visualization editor without selecting anything", context do
         {:ok, view, html} = live(context.owner_conn, "/app/visualizations/new")

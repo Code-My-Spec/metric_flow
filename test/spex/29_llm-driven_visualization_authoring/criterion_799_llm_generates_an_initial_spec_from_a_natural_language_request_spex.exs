@@ -29,7 +29,8 @@ defmodule MetricFlowSpex.Criterion799LlmGeneratesInitialSpecSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 

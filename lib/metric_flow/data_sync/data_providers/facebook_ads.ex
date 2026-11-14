@@ -132,7 +132,7 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
 
     result =
       try do
-        Req.request(req_opts)
+        MetricFlow.DataSync.ProviderHttp.request(req_opts)
       rescue
         _e in Jason.DecodeError -> {:error, :malformed_response}
         e -> {:error, {:network_error, e}}
@@ -165,12 +165,24 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
       Logger.info("FacebookAds API returned #{length(data)} rows for #{ad_account_id}")
       if data == [], do: Logger.info("FacebookAds API full response: #{inspect(decoded)}")
       metrics = Enum.flat_map(data, &transform_row(&1, ad_account_id))
-      fetch_next_page(decoded, metrics, access_token, ad_account_id, date_range, breakdown, http_plug)
+
+      fetch_next_page(
+        decoded,
+        metrics,
+        access_token,
+        ad_account_id,
+        date_range,
+        breakdown,
+        http_plug
+      )
     end
   end
 
   defp handle_http_result({:ok, %{status: 401}}, _, _, _, _, _), do: {:error, :unauthorized}
-  defp handle_http_result({:ok, %{status: 403}}, _, _, _, _, _), do: {:error, :insufficient_permissions}
+
+  defp handle_http_result({:ok, %{status: 403}}, _, _, _, _, _),
+    do: {:error, :insufficient_permissions}
+
   defp handle_http_result({:ok, %{status: 429}}, _, _, _, _, _), do: {:error, :rate_limited}
 
   defp handle_http_result({:ok, %{status: 400, body: body}}, _, _, _, _, _) do
@@ -190,7 +202,15 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
   defp handle_http_result({:error, reason}, _, _, _, _, _),
     do: {:error, {:network_error, reason}}
 
-  defp fetch_next_page(decoded, metrics, access_token, ad_account_id, date_range, breakdown, http_plug) do
+  defp fetch_next_page(
+         decoded,
+         metrics,
+         access_token,
+         ad_account_id,
+         date_range,
+         breakdown,
+         http_plug
+       ) do
     case get_paging_next(decoded) do
       nil ->
         {:ok, metrics}

@@ -17,7 +17,11 @@ defmodule MetricFlow.Integrations.Providers.BehaviourTest do
 
     @impl true
     def config do
-      [client_id: "test_id", client_secret: "test_secret", redirect_uri: "http://localhost/callback"]
+      [
+        client_id: "test_id",
+        client_secret: "test_secret",
+        redirect_uri: "http://localhost/callback"
+      ]
     end
 
     @impl true

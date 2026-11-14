@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4842ReportEditorIncludesVegaLiteEditorSpex do
 
   spex "Report editor includes the Vega-Lite editor", criterion: 159 do
     scenario "dashboard editor has chart type selector and metric picker" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user opens the metric picker on a new dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

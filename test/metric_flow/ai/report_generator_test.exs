@@ -96,7 +96,8 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     test "returned map contains dollar-schema key" do
       runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+      {:ok, spec} =
+        ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
 
       assert Map.has_key?(spec, "$schema")
     end
@@ -104,7 +105,8 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     test "returned map contains mark key" do
       runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+      {:ok, spec} =
+        ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
 
       assert Map.has_key?(spec, "mark")
     end
@@ -112,7 +114,8 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     test "returned map contains encoding key" do
       runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+      {:ok, spec} =
+        ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
 
       assert Map.has_key?(spec, "encoding")
     end
@@ -120,7 +123,8 @@ defmodule MetricFlow.Ai.ReportGeneratorTest do
     test "dollar-schema field points to a Vega-Lite v5 URL" do
       runner = ClaudeCodeStub.tool_call("emit_vega_spec", %{"spec" => vega_spec()})
 
-      {:ok, spec} = ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
+      {:ok, spec} =
+        ReportGenerator.generate(user_prompt(), metric_names(), command_runner: runner)
 
       assert String.contains?(spec["$schema"], "vega-lite")
       assert String.contains?(spec["$schema"], "v5")

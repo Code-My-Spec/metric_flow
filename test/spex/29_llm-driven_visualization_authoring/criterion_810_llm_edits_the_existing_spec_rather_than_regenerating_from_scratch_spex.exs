@@ -29,7 +29,8 @@ defmodule MetricFlowSpex.Criterion810LlmEditsExistingSpecSpex do
             "prompt" => "Show me impressions over time as a line chart"
           })
 
-          Process.sleep(100)
+          await_chat_completion(view)
+
           render(view)
         end)
 
@@ -47,7 +48,7 @@ defmodule MetricFlowSpex.Criterion810LlmEditsExistingSpecSpex do
 
         capture_log(fn ->
           render_submit(context.view, "send_chat", %{"prompt" => "Make the line thicker"})
-          Process.sleep(100)
+          await_chat_completion(context.view)
           render(context.view)
         end)
 

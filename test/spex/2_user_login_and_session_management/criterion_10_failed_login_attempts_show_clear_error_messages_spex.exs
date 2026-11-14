@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
 
   spex "Failed login attempts show clear error messages", criterion: 10 do
     scenario "user submits incorrect password" do
-      given_ :user_registered_with_password
+      given_(:user_registered_with_password)
 
       given_ "the login page is loaded", context do
         {:ok, view, _html} = live(context.conn, "/users/log-in")
@@ -15,10 +15,12 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
 
       when_ "the user submits the correct email but wrong password", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: context.registered_email,
-            password: "WrongPassword999!"
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: context.registered_email,
+              password: "WrongPassword999!"
+            }
+          )
 
         render_submit(form)
         conn = follow_trigger_action(form, context.conn)
@@ -41,10 +43,12 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
 
       when_ "the user submits an email that does not exist", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: "nonexistent@example.com",
-            password: "SomePassword123!"
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: "nonexistent@example.com",
+              password: "SomePassword123!"
+            }
+          )
 
         render_submit(form)
         conn = follow_trigger_action(form, context.conn)
@@ -67,10 +71,12 @@ defmodule MetricFlowSpex.FailedLoginAttemptsShowClearErrorMessagesSpex do
 
       when_ "the user submits the form with empty fields", context do
         form =
-          form(context.view, "#login_form_password", user: %{
-            email: "",
-            password: ""
-          })
+          form(context.view, "#login_form_password",
+            user: %{
+              email: "",
+              password: ""
+            }
+          )
 
         render_submit(form)
         conn = follow_trigger_action(form, context.conn)

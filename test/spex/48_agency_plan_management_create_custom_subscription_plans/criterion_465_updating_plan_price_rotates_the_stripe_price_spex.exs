@@ -10,9 +10,9 @@ defmodule MetricFlowSpex.Story48.Criterion4141Spex do
 
   spex "Updating plan price rotates the Stripe Price", criterion: 465 do
     scenario "editing a plan's price replaces its Stripe Price" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
+      given_(:owner_has_agency_plan)
 
       given_ "Alex is on the agency plans page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

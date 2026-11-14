@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion902AcceptanceTransfersOwnershipCompletelySpex 
 
   spex "Acceptance transfers ownership completely", criterion: 902 do
     scenario "the new owner has authenticated and confirmed acceptance" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "the new owner has authenticated and the transfer is pending", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)
@@ -37,7 +37,8 @@ defmodule MetricFlowSpex.Criterion902AcceptanceTransfersOwnershipCompletelySpex 
       end
 
       when_ "the transfer completes", context do
-        {:ok, view, _html} = live(context.member_conn, "/account_transfers/#{context.transfer_token}")
+        {:ok, view, _html} =
+          live(context.member_conn, "/account_transfers/#{context.transfer_token}")
 
         view
         |> element("[data-role='accept-transfer-btn']")

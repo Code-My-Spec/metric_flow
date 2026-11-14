@@ -74,7 +74,9 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
   # ---------------------------------------------------------------------------
 
   describe "renders account settings page with account name and slug fields for owner" do
-    test "renders account settings page with account name and slug fields for owner", %{conn: conn} do
+    test "renders account settings page with account name and slug fields for owner", %{
+      conn: conn
+    } do
       user = user_fixture()
       account = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -98,7 +100,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
       assert html =~ "Personal"
     end
-
   end
 
   describe "live-validates account name and slug on change and shows inline errors" do
@@ -116,7 +117,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
       assert html =~ "can&#39;t be blank"
     end
-
   end
 
   describe "saves account settings and shows success flash on valid submit" do
@@ -137,7 +137,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       assert html =~ "Updated Name"
       assert html =~ "saved"
     end
-
   end
 
   describe "shows unauthorized error when non-owner/admin attempts to save" do
@@ -152,7 +151,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
       refute has_element?(lv, "button", "Save Changes")
     end
-
   end
 
   describe "displays Transfer Ownership section for owners of team accounts" do
@@ -182,7 +180,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
       refute has_element?(lv, "[data-role='transfer-ownership']")
     end
-
   end
 
   describe "transfers ownership to selected member and demotes current user to admin" do
@@ -214,7 +211,9 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
   end
 
   describe "displays Danger Zone with delete account form for owners of team accounts" do
-    test "displays Danger Zone with delete account form for owners of team accounts", %{conn: conn} do
+    test "displays Danger Zone with delete account form for owners of team accounts", %{
+      conn: conn
+    } do
       user = user_fixture()
       _account = team_account_fixture(user)
       conn = log_in_user(conn, user)
@@ -237,7 +236,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
 
       refute has_element?(lv, "[data-role='delete-account']")
     end
-
   end
 
   describe "shows Account name does not match error when confirmation name is wrong" do
@@ -330,7 +328,6 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       html = render(lv)
       assert html =~ "PubSub Updated Name"
     end
-
   end
 
   describe "redirects to /accounts when user has no accounts" do
@@ -358,9 +355,10 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
   end
 
   describe "shows transfer-originator checkbox for a client-typed account with a real origination grant" do
-    test "shows transfer-originator checkbox for a client-typed account with a real origination grant", %{
-      conn: conn
-    } do
+    test "shows transfer-originator checkbox for a client-typed account with a real origination grant",
+         %{
+           conn: conn
+         } do
       owner = user_fixture()
       # Genuinely a "client"-typed account, yet it originates another client
       # account via a real agency_client_access_grants row -- origination is

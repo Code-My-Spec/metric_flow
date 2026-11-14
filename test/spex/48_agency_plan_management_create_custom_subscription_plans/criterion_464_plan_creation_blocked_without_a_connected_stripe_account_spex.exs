@@ -10,7 +10,7 @@ defmodule MetricFlowSpex.Story48.Criterion4140Spex do
 
   spex "Plan creation blocked without a connected Stripe account", criterion: 464 do
     scenario "attempting to create a plan without Stripe Connect is rejected" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Acme Agency has no connected Stripe account, and Alex is on the plans page",
              context do

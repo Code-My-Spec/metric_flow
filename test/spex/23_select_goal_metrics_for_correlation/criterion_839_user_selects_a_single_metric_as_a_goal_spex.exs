@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion839UserSelectsASingleMetricAsAGoalSpex do
 
   spex "User selects a single metric as a goal", criterion: 839 do
     scenario "a user in the goal metrics configuration screen selects their revenue account as a goal" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user in the goal metrics configuration screen", context do
         yesterday = Date.add(Date.utc_today(), -1)

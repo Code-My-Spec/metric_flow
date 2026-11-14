@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
 
   spex "User can initiate OAuth flow for QuickBooks", criterion: 85 do
     scenario "the connect page displays QuickBooks as an available platform" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -21,7 +21,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
     end
 
     scenario "clicking connect for QuickBooks initiates the OAuth flow" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -30,7 +30,11 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
 
       when_ "the user clicks the connect button for QuickBooks", context do
         view = context.view
-        result = element(view, "[data-platform='quickbooks'] [data-role='connect-button']") |> render_click()
+
+        result =
+          element(view, "[data-platform='quickbooks'] [data-role='connect-button']")
+          |> render_click()
+
         {:ok, Map.put(context, :click_result, result)}
       end
 
@@ -42,7 +46,7 @@ defmodule MetricFlowSpex.UserCanInitiateOauthFlowForQuickbooksSpex do
     end
 
     scenario "QuickBooks shows not connected status when no integration exists" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")

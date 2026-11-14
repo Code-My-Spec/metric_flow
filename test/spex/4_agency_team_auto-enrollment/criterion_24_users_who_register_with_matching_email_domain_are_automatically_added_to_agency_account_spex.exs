@@ -4,17 +4,20 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Users who register with matching email domain are automatically added to agency account", criterion: 24 do
+  spex "Users who register with matching email domain are automatically added to agency account",
+    criterion: 24 do
     scenario "new user with matching email domain is auto-enrolled in the agency account after registration" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: "testco.com"
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: "testco.com"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -25,11 +28,13 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: "newuser@testco.com",
-          password: "SecurePassword123!",
-          account_name: "New User Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "newuser@testco.com",
+            password: "SecurePassword123!",
+            account_name: "New User Account"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -44,15 +49,17 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
     end
 
     scenario "new user with non-matching email domain is NOT auto-enrolled" do
-      given_ :agency_owner_logged_in
+      given_(:agency_owner_logged_in)
 
       given_ "the owner configures auto-enrollment for domain testco.com", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#auto-enrollment-form", auto_enrollment: %{
-          domain: "testco.com"
-        })
+        |> form("#auto-enrollment-form",
+          auto_enrollment: %{
+            domain: "testco.com"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -63,11 +70,13 @@ defmodule MetricFlowSpex.UsersWhoRegisterWithMatchingEmailDomainAreAutomatically
         {:ok, reg_view, _html} = live(reg_conn, "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: "outsider@otherdomain.com",
-          password: "SecurePassword123!",
-          account_name: "Other Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "outsider@otherdomain.com",
+            password: "SecurePassword123!",
+            account_name: "Other Account"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

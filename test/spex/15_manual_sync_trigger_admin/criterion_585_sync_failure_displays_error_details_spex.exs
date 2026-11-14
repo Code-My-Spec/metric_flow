@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.SyncFailureDisplaysErrorDetailsSpex do
 
   spex "Sync failure displays error details", criterion: 585 do
     scenario "when a manual sync fails, the admin sees the error details explaining why" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "a manual sync fails (e.g. the platform rejects the request)", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

@@ -12,9 +12,10 @@ defmodule MetricFlowSpex.LegacySingleAccountConnectionIsPreSelectedDuringMigrati
   ]
 
   spex "Legacy single-account connection is pre-selected during migration",
-       fail_on_error_logs: false, criterion: 949 do
+    fail_on_error_logs: false,
+    criterion: 949 do
     scenario "a user with a legacy singular account connection sees it pre-selected on revisit" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user previously connected a single legacy GMB account", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -38,14 +39,14 @@ defmodule MetricFlowSpex.LegacySingleAccountConnectionIsPreSelectedDuringMigrati
 
       when_ "they revisit the GBP integration settings", context do
         {view, html} =
-          with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+          with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
             Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
             {:ok, view, html} =
               live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
 
             {view, html}
-          end
+          end)
 
         Application.delete_env(:metric_flow, :req_http_options)
         {:ok, Map.merge(context, %{view: view, html: html})}

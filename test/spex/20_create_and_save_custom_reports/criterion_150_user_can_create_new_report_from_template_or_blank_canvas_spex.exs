@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
 
   spex "User can create new report from template or blank canvas", criterion: 150 do
     scenario "new dashboard page shows template chooser and blank canvas option" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       when_ "user navigates to create a new dashboard", context do
         {:ok, view, html} = live(context.owner_conn, "/app/dashboards/new")
@@ -28,8 +28,8 @@ defmodule MetricFlowSpex.Criterion4082CreateFromTemplateOrBlankSpex do
     end
 
     scenario "selecting a template populates the canvas with visualizations" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user is on the new dashboard page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

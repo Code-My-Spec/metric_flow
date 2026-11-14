@@ -24,6 +24,10 @@ config :metric_flow,
   ecto_repos: [MetricFlow.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Gates every paywall/subscription check in the app. Overridden to false
+# in dev so gated features are usable without a subscription.
+config :metric_flow, :paywall_enabled, true
+
 # Configures the endpoint
 config :metric_flow, MetricFlowWeb.Endpoint,
   url: [host: "localhost"],

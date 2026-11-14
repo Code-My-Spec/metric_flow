@@ -5,10 +5,12 @@ defmodule MetricFlowSpex.ReconnectAttemptFailsWhenAuthorizationIsNotGrantedSpex 
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Reconnect attempt fails when authorization is not granted", fail_on_error_logs: false, criterion: 578 do
+  spex "Reconnect attempt fails when authorization is not granted",
+    fail_on_error_logs: false,
+    criterion: 578 do
     scenario "the user starts the reconnect flow but authorization fails or is denied" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user starts the reconnect flow for Google Analytics", context do
         {:ok, context}

@@ -516,6 +516,76 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       assert String.length(history.error_message) > 0
     end
 
+    test "persists HTTP diagnostics for auth, permission, and missing-resource failures" do
+      for status <- [401, 403, 404] do
+        {user, scope} = user_with_scope()
+        integration = insert_integration!(user.id)
+        sync_job = insert_sync_job!(user.id, integration.id)
+
+        body = %{
+          "error" => %{
+            "code" => status,
+            "message" => "Provider diagnostic #{status}",
+            "access_token" => integration.access_token
+          }
+        }
+
+        plug = fn conn ->
+          conn
+          |> Plug.Conn.put_resp_content_type("application/json")
+          |> Plug.Conn.send_resp(status, Jason.encode!(body))
+        end
+
+        capture_log(fn ->
+          perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id, plug), [])
+        end)
+
+        [history] = SyncHistoryRepository.list_sync_history(scope)
+        assert history.status == :failed
+        assert history.provider_error_detail["status"] == status
+        assert history.provider_error_detail["body"] =~ "Provider diagnostic #{status}"
+        refute history.provider_error_detail["body"] =~ integration.access_token
+        refute history.error_message =~ "provider_http_error"
+      end
+    end
+
+    test "preserves Google Analytics API details in failed sync history" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id)
+      sync_job = insert_sync_job!(user.id, integration.id)
+
+      plug = fn conn ->
+        body =
+          Jason.encode!(%{
+            "error" => %{
+              "code" => 400,
+              "status" => "INVALID_ARGUMENT",
+              "message" => "Requests are limited to 10 metrics"
+            }
+          })
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(400, body)
+      end
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id, plug), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+      assert history.records_synced == 0
+
+      assert history.error_message ==
+               "Google Analytics API HTTP 400 (INVALID_ARGUMENT): Requests are limited to 10 metrics"
+
+      assert history.provider_error_detail["status"] == 400
+
+      assert Jason.decode!(history.provider_error_detail["body"])["error"]["status"] ==
+               "INVALID_ARGUMENT"
+    end
+
     test "includes error message in SyncHistory when token refresh fails" do
       {user, scope} = user_with_scope()
       integration = insert_expired_integration_with_refresh!(user.id)
@@ -628,6 +698,79 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
         end)
 
       assert log =~ to_string(integration.id)
+    end
+
+    test "humanizes the error message when no Google Business Profile locations are configured" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :google_business)
+      sync_job = insert_sync_job!(user.id, integration.id, :google_business)
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message == "no_locations_configured"
+      assert history.error_message =~ "Google Business Profile"
+    end
+
+    test "humanizes a Google Ads 400 bad_request error instead of dumping the raw error tuple" do
+      {user, scope} = user_with_scope()
+
+      integration =
+        %Integration{}
+        |> Integration.changeset(%{
+          user_id: user.id,
+          provider: :google_ads,
+          access_token: "access-token-#{System.unique_integer([:positive])}",
+          refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
+          expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
+          granted_scopes: [],
+          provider_metadata: %{"customer_id" => "0000000000"}
+        })
+        |> Repo.insert!()
+
+      sync_job = insert_sync_job!(user.id, integration.id, :google_ads)
+
+      bad_request_plug = fn conn ->
+        body = Jason.encode!(%{"error" => %{"message" => "Invalid customer ID 0000000000"}})
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(400, body)
+      end
+
+      capture_log(fn ->
+        perform_job(
+          SyncWorker,
+          job_args(integration.id, user.id, sync_job.id, bad_request_plug),
+          []
+        )
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message =~ "{:bad_request"
+      assert history.error_message =~ "Invalid customer ID 0000000000"
+    end
+
+    test "humanizes the error message when QuickBooks has no realm_id configured" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :quickbooks)
+      sync_job = insert_sync_job!(user.id, integration.id, :quickbooks)
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message == "missing_realm_id"
+      assert history.error_message =~ "QuickBooks"
     end
   end
 

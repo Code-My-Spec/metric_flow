@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Financial data (debits and credits) becomes just another metric in the system for correlation", criterion: 92 do
+  spex "Financial data (debits and credits) becomes just another metric in the system for correlation",
+    criterion: 92 do
     scenario "the QuickBooks detail page describes syncing financial data" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the QuickBooks connect detail page", context do
         {:ok, view, _html} =
@@ -29,7 +30,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
     end
 
     scenario "the connect page shows QuickBooks alongside other marketing platforms" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect")
@@ -45,7 +46,7 @@ defmodule MetricFlowSpex.FinancialDataDebitsAndCreditsBecomesJustAnotherMetricIn
     end
 
     scenario "a connected QuickBooks integration appears in the integrations list" do
-      given_ :owner_with_quickbooks_integration
+      given_(:owner_with_quickbooks_integration)
 
       when_ "the user views the QuickBooks detail page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")

@@ -6,12 +6,12 @@ defmodule MetricFlowSpex.UserSeesAllAccessibleGbpAccountsAfterAuthenticatingSpex
 
   spex "User sees all accessible GBP accounts after authenticating", criterion: 945 do
     scenario "the account list shows every Google Business Profile account the user has access to" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user has completed Google authentication and has access to two GBP accounts",
              context do
         plug = fn conn ->
-  conn = Plug.Conn.put_resp_content_type(conn, "application/json")
+          conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
           case conn.request_path do
             "/v1/accounts" ->

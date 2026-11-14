@@ -3,11 +3,12 @@ defmodule MetricFlowSpex.AgencyWebhookEventsRoutedCorrectlySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Webhook events for agency customer subscriptions are routed and processed correctly", criterion: 431 do
+  spex "Webhook events for agency customer subscriptions are routed and processed correctly",
+    criterion: 431 do
     scenario "webhook event arrives with agency Stripe account ID in the payload" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
+      given_(:owner_has_stripe_connect)
 
       when_ "a subscription event is sent for an agency customer", context do
         event_id = "evt_agency_#{System.unique_integer([:positive])}"
@@ -33,7 +34,10 @@ defmodule MetricFlowSpex.AgencyWebhookEventsRoutedCorrectlySpex do
         conn =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         {:ok, Map.merge(context, %{response: conn, event_id: event_id})}

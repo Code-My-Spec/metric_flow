@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.AgencyStripeStateStoredSpex do
 
   spex "Agency Stripe connection state is stored and reflected in UI", criterion: 420 do
     scenario "Stripe Connect page reflects stored connection state" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the admin navigates to the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

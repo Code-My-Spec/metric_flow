@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ClientRevokesAnAgencysAccessToTheirAccountSpex do
 
   spex "Client revokes an agency's access to their account", criterion: 556 do
     scenario "Jordan revokes Acme Agency's access to his account" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Acme Agency exists", context do
         email = "acme#{System.unique_integer([:positive])}@example.com"
@@ -48,10 +48,12 @@ defmodule MetricFlowSpex.ClientRevokesAnAgencysAccessToTheirAccountSpex do
         {:ok, settings_view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         settings_view
-        |> form("#grant-agency-access-form", agency_access: %{
-          slug: context.acme_account_slug,
-          access_level: "read_only"
-        })
+        |> form("#grant-agency-access-form",
+          agency_access: %{
+            slug: context.acme_account_slug,
+            access_level: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :settings_view, settings_view)}
@@ -64,7 +66,9 @@ defmodule MetricFlowSpex.ClientRevokesAnAgencysAccessToTheirAccountSpex do
 
       when_ "Jordan revokes Acme Agency's access", context do
         context.settings_view
-        |> element("[data-role='revoke-agency-access'][phx-value-agency-account-id='#{context.acme_account_id}']")
+        |> element(
+          "[data-role='revoke-agency-access'][phx-value-agency-account-id='#{context.acme_account_id}']"
+        )
         |> render_click()
 
         {:ok, context}

@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.FeatureGateEnforcedServerSideSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Feature access is enforced server-side: gating cannot be bypassed by manipulating client state", criterion: 410 do
+  spex "Feature access is enforced server-side: gating cannot be bypassed by manipulating client state",
+    criterion: 410 do
     scenario "free user navigating to correlations does not receive correlation data in the rendered page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates to the correlations page", context do
         result = live(context.owner_conn, "/app/correlations")

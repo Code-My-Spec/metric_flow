@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
 
   spex "Each chart or visualization can have an AI info button", criterion: 206 do
     scenario "user on dashboard with visualizations sees AI info buttons" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -32,7 +32,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
     end
 
     scenario "AI info button is rendered within or near each visualization container" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")
@@ -66,7 +66,7 @@ defmodule MetricFlowSpex.EachChartOrVisualizationCanHaveAnAiInfoButtonSpex do
     end
 
     scenario "when no visualizations exist, no AI info buttons are shown" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the dashboard without any connected integrations", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboard")

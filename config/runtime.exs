@@ -48,10 +48,17 @@ end
 # CodeMySpec preview tunnel — reads this checkout's .cms_harness.json (main
 # working copy only; every other worktree gets an empty config, which leaves
 # the tunnel disabled) so the CodeMySpec preview pane can reach this app.
+#
+# Never in :test — a connector that dies there (no cloudflared, no network)
+# takes down the whole supervision tree, Repo included, mid-suite.
 config :metric_flow,
        :preview,
-       ClientUtils.Harness.Preview.config(File.cwd!(),
-         origin_url: "http://127.0.0.1:#{System.get_env("PORT", "4070")}"
+       if(config_env() == :test,
+         do: [],
+         else:
+           ClientUtils.Harness.Preview.config(File.cwd!(),
+             origin_url: "http://127.0.0.1:#{System.get_env("PORT", "4070")}"
+           )
        )
 
 # Cassette-replay tests validate request parameters (e.g. ReqLLM rejects a nil

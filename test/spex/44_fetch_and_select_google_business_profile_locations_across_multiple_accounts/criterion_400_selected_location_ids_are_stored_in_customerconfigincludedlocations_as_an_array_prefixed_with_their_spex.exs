@@ -5,9 +5,11 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
   import MetricFlowSpex.SharedGivens
 
   spex "Selected location IDs are stored in customerConfig.includedLocations as an array, prefixed with their accountId for unambiguous reference across multiple accounts",
-       fail_on_error_logs: false, criterion: 400 do
+    fail_on_error_logs: false,
+    criterion: 400 do
     scenario "after saving location selection, revisiting the page reflects previously saved selections" do
-      given_ "a user registered and a google_business integration with two account IDs is created", context do
+      given_ "a user registered and a google_business integration with two account IDs is created",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -57,11 +59,14 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "the user submits a location selection including an account-prefixed location ID", context do
+      when_ "the user submits a location selection including an account-prefixed location ID",
+            context do
         _result =
           if has_element?(context.view, "[data-role='account-selection']") do
             context.view
@@ -92,6 +97,7 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
           else
             try do
               html = render(context.view)
+
               html =~ "saved" or html =~ "Saved" or
                 html =~ "success" or html =~ "Success" or
                 html =~ "updated" or html =~ "Updated"
@@ -108,7 +114,8 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
     end
 
     scenario "location selection page pre-selects previously saved locations on revisit" do
-      given_ "a user registered and a google_business integration with a saved location selection is created", context do
+      given_ "a user registered and a google_business integration with a saved location selection is created",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -140,7 +147,10 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
           provider_metadata: %{
             "email" => email,
             "google_business_account_ids" => ["accounts/123", "accounts/456"],
-            "included_locations" => ["accounts/123/locations/loc-001", "accounts/456/locations/loc-002"]
+            "included_locations" => [
+              "accounts/123/locations/loc-001",
+              "accounts/456/locations/loc-002"
+            ]
           }
         })
 
@@ -159,7 +169,9 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
@@ -186,7 +198,8 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
     end
 
     scenario "location IDs stored with account prefix are unambiguous across multiple accounts" do
-      given_ "a user registered and a google_business integration with locations from two different accounts is created", context do
+      given_ "a user registered and a google_business integration with locations from two different accounts is created",
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 
@@ -240,11 +253,14 @@ defmodule MetricFlowSpex.SelectedLocationIdsAreStoredInCustomerconfigIncludedLoc
       end
 
       given_ "the user navigates to the Google Business location selection page", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+        {:ok, view, _html} =
+          live(context.owner_conn, "/app/integrations/connect/google_business/accounts")
+
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the location selection page loads without error for a multi-account configuration", context do
+      then_ "the location selection page loads without error for a multi-account configuration",
+            context do
         html = render(context.view)
 
         # The page should render successfully and contain the account selection UI,

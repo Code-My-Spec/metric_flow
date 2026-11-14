@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
 
   spex "If not logged in, user is prompted to log in or register", criterion: 38 do
     scenario "anonymous user visiting an invitation link sees log in and register options" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -47,17 +49,19 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
     end
 
     scenario "anonymous user can navigate to registration from the invitation page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -82,17 +86,19 @@ defmodule MetricFlowSpex.IfNotLoggedInUserIsPromptedToLogInOrRegisterSpex do
     end
 
     scenario "anonymous user can navigate to login from the invitation page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has sent an invitation", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =

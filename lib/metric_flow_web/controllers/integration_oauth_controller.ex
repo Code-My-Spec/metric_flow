@@ -33,6 +33,31 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   by the state value. The provider echoes the state back in the callback,
   allowing retrieval without cookies.
   """
+  def request(conn, %{"provider" => "youtube"}) do
+    scope = youtube_scope(conn)
+
+    with :ok <- Integrations.authorize_youtube_connection(scope),
+         {:ok, %{url: url, session_params: params}} <- Integrations.authorize_url(:youtube),
+         state when is_binary(state) <- params[:state] || params["state"] do
+      bound_params =
+        Map.merge(params, %{
+          youtube_user_id: scope.user.id,
+          youtube_account_id: scope.account_id
+        })
+
+      OAuthStateStore.store(state, bound_params)
+      redirect(conn, external: url)
+    else
+      _ ->
+        conn
+        |> put_flash(
+          :error,
+          "YouTube could not be connected. Check your account access and try again."
+        )
+        |> redirect(to: ~p"/app/integrations/connect")
+    end
+  end
+
   def request(conn, %{"provider" => provider_str}) do
     provider = String.to_existing_atom(provider_str)
 
@@ -85,6 +110,43 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   from the server-side ETS store using the state token echoed back by the
   provider.
   """
+  def callback(conn, %{"provider" => "youtube"} = params) do
+    scope = youtube_scope(conn)
+    session_params = fetch_session_params(params)
+
+    result =
+      if params["error"] do
+        {:error, :consent_denied}
+      else
+        Integrations.prepare_youtube_connection(scope, session_params, params)
+      end
+
+    case result do
+      {:ok, token} ->
+        conn
+        |> put_session(:youtube_pending_authorization, token)
+        |> redirect(to: ~p"/app/integrations/connect/youtube/accounts")
+
+      {:error, reason} ->
+        message =
+          case reason do
+            :consent_denied ->
+              "YouTube was not connected because consent was cancelled or denied."
+
+            :no_youtube_channels ->
+              "No YouTube channels were found for this Google account."
+
+            _ ->
+              "YouTube could not be connected. Please try again and grant channel and analytics access."
+          end
+
+        conn
+        |> delete_session(:youtube_pending_authorization)
+        |> put_flash(:error, message)
+        |> redirect(to: ~p"/app/integrations/connect/youtube")
+    end
+  end
+
   def callback(conn, %{"provider" => provider_str} = params) do
     scope = conn.assigns.current_scope
     session_params = fetch_session_params(params)
@@ -128,6 +190,12 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   end
 
   # Private Helpers
+
+  defp youtube_scope(conn) do
+    scope = conn.assigns.current_scope
+    account = scope |> MetricFlow.Accounts.list_accounts() |> List.first()
+    MetricFlow.Users.Scope.put_account_id(scope, account && account.id)
+  end
 
   @callback_provider_map %{
     "google" => :google,

@@ -7,10 +7,11 @@ defmodule MetricFlowSpex.Criterion200ResultsPresentedWithExplanationsSpex do
   spex "Results are presented with explanations (e.g., Google Ads spend shows strong correlation with revenue at 7-day lag)",
     criterion: 200 do
     scenario "a strong correlation at a 7-day lag is shown with a plain-language explanation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
-      given_ "a strong correlation between Google Ads spend and revenue at a 7-day lag", context do
+      given_ "a strong correlation between Google Ads spend and revenue at a 7-day lag",
+             context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
           metric_name: "ad_spend",
           goal_metric_name: "revenue",
@@ -32,7 +33,8 @@ defmodule MetricFlowSpex.Criterion200ResultsPresentedWithExplanationsSpex do
         {:ok, context}
       end
 
-      then_ "it is presented with an explanation describing the relationship and the 7-day lag in plain language", context do
+      then_ "it is presented with an explanation describing the relationship and the 7-day lag in plain language",
+            context do
         row_html =
           context.view
           |> element("[data-role='correlation-row'][data-metric='ad_spend']")

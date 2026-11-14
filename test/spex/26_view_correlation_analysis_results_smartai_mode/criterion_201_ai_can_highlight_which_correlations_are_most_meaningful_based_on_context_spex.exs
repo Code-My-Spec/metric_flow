@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.Criterion201AiHighlightsMostMeaningfulCorrelationsSpex 
 
   import MetricFlowSpex.SharedGivens
 
-  spex "AI can highlight which correlations are most meaningful based on context", criterion: 201 do
+  spex "AI can highlight which correlations are most meaningful based on context",
+    criterion: 201 do
     scenario "the AI highlights a contextually meaningful correlation among several shown" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "several correlations are shown in Smart/AI mode", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -37,8 +38,12 @@ defmodule MetricFlowSpex.Criterion201AiHighlightsMostMeaningfulCorrelationsSpex 
         {:ok, context}
       end
 
-      then_ "it highlights which of them are most meaningful, not just which have the highest raw correlation value", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-ai-highlighted='true']"),
+      then_ "it highlights which of them are most meaningful, not just which have the highest raw correlation value",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-ai-highlighted='true']"
+               ),
                "Expected at least one correlation to be marked as AI-highlighted based on business context, distinct from its raw coefficient rank"
 
         {:ok, context}

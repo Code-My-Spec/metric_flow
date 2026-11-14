@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.NewlyAddedLocationBackfills548DaysOnFirstSyncSpex do
 
   spex "Newly added location backfills 548 days on first sync", criterion: 942 do
     scenario "a newly added location's first sync requests performance data starting 548 days back" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a user adds a new location to their sync configuration", context do
         {:ok, agent} = Agent.start_link(fn -> [] end)
@@ -47,9 +47,12 @@ defmodule MetricFlowSpex.NewlyAddedLocationBackfills548DaysOnFirstSyncSpex do
         {:ok, context}
       end
 
-      then_ "it backfills 548 days of history, consistent with existing GBP backfill behavior", context do
+      then_ "it backfills 548 days of history, consistent with existing GBP backfill behavior",
+            context do
         requests = Agent.get(context.requests_agent, & &1)
-        assert requests != [], "Expected at least one performance metrics request to have been made"
+
+        assert requests != [],
+               "Expected at least one performance metrics request to have been made"
 
         expected_start = Date.add(Date.utc_today(), -548)
 

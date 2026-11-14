@@ -10,8 +10,8 @@ defmodule MetricFlowSpex.Story48.Criterion4137Spex do
 
   spex "Plan name cannot be blank", criterion: 461 do
     scenario "submitting a plan with no name is rejected" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "Alex is creating a new plan", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

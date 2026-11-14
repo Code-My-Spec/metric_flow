@@ -6,10 +6,11 @@ defmodule MetricFlowSpex.Criterion869InsufficientDataShowsAnExplanatoryMessageSp
 
   spex "Insufficient data shows an explanatory message", criterion: 869 do
     scenario "an account with too little synced history sees the minimum data requirements explained" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
-      given_ "an account with too little synced history to meet the minimum data requirement", context do
+      given_ "an account with too little synced history to meet the minimum data requirement",
+             context do
         {:ok, context}
       end
 
@@ -23,7 +24,8 @@ defmodule MetricFlowSpex.Criterion869InsufficientDataShowsAnExplanatoryMessageSp
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "they see a message explaining the minimum data requirements rather than an empty or broken list", context do
+      then_ "they see a message explaining the minimum data requirements rather than an empty or broken list",
+            context do
         assert has_element?(context.view, "[data-role='insufficient-data-warning']")
 
         warning_html =

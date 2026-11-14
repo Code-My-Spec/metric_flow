@@ -9,11 +9,13 @@ defmodule MetricFlowSpex.RegisteringWithEmailAlreadyInUseIsRejectedSpex do
         {:ok, view, _html} = live(conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "already_used@example.com",
-          password: "SecurePassword123!",
-          account_name: "Already Used Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "already_used@example.com",
+            password: "SecurePassword123!",
+            account_name: "Already Used Co"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -23,11 +25,13 @@ defmodule MetricFlowSpex.RegisteringWithEmailAlreadyInUseIsRejectedSpex do
         {:ok, view, _html} = live(context.conn, "/users/register")
 
         view
-        |> form("#registration_form", user: %{
-          email: "already_used@example.com",
-          password: "AnotherSecurePass456!",
-          account_name: "Second Attempt Co"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: "already_used@example.com",
+            password: "AnotherSecurePass456!",
+            account_name: "Second Attempt Co"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}

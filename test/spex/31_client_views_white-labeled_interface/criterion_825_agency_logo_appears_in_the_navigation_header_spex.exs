@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion825AgencyLogoAppearsInNavigationHeaderSpex do
 
   spex "Agency logo appears in the navigation header", criterion: 825 do
     scenario "a client viewing a white-labeled interface sees the agency's logo in the navigation header" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client viewing a white-labeled interface", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)

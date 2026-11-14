@@ -139,6 +139,18 @@ defmodule MetricFlow.Users.User do
   end
 
   @doc """
+  A passwordless user created from a verified OAuth sign-in. Google has already
+  verified the email, so the user is confirmed immediately.
+  """
+  def oauth_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:email, :account_name])
+    |> validate_email([])
+    |> validate_required([:account_name])
+    |> put_change(:confirmed_at, DateTime.utc_now(:second))
+  end
+
+  @doc """
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do

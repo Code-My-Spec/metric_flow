@@ -115,6 +115,7 @@ defmodule MetricFlow.Ai.InsightsGenerator do
 
   @valid_types ~w(budget_increase budget_decrease optimization monitoring general)a
   defp parse_suggestion_type(type) when is_atom(type) and type in @valid_types, do: type
+
   defp parse_suggestion_type(type) when is_binary(type) do
     try do
       String.to_existing_atom(type)
@@ -123,6 +124,7 @@ defmodule MetricFlow.Ai.InsightsGenerator do
     end
     |> then(fn atom -> if atom in @valid_types, do: atom, else: :general end)
   end
+
   defp parse_suggestion_type(_), do: :general
 
   defp build_metadata(nil), do: %{}

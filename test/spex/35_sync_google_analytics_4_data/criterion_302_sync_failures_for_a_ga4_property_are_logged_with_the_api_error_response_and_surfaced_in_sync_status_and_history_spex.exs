@@ -5,11 +5,13 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedAndSurfacedSpex do
   import MetricFlowSpex.SharedGivens
 
   spex "Sync failures for a GA4 property are logged with the API error response and surfaced in Sync Status and History",
-       fail_on_error_logs: false, criterion: 302 do
+    fail_on_error_logs: false,
+    criterion: 302 do
     scenario "a GA4 sync failure shows the API error in sync history" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a GA4 integration exists with no property configured, which the API rejects", context do
+      given_ "a GA4 integration exists with no property configured, which the API rejects",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics)
         {:ok, context}
       end
@@ -21,8 +23,14 @@ defmodule MetricFlowSpex.SyncFailuresForAGa4PropertyAreLoggedAndSurfacedSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync history shows a failed Google Analytics entry with the API error message", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'][data-status='failed'] [data-role='sync-provider']", "Google Analytics")
+      then_ "the sync history shows a failed Google Analytics entry with the API error message",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'][data-status='failed'] [data-role='sync-provider']",
+                 "Google Analytics"
+               )
+
         assert has_element?(context.view, "[data-role='sync-error']")
         {:ok, context}
       end

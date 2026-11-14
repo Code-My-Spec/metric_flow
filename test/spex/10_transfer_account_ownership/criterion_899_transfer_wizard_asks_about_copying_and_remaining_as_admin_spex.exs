@@ -11,7 +11,7 @@ defmodule MetricFlowSpex.Criterion899TransferWizardAsksAboutCopyingAndRemainingA
 
   spex "Transfer wizard asks about copying and remaining as admin", criterion: 899 do
     scenario "the current owner goes through the transfer wizard" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       when_ "they go through the transfer wizard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")

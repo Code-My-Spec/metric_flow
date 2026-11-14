@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
   ]
 
   spex "Integration is saved only after at least one account is selected and confirmed",
-       fail_on_error_logs: false, criterion: 391 do
+    fail_on_error_logs: false,
+    criterion: 391 do
     scenario "submitting with no selections shows a validation error and stays on the page" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -39,7 +40,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
 
       then_ "submitting with no accounts selected shows an error requiring at least one selection",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -55,14 +56,14 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end
     end
 
     scenario "submitting with at least one location selected saves and redirects" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -86,7 +87,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
 
       then_ "submitting with a valid account ID saves and advances to the locations step",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -104,7 +105,7 @@ defmodule MetricFlowSpex.Criterion4851IntegrationSavedOnlyAfterAccountSelectedAn
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end

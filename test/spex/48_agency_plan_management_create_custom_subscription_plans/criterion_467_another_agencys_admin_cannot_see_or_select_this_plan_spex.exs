@@ -10,9 +10,9 @@ defmodule MetricFlowSpex.Story48.Criterion4143Spex do
 
   spex "Another agency's admin cannot see or select this plan", criterion: 467 do
     scenario "a plan is invisible outside its owning account" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
+      given_(:owner_has_agency_plan)
 
       given_ "a second, unaffiliated user is registered and logged in", context do
         email = "otheruser#{System.unique_integer([:positive])}@example.com"

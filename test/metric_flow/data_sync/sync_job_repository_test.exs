@@ -290,7 +290,10 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
     test "allows optional started_at and completed_at" do
       {user, scope} = user_with_scope()
       integration = insert_integration!(user.id)
-      started_at = DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+
+      started_at =
+        DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+
       completed_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
       attrs = %{
@@ -308,7 +311,12 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
     test "allows optional error_message" do
       {user, scope} = user_with_scope()
       integration = insert_integration!(user.id)
-      attrs = %{provider: :google_analytics, status: :failed, error_message: "Something went wrong"}
+
+      attrs = %{
+        provider: :google_analytics,
+        status: :failed,
+        error_message: "Something went wrong"
+      }
 
       assert {:ok, sync_job} = SyncJobRepository.create_sync_job(scope, integration.id, attrs)
       assert sync_job.error_message == "Something went wrong"
@@ -325,7 +333,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :pending})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
+
       assert updated.status == :running
     end
 
@@ -334,7 +344,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :running})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+
       assert updated.status == :completed
     end
 
@@ -343,7 +355,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :running})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :failed)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :failed)
+
       assert updated.status == :failed
     end
 
@@ -352,7 +366,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :pending})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
+
       assert updated.started_at != nil
     end
 
@@ -361,7 +377,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :running})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+
       assert updated.completed_at != nil
     end
 
@@ -370,7 +388,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :running})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :failed)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :failed)
+
       assert updated.completed_at != nil
     end
 
@@ -379,7 +399,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id, %{status: :running})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :cancelled)
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :cancelled)
+
       assert updated.completed_at != nil
     end
 
@@ -396,16 +418,23 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
 
       {_user, scope} = user_with_scope()
 
-      assert {:error, :not_found} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
+      assert {:error, :not_found} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :running)
     end
 
     test "preserves existing timestamps when not transitioning" do
       {user, scope} = user_with_scope()
       integration = insert_integration!(user.id)
-      started_at = DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond)
-      sync_job = insert_sync_job!(user.id, integration.id, %{status: :running, started_at: started_at})
 
-      assert {:ok, updated} = SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+      started_at =
+        DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond)
+
+      sync_job =
+        insert_sync_job!(user.id, integration.id, %{status: :running, started_at: started_at})
+
+      assert {:ok, updated} =
+               SyncJobRepository.update_sync_job_status(scope, sync_job.id, :completed)
+
       assert DateTime.compare(updated.started_at, started_at) == :eq
     end
 
@@ -419,8 +448,11 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       sync_job_a = insert_sync_job!(user_a.id, integration_a.id, %{status: :pending})
       sync_job_b = insert_sync_job!(user_b.id, integration_b.id, %{status: :pending})
 
-      assert {:ok, _updated} = SyncJobRepository.update_sync_job_status(scope_a, sync_job_a.id, :running)
-      assert {:error, :not_found} = SyncJobRepository.update_sync_job_status(scope_a, sync_job_b.id, :running)
+      assert {:ok, _updated} =
+               SyncJobRepository.update_sync_job_status(scope_a, sync_job_a.id, :running)
+
+      assert {:error, :not_found} =
+               SyncJobRepository.update_sync_job_status(scope_a, sync_job_b.id, :running)
     end
   end
 

@@ -314,7 +314,9 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
         expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
       }
 
-      assert {:ok, updated} = IntegrationRepository.update_integration(scope, :google, refreshed_attrs)
+      assert {:ok, updated} =
+               IntegrationRepository.update_integration(scope, :google, refreshed_attrs)
+
       assert updated.access_token == "new-access-token-after-refresh"
     end
   end
@@ -542,7 +544,9 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
         provider_metadata: %{"id" => "provider-user-id"}
       }
 
-      assert {:ok, integration} = IntegrationRepository.upsert_integration(scope, :google, oauth_attrs)
+      assert {:ok, integration} =
+               IntegrationRepository.upsert_integration(scope, :google, oauth_attrs)
+
       assert integration.granted_scopes == ["email", "profile"]
     end
 
@@ -556,7 +560,9 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
         expires_at: future_expires_at()
       }
 
-      assert {:ok, updated} = IntegrationRepository.upsert_integration(scope, :google, new_oauth_attrs)
+      assert {:ok, updated} =
+               IntegrationRepository.upsert_integration(scope, :google, new_oauth_attrs)
+
       assert updated.access_token == "new-oauth-access-token"
     end
 

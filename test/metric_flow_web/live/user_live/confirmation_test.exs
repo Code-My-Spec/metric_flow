@@ -11,7 +11,10 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
   end
 
   describe "Confirm user" do
-    test "auto-confirms unconfirmed user and redirects to onboarding", %{conn: conn, unconfirmed_user: user} do
+    test "auto-confirms unconfirmed user and redirects to onboarding", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
       token =
         extract_user_token(fn url ->
           Users.deliver_login_instructions(user, url)

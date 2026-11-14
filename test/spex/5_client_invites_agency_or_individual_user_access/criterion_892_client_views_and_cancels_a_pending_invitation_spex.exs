@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.Criterion892ClientViewsAndCancelsAPendingInvitationSpex
 
   spex "Client views and cancels a pending invitation", criterion: 892 do
     scenario "a client cancels an invitation that has not yet been accepted" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a client has sent an invitation that has not yet been accepted", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
@@ -24,7 +24,11 @@ defmodule MetricFlowSpex.Criterion892ClientViewsAndCancelsAPendingInvitationSpex
       end
 
       when_ "they view pending invitations and cancel it", context do
-        assert has_element?(context.view, "[data-role='pending-invitation-row'] [data-role='invitation-email']", "not-yet-accepted@example.com")
+        assert has_element?(
+                 context.view,
+                 "[data-role='pending-invitation-row'] [data-role='invitation-email']",
+                 "not-yet-accepted@example.com"
+               )
 
         context.view
         |> element("[data-role='cancel-invitation'][data-email='not-yet-accepted@example.com']")
@@ -34,7 +38,12 @@ defmodule MetricFlowSpex.Criterion892ClientViewsAndCancelsAPendingInvitationSpex
       end
 
       then_ "the invitation is cancelled and can no longer be accepted", context do
-        refute has_element?(context.view, "[data-role='pending-invitation-row'] [data-role='invitation-email']", "not-yet-accepted@example.com")
+        refute has_element?(
+                 context.view,
+                 "[data-role='pending-invitation-row'] [data-role='invitation-email']",
+                 "not-yet-accepted@example.com"
+               )
+
         {:ok, context}
       end
     end

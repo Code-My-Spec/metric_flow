@@ -35,9 +35,10 @@ defmodule MetricFlowWeb.Journeys.AgencyWhiteLabelAndMultiClientAccessTest do
     |> Repo.insert!()
   end
 
-  test "shows multiple accounts with different roles, switches between them, and restricts a read_only account", %{
-    conn: conn
-  } do
+  test "shows multiple accounts with different roles, switches between them, and restricts a read_only account",
+       %{
+         conn: conn
+       } do
     user = user_fixture()
 
     owned = insert_account!(user, %{name: "QA Agency 1101", type: "agency"})

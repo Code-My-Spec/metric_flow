@@ -65,10 +65,12 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
 
         assert has_element?(lv, "[data-role='canned-dashboards']")
         assert html =~ "Traffic Overview"
+
         assert has_element?(
                  lv,
                  "[data-role='dashboard-card'][data-dashboard-id='#{canned.id}'][data-built-in='true']"
                )
+
         assert has_element?(lv, "[data-role='view-dashboard-#{canned.id}']")
         refute has_element?(lv, "[data-role='delete-dashboard-#{canned.id}']")
       end)
@@ -85,10 +87,12 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert html =~ "Revenue Overview"
+
         assert has_element?(
                  lv,
                  "[data-role='dashboard-card'][data-dashboard-id='#{dashboard.id}'][data-built-in='false']"
                )
+
         assert has_element?(lv, "[data-role='view-dashboard-#{dashboard.id}']")
         assert has_element?(lv, "[data-role='edit-dashboard-#{dashboard.id}']")
         assert has_element?(lv, "[data-role='delete-dashboard-#{dashboard.id}']")
@@ -105,7 +109,11 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards")
 
         assert has_element?(lv, "[data-role='empty-user-dashboards']")
-        assert has_element?(lv, "[data-role='empty-user-dashboards'] a[href='/app/dashboards/new']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='empty-user-dashboards'] a[href='/app/dashboards/new']"
+               )
       end)
     end
   end
@@ -141,7 +149,11 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
         html = render_click(lv, "confirm_delete", %{"id" => to_string(dashboard.id)})
 
         assert html =~ "Dashboard deleted."
-        refute has_element?(lv, "[data-role='dashboard-card'][data-dashboard-id='#{dashboard.id}']")
+
+        refute has_element?(
+                 lv,
+                 "[data-role='dashboard-card'][data-dashboard-id='#{dashboard.id}']"
+               )
       end)
     end
   end
@@ -160,7 +172,11 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
 
         render_click(lv, "cancel_delete", %{})
         refute has_element?(lv, "[data-role='delete-confirm-#{dashboard.id}']")
-        assert has_element?(lv, "[data-role='dashboard-card'][data-dashboard-id='#{dashboard.id}']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='dashboard-card'][data-dashboard-id='#{dashboard.id}']"
+               )
       end)
     end
   end

@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.Criterion1011MissingCompanyOrIncomeAccountConfigFailsCl
   import MetricFlowSpex.SharedGivens
 
   spex "An integration missing its QuickBooks company or income account configuration fails to sync with a clear error",
-       fail_on_error_logs: false, criterion: 1011 do
+    fail_on_error_logs: false,
+    criterion: 1011 do
     scenario "a QuickBooks integration has no income account configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a QuickBooks integration has no income account configured", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,

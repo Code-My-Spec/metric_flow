@@ -309,7 +309,8 @@ defmodule MetricFlow.Invitations do
   Returns `{:ok, {invitation, encoded_token}}` on success or
   `{:error, changeset}` on validation failure.
   """
-  @spec build_invitation(map()) :: {:ok, {Invitation.t(), String.t()}} | {:error, Ecto.Changeset.t()}
+  @spec build_invitation(map()) ::
+          {:ok, {Invitation.t(), String.t()}} | {:error, Ecto.Changeset.t()}
   def build_invitation(attrs) do
     expires_at = DateTime.add(DateTime.utc_now(:second), @invitation_validity_in_days, :day)
 
@@ -441,7 +442,9 @@ defmodule MetricFlow.Invitations do
     end
   end
 
-  defp check_invitation_expiry(%Invitation{expires_at: expires_at, inserted_at: inserted_at} = invitation) do
+  defp check_invitation_expiry(
+         %Invitation{expires_at: expires_at, inserted_at: inserted_at} = invitation
+       ) do
     now = DateTime.utc_now()
     inserted_at_dt = DateTime.from_naive!(inserted_at, "Etc/UTC")
     inserted_at_expiry = DateTime.add(inserted_at_dt, @invitation_validity_in_days, :day)

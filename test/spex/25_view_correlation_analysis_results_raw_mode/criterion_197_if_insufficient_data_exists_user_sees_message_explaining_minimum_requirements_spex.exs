@@ -7,8 +7,8 @@ defmodule MetricFlowSpex.Criterion197IfInsufficientDataExistsUserSeesMessageExpl
   spex "If insufficient data exists, user sees message explaining minimum requirements",
     criterion: 197 do
     scenario "a user with too little synced history is shown the minimum data requirements" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "an account with too little synced metric history", context do
         {:ok, goals_view, _html} = live(context.owner_conn, "/app/correlations/goals")

@@ -6,13 +6,16 @@ defmodule MetricFlowSpex.AgencyAdminCancelsACustomersSubscriptionAtPeriodEndSpex
 
   spex "Agency admin cancels a customer's subscription at period end", criterion: 507 do
     scenario "Jordan has an active subscription under Acme Agency" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
+      given_(:owner_has_stripe_connect)
 
       given_ "Jordan has an active subscription under Acme Agency", context do
         subscription =
-          MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
 
         {:ok, Map.put(context, :jordan_subscription_id, subscription.id)}
       end

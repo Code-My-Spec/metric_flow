@@ -5,9 +5,10 @@ defmodule MetricFlowSpex.Criterion1017SyncFailuresLoggedAndVisibleInSyncHistoryS
   import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with enough detail to diagnose them and are visible in Sync History",
-       fail_on_error_logs: false, criterion: 1017 do
+    fail_on_error_logs: false,
+    criterion: 1017 do
     scenario "a QuickBooks sync fails because no income account is configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a QuickBooks integration has no income account configured", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks,
@@ -24,7 +25,8 @@ defmodule MetricFlowSpex.Criterion1017SyncFailuresLoggedAndVisibleInSyncHistoryS
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the failure is logged with enough detail to diagnose it and is visible in Sync History", context do
+      then_ "the failure is logged with enough detail to diagnose it and is visible in Sync History",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='failed'] [data-role='sync-provider']",

@@ -10,7 +10,7 @@
 
 export const S3Uploader = (entries, onViewError) => {
   entries.forEach((entry) => {
-    const { url, s3_key } = entry.meta
+    const { url } = entry.meta
 
     const xhr = new XMLHttpRequest()
     onViewError(() => xhr.abort())
@@ -18,7 +18,6 @@ export const S3Uploader = (entries, onViewError) => {
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         entry.progress(100)
-        entry.done()
       } else {
         entry.error(`Upload failed with status ${xhr.status}`)
       }

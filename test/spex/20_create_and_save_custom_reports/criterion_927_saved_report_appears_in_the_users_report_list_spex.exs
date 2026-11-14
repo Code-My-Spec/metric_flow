@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.SavedReportAppearsInTheUsersReportListSpex do
 
   spex "Saved report appears in the user's report list", criterion: 927 do
     scenario "a just-saved report shows up when the user views their report list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has just saved a report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

@@ -36,6 +36,7 @@ defmodule MetricFlow.Accounts do
   defdelegate create_team_account(scope, attrs), to: AccountRepository
   defdelegate create_team_account(scope, attrs, type), to: AccountRepository
   defdelegate update_account(scope, account, attrs), to: AccountRepository
+
   @doc """
   Deletes an account and emails the owner a deletion confirmation on success.
   """
@@ -46,6 +47,7 @@ defmodule MetricFlow.Accounts do
       {:ok, deleted}
     end
   end
+
   defdelegate list_account_members(scope, account_id), to: AccountRepository
   defdelegate get_user_role(scope, user_id, account_id), to: AccountRepository
   defdelegate update_user_role(scope, user_id, account_id, role), to: AccountRepository
@@ -257,13 +259,22 @@ defmodule MetricFlow.Accounts do
   defp resolve_invite_target(_email), do: {:error, :invalid_target}
 
   defp cancel_pending_transfers(account_id) do
-    from(t in AccountOwnershipTransfer, where: t.account_id == ^account_id and t.status == :pending)
+    from(t in AccountOwnershipTransfer,
+      where: t.account_id == ^account_id and t.status == :pending
+    )
     |> Repo.delete_all()
   end
 
-  defp do_initiate_transfer(scope, account_id, %{user_id: target_user_id, email: target_email}, attrs) do
+  defp do_initiate_transfer(
+         scope,
+         account_id,
+         %{user_id: target_user_id, email: target_email},
+         attrs
+       ) do
     account = Repo.get!(Account, account_id)
-    {encoded_token, token_changeset} = AccountOwnershipTransfer.build_token(%AccountOwnershipTransfer{})
+
+    {encoded_token, token_changeset} =
+      AccountOwnershipTransfer.build_token(%AccountOwnershipTransfer{})
 
     insert_attrs = %{
       account_id: account_id,
@@ -295,7 +306,10 @@ defmodule MetricFlow.Accounts do
     end
   end
 
-  defp verify_transfer_recipient(%AccountOwnershipTransfer{target_user_id: nil, target_email: email}, user) do
+  defp verify_transfer_recipient(
+         %AccountOwnershipTransfer{target_user_id: nil, target_email: email},
+         user
+       ) do
     if String.downcase(user.email) == String.downcase(email) do
       :ok
     else

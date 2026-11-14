@@ -61,24 +61,64 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         {:ok, lv, html} = mount_chat(conn, user)
 
         assert has_element?(lv, "[data-role='chat-empty-state']")
-        assert html =~ "Ask me anything about your data"
+        assert html =~ "What can I help you with today?"
         assert has_element?(lv, "[data-role='example-prompt']")
         assert has_element?(lv, "[data-role='no-sessions-state']")
       end)
     end
   end
 
-  describe "shows no-session-selected state when sessions exist but none is active" do
-    test "shows no-session-selected state when sessions exist but none is active", %{conn: conn} do
+  describe "shows the AI greeting when sessions exist but none is active" do
+    test "shows the AI greeting when sessions exist but none is active", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       insert_chat_session!(user.id, account_id)
 
       capture_log(fn ->
+        {:ok, lv, html} = mount_chat(conn, user)
+
+        assert has_element?(lv, "[data-role='chat-empty-state']")
+        assert html =~ "What can I help you with today?"
+        assert has_element?(lv, "[data-role='session-item']")
+      end)
+    end
+  end
+
+  describe "clicking an empty-state example prompt sends it as a message" do
+    test "clicking an empty-state example prompt sends it as a message", %{conn: conn} do
+      {user, _account_id, _scope} = user_with_account()
+
+      capture_log(fn ->
         {:ok, lv, _html} = mount_chat(conn, user)
 
-        assert has_element?(lv, "[data-role='no-session-selected']")
+        lv
+        |> element("[data-role='example-prompt']", "Why did my revenue drop last week?")
+        |> render_click()
+
+        assert has_element?(
+                 lv,
+                 "[data-role='user-message']",
+                 "Why did my revenue drop last week?"
+               )
+
         refute has_element?(lv, "[data-role='chat-empty-state']")
-        assert has_element?(lv, "[data-role='session-item']")
+      end)
+    end
+  end
+
+  describe "clicking an example prompt without a resolvable account shows an error instead of sending" do
+    test "clicking an example prompt without a resolvable account shows an error instead of sending",
+         %{conn: conn} do
+      user = MetricFlowTest.UsersFixtures.user_fixture()
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_chat(conn, user)
+
+        lv
+        |> element("[data-role='example-prompt']", "Why did my revenue drop last week?")
+        |> render_click()
+
+        assert render(lv) =~ "Could not start chat session."
+        refute has_element?(lv, "[data-role='user-message']")
       end)
     end
   end
@@ -208,7 +248,9 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
       capture_log(fn ->
         conn = log_in_user(conn, user)
 
-        assert {:error, {:live_redirect, %{to: "/app/chat", flash: %{"error" => "Chat session not found."}}}} =
+        assert {:error,
+                {:live_redirect,
+                 %{to: "/app/chat", flash: %{"error" => "Chat session not found."}}}} =
                  live(conn, ~p"/app/chat/999999")
       end)
     end

@@ -5,11 +5,12 @@ defmodule MetricFlowSpex.Criterion1004MetricsStoredDailyPerLocationPerMetricSpex
   import MetricFlowSpex.SharedGivens
 
   spex "Metrics are stored daily, per location, per metric, so performance can be seen location by location as well as in aggregate",
-       criterion: 1004 do
+    criterion: 1004 do
     scenario "a client with multiple Google Business Profile locations syncs each location's metrics" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a client has a connected Google Business Profile with two locations configured", context do
+      given_ "a client has a connected Google Business Profile with two locations configured",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business,
           provider_metadata: %{"included_locations" => ["locations/111", "locations/222"]}
         )

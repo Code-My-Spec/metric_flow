@@ -122,7 +122,10 @@ defmodule MetricFlow.CodeMySpec.WidgetClient do
   end
 
   def handle_cast({:request_screenshot_upload, content_type}, socket) do
-    push(socket, socket.assigns.topic, "request_screenshot_upload", %{"content_type" => content_type})
+    push(socket, socket.assigns.topic, "request_screenshot_upload", %{
+      "content_type" => content_type
+    })
+
     {:noreply, socket}
   end
 

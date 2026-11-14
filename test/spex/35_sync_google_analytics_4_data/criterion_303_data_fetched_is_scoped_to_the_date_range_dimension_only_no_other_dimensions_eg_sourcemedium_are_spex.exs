@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Data fetched is scoped to the date range dimension only — no other dimensions (e.g., source/medium) are stored at this stage", criterion: 303 do
+  spex "Data fetched is scoped to the date range dimension only — no other dimensions (e.g., source/medium) are stored at this stage",
+    criterion: 303 do
     scenario "a GA4 sync completion event with a data date appears in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -16,12 +17,17 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
       when_ "a GA4 sync completion event is broadcast with a specific data date", context do
         data_date = Date.add(Date.utc_today(), -1)
 
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: data_date
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: data_date
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, Map.put(context, :data_date, data_date)}
@@ -34,6 +40,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
                "Expected sync history to show 'Google Analytics' as the provider, got: #{html}"
 
         expected_date = Date.to_iso8601(context.data_date)
+
         assert html =~ expected_date or html =~ "Date:",
                "Expected the sync entry to show the data date #{expected_date}, got: #{html}"
 
@@ -51,7 +58,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
     end
 
     scenario "the sync history page date range section shows a single date range, not dimensional breakdowns" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -62,7 +69,8 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         assert has_element?(context.view, "[data-role='date-range']"),
                "Expected a [data-role='date-range'] element showing the date coverage"
 
-        html = context.view
+        html =
+          context.view
           |> element("[data-role='date-range']")
           |> render()
 
@@ -74,7 +82,7 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
     end
 
     scenario "sync history entries show one entry per date per provider, not per dimension" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -85,21 +93,31 @@ defmodule MetricFlowSpex.DataFetchedIsScopedToTheDateRangeDimensionOnlyNoOtherDi
         date1 = Date.add(Date.utc_today(), -1)
         date2 = Date.add(Date.utc_today(), -2)
 
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: date1
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: date1
+           }}
+        )
 
         :timer.sleep(50)
 
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: date2
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: date2
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}

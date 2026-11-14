@@ -382,7 +382,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {_inv, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       assert {:ok, %AccountMember{}} = Invitations.accept_invitation(invitee_scope, encoded_token)
     end
@@ -394,7 +396,10 @@ defmodule MetricFlow.InvitationsTest do
       invitee_scope = Scope.for_user(invitee)
 
       {_inv, encoded_token} =
-        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email, role: :account_manager})
+        pending_invitation_fixture(account.id, owner.id, %{
+          email: invitee.email,
+          role: :account_manager
+        })
 
       {:ok, _member} = Invitations.accept_invitation(invitee_scope, encoded_token)
 
@@ -407,7 +412,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {_inv, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       {:ok, _member} = Invitations.accept_invitation(invitee_scope, encoded_token)
 
@@ -421,7 +428,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {invitation, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {invitation, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       {:ok, _member} = Invitations.accept_invitation(invitee_scope, encoded_token)
 
@@ -434,7 +443,10 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {invitation, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {invitation, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
       before_call = DateTime.utc_now()
 
       {:ok, _member} = Invitations.accept_invitation(invitee_scope, encoded_token)
@@ -449,7 +461,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {_inv, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       Phoenix.PubSub.subscribe(MetricFlow.PubSub, "accounts:user:#{invitee.id}")
 
@@ -480,7 +494,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {invitation, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {invitation, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       invitation |> Invitation.decline_changeset() |> Repo.update!()
 
@@ -507,7 +523,8 @@ defmodule MetricFlow.InvitationsTest do
       {_inv, encoded_token} =
         pending_invitation_fixture(account.id, owner.id, %{email: invitee.email, role: :admin})
 
-      assert {:error, :already_member} = Invitations.accept_invitation(invitee_scope, encoded_token)
+      assert {:error, :already_member} =
+               Invitations.accept_invitation(invitee_scope, encoded_token)
     end
 
     test "propagates access to the rest of the invitee's agency team" do
@@ -548,7 +565,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {_inv, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       assert {:ok, %Invitation{}} = Invitations.decline_invitation(invitee_scope, encoded_token)
     end
@@ -558,7 +577,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {invitation, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {invitation, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       {:ok, _inv} = Invitations.decline_invitation(invitee_scope, encoded_token)
 
@@ -571,7 +592,9 @@ defmodule MetricFlow.InvitationsTest do
       account = account_fixture(scope)
       invitee = user_fixture()
       invitee_scope = Scope.for_user(invitee)
-      {_inv, encoded_token} = pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
+
+      {_inv, encoded_token} =
+        pending_invitation_fixture(account.id, owner.id, %{email: invitee.email})
 
       {:ok, _inv} = Invitations.decline_invitation(invitee_scope, encoded_token)
 
@@ -640,7 +663,8 @@ defmodule MetricFlow.InvitationsTest do
     test "changeset is invalid when role is not a valid enum value" do
       {_user, scope} = user_fixture_with_scope()
 
-      changeset = Invitations.change_invitation(scope, %{email: "a@example.com", role: :super_admin})
+      changeset =
+        Invitations.change_invitation(scope, %{email: "a@example.com", role: :super_admin})
 
       refute changeset.valid?
       assert changeset.errors[:role] != nil
@@ -649,7 +673,8 @@ defmodule MetricFlow.InvitationsTest do
     test "changeset is valid when all required fields are present and valid" do
       {_user, scope} = user_fixture_with_scope()
 
-      changeset = Invitations.change_invitation(scope, %{email: "valid@example.com", role: :admin})
+      changeset =
+        Invitations.change_invitation(scope, %{email: "valid@example.com", role: :admin})
 
       assert changeset.valid?
     end

@@ -23,8 +23,7 @@ defmodule MetricFlow.Dashboards.Dashboard do
           date_range: String.t() | nil,
           user_id: integer() | nil,
           user: User.t() | Ecto.Association.NotLoaded.t(),
-          dashboard_visualizations:
-            [DashboardVisualization.t()] | Ecto.Association.NotLoaded.t(),
+          dashboard_visualizations: [DashboardVisualization.t()] | Ecto.Association.NotLoaded.t(),
           visualizations: [Visualization.t()] | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil

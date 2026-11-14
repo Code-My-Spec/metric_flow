@@ -16,9 +16,9 @@ defmodule MetricFlowSpex.RollingReviewMetricsComputedFromEveryReviewRegardlessOf
   import MetricFlowSpex.SharedGivens
 
   spex "Rolling review metrics are computed from every review recorded for the account, regardless of which platform the review came from",
-       criterion: 989 do
+    criterion: 989 do
     scenario "reviews recorded under different locations are all included in the rolling totals" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the account has multiple reviews recorded for its connected review platform",
              context do

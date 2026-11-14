@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion864UserSortsTheListByPlatformSpex do
 
   spex "User sorts the list by platform", criterion: 864 do
     scenario "a user sorts the Raw mode list by platform" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the Raw mode correlation list", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

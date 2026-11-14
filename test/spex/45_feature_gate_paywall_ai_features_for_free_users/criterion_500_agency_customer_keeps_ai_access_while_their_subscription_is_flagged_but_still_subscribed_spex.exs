@@ -5,13 +5,13 @@ defmodule MetricFlowSpex.AgencyCustomerKeepsAiAccessWhileFlaggedButSubscribedSpe
   import MetricFlowSpex.SharedGivens
 
   spex "Agency customer keeps AI access while their subscription is flagged but still subscribed",
-       criterion: 500 do
+    criterion: 500 do
     scenario "Jordan's subscription is flagged because Acme Agency's Stripe account disconnected" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
-      given_ :owner_has_stripe_connect
-      given_ :second_user_registered
-      given_ :second_user_has_agency_plan_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
+      given_(:owner_has_stripe_connect)
+      given_(:second_user_registered)
+      given_(:second_user_has_agency_plan_subscription)
 
       given_ "the admin is on the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")
@@ -39,10 +39,14 @@ defmodule MetricFlowSpex.AgencyCustomerKeepsAiAccessWhileFlaggedButSubscribedSpe
             {:ok, context}
 
           {:error, {:redirect, %{to: path}}} ->
-            flunk("Expected Jordan to keep access to /visualizations but was redirected to #{path}")
+            flunk(
+              "Expected Jordan to keep access to /visualizations but was redirected to #{path}"
+            )
 
           {:error, {:live_redirect, %{to: path}}} ->
-            flunk("Expected Jordan to keep access to /visualizations but was live-redirected to #{path}")
+            flunk(
+              "Expected Jordan to keep access to /visualizations but was live-redirected to #{path}"
+            )
         end
       end
     end

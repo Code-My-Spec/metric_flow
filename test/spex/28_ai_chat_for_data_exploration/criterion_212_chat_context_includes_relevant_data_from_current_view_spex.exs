@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion212ChatContextIncludesRelevantDataFromCurrentV
 
   spex "Chat context includes relevant data from current view", criterion: 212 do
     scenario "a user opens AI chat from a specific visualization and asks a question" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user opens AI chat from a specific visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -25,7 +25,9 @@ defmodule MetricFlowSpex.Criterion212ChatContextIncludesRelevantDataFromCurrentV
               chat_view
 
             _ ->
-              flunk("Expected opening AI chat from the visualization to navigate to the chat interface")
+              flunk(
+                "Expected opening AI chat from the visualization to navigate to the chat interface"
+              )
           end
 
         {:ok, Map.put(context, :chat_view, chat_view)}
@@ -35,7 +37,8 @@ defmodule MetricFlowSpex.Criterion212ChatContextIncludesRelevantDataFromCurrentV
         {:ok, context}
       end
 
-      then_ "the chat has access to the relevant data from that visualization as context", context do
+      then_ "the chat has access to the relevant data from that visualization as context",
+            context do
         assert has_element?(context.chat_view, "[data-role='context-indicator']"),
                "Expected the chat to show a context indicator referencing the originating visualization"
 

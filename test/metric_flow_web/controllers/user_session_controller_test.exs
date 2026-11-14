@@ -18,7 +18,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/app/integrations"
+      assert redirected_to(conn) == ~p"/app/chat"
 
       # Now do a logged in request and assert on the menu
       conn = get(conn, ~p"/app/integrations")
@@ -41,7 +41,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_metric_flow_web_user_remember_me"]
-      assert redirected_to(conn) == ~p"/app/integrations"
+      assert redirected_to(conn) == ~p"/app/chat"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do
@@ -82,7 +82,7 @@ defmodule MetricFlowWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/app/integrations"
+      assert redirected_to(conn) == ~p"/app/chat"
 
       # Now do a logged in request and assert on the menu
       conn = get(conn, ~p"/app/integrations")

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserDeletesASavedReportSpex do
 
   spex "User deletes a saved report", criterion: 929 do
     scenario "deleting a saved report removes it from the report list" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user has a saved report", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

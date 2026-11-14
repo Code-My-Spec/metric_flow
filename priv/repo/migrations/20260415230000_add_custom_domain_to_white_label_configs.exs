@@ -9,8 +9,8 @@ defmodule MetricFlow.Repo.Migrations.AddCustomDomainToWhiteLabelConfigs do
     end
 
     create unique_index(:white_label_configs, [:custom_domain],
-      where: "custom_domain IS NOT NULL",
-      name: :white_label_configs_custom_domain_index
-    )
+             where: "custom_domain IS NOT NULL",
+             name: :white_label_configs_custom_domain_index
+           )
   end
 end

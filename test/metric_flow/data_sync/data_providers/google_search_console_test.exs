@@ -105,7 +105,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleSearchConsoleTest do
     rows =
       Enum.map(1..25_000, fn i ->
         date = Date.add(~D[2025-01-01], i - 1) |> Date.to_iso8601()
-        %{"keys" => [date], "clicks" => i, "impressions" => i * 10, "ctr" => 0.1, "position" => 5.0}
+
+        %{
+          "keys" => [date],
+          "clicks" => i,
+          "impressions" => i * 10,
+          "ctr" => 0.1,
+          "position" => 5.0
+        }
       end)
 
     Jason.encode!(%{"rows" => rows})

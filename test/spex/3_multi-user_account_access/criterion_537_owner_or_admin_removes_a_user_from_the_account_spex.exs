@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.OwnerOrAdminRemovesAUserFromTheAccountSpex do
 
   spex "Owner or admin removes a user from the account", criterion: 537 do
     scenario "Alex, an admin, removes a teammate who no longer needs access" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex holds admin access and a teammate no longer needs access", context do
         alex_email = "alex#{System.unique_integer([:positive])}@example.com"
@@ -17,11 +17,13 @@ defmodule MetricFlowSpex.OwnerOrAdminRemovesAUserFromTheAccountSpex do
           {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
           reg_view
-          |> form("#registration_form", user: %{
-            email: email,
-            password: alex_password,
-            account_name: "Personal Account"
-          })
+          |> form("#registration_form",
+            user: %{
+              email: email,
+              password: alex_password,
+              account_name: "Personal Account"
+            }
+          )
           |> render_submit()
         end
 
@@ -38,11 +40,13 @@ defmodule MetricFlowSpex.OwnerOrAdminRemovesAUserFromTheAccountSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: alex_email,
-            password: alex_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: alex_email,
+              password: alex_password,
+              remember_me: true
+            }
+          )
 
         alex_conn = build_conn() |> then(&submit_form(login_form, &1)) |> recycle()
 

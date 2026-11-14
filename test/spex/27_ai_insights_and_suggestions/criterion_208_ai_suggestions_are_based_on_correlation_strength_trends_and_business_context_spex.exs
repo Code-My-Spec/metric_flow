@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
 
   import MetricFlowSpex.SharedGivens
 
-  spex "AI suggestions are based on correlation strength, trends, and business context", criterion: 208 do
+  spex "AI suggestions are based on correlation strength, trends, and business context",
+    criterion: 208 do
     scenario "AI suggestions reference correlation strength using qualitative or quantitative language" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -58,8 +59,8 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
     end
 
     scenario "AI suggestions reference trends such as increasing or declining patterns" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -114,8 +115,8 @@ defmodule MetricFlowSpex.AiSuggestionsAreBasedOnCorrelationStrengthTrendsAndBusi
     end
 
     scenario "AI suggestions reference business context such as revenue, spend, or ROI" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

@@ -104,35 +104,28 @@ defmodule MetricFlow.Integrations.Providers.QuickBooks do
 
   Uses Basic Auth (client_id:client_secret) as required by the Intuit API.
   Intuit's revocation endpoint returns plain text (not JSON), so the response
-  is dispatched via `:httpc` to avoid Assent's JSON-decoding layer.
+  is read raw via Req (`decode_body: false`) to avoid JSON decoding.
   """
   @spec revoke_token(String.t()) :: :ok | {:error, term()}
   @impl MetricFlow.Integrations.Providers.Behaviour
   def revoke_token(token) when is_binary(token) do
     client_id = Application.fetch_env!(:metric_flow, :quickbooks_client_id)
     client_secret = Application.fetch_env!(:metric_flow, :quickbooks_client_secret)
-    credentials = Base.encode64("#{client_id}:#{client_secret}")
     body = Jason.encode!(%{"token" => token})
 
-    headers = [
-      {~c"authorization", ~c"Basic #{credentials}"},
-      {~c"accept", ~c"application/json"},
-      {~c"content-type", ~c"application/json"}
-    ]
-
-    request = {
-      String.to_charlist(@revoke_url),
-      headers,
-      ~c"application/json",
-      body
-    }
-
-    case :httpc.request(:post, request, [], []) do
-      {:ok, {{_version, 200, _reason}, _headers, _body}} ->
+    # Intuit answers in plain text, so keep the body raw (`decode_body: false`).
+    case Req.post(@revoke_url,
+           auth: {:basic, "#{client_id}:#{client_secret}"},
+           headers: [{"accept", "application/json"}, {"content-type", "application/json"}],
+           body: body,
+           decode_body: false,
+           retry: false
+         ) do
+      {:ok, %Req.Response{status: 200}} ->
         Logger.info("QuickBooks token revoked successfully")
         :ok
 
-      {:ok, {{_version, status, _reason}, _headers, resp_body}} ->
+      {:ok, %Req.Response{status: status, body: resp_body}} ->
         Logger.warning("QuickBooks token revocation returned #{status}: #{inspect(resp_body)}")
         {:error, {:revocation_failed, status}}
 

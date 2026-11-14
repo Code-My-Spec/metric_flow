@@ -7,9 +7,9 @@ defmodule MetricFlowSpex.Criterion148SpecIsTemplatePopulatedAtRenderTimeSpex do
   spex "The saved Vega-Lite spec is a template with no embedded data values -- data is fetched and injected at render time from the bound metrics",
     criterion: 148 do
     scenario "viewing a saved visualization as a report shows fresh data injected into its template spec" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "the user saves a visualization bound to one metric", context do
         {:ok, new_view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -38,7 +38,8 @@ defmodule MetricFlowSpex.Criterion148SpecIsTemplatePopulatedAtRenderTimeSpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the rendered chart's spec contains real data values injected at render time, not the bare template", context do
+      then_ "the rendered chart's spec contains real data values injected at render time, not the bare template",
+            context do
         chart_html =
           context.view
           |> element("[data-role='vega-lite-chart']")

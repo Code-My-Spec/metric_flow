@@ -29,7 +29,10 @@ defmodule MetricFlowSpex.DuplicateDeliveryOfTheSameEventIsANoOpSpex do
         first =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(payload)
+          )
           |> post("/billing/webhooks", payload)
 
         assert first.status in [200, 202]
@@ -41,7 +44,10 @@ defmodule MetricFlowSpex.DuplicateDeliveryOfTheSameEventIsANoOpSpex do
         second =
           build_conn()
           |> put_req_header("content-type", "application/json")
-          |> put_req_header("stripe-signature", MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload))
+          |> put_req_header(
+            "stripe-signature",
+            MetricFlowSpex.SharedGivens.sign_webhook_payload(context.payload)
+          )
           |> post("/billing/webhooks", context.payload)
 
         {:ok, Map.put(context, :response, second)}

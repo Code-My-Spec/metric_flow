@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion818SearchNoMatchShowsEmptyResultSpex do
 
   spex "Search with no matching reports shows an empty result", criterion: 818 do
     scenario "searching for a name no report matches shows an empty result rather than an error" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user searching their saved reports", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -44,6 +44,7 @@ defmodule MetricFlowSpex.Criterion818SearchNoMatchShowsEmptyResultSpex do
       then_ "the list shows an empty result rather than an error", context do
         html = render(context.view)
         refute html =~ "Existing Report"
+
         assert has_element?(context.view, "[data-role='empty-reports']") or
                  has_element?(context.view, "[data-role='no-search-results']")
 

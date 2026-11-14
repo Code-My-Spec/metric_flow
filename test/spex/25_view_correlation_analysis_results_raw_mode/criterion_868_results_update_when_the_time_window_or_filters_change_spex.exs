@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion868ResultsUpdateWhenTheTimeWindowOrFiltersChan
 
   spex "Results update when the time window or filters change", criterion: 868 do
     scenario "a user applies a filter and the displayed results update" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing correlation results", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -37,15 +37,23 @@ defmodule MetricFlowSpex.Criterion868ResultsUpdateWhenTheTimeWindowOrFiltersChan
       end
 
       then_ "the displayed results update to reflect the new selection", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='ads_metric']")
-        refute has_element?(context.view, "[data-role='correlation-row'][data-metric='books_metric']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='ads_metric']"
+               )
+
+        refute has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='books_metric']"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "a user changes the time window and the displayed results update" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user viewing correlation results", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{

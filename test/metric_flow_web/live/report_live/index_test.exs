@@ -190,7 +190,11 @@ defmodule MetricFlowWeb.ReportLive.IndexTest do
         assert has_element?(lv, "[data-role='report-option-ai']")
         assert has_element?(lv, "[data-role='report-option-manual']")
         assert has_element?(lv, "[data-role='report-option-ai'] a[href='/app/reports/generate']")
-        assert has_element?(lv, "[data-role='report-option-manual'] a[href='/app/visualizations/new']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='report-option-manual'] a[href='/app/visualizations/new']"
+               )
       end)
     end
   end

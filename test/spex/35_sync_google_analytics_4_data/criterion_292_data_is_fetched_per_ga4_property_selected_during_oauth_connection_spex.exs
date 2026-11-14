@@ -6,9 +6,10 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
 
   spex "Data is fetched per GA4 property selected during OAuth connection", criterion: 292 do
     scenario "a sync fetches data for the property chosen at connection time" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a GA4 integration exists for the property chosen during OAuth connection", context do
+      given_ "a GA4 integration exists for the property chosen during OAuth connection",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_analytics,
           provider_metadata: %{"property_id" => "properties/123456789"}
         )
@@ -16,7 +17,7 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         {:ok, context}
       end
 
-      given_ :with_google_analytics_sync_stub
+      given_(:with_google_analytics_sync_stub)
 
       when_ "the sync runs", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -25,7 +26,8 @@ defmodule MetricFlowSpex.DataIsFetchedPerGa4PropertySelectedDuringOauthConnectio
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the sync completes successfully for that property's Google Analytics integration", context do
+      then_ "the sync completes successfully for that property's Google Analytics integration",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='success'] [data-role='sync-provider']",

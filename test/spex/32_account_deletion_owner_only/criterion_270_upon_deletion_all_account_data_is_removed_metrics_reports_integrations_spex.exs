@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Upon deletion, all account data is removed (metrics, reports, integrations)", criterion: 270 do
+  spex "Upon deletion, all account data is removed (metrics, reports, integrations)",
+    criterion: 270 do
     scenario "after account deletion, the deleted account no longer appears in the accounts list" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -15,10 +16,12 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
       when_ "the owner deletes the account with correct name and password", context do
         context.settings_view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -41,7 +44,7 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
     end
 
     scenario "after account deletion, user cannot access the deleted account's settings" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner navigates to account settings", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
@@ -50,10 +53,12 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
 
       when_ "the owner deletes the account with correct name and password", context do
         context.settings_view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -64,7 +69,8 @@ defmodule MetricFlowSpex.UponDeletionAllAccountDataIsRemovedMetricsReportsIntegr
         {:ok, context}
       end
 
-      then_ "navigating to the deleted account's settings results in an error or redirect", context do
+      then_ "navigating to the deleted account's settings results in an error or redirect",
+            context do
         result = live(context.owner_conn, "/app/accounts/settings")
 
         case result do

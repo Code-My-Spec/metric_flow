@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.NonAdminCannotInitiateStripeConnectSpex do
 
   spex "Non-admin agency member cannot initiate Stripe connect", criterion: 470 do
     scenario "a non-admin member has no connect action available to them" do
-      given_ :user_logged_in_as_owner
-      given_ :agency_member_registered
+      given_(:user_logged_in_as_owner)
+      given_(:agency_member_registered)
 
       when_ "the non-admin member opens the Stripe Connect page", context do
         {:ok, view, _html} = live(context.member_conn, "/app/agency/stripe-connect")

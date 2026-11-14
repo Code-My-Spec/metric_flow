@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion859UserAccessesCorrelationAnalysisFromMainNavi
 
   spex "User accesses correlation analysis from main navigation", criterion: 859 do
     scenario "a user browsing the application selects correlation analysis from the main navigation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user browsing the application", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")

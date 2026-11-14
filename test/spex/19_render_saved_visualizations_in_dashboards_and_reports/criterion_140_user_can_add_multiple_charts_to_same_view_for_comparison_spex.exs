@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4080MultipleChartsForComparisonSpex do
 
   spex "User can add multiple charts to the same dashboard for comparison", criterion: 140 do
     scenario "dashboard editor allows adding multiple visualizations" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user navigates to create a new dashboard", context do
         {:ok, view, html} = live(context.owner_conn, "/app/dashboards/new")
@@ -21,8 +21,8 @@ defmodule MetricFlowSpex.Criterion4080MultipleChartsForComparisonSpex do
     end
 
     scenario "existing dashboard shows multiple visualization panels" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       when_ "user views the dashboards index", context do
         {:ok, view, html} = live(context.owner_conn, "/app/dashboards")

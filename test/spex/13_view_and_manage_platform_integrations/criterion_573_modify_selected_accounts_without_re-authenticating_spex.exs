@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.ModifySelectedAccountsWithoutReAuthenticatingSpex do
 
   spex "Modify selected accounts without re-authenticating", criterion: 573 do
     scenario "a connected, healthy integration has its selection changed" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the account editing page for that integration", context do
         {:ok, view, _html} =

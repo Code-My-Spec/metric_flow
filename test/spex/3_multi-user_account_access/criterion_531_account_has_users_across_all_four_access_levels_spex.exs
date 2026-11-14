@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AccountHasUsersAcrossAllFourAccessLevelsSpex do
 
   spex "Account has users across all four access levels", criterion: 531 do
     scenario "Alex assigns each of the four access levels to different teammates" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "three teammates are invited, one at each of the other access levels", context do
         admin_email = "admin#{System.unique_integer([:positive])}@example.com"
@@ -20,11 +20,13 @@ defmodule MetricFlowSpex.AccountHasUsersAcrossAllFourAccessLevelsSpex do
           {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
           reg_view
-          |> form("#registration_form", user: %{
-            email: email,
-            password: "SecurePassword123!",
-            account_name: "Personal Account"
-          })
+          |> form("#registration_form",
+            user: %{
+              email: email,
+              password: "SecurePassword123!",
+              account_name: "Personal Account"
+            }
+          )
           |> render_submit()
         end
 

@@ -7,16 +7,18 @@ defmodule MetricFlowSpex.OwnerReceivesAConfirmationEmailAfterDeletionSpex do
 
   spex "Owner receives a confirmation email after deletion", criterion: 550 do
     scenario "owner deletes his account and receives a confirmation email" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex has just deleted his account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         view
-        |> form("#delete-account-form", delete_confirmation: %{
-          account_name: "Owner Account",
-          password: context.owner_password
-        })
+        |> form("#delete-account-form",
+          delete_confirmation: %{
+            account_name: "Owner Account",
+            password: context.owner_password
+          }
+        )
         |> render_submit()
 
         {:ok, context}

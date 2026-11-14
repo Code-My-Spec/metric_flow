@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.Criterion875SuggestionsReflectCorrelationStrengthTrendA
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Suggestions reflect correlation strength, trend, and business context together", criterion: 875 do
+  spex "Suggestions reflect correlation strength, trend, and business context together",
+    criterion: 875 do
     scenario "a metric with a moderate correlation but a clear upward trend and relevant business context" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a metric with a moderate correlation but a clear upward trend and relevant business context",
              context do

@@ -5,11 +5,13 @@ defmodule MetricFlowSpex.Criterion971SyncFetchesAdCampaignDataFromFacebookMarket
   import MetricFlowSpex.SharedGivens
 
   spex "Sync fetches ad campaign performance data from the Facebook Marketing API for the configured ad account, via Facebook's own OAuth, separate from Google integrations",
-       fail_on_error_logs: false, criterion: 971 do
+    fail_on_error_logs: false,
+    criterion: 971 do
     scenario "a client with both a Facebook Ads and a Google Ads integration syncs each independently" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a client has a connected Facebook Ads account and a connected Google Ads account", context do
+      given_ "a client has a connected Facebook Ads account and a connected Google Ads account",
+             context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :facebook_ads,
           provider_metadata: %{"ad_account_id" => "123456789"}
         )
@@ -26,7 +28,8 @@ defmodule MetricFlowSpex.Criterion971SyncFetchesAdCampaignDataFromFacebookMarket
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the Facebook Ads account is synced via its own OAuth connection, separately from the Google Ads integration", context do
+      then_ "the Facebook Ads account is synced via its own OAuth connection, separately from the Google Ads integration",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'] [data-role='sync-provider']",

@@ -7,17 +7,19 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
 
   spex "Already-accepted invitations cannot be reused", criterion: 42 do
     scenario "user tries to use an already-accepted invitation and sees an error" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -34,11 +36,13 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)
@@ -70,17 +74,19 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
     end
 
     scenario "a third user cannot reuse another person's accepted invitation" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited the second user", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/invitations")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         token =
@@ -97,11 +103,13 @@ defmodule MetricFlowSpex.AlreadyAcceptedInvitationsCannotBeReusedSpex do
         {:ok, login_view, _html} = live(login_conn, "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, login_conn)
         authed_conn = recycle(logged_in_conn)

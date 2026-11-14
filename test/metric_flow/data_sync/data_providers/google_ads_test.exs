@@ -583,7 +583,10 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
 
     test "returns error :insufficient_permissions when token lacks adwords scope" do
       plug =
-        build_stub_plug(403, Jason.encode!(%{"error" => %{"message" => "insufficient_permissions"}}))
+        build_stub_plug(
+          403,
+          Jason.encode!(%{"error" => %{"message" => "insufficient_permissions"}})
+        )
 
       assert {:error, :insufficient_permissions} =
                GoogleAds.fetch_metrics(valid_integration(), http_plug: plug)
@@ -809,25 +812,29 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
       if context[:skip], do: flunk("GOOGLE_ADS_TEST_CUSTOMER_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "google_ads_fetch_metrics", cassette_opts("google_ads_fetch_metrics"), fn plug ->
-          assert {:ok, metrics} =
-                   GoogleAds.fetch_metrics(context.integration,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+        with_cassette(
+          "google_ads_fetch_metrics",
+          cassette_opts("google_ads_fetch_metrics"),
+          fn plug ->
+            assert {:ok, metrics} =
+                     GoogleAds.fetch_metrics(context.integration,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert is_list(metrics)
+            assert is_list(metrics)
 
-          for metric <- metrics do
-            assert metric.provider == :google_ads
-            assert metric.metric_type == "advertising"
-            assert is_binary(metric.metric_name)
-            assert is_number(metric.value)
-            assert %DateTime{} = metric.recorded_at
-            assert is_map(metric.metadata)
-            assert Map.has_key?(metric.metadata, :customer_id)
+            for metric <- metrics do
+              assert metric.provider == :google_ads
+              assert metric.metric_type == "advertising"
+              assert is_binary(metric.metric_name)
+              assert is_number(metric.value)
+              assert %DateTime{} = metric.recorded_at
+              assert is_map(metric.metadata)
+              assert Map.has_key?(metric.metadata, :customer_id)
+            end
           end
-        end
+        )
       end)
     end
 
@@ -835,17 +842,21 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleAdsTest do
       if context[:skip], do: flunk("GOOGLE_ADS_TEST_CUSTOMER_ID not set in .env.test")
 
       capture_log(fn ->
-        with_cassette "google_ads_unauthorized", cassette_opts("google_ads_unauthorized"), fn plug ->
-          bad_token = %{context.integration | access_token: "invalid-token"}
+        with_cassette(
+          "google_ads_unauthorized",
+          cassette_opts("google_ads_unauthorized"),
+          fn plug ->
+            bad_token = %{context.integration | access_token: "invalid-token"}
 
-          assert {:error, reason} =
-                   GoogleAds.fetch_metrics(bad_token,
-                     http_plug: plug,
-                     date_range: default_date_range()
-                   )
+            assert {:error, reason} =
+                     GoogleAds.fetch_metrics(bad_token,
+                       http_plug: plug,
+                       date_range: default_date_range()
+                     )
 
-          assert reason in [:unauthorized, :insufficient_permissions, :customer_not_found]
-        end
+            assert reason in [:unauthorized, :insufficient_permissions, :customer_not_found]
+          end
+        )
       end)
     end
   end

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion4089MetricsFromAnyPlatformSpex do
 
   spex "Reports can include metrics from any connected platform", criterion: 157 do
     scenario "metric picker shows metrics from marketing and financial platforms" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "user opens the metric picker on a new dashboard", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

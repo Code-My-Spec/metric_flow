@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4081ChartSettingsSavedWithReportSpex do
 
   spex "Chart settings are saved with the visualization when user saves", criterion: 141 do
     scenario "saving a visualization persists the name, metric, and vega spec" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user configures a visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

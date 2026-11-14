@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.NoWarningShownWhenNoSemanticDifferenceIsKnownSpex do
 
   spex "No warning shown when no semantic difference is known", criterion: 771 do
     scenario "a user with no connected platforms sees no semantic-difference warning" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "no platform has been connected, so there is no comparison to warn about", context do
         {:ok, context}

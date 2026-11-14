@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
 
   import MetricFlowSpex.SharedGivens
 
-  spex "If GA4 API returns no data for a day (e.g., property had no traffic), a zero-value record is stored rather than a gap", criterion: 299 do
+  spex "If GA4 API returns no data for a day (e.g., property had no traffic), a zero-value record is stored rather than a gap",
+    criterion: 299 do
     scenario "a GA4 sync that stored zero-value records for a no-traffic day appears in sync history" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -14,18 +15,24 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
       end
 
       when_ "a GA4 sync completion event arrives for a day with zero records", context do
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 0,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 0,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
       end
 
-      then_ "the sync history shows a Google Analytics success entry even for a zero-records day", context do
+      then_ "the sync history shows a Google Analytics success entry even for a zero-records day",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",
@@ -48,7 +55,7 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
     end
 
     scenario "sync history shows entries for days with traffic and days without traffic side by side" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
@@ -57,22 +64,32 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
 
       when_ "sync events arrive for a day with traffic and a day without traffic", context do
         # Day with traffic
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 11,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -1)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 11,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -1)
+           }}
+        )
 
         :timer.sleep(50)
 
         # Day with zero traffic
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 0,
-          completed_at: DateTime.utc_now(),
-          data_date: Date.add(Date.utc_today(), -2)
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 0,
+             completed_at: DateTime.utc_now(),
+             data_date: Date.add(Date.utc_today(), -2)
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, context}
@@ -95,28 +112,35 @@ defmodule MetricFlowSpex.IfGa4ApiReturnsNoDataForADayAZeroValueRecordIsStoredRat
     end
 
     scenario "the sync history page shows a completed sync entry for each day including zero-traffic days" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is on the sync history page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 
-      when_ "a GA4 sync completion event arrives with zero records for a specific date", context do
+      when_ "a GA4 sync completion event arrives with zero records for a specific date",
+            context do
         specific_date = ~D[2026-03-10]
 
-        Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync", {:sync_completed, %{
-          provider: :google_analytics,
-          records_synced: 0,
-          completed_at: ~U[2026-03-11 02:00:00Z],
-          data_date: specific_date
-        }})
+        Phoenix.PubSub.broadcast(
+          MetricFlow.PubSub,
+          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          {:sync_completed,
+           %{
+             provider: :google_analytics,
+             records_synced: 0,
+             completed_at: ~U[2026-03-11 02:00:00Z],
+             data_date: specific_date
+           }}
+        )
 
         :timer.sleep(100)
         {:ok, Map.put(context, :specific_date, specific_date)}
       end
 
-      then_ "the sync history shows the entry with the specific date and success status", context do
+      then_ "the sync history shows the entry with the specific date and success status",
+            context do
         html = render(context.view)
 
         assert html =~ "Google Analytics",

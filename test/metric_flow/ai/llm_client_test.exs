@@ -74,7 +74,8 @@ defmodule MetricFlow.Ai.LlmClientTest do
   describe "generate_insights/3" do
     @insight %{
       "summary" => "Sessions strongly predict revenue",
-      "content" => "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
+      "content" =>
+        "Sessions correlate with revenue at 0.85; consider increasing acquisition spend.",
       "suggestion_type" => "budget_increase",
       "confidence" => 0.85
     }

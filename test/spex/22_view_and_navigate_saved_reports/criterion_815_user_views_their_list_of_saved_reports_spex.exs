@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion815UserViewsListOfSavedReportsSpex do
 
   spex "User views their list of saved reports", criterion: 815 do
     scenario "opening the reports section shows all saved reports" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "a user with several saved reports", context do
         for {metric, name} <- [

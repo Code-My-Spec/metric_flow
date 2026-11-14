@@ -610,10 +610,12 @@ defmodule MetricFlowSpex.SharedGivens do
     {status, body} =
       case {conn.method, conn.request_path} do
         {"POST", "/v1/products"} ->
-          {200, %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
+          {200,
+           %{"id" => "prod_test_#{System.unique_integer([:positive])}", "object" => "product"}}
 
         {"POST", "/v1/prices"} ->
-          {200, %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
+          {200,
+           %{"id" => "price_test_#{System.unique_integer([:positive])}", "object" => "price"}}
 
         {"GET", "/v1/prices/" <> price_id} ->
           {200,

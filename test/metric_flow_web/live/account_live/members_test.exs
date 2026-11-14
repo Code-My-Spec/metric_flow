@@ -107,7 +107,6 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       refute has_element?(lv, "[data-role='member-row'] select")
       refute has_element?(lv, "[phx-click='remove_member']")
     end
-
   end
 
   describe "owner can change a member role and sees success flash" do
@@ -165,7 +164,9 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       capture_log(fn ->
         html =
           lv
-          |> element("[data-role='member-row'][data-user-id='#{target_user.id}'] [phx-click='remove_member']")
+          |> element(
+            "[data-role='member-row'][data-user-id='#{target_user.id}'] [phx-click='remove_member']"
+          )
           |> render_click()
 
         send(self(), {:html, html})
@@ -239,7 +240,9 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", invitation: %{email: "notauser@example.com", role: "read_only"})
+        |> form("#invite_member_form",
+          invitation: %{email: "notauser@example.com", role: "read_only"}
+        )
         |> render_submit()
 
       assert html =~ "not found"
@@ -258,7 +261,9 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
 
       html =
         lv
-        |> form("#invite_member_form", invitation: %{email: existing_member.email, role: "read_only"})
+        |> form("#invite_member_form",
+          invitation: %{email: existing_member.email, role: "read_only"}
+        )
         |> render_submit()
 
       assert html =~ "already a member"
@@ -281,7 +286,6 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
       html = render(lv)
       assert html =~ new_user.email
     end
-
   end
 
   describe "redirects to /accounts when user has no accounts" do

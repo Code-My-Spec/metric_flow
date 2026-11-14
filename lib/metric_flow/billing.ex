@@ -85,7 +85,9 @@ defmodule MetricFlow.Billing do
   # so `resolve_update_account_id/2` preserves whichever real account the
   # subscription is already attributed to rather than reassigning it to the
   # agency.
-  defp resolve_account(%{"account" => connected_account_id, "type" => "customer.subscription.created"} = event)
+  defp resolve_account(
+         %{"account" => connected_account_id, "type" => "customer.subscription.created"} = event
+       )
        when is_binary(connected_account_id) do
     case BillingRepository.get_stripe_account_by_stripe_id(connected_account_id) do
       nil ->

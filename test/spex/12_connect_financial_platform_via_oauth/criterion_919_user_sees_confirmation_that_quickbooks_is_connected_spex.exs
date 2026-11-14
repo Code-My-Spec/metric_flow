@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserSeesConfirmationThatQuickbooksIsConnectedSpex do
 
   spex "User sees confirmation that QuickBooks is connected", criterion: 919 do
     scenario "viewing the connection status after the integration is saved shows a ready-to-sync confirmation" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the integration has just been saved", context do
         _callback_conn =

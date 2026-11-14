@@ -4,10 +4,11 @@ defmodule MetricFlowSpex.Criterion192UserCanSortByCorrelationStrengthMetricNameP
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can sort by: correlation strength, metric name, platform, lag time", criterion: 192 do
+  spex "User can sort by: correlation strength, metric name, platform, lag time",
+    criterion: 192 do
     scenario "a user sorts the correlation list by each available column" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "several correlations differing in strength, name, platform, and lag", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -39,7 +40,11 @@ defmodule MetricFlowSpex.Criterion192UserCanSortByCorrelationStrengthMetricNameP
       end
 
       then_ "the list is sortable by correlation strength", context do
-        assert has_element?(context.view, "[data-sort-col='coefficient'][data-sort-active='true']")
+        assert has_element?(
+                 context.view,
+                 "[data-sort-col='coefficient'][data-sort-active='true']"
+               )
+
         {:ok, context}
       end
 
@@ -52,7 +57,11 @@ defmodule MetricFlowSpex.Criterion192UserCanSortByCorrelationStrengthMetricNameP
       end
 
       then_ "the list is sortable by metric name", context do
-        assert has_element?(context.view, "[data-sort-col='metric_name'][data-sort-active='true']")
+        assert has_element?(
+                 context.view,
+                 "[data-sort-col='metric_name'][data-sort-active='true']"
+               )
+
         {:ok, context}
       end
 

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
 
   spex "Integration is saved only after successful OAuth completion", criterion: 81 do
     scenario "integrations page shows no platforms connected before OAuth completion" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user views the integrations page before completing any OAuth flow", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
     end
 
     scenario "integration connect page shows pending state before OAuth" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user navigates to the connect page for Google", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
@@ -41,12 +41,13 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
                  has_element?(context.view, "a[href*='oauth']") or
                  render(context.view) =~ "Connect" or
                  render(context.view) =~ "Authorize"
+
         {:ok, context}
       end
     end
 
     scenario "OAuth callback page shows success confirmation after completing OAuth" do
-      given_ :owner_with_google_ads_integration
+      given_(:owner_with_google_ads_integration)
 
       given_ "the user navigates to the Google detail page after OAuth", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
@@ -55,6 +56,7 @@ defmodule MetricFlowSpex.IntegrationIsSavedOnlyAfterSuccessfulOAuthCompletionSpe
 
       then_ "the page acknowledges the OAuth flow has completed", context do
         html = render(context.view)
+
         assert html =~ "connected" or html =~ "Connected" or html =~ "success" or
                  html =~ "saved" or html =~ "authorized" or html =~ "Authorized"
 

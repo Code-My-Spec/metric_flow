@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.ClientViewsEveryoneWithAccessToTheirAccountSpex do
 
   spex "Client views everyone with access to their account", criterion: 552 do
     scenario "Jordan sees teammates and Acme Agency together on the access management page" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "several teammates have access to Jordan's account", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "member"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "member"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -52,17 +54,24 @@ defmodule MetricFlowSpex.ClientViewsEveryoneWithAccessToTheirAccountSpex do
 
         drain.(drain)
 
-        {:ok, Map.put(context, :acme_account_slug, MetricFlowSpex.Fixtures.personal_account_slug(email))}
+        {:ok,
+         Map.put(
+           context,
+           :acme_account_slug,
+           MetricFlowSpex.Fixtures.personal_account_slug(email)
+         )}
       end
 
       given_ "Acme Agency has been granted access to Jordan's account", context do
         {:ok, settings_view, _html} = live(context.owner_conn, "/app/accounts/settings")
 
         settings_view
-        |> form("#grant-agency-access-form", agency_access: %{
-          slug: context.acme_account_slug,
-          access_level: "read_only"
-        })
+        |> form("#grant-agency-access-form",
+          agency_access: %{
+            slug: context.acme_account_slug,
+            access_level: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, context}

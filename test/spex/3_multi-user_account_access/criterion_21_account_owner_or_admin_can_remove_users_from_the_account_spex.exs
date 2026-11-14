@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
 
   spex "Account owner or admin can remove users from the account", criterion: 21 do
     scenario "owner removes a member from the account" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a second user has been invited as a member", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "account_manager"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "account_manager"
+          }
+        )
         |> render_submit()
 
         {:ok, Map.put(context, :view, view)}
@@ -43,7 +45,7 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
     end
 
     scenario "owner cannot remove themselves as the last owner" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the owner is on the members page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -61,17 +63,19 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
     end
 
     scenario "read-only members cannot see remove buttons" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "a second user has been invited as read-only", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "read_only"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "read_only"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -81,11 +85,13 @@ defmodule MetricFlowSpex.AccountOwnerOrAdminCanRemoveUsersSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)

@@ -6,17 +6,19 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
 
   spex "All users on an account see the same data with account-level isolation", criterion: 22 do
     scenario "two members of the same account see the same members list" do
-      given_ :user_logged_in_as_owner
-      given_ :second_user_registered
+      given_(:user_logged_in_as_owner)
+      given_(:second_user_registered)
 
       given_ "the owner has invited a second user as admin", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/accounts/members")
 
         view
-        |> form("#invite_member_form", invitation: %{
-          email: context.second_user_email,
-          role: "admin"
-        })
+        |> form("#invite_member_form",
+          invitation: %{
+            email: context.second_user_email,
+            role: "admin"
+          }
+        )
         |> render_submit()
 
         {:ok, context}
@@ -37,11 +39,13 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: context.second_user_email,
-            password: context.second_user_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: context.second_user_email,
+              password: context.second_user_password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
         member_conn = recycle(logged_in_conn)
@@ -57,7 +61,7 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
     end
 
     scenario "users from different accounts cannot see each other's members" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a completely separate user registers their own account", context do
         email = "separate#{System.unique_integer([:positive])}@example.com"
@@ -66,24 +70,30 @@ defmodule MetricFlowSpex.AllUsersOnAccountSeeTheSameDataWithIsolationSpex do
         {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: email,
-          password: password,
-          account_name: "Separate Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: email,
+            password: password,
+            account_name: "Separate Account"
+          }
+        )
         |> render_submit()
 
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: email,
-            password: password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: email,
+              password: password,
+              remember_me: true
+            }
+          )
 
         logged_in_conn = submit_form(login_form, build_conn())
-        {:ok, Map.merge(context, %{separate_conn: recycle(logged_in_conn), separate_email: email})}
+
+        {:ok,
+         Map.merge(context, %{separate_conn: recycle(logged_in_conn), separate_email: email})}
       end
 
       when_ "the separate user views their members page", context do

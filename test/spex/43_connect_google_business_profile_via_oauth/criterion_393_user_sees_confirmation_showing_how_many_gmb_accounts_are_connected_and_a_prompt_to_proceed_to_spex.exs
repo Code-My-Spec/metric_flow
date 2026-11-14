@@ -13,9 +13,10 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
   ]
 
   spex "User sees confirmation showing how many GMB accounts are connected and a prompt to proceed to location selection",
-       fail_on_error_logs: false, criterion: 393 do
+    fail_on_error_logs: false,
+    criterion: 393 do
     scenario "connected Google Business detail page shows connected status and a link to select locations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -51,7 +52,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
     end
 
     scenario "saving a location selection shows a flash message referencing the saved locations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "user has a connected google_business integration", context do
         user = MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
@@ -75,7 +76,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
 
       then_ "submitting two location IDs redirects with a flash message mentioning location count",
             context do
-        with_cassette "gbp_locations_list", @cassette_opts, fn plug ->
+        with_cassette("gbp_locations_list", @cassette_opts, fn plug ->
           Application.put_env(:metric_flow, :req_http_options, plug: plug)
 
           capture_log(fn ->
@@ -97,7 +98,7 @@ defmodule MetricFlowSpex.Criterion4853UserSeesConfirmationOfConnectedGMBAccounts
           end)
 
           Application.delete_env(:metric_flow, :req_http_options)
-        end
+        end)
 
         {:ok, context}
       end

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AdminCanInviteAnotherAdminSpex do
 
   spex "Admin can invite another admin", criterion: 532 do
     scenario "Alex, an admin, attempts to invite a new user as admin" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "Alex holds admin access on the account", context do
         alex_email = "alex#{System.unique_integer([:positive])}@example.com"
@@ -15,11 +15,13 @@ defmodule MetricFlowSpex.AdminCanInviteAnotherAdminSpex do
         {:ok, reg_view, _html} = live(build_conn(), "/users/register")
 
         reg_view
-        |> form("#registration_form", user: %{
-          email: alex_email,
-          password: alex_password,
-          account_name: "Alex Personal Account"
-        })
+        |> form("#registration_form",
+          user: %{
+            email: alex_email,
+            password: alex_password,
+            account_name: "Alex Personal Account"
+          }
+        )
         |> render_submit()
 
         {:ok, owner_members_view, _html} = live(context.owner_conn, "/app/accounts/members")
@@ -31,11 +33,13 @@ defmodule MetricFlowSpex.AdminCanInviteAnotherAdminSpex do
         {:ok, login_view, _html} = live(build_conn(), "/users/log-in")
 
         login_form =
-          form(login_view, "#login_form_password", user: %{
-            email: alex_email,
-            password: alex_password,
-            remember_me: true
-          })
+          form(login_view, "#login_form_password",
+            user: %{
+              email: alex_email,
+              password: alex_password,
+              remember_me: true
+            }
+          )
 
         alex_conn = build_conn() |> then(&submit_form(login_form, &1)) |> recycle()
 

@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.AbandonedOauthFlowSavesNoIntegrationSpex do
 
   spex "Abandoned OAuth flow saves no integration", criterion: 918 do
     scenario "a user starts but does not complete the QuickBooks OAuth flow" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the user starts the OAuth flow but does not complete it", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/quickbooks")

@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4077SwitchChartTypesRetainsSelectionsSpex do
 
   spex "User can switch chart types without losing metric or name selections", criterion: 137 do
     scenario "switching chart type preserves the selected metric and name" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has configured a visualization with a metric and name", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

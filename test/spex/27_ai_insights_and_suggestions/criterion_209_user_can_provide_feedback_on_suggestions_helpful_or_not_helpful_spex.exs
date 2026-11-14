@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
 
   spex "User can provide feedback on suggestions (helpful or not helpful)", criterion: 209 do
     scenario "each AI recommendation has helpful and not-helpful feedback buttons" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -26,7 +26,8 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
         {:ok, context}
       end
 
-      then_ "each AI recommendation displays a helpful button and a not-helpful button", context do
+      then_ "each AI recommendation displays a helpful button and a not-helpful button",
+            context do
         html = render(context.view)
 
         has_helpful_button =
@@ -53,8 +54,8 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
     end
 
     scenario "user clicks helpful on a suggestion and sees confirmation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")
@@ -122,8 +123,8 @@ defmodule MetricFlowSpex.UserCanProvideFeedbackOnSuggestionsHelpfulOrNotHelpfulS
     end
 
     scenario "user clicks not helpful on a suggestion and sees confirmation" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "the user navigates to the correlations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/correlations")

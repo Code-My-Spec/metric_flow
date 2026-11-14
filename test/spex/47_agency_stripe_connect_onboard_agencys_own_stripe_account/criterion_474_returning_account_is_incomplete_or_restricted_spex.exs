@@ -5,8 +5,8 @@ defmodule MetricFlowSpex.ReturningAccountIsRestrictedSpex do
 
   spex "Returning account is incomplete or restricted", criterion: 474 do
     scenario "agency with an incomplete Stripe account is shown as restricted" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_incomplete_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_incomplete_stripe_connect)
 
       when_ "the admin views the Stripe Connect page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/stripe-connect")

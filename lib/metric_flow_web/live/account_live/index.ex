@@ -30,94 +30,100 @@ defmodule MetricFlowWeb.AccountLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-    <div class="mx-auto">
-      <.header>Your Accounts</.header>
+      <div class="mx-auto">
+        <.header>Your Accounts</.header>
 
-      <div class="mt-8 space-y-4">
-        <div :if={@accounts == []} class="text-base-content/60 text-sm">
-          No accounts found.
-        </div>
-        <div
-          :for={account <- @accounts}
-          data-role="account-card"
-          data-account-id={account.id}
-          data-active={to_string(account.id == @active_account_id)}
-          class="card bg-base-200 p-6"
-        >
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold">{account.name}</h3>
-              <div class="mt-2 flex flex-wrap gap-2">
-                <span class={account_type_badge_class(account)}>
-                  {account_type_label(account)}
-                </span>
-                <span class="badge badge-ghost">
-                  {to_string(Map.get(@account_roles, account.id, :member))}
-                </span>
-                <%= if grant = Map.get(@agency_grants, account.id) do %>
-                  <span class="badge badge-accent">
-                    {access_level_label(grant.access_level)}
+        <div class="mt-8 space-y-4">
+          <div :if={@accounts == []} class="text-base-content/60 text-sm">
+            No accounts found.
+          </div>
+          <div
+            :for={account <- @accounts}
+            data-role="account-card"
+            data-account-id={account.id}
+            data-active={to_string(account.id == @active_account_id)}
+            class="card bg-base-200 p-6"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold">{account.name}</h3>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span class={account_type_badge_class(account)}>
+                    {account_type_label(account)}
                   </span>
-                  <span class="badge badge-info">
-                    {origination_status_label(grant.origination_status)}
+                  <span class="badge badge-ghost">
+                    {to_string(Map.get(@account_roles, account.id, :member))}
                   </span>
-                <% end %>
+                  <%= if grant = Map.get(@agency_grants, account.id) do %>
+                    <span class="badge badge-accent">
+                      {access_level_label(grant.access_level)}
+                    </span>
+                    <span class="badge badge-info">
+                      {origination_status_label(grant.origination_status)}
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+              <div class="ml-4 flex-shrink-0">
+                <button
+                  data-role="switch-account"
+                  phx-click="switch_account"
+                  phx-value-account_id={account.id}
+                  disabled={account.id == @active_account_id}
+                  class={
+                    if account.id == @active_account_id,
+                      do: "btn btn-sm btn-ghost",
+                      else: "btn btn-sm btn-primary"
+                  }
+                >
+                  {if account.id == @active_account_id,
+                    do: "#{account.name} (Active)",
+                    else: "Switch to #{account.name}"}
+                </button>
               </div>
             </div>
-            <div class="ml-4 flex-shrink-0">
-              <button
-                data-role="switch-account"
-                phx-click="switch_account"
-                phx-value-account_id={account.id}
-                disabled={account.id == @active_account_id}
-                class={if account.id == @active_account_id, do: "btn btn-sm btn-ghost", else: "btn btn-sm btn-primary"}
-              >
-                {if account.id == @active_account_id, do: "#{account.name} (Active)", else: "Switch to #{account.name}"}
-              </button>
-            </div>
           </div>
         </div>
-      </div>
 
-      <div class="mt-8">
-        <h2 class="text-base font-semibold mb-4">Create Team Account</h2>
-        <.form
-          for={@team_form}
-          phx-submit="create_team"
-          phx-change="validate_team"
-          class="space-y-4"
-        >
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Name</span>
-            </label>
-            <.input
-              field={@team_form[:name]}
-              class="input input-bordered w-full"
-              placeholder="My Team"
-            />
-          </div>
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Slug</span>
-            </label>
-            <.input
-              field={@team_form[:slug]}
-              class="input input-bordered w-full font-mono"
-              placeholder="my-team"
-            />
-            <label class="label">
-              <span class="label-text-alt text-base-content/60">
-                Lowercase letters, numbers, and hyphens
-              </span>
-            </label>
-          </div>
-          <div class="flex justify-end">
-            <button type="submit" class="btn btn-primary">Create Team</button>
-          </div>
-        </.form>
+        <div class="mt-8">
+          <h2 class="text-base font-semibold mb-4">Create Team Account</h2>
+          <.form
+            for={@team_form}
+            phx-submit="create_team"
+            phx-change="validate_team"
+            class="space-y-4"
+          >
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Name</span>
+              </label>
+              <.input
+                field={@team_form[:name]}
+                class="input input-bordered w-full"
+                placeholder="My Team"
+              />
+            </div>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Slug</span>
+              </label>
+              <.input
+                field={@team_form[:slug]}
+                class="input input-bordered w-full font-mono"
+                placeholder="my-team"
+              />
+              <label class="label">
+                <span class="label-text-alt text-base-content/60">
+                  Lowercase letters, numbers, and hyphens
+                </span>
+              </label>
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="btn btn-primary">Create Team</button>
+            </div>
+          </.form>
+        </div>
       </div>
-    </div>
     </Layouts.app>
     """
   end

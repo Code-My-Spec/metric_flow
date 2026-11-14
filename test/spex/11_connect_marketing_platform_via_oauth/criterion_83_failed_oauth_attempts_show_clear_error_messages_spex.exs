@@ -5,16 +5,23 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Failed OAuth attempts show clear error messages", fail_on_error_logs: false, criterion: 83 do
+  spex "Failed OAuth attempts show clear error messages",
+    fail_on_error_logs: false,
+    criterion: 83 do
     scenario "OAuth callback with error parameter shows error message to user" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user arrives at the callback page with an OAuth error", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google",
-            MetricFlowTest.OAuthStub.denied_callback_params())
+          _callback_conn =
+            get(
+              context.owner_conn,
+              "/app/integrations/oauth/callback/google",
+              MetricFlowTest.OAuthStub.denied_callback_params()
+            )
         end)
+
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
@@ -38,15 +45,19 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
     end
 
     scenario "OAuth callback with access denied shows actionable guidance" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user arrives at the callback page after denying access", context do
-        params = MetricFlowTest.OAuthStub.denied_callback_params()
-                 |> Map.put("error_description", "User denied access")
+        params =
+          MetricFlowTest.OAuthStub.denied_callback_params()
+          |> Map.put("error_description", "User denied access")
+
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google", params)
+          _callback_conn =
+            get(context.owner_conn, "/app/integrations/oauth/callback/google", params)
         end)
+
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end
@@ -66,16 +77,18 @@ defmodule MetricFlowSpex.FailedOAuthAttemptsShowClearErrorMessagesSpex do
     end
 
     scenario "OAuth callback with invalid state shows security error" do
-      given_ :user_logged_in_as_owner
-      given_ :with_oauth_stub_providers
+      given_(:user_logged_in_as_owner)
+      given_(:with_oauth_stub_providers)
 
       given_ "the user arrives at the callback page with an invalid state token", context do
         capture_log(fn ->
-          _callback_conn = get(context.owner_conn, "/app/integrations/oauth/callback/google", %{
-            "code" => "some_code",
-            "state" => "invalid_state_token"
-          })
+          _callback_conn =
+            get(context.owner_conn, "/app/integrations/oauth/callback/google", %{
+              "code" => "some_code",
+              "state" => "invalid_state_token"
+            })
         end)
+
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations/connect/google")
         {:ok, Map.put(context, :view, view)}
       end

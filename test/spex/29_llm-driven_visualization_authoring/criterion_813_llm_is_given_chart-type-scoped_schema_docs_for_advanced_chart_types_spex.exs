@@ -28,7 +28,8 @@ defmodule MetricFlowSpex.Criterion813LlmGivenChartTypeScopedSchemaDocsSpex do
             "prompt" => "Show me a Gantt chart of my campaign timeline"
           })
 
-          Process.sleep(100)
+          await_chat_completion(context.view)
+
           render(context.view)
         end)
 

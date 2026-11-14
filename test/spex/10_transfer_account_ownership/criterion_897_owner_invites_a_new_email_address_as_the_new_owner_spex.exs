@@ -12,7 +12,7 @@ defmodule MetricFlowSpex.Criterion897OwnerInvitesANewEmailAddressAsTheNewOwnerSp
 
   spex "Owner invites a new email address as the new owner", criterion: 897 do
     scenario "the owner sends a transfer invitation to an email not yet on the account" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "an email address not yet associated with the account", context do
         email = "newowner#{System.unique_integer([:positive])}@example.com"

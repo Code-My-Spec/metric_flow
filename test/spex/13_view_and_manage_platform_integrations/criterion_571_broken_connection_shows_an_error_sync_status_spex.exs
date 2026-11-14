@@ -5,7 +5,7 @@ defmodule MetricFlowSpex.BrokenConnectionShowsAnErrorSyncStatusSpex do
   spex "Broken connection shows an error sync status", criterion: 571 do
     scenario "an integration whose platform access has been revoked or expired" do
       given_ "the user has an integration whose platform access has been revoked or expired",
-              context do
+             context do
         email = "owner#{System.unique_integer([:positive])}@example.com"
         password = "SecurePassword123!"
 

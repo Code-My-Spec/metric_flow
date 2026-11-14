@@ -10,8 +10,8 @@ defmodule MetricFlowSpex.Story48.Criterion4138Spex do
 
   spex "Plan price must be positive", criterion: 462 do
     scenario "submitting a plan with a zero price is rejected" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_stripe_connect
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_stripe_connect)
 
       given_ "Alex is creating a new plan named \"Pro\"", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/agency/plans")

@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserAddsAVisualizationBySelectingAMetricAndChartTypeSpe
 
   spex "User adds a visualization by selecting a metric and chart type", criterion: 924 do
     scenario "selecting a metric and chart type adds a visualization to the report" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a user editing a report", context do
         dt = DateTime.new!(Date.add(Date.utc_today(), -1), ~T[00:00:00], "Etc/UTC")

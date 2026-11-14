@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.SyncCompletionShowsSuccessMessageWithTimestampAndRecord
 
   spex "Sync completion shows success message with timestamp and record count", criterion: 584 do
     scenario "after a manual sync completes, the admin sees the completion timestamp and record count" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "a manual sync completes successfully", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

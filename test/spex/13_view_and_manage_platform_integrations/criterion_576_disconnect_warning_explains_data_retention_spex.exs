@@ -6,7 +6,7 @@ defmodule MetricFlowSpex.DisconnectWarningExplainsDataRetentionSpex do
 
   spex "Disconnect warning explains data retention", criterion: 576 do
     scenario "the user is disconnecting an integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user is disconnecting an integration", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")

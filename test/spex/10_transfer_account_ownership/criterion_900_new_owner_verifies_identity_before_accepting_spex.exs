@@ -12,8 +12,8 @@ defmodule MetricFlowSpex.Criterion900NewOwnerVerifiesIdentityBeforeAcceptingSpex
 
   spex "New owner verifies identity before accepting", criterion: 900 do
     scenario "a new owner has received a transfer invitation and goes to accept it" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_member_with_access
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_member_with_access)
 
       given_ "a new owner has received a transfer invitation", context do
         member = MetricFlowTest.UsersFixtures.get_user_by_email(context.member_email)

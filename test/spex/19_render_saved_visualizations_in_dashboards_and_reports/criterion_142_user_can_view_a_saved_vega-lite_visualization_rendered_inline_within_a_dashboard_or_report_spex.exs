@@ -4,11 +4,12 @@ defmodule MetricFlowSpex.Criterion5056SavedVizRenderedInlineDashboardSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can view a saved Vega-Lite visualization rendered inline within a dashboard", criterion: 142 do
+  spex "User can view a saved Vega-Lite visualization rendered inline within a dashboard",
+    criterion: 142 do
     scenario "saved visualization appears on the dashboard with VegaLite rendering" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user creates and saves a visualization", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

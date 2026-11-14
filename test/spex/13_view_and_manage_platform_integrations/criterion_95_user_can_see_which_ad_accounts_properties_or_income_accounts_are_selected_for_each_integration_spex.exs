@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
 
   import MetricFlowSpex.SharedGivens
 
-  spex "User can see which ad accounts, properties, or income accounts are selected for each integration", criterion: 95 do
+  spex "User can see which ad accounts, properties, or income accounts are selected for each integration",
+    criterion: 95 do
     scenario "the integrations page shows selected accounts for each marketing integration" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -20,26 +21,32 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
     end
 
     scenario "the integrations page shows selected properties for analytics integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the page contains elements that display selected properties or accounts per integration", context do
+      then_ "the page contains elements that display selected properties or accounts per integration",
+            context do
         assert has_element?(context.view, "[data-role='integration-row']")
         {:ok, context}
       end
 
-      then_ "each integration row shows the accounts or properties selected for syncing", context do
-        assert has_element?(context.view, "[data-role='integration-row'] [data-role='integration-selected-accounts']")
+      then_ "each integration row shows the accounts or properties selected for syncing",
+            context do
+        assert has_element?(
+                 context.view,
+                 "[data-role='integration-row'] [data-role='integration-selected-accounts']"
+               )
+
         {:ok, context}
       end
     end
 
     scenario "the integrations page shows selected income accounts for financial integrations" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
@@ -53,14 +60,15 @@ defmodule MetricFlowSpex.UserCanSeeWhichAdAccountsPropertiesOrIncomeAccountsAreS
     end
 
     scenario "user can navigate to the detail page for an integration to view selected accounts" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the user navigates to the integrations page", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the integrations page has a link or button to view details for each integration", context do
+      then_ "the integrations page has a link or button to view details for each integration",
+            context do
         assert has_element?(context.view, "[data-role='integration-detail-link']")
         {:ok, context}
       end

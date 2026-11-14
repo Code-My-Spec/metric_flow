@@ -6,16 +6,28 @@ defmodule MetricFlowSpex.AgencyAdminSearchesTheCustomerListByNameOrEmailSpex do
 
   spex "Agency admin searches the customer list by name or email", criterion: 511 do
     scenario "Acme Agency has multiple subscribed customers" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_agency_plan
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_agency_plan)
 
       given_ "Acme Agency has two customers with distinct identities", context do
-        first = MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
-        second = MetricFlowSpex.Fixtures.agency_customer_subscription!(context.owner_email, context.agency_plan)
+        first =
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
+
+        second =
+          MetricFlowSpex.Fixtures.agency_customer_subscription!(
+            context.owner_email,
+            context.agency_plan
+          )
 
         {:ok,
          context
-         |> Map.put(:matching_customer_name, MetricFlowSpex.Fixtures.agency_customer_account_name!(first))
+         |> Map.put(
+           :matching_customer_name,
+           MetricFlowSpex.Fixtures.agency_customer_account_name!(first)
+         )
          |> Map.put(:matching_customer_id, first.stripe_customer_id)
          |> Map.put(:other_customer_id, second.stripe_customer_id)}
       end

@@ -28,7 +28,9 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   @provider_metrics %{
     "google_business" =>
-      ~w(review_count review_rating call_clicks direction_requests website_clicks),
+      ~w(review_count review_rating impressions_desktop_maps impressions_desktop_search
+         impressions_mobile_maps impressions_mobile_search conversations direction_requests
+         call_clicks website_clicks bookings food_orders food_menu_clicks),
     "google_analytics" =>
       ~w(activeUsers active7DayUsers active28DayUsers newUsers engagedSessions sessions
          userEngagementDuration screenPageViews eventCount keyEvents scrolledUsers),
@@ -135,6 +137,32 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       </div>
 
       <%= if @provider == "google_business" do %>
+        <div class="mf-card p-5 mb-6">
+          <h2 class="text-lg font-semibold mb-4">Daily Metrics by Location</h2>
+          <div id="daily-location-metrics" phx-update="stream" class="space-y-2">
+            <p
+              id="daily-location-metrics-empty"
+              class="hidden only:block text-base-content/60 text-sm"
+            >
+              No daily location data for this period yet.
+            </p>
+            <div
+              :for={{id, row} <- @streams.daily_location_rows}
+              id={id}
+              data-role="daily-location-metric"
+              data-location-id={row.location_id}
+              data-metric={row.metric_name}
+              data-date={row.date}
+              class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-base-200 px-3 py-2 text-sm"
+            >
+              <span class="text-base-content/70">
+                {row.location_id} | {humanize_metric(row.metric_name)} | {row.date}
+              </span>
+              <strong>{row.value}</strong>
+            </div>
+          </div>
+        </div>
+
         <div data-role="reviews-section" class="mf-card p-5 mb-6">
           <h2 class="text-lg font-semibold mb-4">Recent Reviews</h2>
           <div :if={@reviews == []} class="text-base-content/60 text-sm">
@@ -253,11 +281,11 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
       connected = not is_nil(integration)
 
-      {metrics, sync_history, reviews, rolling_review_rows} =
+      {metrics, sync_history, reviews, rolling_review_rows, daily_location_rows} =
         if connected do
           load_dashboard_data(scope, provider, provider_atom)
         else
-          {%{}, [], [], []}
+          {%{}, [], [], [], []}
         end
 
       last_synced_at =
@@ -283,6 +311,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         |> assign(:sync_history, sync_history)
         |> assign(:reviews, reviews)
         |> assign(:rolling_review_rows, rolling_review_rows)
+        |> stream(:daily_location_rows, daily_location_rows)
         |> assign(:syncing, false)
 
       {:ok, socket}
@@ -332,11 +361,17 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
           do: load_rolling_review_metrics(scope, date_range),
           else: []
 
+      daily_location_rows =
+        if provider == "google_business",
+          do: load_daily_location_rows(scope, date_range),
+          else: []
+
       {:noreply,
        socket
        |> assign(:date_range, date_range)
        |> assign(:metrics, metrics)
-       |> assign(:rolling_review_rows, rolling_review_rows)}
+       |> assign(:rolling_review_rows, rolling_review_rows)
+       |> stream(:daily_location_rows, daily_location_rows, reset: true)}
     else
       {:noreply, assign(socket, :date_range, date_range)}
     end
@@ -349,7 +384,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     date_range = socket.assigns.date_range
 
     if socket.assigns.connected do
-      {metrics, sync_history, reviews, rolling_review_rows} =
+      {metrics, sync_history, reviews, rolling_review_rows, daily_location_rows} =
         load_dashboard_data(scope, provider, provider_atom, date_range)
 
       last_synced_at =
@@ -364,6 +399,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
        |> assign(:sync_history, sync_history)
        |> assign(:reviews, reviews)
        |> assign(:rolling_review_rows, rolling_review_rows)
+       |> stream(:daily_location_rows, daily_location_rows, reset: true)
        |> assign(:last_synced_at, last_synced_at)
        |> assign(:syncing, false)}
     else
@@ -385,7 +421,12 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         do: load_rolling_review_metrics(scope, date_range),
         else: []
 
-    {metrics, sync_history, reviews, rolling_review_rows}
+    daily_location_rows =
+      if provider == "google_business",
+        do: load_daily_location_rows(scope, date_range),
+        else: []
+
+    {metrics, sync_history, reviews, rolling_review_rows, daily_location_rows}
   end
 
   defp load_metrics(scope, provider_atom, date_range) do
@@ -400,6 +441,31 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
         )
 
       Map.put(acc, metric_name, series)
+    end)
+  end
+
+  defp load_daily_location_rows(scope, date_range) do
+    Metrics.list_metrics(scope,
+      provider: :google_business,
+      metric_type: "business_profile",
+      date_range: date_range_to_tuple(date_range)
+    )
+    |> Enum.flat_map(fn metric ->
+      case get_in(metric.dimensions, ["location_id"]) do
+        location_id when is_binary(location_id) ->
+          [
+            %{
+              id: metric.id,
+              location_id: location_id,
+              metric_name: metric.metric_name,
+              date: metric.recorded_at |> DateTime.to_date() |> Date.to_iso8601(),
+              value: trunc(metric.value)
+            }
+          ]
+
+        _ ->
+          []
+      end
     end)
   end
 

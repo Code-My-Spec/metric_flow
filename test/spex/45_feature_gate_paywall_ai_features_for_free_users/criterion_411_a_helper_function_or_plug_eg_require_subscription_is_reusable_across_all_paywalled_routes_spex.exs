@@ -4,16 +4,18 @@ defmodule MetricFlowSpex.RequireSubscriptionReusableSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "A helper function or plug (e.g. require_subscription) is reusable across all paywalled routes", criterion: 411 do
+  spex "A helper function or plug (e.g. require_subscription) is reusable across all paywalled routes",
+    criterion: 411 do
     scenario "free user navigating to the intelligence page also sees the same upgrade prompt as correlations" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates to the intelligence (insights) page", context do
         result = live(context.owner_conn, "/app/insights")
         {:ok, Map.put(context, :result, result)}
       end
 
-      then_ "the user sees an upgrade prompt on the intelligence page, confirming the same gate is applied", context do
+      then_ "the user sees an upgrade prompt on the intelligence page, confirming the same gate is applied",
+            context do
         case context.result do
           {:ok, view, _html} ->
             html = render(view)

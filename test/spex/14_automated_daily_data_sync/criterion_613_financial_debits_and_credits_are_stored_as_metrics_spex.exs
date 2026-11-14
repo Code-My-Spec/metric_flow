@@ -4,9 +4,11 @@ defmodule MetricFlowSpex.FinancialDebitsAndCreditsAreStoredAsMetricsSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "Financial debits and credits are stored as metrics", fail_on_error_logs: false, criterion: 613 do
+  spex "Financial debits and credits are stored as metrics",
+    fail_on_error_logs: false,
+    criterion: 613 do
     scenario "a connected financial integration's debits and credits sync in like any other metric source" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "a connected financial integration produces debits and credits", context do
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :quickbooks)
@@ -21,7 +23,12 @@ defmodule MetricFlowSpex.FinancialDebitsAndCreditsAreStoredAsMetricsSpex do
       end
 
       then_ "it is stored as metrics alongside the marketing metrics", context do
-        assert has_element?(context.view, "[data-role='sync-history-entry'] [data-role='sync-provider']", "QuickBooks")
+        assert has_element?(
+                 context.view,
+                 "[data-role='sync-history-entry'] [data-role='sync-provider']",
+                 "QuickBooks"
+               )
+
         {:ok, context}
       end
     end

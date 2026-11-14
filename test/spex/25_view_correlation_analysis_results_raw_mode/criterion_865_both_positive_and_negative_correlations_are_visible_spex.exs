@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.Criterion865BothPositiveAndNegativeCorrelationsAreVisib
 
   spex "Both positive and negative correlations are visible", criterion: 865 do
     scenario "a goal metric with both positively and negatively correlated metrics shows both in Raw mode" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a goal metric with both positively and negatively correlated metrics", context do
         MetricFlowSpex.Fixtures.create_correlation_result!(context.owner_email, %{
@@ -31,8 +31,16 @@ defmodule MetricFlowSpex.Criterion865BothPositiveAndNegativeCorrelationsAreVisib
       end
 
       then_ "both positive and negative correlations appear in the list", context do
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='positive_metric']")
-        assert has_element?(context.view, "[data-role='correlation-row'][data-metric='negative_metric']")
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='positive_metric']"
+               )
+
+        assert has_element?(
+                 context.view,
+                 "[data-role='correlation-row'][data-metric='negative_metric']"
+               )
+
         {:ok, context}
       end
     end

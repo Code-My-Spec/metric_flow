@@ -4,19 +4,21 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "White-label branding does not affect functionality only visual appearance", criterion: 264 do
+  spex "White-label branding does not affect functionality only visual appearance",
+    criterion: 264 do
     scenario "dashboard loads successfully with white-label branding active" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the client's account has an originating agency with white-label config", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "functest",
-          logo_url: "https://example.com/logo.png",
-          primary_color: "#123456",
-          secondary_color: "#654321"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "functest",
+            logo_url: "https://example.com/logo.png",
+            primary_color: "#123456",
+            secondary_color: "#654321"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -30,7 +32,8 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the dashboard loads without errors and all functional elements are present", context do
+      then_ "the dashboard loads without errors and all functional elements are present",
+            context do
         html = render(context.view)
 
         has_metrics_area =
@@ -46,17 +49,18 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
     end
 
     scenario "platform filter works correctly under white-label branding" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
       given_ "the client's account has white-label branding from an agency", context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "functest2",
-          logo_url: "https://example.com/logo.png",
-          primary_color: "#AABB00",
-          secondary_color: "#00AABB"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "functest2",
+            logo_url: "https://example.com/logo.png",
+            primary_color: "#AABB00",
+            secondary_color: "#00AABB"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -95,17 +99,19 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
     end
 
     scenario "integration page loads correctly under white-label branding" do
-      given_ :owner_with_integrations
+      given_(:owner_with_integrations)
 
-      given_ "the client's account has white-label branding from an originating agency", context do
+      given_ "the client's account has white-label branding from an originating agency",
+             context do
         account = MetricFlowSpex.Fixtures.account_originated_by(context.owner_email)
 
-        agency = MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
-          subdomain: "functest3",
-          logo_url: "https://example.com/logo.png",
-          primary_color: "#CCDD00",
-          secondary_color: "#00CCDD"
-        })
+        agency =
+          MetricFlowTest.AgenciesFixtures.agency_with_white_label_fixture(%{
+            subdomain: "functest3",
+            logo_url: "https://example.com/logo.png",
+            primary_color: "#CCDD00",
+            secondary_color: "#00CCDD"
+          })
 
         MetricFlowTest.AgenciesFixtures.grant_agency_originator_access(agency.id, account.id)
 
@@ -119,7 +125,8 @@ defmodule MetricFlowSpex.WhiteLabelDoesNotAffectFunctionalitySpex do
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the integrations page loads and functions normally with white-label branding", context do
+      then_ "the integrations page loads and functions normally with white-label branding",
+            context do
         html = render(context.view)
 
         page_functional =

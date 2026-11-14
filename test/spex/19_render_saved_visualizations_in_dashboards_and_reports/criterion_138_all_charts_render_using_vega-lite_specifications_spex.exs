@@ -6,9 +6,9 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
 
   spex "All charts render using Vega-Lite specifications", criterion: 138 do
     scenario "selecting a metric renders a chart with a vega-lite data-spec attribute" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user is on the visualization editor", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")
@@ -40,9 +40,9 @@ defmodule MetricFlowSpex.Criterion4078AllChartsRenderVegaLiteSpex do
     end
 
     scenario "the vega-lite spec editor shows valid JSON for the current chart" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
-      given_ :owner_has_metrics
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
+      given_(:owner_has_metrics)
 
       given_ "user has selected a metric", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/visualizations/new")

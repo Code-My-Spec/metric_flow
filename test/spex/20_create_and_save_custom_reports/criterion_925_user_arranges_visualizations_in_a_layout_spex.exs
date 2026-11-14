@@ -6,8 +6,8 @@ defmodule MetricFlowSpex.UserArrangesVisualizationsInALayoutSpex do
 
   spex "User arranges visualizations in a layout", criterion: 925 do
     scenario "dragging and dropping visualizations changes the report's layout" do
-      given_ :user_logged_in_as_owner
-      given_ :owner_has_active_subscription
+      given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       given_ "a report with multiple visualizations", context do
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards/new")

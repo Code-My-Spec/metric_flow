@@ -23,6 +23,7 @@ defmodule MetricFlowWeb.Application do
         {Oban, Application.fetch_env!(:metric_flow, Oban)},
         {Cachex, name: :metric_cache},
         MetricFlow.Integrations.OAuthStateStore,
+        MetricFlow.Integrations.PendingYouTubeAuthorizations,
         # Start to serve requests, typically the last entry
         MetricFlowWeb.Endpoint,
         # CodeMySpec preview tunnel. Distinct :id and :name from the legacy

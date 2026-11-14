@@ -5,13 +5,18 @@ defmodule MetricFlowSpex.Criterion988SyncFailuresLoggedAndVisibleInSyncHistorySp
   import MetricFlowSpex.SharedGivens
 
   spex "Sync failures are logged with enough detail to diagnose them and are visible in Sync History",
-       fail_on_error_logs: false,
-       criterion: 988 do
+    fail_on_error_logs: false,
+    criterion: 988 do
     scenario "a Google Business Profile review sync fails because no location is configured" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
-      given_ "a Google Business Profile integration's review sync fails because no location is configured", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_business_reviews)
+      given_ "a Google Business Profile integration's review sync fails because no location is configured",
+             context do
+        MetricFlowSpex.Fixtures.create_integration_for(
+          context.owner_email,
+          :google_business_reviews
+        )
+
         {:ok, context}
       end
 
@@ -22,7 +27,8 @@ defmodule MetricFlowSpex.Criterion988SyncFailuresLoggedAndVisibleInSyncHistorySp
         {:ok, Map.put(context, :view, view)}
       end
 
-      then_ "the failure is logged with enough detail to diagnose it and is visible in Sync History", context do
+      then_ "the failure is logged with enough detail to diagnose it and is visible in Sync History",
+            context do
         assert has_element?(
                  context.view,
                  "[data-role='sync-history-entry'][data-status='failed'] [data-role='sync-provider']",

@@ -4,9 +4,10 @@ defmodule MetricFlowSpex.PaywallShowsPlanAndPriceSpex do
 
   import MetricFlowSpex.SharedGivens
 
-  spex "The paywall UI clearly communicates which plan unlocks AI features and the monthly price", criterion: 407 do
+  spex "The paywall UI clearly communicates which plan unlocks AI features and the monthly price",
+    criterion: 407 do
     scenario "the paywall on the correlations page shows the plan name that unlocks AI features and its monthly price" do
-      given_ :user_logged_in_as_owner
+      given_(:user_logged_in_as_owner)
 
       given_ "the free user navigates to the correlations page", context do
         result = live(context.owner_conn, "/app/correlations")
