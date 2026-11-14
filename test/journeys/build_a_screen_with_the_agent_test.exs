@@ -312,4 +312,47 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     refute multi_widget_guidance_present?(payload)
   end
 
+  test "refining an already-saved dashboard through chat records a restorable version", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 10.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    # Story 74, scenario (journey_plan.md Journey 6 step 4): reopen an
+    # already-saved dashboard and let the agent keep refining it.
+    {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.generate_followup()
+    )
+
+    render_submit(edit_view, "send_dashboard_chat", %{
+      "message" => "Add clicks as a second series"
+    })
+
+    wait_for_chart(edit_view)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    # Story 74, scenario (journey_plan.md Journey 6 step 5): each agent
+    # change is recorded as a version, with the ability to restore an
+    # earlier one. No version schema or UI exists yet (confirmed: the
+    # Dashboard schema has no version association, and there is no
+    # DashboardVersion module anywhere in lib/), so this fails cleanly
+    # rather than crashing -- the coder's next work item for this journey.
+    assert has_element?(edit_view, "[data-role='dashboard-version-list']")
+  end
 end

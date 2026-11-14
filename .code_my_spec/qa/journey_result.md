@@ -15,10 +15,16 @@ all), pass for chat-builds-one-visualization at 684d9a0/4db2d04, pass for
 draft autosave + reload persistence at 950932f -- and fail again at 950932f
 for mixed widget types in one chat message, which still collapses into a
 single Vega-Lite spec instead of separate dashboard elements. Re-walked at
-d4a75d8 (2026-11-14): still fails, now with a precise root cause -- see
-below. Missing-metric redirect, a named "Edit with agent" resume action, and
-versioning/restore remain untested/unbuilt. The journey test stays red (multi-widget stage)
-rather than green, since Story 74 isn't fully built. Some of this walking was
+d4a75d8 (2026-11-14): still fails, now with a precise root cause (the model
+never told it may call `update_spec` more than once). Fixed at 455ea40
+(dashboard-chat-only system-prompt guidance) and confirmed live at
+de23c19+ on 2026-11-14 -- the real model now produces two separate
+widgets from one request. Missing-metric redirect, a named "Edit with
+agent" resume action, and versioning/restore remain untested/unbuilt. The
+journey test now covers build, draft autosave, and multi-widget (both the
+backend mechanism and the real prompt/tool guidance); the next stage
+(versioning/restore or "Edit with agent" history) is added below as the
+coder's next red. Some of this walking was
 done outside `start_task`/`evaluate_task` because of a graph deadlock
 (c2084903) that refused to re-offer `qa_journey` after a stage landed; see
 Issues.
@@ -269,6 +275,33 @@ escalation of this to CodeMySpec. No login, so still no live multi-widget
 result. The committed test suite (5/5 passing at de23c19/74e65e3, including
 both capture-based prompt/tool-description assertions) remains the only
 confirmed evidence the fix works.
+
+**Multi-widget stage -- pass live (2026-11-14, walked by main directly on
+this copy's app at de23c19+, since QA's own browser tool kept 504ing).**
+As `qa@example.com` on `/app/dashboards/new`, sent "Add a stat tile showing
+total impressions and a line chart of impressions over time". The real
+model produced two separate `[data-role='visualization-card']` elements --
+"Total Impressions" (text/stat) and "Impressions Over Time" (line), each
+with its own `vega-lite-chart` -- and replied "I added both widgets to the
+dashboard... both spec updates succeeded." This confirms the 455ea40 fix
+(per-widget `update_spec` guidance on the dashboard chat path) works
+against the real model, closing the gap recorded in the third/fifth/sixth
+re-walk attempts above. Story 74 rule 2's multi-widget scenario now passes
+live, matching the already-green capture-based test.
+
+**Draft-autosave-after-multi-widget-build -- not independently re-verified
+this session.** The multi-widget build above left the URL on
+`/app/dashboards/new` rather than navigating to a persisted id, so main
+asked QA to confirm a reload still restores the draft. QA's attempts to do
+so (two more packed-login scripts) 504'd twice in a row each time, with no
+other browser action in between, immediately after main's own session had
+just worked -- so this isn't host load or the leaked-browser accumulation
+(both already ruled out in the sixth attempt above); it looks specific to
+QA's own browser session/tool instance. Not re-attempted further this
+session; flagged to main. The original draft-autosave stage (building one
+visualization, then reopening via `/edit`) already passed live at 950932f
+and is not in question -- only whether it still holds after a build that
+now produces two widgets in one turn is unconfirmed.
 
 Not a regression anywhere tested: everything that worked before still
 works, and all capabilities tested to date work as described except
