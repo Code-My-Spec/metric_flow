@@ -1412,4 +1412,388 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert stat_text == "125,706"
     end)
   end
+
+  # ---------------------------------------------------------------------------
+  # Story 75: Save, List and Reopen Dashboards (criteria 1068-1080)
+  # ---------------------------------------------------------------------------
+
+  test "the agent titles Dana's new dashboard from her request, and she can rename it from the list",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      # Story 75, criterion 1068: "the dashboard has a title drawn from
+      # her request." draft_dashboard_name/1 (editor.ex) falls back to
+      # the literal "Untitled Dashboard" whenever no name was explicitly
+      # typed, which is always true for a chat-only build -- nothing
+      # derives a title from the chat request text.
+      refute dashboard.name == "Untitled Dashboard",
+             "expected the dashboard's title to be drawn from the chat request, not left as the default"
+
+      {:ok, _index_view, index_html} = live(conn, ~p"/app/dashboards")
+
+      # "...and she can rename it ... from the list." dashboard_live/
+      # index.ex only offers View/Edit/Delete per card -- no rename
+      # affordance there at all. Selector proposed, pending main's
+      # confirmation: data-role="rename-dashboard-#{id}".
+      assert index_html =~ ~s(data-role="rename-dashboard-#{dashboard.id}")
+    end)
+  end
+
+  test "deleting a dashboard with confirmation removes it, its chat history, and its versions",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+      assert Dashboards.list_dashboard_versions(dashboard) != []
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      index_view
+      |> element("[data-role='delete-dashboard-#{dashboard.id}']")
+      |> render_click()
+
+      index_view
+      |> element("[data-role='confirm-delete-#{dashboard.id}']")
+      |> render_click()
+
+      refute has_element?(index_view, "[data-dashboard-id='#{dashboard.id}']")
+      assert Dashboards.list_dashboards(scope) == []
+
+      # Story 75, criterion 1069: "its chat history and versions are
+      # gone." paper_trail's versions table has no foreign key to
+      # dashboards at all (item_id/item_type are plain columns, no
+      # on_delete), and the AI chat session is looked up separately by
+      # (scope, :dashboard, id) -- Dashboards.delete_dashboard/2 just
+      # does Repo.delete(dashboard), with no cleanup of either.
+      assert Dashboards.list_dashboard_versions(dashboard) == [],
+             "expected the dashboard's versions to be deleted along with it"
+
+      assert Ai.get_chat_session_by_context(scope, :dashboard, dashboard.id) == {:error, :not_found},
+             "expected the dashboard's chat history to be deleted along with it"
+    end)
+  end
+
+  test "cancelling the delete confirmation leaves the dashboard untouched", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      index_view
+      |> element("[data-role='delete-dashboard-#{dashboard.id}']")
+      |> render_click()
+
+      index_view
+      |> element("[data-role='cancel-delete']")
+      |> render_click()
+
+      assert has_element?(index_view, "[data-dashboard-id='#{dashboard.id}']")
+      assert Dashboards.list_dashboards(scope) == [dashboard]
+    end)
+  end
+
+  test "duplicating a dashboard copies its spec and filter into a new dashboard, with no history",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+      {:ok, dashboard} = Dashboards.update_dashboard(scope, dashboard, %{"date_range" => "90"})
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      # Story 75, criterion 1071: no duplicate affordance exists in
+      # dashboard_live/index.ex at all -- only View/Edit/Delete per
+      # card. Selector proposed: data-role="duplicate-dashboard-#{id}".
+      assert has_element?(index_view, "[data-role='duplicate-dashboard-#{dashboard.id}']")
+    end)
+  end
+
+  test "a read-only member cannot start a dashboard", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      owner = user_fixture()
+      member = user_fixture()
+      account = insert_account!(owner)
+      insert_member!(account, owner, :owner)
+      insert_member!(account, member, :read_only)
+
+      conn = log_in_user(conn, member)
+
+      result = live(conn, ~p"/app/dashboards/new")
+
+      # Story 75, criterion 1072: "they are refused and no dashboard is
+      # created." Role gating from story 8 is supposed to carry over to
+      # the builder, but dashboard_live/editor.ex has no role or
+      # permission check anywhere (confirmed via grep) -- a read-only
+      # member mounts /dashboards/new exactly like an owner would.
+      refute match?({:ok, _view, _html}, result),
+             "expected a read-only member to be refused at /dashboards/new"
+
+      assert Dashboards.list_dashboards(Scope.for_user(member)) == []
+    end)
+  end
+
+  test "Dana can search her dashboards by name", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      scope = Scope.for_user(user)
+
+      {:ok, _monday} = Dashboards.save_dashboard(scope, %{"name" => "Monday review"})
+      {:ok, _spend} = Dashboards.save_dashboard(scope, %{"name" => "Ad spend"})
+      {:ok, _traffic} = Dashboards.save_dashboard(scope, %{"name" => "Traffic"})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      # Story 75, criterion 1073: "searching 'ad' shows only 'Ad
+      # spend'." No search input exists anywhere in dashboard_live/
+      # index.ex. Selector proposed: data-role="dashboard-search".
+      assert has_element?(index_view, "[data-role='dashboard-search']")
+
+      index_view
+      |> element("[data-role='dashboard-search'] form[phx-change]")
+      |> render_change(%{"query" => "ad"})
+
+      cards =
+        index_view
+        |> render()
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='dashboard-card']")
+
+      assert length(cards) == 1
+      assert Floki.text(hd(cards)) =~ "Ad spend"
+    end)
+  end
+
+  test "a search that matches none of Dana's dashboards shows an empty result", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      scope = Scope.for_user(user)
+
+      {:ok, _a} = Dashboards.save_dashboard(scope, %{"name" => "Monday review"})
+      {:ok, _b} = Dashboards.save_dashboard(scope, %{"name" => "Ad spend"})
+      {:ok, _c} = Dashboards.save_dashboard(scope, %{"name" => "Traffic"})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      assert has_element?(index_view, "[data-role='dashboard-search']")
+
+      index_view
+      |> element("[data-role='dashboard-search'] form[phx-change]")
+      |> render_change(%{"query" => "payroll"})
+
+      # Selector proposed: data-role="empty-search-results".
+      assert has_element?(index_view, "[data-role='empty-search-results']")
+    end)
+  end
+
+  test "Dana can mark a dashboard as a favorite and unmark it", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      scope = Scope.for_user(user)
+
+      {:ok, dashboard} = Dashboards.save_dashboard(scope, %{"name" => "Monday review"})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, index_view, _html} = live(conn, ~p"/app/dashboards")
+
+      # Story 75, criterion 1075: no favorite field exists on the
+      # Dashboard schema at all (confirmed via grep), so there's
+      # nothing to toggle here. Selector proposed:
+      # data-role="favorite-dashboard-#{id}".
+      assert has_element?(index_view, "[data-role='favorite-dashboard-#{dashboard.id}']")
+    end)
+  end
+
+  test "Dana sees built-in dashboards in their own section, apart from her own", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      scope = Scope.for_user(user)
+
+      {:ok, _own} = Dashboards.save_dashboard(scope, %{"name" => "My dashboard"})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, _index_view, html} = live(conn, ~p"/app/dashboards")
+
+      canned_section =
+        html |> Floki.parse_fragment!() |> Floki.find("[data-role='canned-dashboards']")
+
+      user_section =
+        html |> Floki.parse_fragment!() |> Floki.find("[data-role='user-dashboards']")
+
+      # Story 75, criterion 1076: dashboard_live/index.ex already
+      # renders canned and user dashboards in separate sections -- but
+      # no built-in (built_in: true) dashboard row is ever seeded
+      # anywhere, so the canned section has nothing to show.
+      assert canned_section != [], "expected at least one built-in dashboard to exist and render"
+      assert user_section != []
+    end)
+  end
+
+  test "opening a saved dashboard shows it with an Edit with agent button that opens the chat",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      # Story 75, criterion 1077: "she sees the dashboard with her saved
+      # filters and an Edit with agent button." DashboardLive.Show is
+      # still the pre-A2UI "All Metrics" page (its own moduledoc says
+      # so) -- it never renders a saved a2ui_spec's widgets and has no
+      # Edit with agent button at all.
+      assert has_element?(show_view, "[data-role='echarts-chart']")
+      assert has_element?(show_view, "[data-role='edit-dashboard-#{dashboard.id}']")
+    end)
+  end
+
+  test "the old /reports and /visualizations pages are gone", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+
+      conn = log_in_user(conn, user)
+
+      reports_result = live(conn, ~p"/app/reports")
+      visualizations_result = live(conn, ~p"/app/visualizations")
+
+      # Story 75, criterion 1078: both pages are retired in favor of
+      # the one dashboards list; router.ex still registers
+      # ReportLive.Index and VisualizationLive.Index under those paths,
+      # so both still mount today instead of 404ing.
+      refute match?({:ok, _view, _html}, reports_result),
+             "expected /app/reports to be gone (404), but it still mounts"
+
+      refute match?({:ok, _view, _html}, visualizations_result),
+             "expected /app/visualizations to be gone (404), but it still mounts"
+
+      {:ok, _index_view, index_html} = live(conn, ~p"/app/dashboards")
+
+      refute index_html =~ ~s(href="/app/reports")
+      refute index_html =~ ~s(href="/app/visualizations")
+    end)
+  end
+
+  test "changing a dashboard's filter on the view page sticks without opening the chat", %{
+    conn: conn
+  } do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      # Story 75, criterion 1079: DashboardLive.Show has no
+      # [data-role='filter-control'] convention (editor.ex's own,
+      # confirmed via grep) -- its only date form today is
+      # update_custom_dates, for the unrelated global metrics view.
+      assert has_element?(show_view, "[data-role='filter-control'] form[phx-change]")
+    end)
+  end
+
+  test "a dashboard's versions are shown only in Edit with agent, not on the view page", %{
+    conn: conn
+  } do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+      assert Dashboards.list_dashboard_versions(dashboard) != []
+
+      {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      refute has_element?(show_view, "[data-role='dashboard-version-list']")
+
+      # Story 75, criterion 1080: "choosing Edit with agent shows the
+      # versions beside the chat." DashboardLive.Show has no Edit with
+      # agent button to choose at all (same gap as criterion 1077).
+      assert has_element?(show_view, "[data-role='edit-dashboard-#{dashboard.id}']")
+    end)
+  end
 end

@@ -363,6 +363,30 @@ test instead, each since fixed by the coder in the same session, and
 the final state is confirmed both by the committed suite (19/19 at
 521a542) and by main's live walk above.
 
+- **Story 74's A2UI rebuild (Journey 6, stages 1-2) -- pass end to
+  end, confirmed live by main (2026-11-14) at 5d8ad7b/009253f, with
+  synthetic metric data seeded through 2026-11-13.** The dashboard
+  chat replaced VizChat/Vega-Lite with DashboardBuilder/
+  set_dashboard_spec and ECharts entirely: a chat request built a stat
+  tile and a line chart with real data (31 points at the default
+  30-day range, no vega-embed/"Edit Spec" anywhere); a chat refine
+  ("change Impressions Over Time to a bar chart and add a line chart
+  of clicks") updated the existing card to bar in place, added a new
+  "Clicks Over Time" card, and recorded a version; switching the
+  filter to 90 days correctly widened both charts to 90 points and a
+  bigger stat total, with both canvases surviving the live update;
+  restoring an earlier version brought back its original widgets as a
+  new version, survived a reload, and kept the 90-day filter. Three
+  real gaps surfaced along the way and were each fixed by the coder
+  before this pass: the ECharts canvas was wiped by LiveView patches
+  after any live update (needed `phx-update="ignore"` on the hook
+  container); the date-range filter changed its own assign but never
+  re-queried the chart data; and a stat tile rendered its raw summed
+  float ("125706.0") instead of a formatted number ("125,706"). Each
+  was caught as a failing journey assertion first (commit 56eac9d),
+  then fixed (5d8ad7b). Screenshots (main's own agent scratch, not
+  copied into the project): `a2ui_02.png` through `a2ui_07.png`.
+
 ## Issues
 
 Graph deadlock c2084903 (framework, tracked by main/CodeMySpec main, not
