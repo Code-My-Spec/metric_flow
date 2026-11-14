@@ -257,6 +257,19 @@ again no multi-widget result was captured. The committed test suite remains
 the only confirmed evidence that the fix works (5/5 passing at de23c19);
 live confirmation is still outstanding, blocked on browser tool reliability.
 
+**Sixth re-walk attempt (commit 74e65e3, 2026-11-14): partial again --
+same cause, with the leaked browsers cleared.** Main confirmed the orphaned
+chromedrivers were gone (only 3 remained, none orphaned) and load was down
+to ~7.5/10 cores; app instance confirmed already serving this commit. The
+same packed login script 504'd twice in a row again, with no other browser
+action attempted in between. This rules out both host load and the leaked-
+browser accumulation as the cause -- the browser tool itself is failing on
+this very first step regardless of machine state, consistent with main's
+escalation of this to CodeMySpec. No login, so still no live multi-widget
+result. The committed test suite (5/5 passing at de23c19/74e65e3, including
+both capture-based prompt/tool-description assertions) remains the only
+confirmed evidence the fix works.
+
 Not a regression anywhere tested: everything that worked before still
 works, and all capabilities tested to date work as described except
 multi-widget composition. Multi-widget composition (now understood as a
