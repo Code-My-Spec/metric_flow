@@ -2120,7 +2120,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "a table widget of a fractional metric shows up to 2 decimal places on both the editor and the view page",
+  test "a table widget's values show up to 2 decimal places and thousands grouping, on both the editor and the view page",
        %{conn: conn} do
     stage("Save and reopen", fn ->
       user = user_fixture()
@@ -2139,6 +2139,13 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
         metric_name: "impressions",
         value: 12.5,
         recorded_at: DateTime.new!(Date.add(Date.utc_today(), -10), ~T[00:00:00], "Etc/UTC")
+      })
+
+      insert_metric!(user, %{
+        provider: :google_ads,
+        metric_name: "impressions",
+        value: 4005,
+        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -15), ~T[00:00:00], "Etc/UTC")
       })
 
       scope = Scope.for_user(user)
@@ -2165,16 +2172,21 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.delete_env(:metric_flow, :command_runner)
 
       # Main's review (bb0056d, 2026-11-14): A2ui.format_table_value/1
-      # rounds every value with round() |> Integer.to_string() -- a
+      # rounded every value with round() |> Integer.to_string() -- a
       # fractional metric (0.034, 12.5) should show up to 2 decimal
       # places ("0.03", "12.50"), not be rounded to a whole number.
-      # Editor and Show both render a table widget through the one
-      # shared widget_card component and the one shared
+      # Extended (main, 2026-11-14) to cover the coder's unified
+      # format_number/1 (601995f) end to end: a large whole value
+      # (4005) in the same table should also show thousands grouping
+      # ("4,005"), matching the stat tile's own formatting. Editor and
+      # Show both render a table widget through the one shared
+      # widget_card component and the one shared
       # A2ui.render_from_values/2, so checking both pages against the
       # same seeded data checks the one place this is actually fixed.
       editor_html = render(view)
       assert editor_html =~ "0.03"
       assert editor_html =~ "12.50"
+      assert editor_html =~ "4,005"
 
       assert [dashboard] = Dashboards.list_dashboards(scope)
 
@@ -2182,6 +2194,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       assert show_html =~ "0.03"
       assert show_html =~ "12.50"
+      assert show_html =~ "4,005"
     end)
   end
 end
