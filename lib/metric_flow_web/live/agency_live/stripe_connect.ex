@@ -182,27 +182,4 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
         {:noreply, put_flash(socket, :error, "Failed to disconnect: #{reason}")}
     end
   end
-
-  def handle_event("refresh_status", _params, socket) do
-    account_id = socket.assigns.active_account_id
-    stripe_account = BillingRepository.get_stripe_account_by_agency(account_id)
-
-    {status, stripe_account_id, capabilities} =
-      case stripe_account do
-        nil ->
-          {:not_connected, nil, %{}}
-
-        %{onboarding_status: :complete} = sa ->
-          {:complete, sa.stripe_account_id, sa.capabilities || %{}}
-
-        %{onboarding_status: _} = sa ->
-          {:restricted, sa.stripe_account_id, sa.capabilities || %{}}
-      end
-
-    socket =
-      socket
-      |> assign(status: status, stripe_account_id: stripe_account_id, capabilities: capabilities)
-
-    {:noreply, socket}
-  end
 end

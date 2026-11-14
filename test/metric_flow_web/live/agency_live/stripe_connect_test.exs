@@ -62,6 +62,21 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
     assert html =~ "Stripe Connect"
   end
 
+  test "has no live trigger for the unreachable refresh_status event handler", %{conn: conn} do
+    user = user_fixture()
+    _account = agency_fixture(user)
+    conn = log_in_user(conn, user)
+
+    {:ok, lv, _html} = live(conn, "/app/agency/stripe-connect")
+
+    refute has_element?(lv, "[phx-click='refresh_status']")
+
+    Process.flag(:trap_exit, true)
+    catch_exit(render_hook(lv, "refresh_status", %{}))
+
+    refute Process.alive?(lv.pid)
+  end
+
   test "shows not connected status when no Stripe account exists", %{conn: conn} do
     user = user_fixture()
     _account = agency_fixture(user)
