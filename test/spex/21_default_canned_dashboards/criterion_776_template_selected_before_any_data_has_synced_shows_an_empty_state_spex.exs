@@ -10,11 +10,6 @@ defmodule MetricFlowSpex.TemplateSelectedBeforeAnyDataHasSyncedShowsAnEmptyState
 
       given_ "a default template exists and the user has no platform integrations synced yet",
              context do
-        MetricFlowSpex.Fixtures.create_canned_dashboard!(
-          context.owner_email,
-          "Marketing Overview"
-        )
-
         {:ok, view, _html} = live(context.owner_conn, "/app/dashboards")
         {:ok, Map.put(context, :view, view)}
       end
@@ -25,7 +20,10 @@ defmodule MetricFlowSpex.TemplateSelectedBeforeAnyDataHasSyncedShowsAnEmptyState
           |> element("[data-role='dashboard-card']", "Marketing Overview")
           |> render()
           |> then(fn html ->
-            [_, id] = Regex.run(~r/data-dashboard-id="(\d+)"/, html)
+            [id] =
+              Floki.parse_fragment!(html)
+              |> Floki.attribute("[data-role=dashboard-card]", "data-dashboard-id")
+
             id
           end)
 

@@ -9,11 +9,6 @@ defmodule MetricFlowSpex.Criterion166CannedDashboardsUseVegaLiteVisualizationsSp
       given_(:user_logged_in_as_owner)
 
       given_ "a canned dashboard is displayed", context do
-        MetricFlowSpex.Fixtures.create_canned_dashboard!(
-          context.owner_email,
-          "Marketing Overview"
-        )
-
         MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
 
         MetricFlowSpex.Fixtures.create_metric_for(context.owner_email, %{
@@ -29,7 +24,10 @@ defmodule MetricFlowSpex.Criterion166CannedDashboardsUseVegaLiteVisualizationsSp
           |> element("[data-role='dashboard-card']", "Marketing Overview")
           |> render()
           |> then(fn html ->
-            [_, id] = Regex.run(~r/data-dashboard-id="(\d+)"/, html)
+            [id] =
+              Floki.parse_fragment!(html)
+              |> Floki.attribute("[data-role=dashboard-card]", "data-dashboard-id")
+
             id
           end)
 
