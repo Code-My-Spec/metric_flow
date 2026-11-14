@@ -50,7 +50,7 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
       end
 
       then_ "the user is successfully logged in", context do
-        assert redirected_to(context.login_conn) == "/app/integrations"
+        assert redirected_to(context.login_conn) == "/app/chat"
         {:ok, context}
       end
 
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.UserCanUseRememberMeOptionForExtendedSessionsSpex do
       end
 
       then_ "the user is successfully logged in", context do
-        assert redirected_to(context.login_conn) == "/app/integrations"
+        assert redirected_to(context.login_conn) == "/app/chat"
         {:ok, context}
       end
 

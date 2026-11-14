@@ -27,8 +27,8 @@ defmodule MetricFlowSpex.UserCanLogInWithEmailAndPasswordSpex do
         {:ok, Map.put(context, :login_conn, conn)}
       end
 
-      then_ "the user is redirected to the integrations page", context do
-        assert redirected_to(context.login_conn) == "/app/integrations"
+      then_ "the user is redirected to the AI chat home", context do
+        assert redirected_to(context.login_conn) == "/app/chat"
         {:ok, context}
       end
 
