@@ -41,6 +41,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
   import MetricFlowTest.MetricsFixtures
 
   alias MetricFlow.Accounts.Account
+  alias MetricFlow.Ai
   alias MetricFlow.Accounts.AccountMember
   alias MetricFlow.Dashboards
   alias MetricFlow.Repo
@@ -284,4 +285,31 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     # model here.
     assert multi_widget_guidance_present?(payload)
   end
+
+  test "the single-visualization editor's chat does not get the multi-widget guidance" do
+    {:ok, agent} = Agent.start_link(fn -> nil end)
+
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    Ai.viz_chat(scope, nil, "Show me impressions over time", command_runner: capturing_runner(agent))
+
+    args = Agent.get(agent, & &1)
+    refute is_nil(args), "the visualization chat never reached the command_runner"
+
+    payload = decode_prompt_payload(args)
+
+    # Converse of the test above: the single-visualization editor builds
+    # exactly one chart and never passes multi_widget: true, so neither
+    # its system prompt nor the (shared) update_spec tool description it
+    # receives should carry the "call update_spec again per widget"
+    # guidance -- that's the dashboard chat's job alone. Checks both
+    # sources via multi_widget_guidance_present?/1, the same helper the
+    # test above uses, so a leak into either one is caught here.
+    refute multi_widget_guidance_present?(payload)
+  end
+
 end
