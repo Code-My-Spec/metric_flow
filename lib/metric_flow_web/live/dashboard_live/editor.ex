@@ -194,6 +194,38 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           </form>
         </div>
 
+        <%!-- Story 74, rule 5: an interactive control, bound to the
+             dashboard's data model like the date range -- only re-runs
+             what's shown, never writes anywhere else. --%>
+        <div
+          :if={@available_platforms != []}
+          data-role="platform-filter"
+          class="mf-card p-3 mb-6 flex items-center gap-2"
+        >
+          <span class="text-sm text-base-content/70">Platform</span>
+          <button
+            phx-click="filter_platform"
+            phx-value-platform="all"
+            class={[
+              "btn btn-sm",
+              (is_nil(@dashboard_platform_filter) && "btn-primary") || "btn-ghost"
+            ]}
+          >
+            All
+          </button>
+          <button
+            :for={platform <- @available_platforms}
+            phx-click="filter_platform"
+            phx-value-platform={platform}
+            class={[
+              "btn btn-sm",
+              (@dashboard_platform_filter == platform && "btn-primary") || "btn-ghost"
+            ]}
+          >
+            {platform_display_name(platform)}
+          </button>
+        </div>
+
         <%!-- Visualization canvas --%>
         <div
           id="visualization-canvas"
@@ -316,16 +348,8 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           socket
           |> assign(:dashboard, dashboard)
           |> assign(:changeset, changeset)
-          |> assign(:visualizations, visualizations)
-          |> assign(
-            :chart_render,
-            resolve_chart_render(
-              visualizations,
-              scope,
-              date_range_for(dashboard.date_range || "30")
-            )
-          )
           |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
+          |> assign(:available_platforms, available_platforms(scope))
           |> assign(:viz_error, nil)
           |> assign(:dashboard_chat_messages, chat_messages)
           |> assign(:dashboard_chat_generating, false)
@@ -335,7 +359,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_pending_message, nil)
           |> assign(:dashboard_versions, Dashboards.list_paper_trail_versions(dashboard.id))
           |> assign(:dashboard_date_range, dashboard.date_range || "30")
+          |> assign(:dashboard_platform_filter, dashboard.platform_filter)
           |> assign(:page_title, "Edit Dashboard")
+          |> assign_visualizations(visualizations)
 
         {:noreply, socket}
 
@@ -358,6 +384,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:visualizations, [])
       |> assign(:chart_render, [])
       |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
+      |> assign(:available_platforms, available_platforms(scope))
       |> assign(:viz_error, nil)
       |> assign(:dashboard_chat_messages, [])
       |> assign(:dashboard_chat_generating, false)
@@ -367,6 +394,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard_chat_pending_message, nil)
       |> assign(:dashboard_versions, [])
       |> assign(:dashboard_date_range, "30")
+      |> assign(:dashboard_platform_filter, nil)
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -444,6 +472,36 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         scope = socket.assigns.current_scope
 
         case Dashboards.update_dashboard(scope, dashboard, %{"date_range" => range}) do
+          {:ok, dashboard} -> {:noreply, assign(socket, :dashboard, dashboard)}
+          {:error, _} -> {:noreply, socket}
+        end
+
+      nil ->
+        {:noreply, socket}
+    end
+  end
+
+  # Story 74, rule 5: a platform filter is an ordinary interactive control
+  # bound to the dashboard's data model, like the date range -- it only
+  # re-runs what's shown and saves the chosen value with the dashboard;
+  # it never writes anywhere else or calls another tool.
+  def handle_event("filter_platform", %{"platform" => "all"}, socket) do
+    handle_event("filter_platform", %{"platform" => nil}, socket)
+  end
+
+  def handle_event("filter_platform", %{"platform" => platform_str}, socket) do
+    platform = platform_str && String.to_existing_atom(platform_str)
+
+    socket =
+      socket
+      |> assign(:dashboard_platform_filter, platform)
+      |> assign_visualizations(socket.assigns.visualizations)
+
+    case socket.assigns.dashboard do
+      %Dashboard{} = dashboard ->
+        scope = socket.assigns.current_scope
+
+        case Dashboards.update_dashboard(scope, dashboard, %{"platform_filter" => platform_str}) do
           {:ok, dashboard} -> {:noreply, assign(socket, :dashboard, dashboard)}
           {:error, _} -> {:noreply, socket}
         end
@@ -930,10 +988,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp assign_visualizations(socket, visualizations) do
     scope = socket.assigns.current_scope
     date_range = date_range_for(socket.assigns.dashboard_date_range)
+    platform = socket.assigns[:dashboard_platform_filter]
 
     socket
     |> assign(:visualizations, visualizations)
-    |> assign(:chart_render, resolve_chart_render(visualizations, scope, date_range))
+    |> assign(:chart_render, resolve_chart_render(visualizations, scope, date_range, platform))
   end
 
   # Story 74: "Charts are ECharts"; "data is fetched at render time and never
@@ -942,16 +1001,16 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # stored vega_spec's "data" happens to say -- so this works the same for
   # a chat-built widget (named data source, no embedded values) and an
   # older template/library/manual one (embedded values, or none at all).
-  defp resolve_chart_render(visualizations, scope, date_range) do
-    Enum.map(visualizations, &build_chart_render(&1, scope, date_range))
+  defp resolve_chart_render(visualizations, scope, date_range, platform) do
+    Enum.map(visualizations, &build_chart_render(&1, scope, date_range, platform))
   end
 
   # Story 74 (main, live walk of a7ba770): a widget whose query resolves to
   # zero data points in range gets a clear message instead of a silent 0
   # stat or an empty chart -- checked once, ahead of the stat/chart split,
   # so neither branch has to re-derive "no data" on its own.
-  defp build_chart_render(viz, scope, date_range) do
-    case query_metric_values(viz, scope, date_range) do
+  defp build_chart_render(viz, scope, date_range, platform) do
+    case query_metric_values(viz, scope, date_range, platform) do
       [] -> {:no_data, nil}
       values -> render_chart_from_values(viz, values)
     end
@@ -1001,10 +1060,37 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  defp query_metric_values(viz, scope, date_range) do
+  defp query_metric_values(viz, scope, date_range, platform) do
+    opts = [date_range: date_range] |> maybe_put_provider(platform)
+
     scope
-    |> Metrics.query_time_series(chart_metric_key(viz), date_range: date_range)
+    |> Metrics.query_time_series(chart_metric_key(viz), opts)
     |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
+  end
+
+  defp maybe_put_provider(opts, nil), do: opts
+  defp maybe_put_provider(opts, platform), do: Keyword.put(opts, :provider, platform)
+
+  # Story 74, rule 5: "interactive controls... only re-run metric queries
+  # and change what is shown." Every provider any of the account's metrics
+  # has data from -- the same set a dashboard's charts/stats/tables can
+  # ever be bound to -- not scoped to this one dashboard's own components,
+  # so the control still offers a platform the account has even before any
+  # widget on this dashboard happens to use it.
+  defp available_platforms(scope) do
+    scope
+    |> Metrics.list_metric_providers()
+    |> Map.values()
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  defp platform_display_name(platform) when is_atom(platform) do
+    platform
+    |> Atom.to_string()
+    |> String.replace("_", " ")
+    |> String.split()
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   # Main's live walk (a7ba770 + seeds): the filter's chosen "7"/"30"/"90"

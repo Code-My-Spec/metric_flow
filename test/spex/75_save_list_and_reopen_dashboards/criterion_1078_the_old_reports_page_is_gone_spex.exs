@@ -8,6 +8,11 @@ defmodule MetricFlowSpex.Story75.Criterion1078Spex do
   (confirmed live by main, journey 66a06609) -- /visualizations/new and
   /visualizations/:id/edit stay routed and untouched for Story 29's
   single-chart Vega-Lite editor, which this story does not retire.
+
+  Needs an active subscription: a free/unpaid user hitting /visualizations
+  is paywall-gated first (redirected to /app/subscriptions/checkout, story
+  45) before ever reaching this retirement redirect -- that's a different,
+  earlier check on the same route, not something this criterion covers.
   """
 
   use MetricFlowSpex.Case, async: false
@@ -17,6 +22,7 @@ defmodule MetricFlowSpex.Story75.Criterion1078Spex do
   spex "The old reports page is gone", criterion: 1078 do
     scenario "/reports and /visualizations redirect to the dashboards list, with no nav links" do
       given_(:user_logged_in_as_owner)
+      given_(:owner_has_active_subscription)
 
       when_ "anyone requests /reports or /visualizations", context do
         reports_result = live(context.owner_conn, ~p"/app/reports")
