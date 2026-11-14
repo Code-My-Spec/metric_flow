@@ -802,6 +802,30 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     }
   end
 
+  # Main's review (4986f30, 2026-11-14): the A2UI view's date-range select
+  # has phx-change="dashboard_filter_date_range", but nothing here handled
+  # it -- changing it crashed the LiveView instead of re-querying or
+  # persisting the choice. Reuses the editor's own persistence
+  # (DashboardLive.Editor's "filter_date_range" handler): re-render every
+  # component's chart at the new range, then save it on the dashboard so a
+  # fresh mount defaults to it.
+  @impl true
+  def handle_event("dashboard_filter_date_range", %{"range" => range}, socket) do
+    scope = socket.assigns.current_scope
+    dashboard = socket.assigns.dashboard
+    components = a2ui_dashboard_components(dashboard)
+
+    socket =
+      socket
+      |> assign(:dashboard_date_range, range)
+      |> assign(:chart_render, Enum.map(components, &a2ui_build_chart_render(&1, scope, range)))
+
+    case Dashboards.update_dashboard(scope, dashboard, %{"date_range" => range}) do
+      {:ok, dashboard} -> {:noreply, assign(socket, :dashboard, dashboard)}
+      {:error, _} -> {:noreply, socket}
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Event handlers
   # ---------------------------------------------------------------------------
