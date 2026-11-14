@@ -59,12 +59,26 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       "message" => "Show me impressions over time as a line chart"
     })
 
-    Process.sleep(100)
-    html = render(view)
+    html = wait_for_chart(view)
 
     Application.delete_env(:metric_flow, :command_runner)
 
     html
+  end
+
+  # The chat handler resolves via a plain `Task.async` + `handle_info`, not
+  # LiveView's `assign_async`/`start_async`, so `render_async/1` can't track
+  # it -- poll instead of a fixed sleep so this doesn't flake under load.
+  defp wait_for_chart(view, deadline \\ System.monotonic_time(:millisecond) + 2000) do
+    html = render(view)
+
+    cond do
+      has_element?(view, "[data-role='vega-lite-chart']") -> html
+      System.monotonic_time(:millisecond) >= deadline -> html
+      true ->
+        Process.sleep(20)
+        wait_for_chart(view, deadline)
+    end
   end
 
   test "describing a dashboard in chat builds a visualization onto the canvas", %{conn: conn} do
