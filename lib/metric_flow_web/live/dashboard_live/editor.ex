@@ -738,7 +738,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         runner = Application.get_env(:metric_flow, :command_runner)
 
         Task.async(fn ->
-          VizChat.send_message(context, trimmed, metric_names: metric_names, command_runner: runner)
+          VizChat.send_message(
+            context,
+            trimmed,
+            metric_names: metric_names,
+            command_runner: runner,
+            multi_widget: true
+          )
         end)
 
         socket =

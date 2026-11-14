@@ -52,8 +52,9 @@ defmodule MetricFlow.Ai.VizChat do
     {metric_names, opts} = Keyword.pop(opts, :metric_names, [])
     {current_spec, opts} = Keyword.pop(opts, :current_spec)
     {system_prompt, opts} = Keyword.pop(opts, :system_prompt)
+    {multi_widget, opts} = Keyword.pop(opts, :multi_widget, false)
 
-    system_prompt = system_prompt || build_system_prompt(current_spec)
+    system_prompt = system_prompt || build_system_prompt(current_spec, multi_widget)
 
     run_opts = [
       provider: LlmProvider.chat_provider(opts),
@@ -140,16 +141,32 @@ defmodule MetricFlow.Ai.VizChat do
   improvements. Not every message needs a spec update.
   """
 
-  defp build_system_prompt(nil) do
-    String.trim(@base_system_prompt) <>
-      "\n\nNo chart exists yet. When the user asks for a visualization, " <>
-      "create one by calling update_spec."
-  end
+  @multi_widget_guidance """
+  You are building widgets onto a DASHBOARD, not a single chart. A dashboard
+  holds many separate widgets (charts, stat tiles, tables, headings).
 
-  defp build_system_prompt(current_spec) do
-    String.trim(@base_system_prompt) <>
-      "\n\nCurrent Vega-Lite spec:\n```json\n" <>
-      Jason.encode!(current_spec, pretty: true) <>
-      "\n```\nWhen editing, pass the COMPLETE updated spec to update_spec."
+  When the user asks for more than one thing (e.g. "a stat tile and a line
+  chart"), call update_spec ONCE PER WIDGET. Do not combine multiple widgets
+  into a single spec with "vconcat", "hconcat", or "concat" -- that produces
+  one widget, not several. Each call to update_spec adds a new widget to the
+  dashboard; it does not replace what you already added this turn.
+  """
+
+  defp build_system_prompt(current_spec, multi_widget) do
+    base =
+      case current_spec do
+        nil ->
+          String.trim(@base_system_prompt) <>
+            "\n\nNo chart exists yet. When the user asks for a visualization, " <>
+            "create one by calling update_spec."
+
+        spec ->
+          String.trim(@base_system_prompt) <>
+            "\n\nCurrent Vega-Lite spec:\n```json\n" <>
+            Jason.encode!(spec, pretty: true) <>
+            "\n```\nWhen editing, pass the COMPLETE updated spec to update_spec."
+      end
+
+    if multi_widget, do: base <> "\n\n" <> String.trim(@multi_widget_guidance), else: base
   end
 end
