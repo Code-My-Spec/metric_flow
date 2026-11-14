@@ -158,7 +158,6 @@ defmodule MetricFlowWeb.Layouts do
               <details>
                 <summary>Visualizations</summary>
                 <ul>
-                  <li><a href={~p"/app/visualizations"}>Library</a></li>
                   <li><a href={~p"/app/visualizations/new"}>New Visualization</a></li>
                 </ul>
               </details>
@@ -168,7 +167,6 @@ defmodule MetricFlowWeb.Layouts do
               <details>
                 <summary>Reports</summary>
                 <ul>
-                  <li><a href={~p"/app/reports"}>All Reports</a></li>
                   <li><a href={~p"/app/reports/generate"}>Generate Report</a></li>
                 </ul>
               </details>

@@ -196,6 +196,20 @@ defmodule MetricFlow.Ai.AiRepository do
   end
 
   @doc """
+  Deletes the chat session (and its messages, via cascade) scoped to the
+  given context, if one exists. A no-op when none does.
+  """
+  @spec delete_chat_session_by_context(Scope.t(), atom(), integer() | nil) :: :ok
+  def delete_chat_session_by_context(%Scope{} = scope, context_type, context_id) do
+    case get_chat_session_by_context(scope, context_type, context_id) do
+      {:ok, session} -> Repo.delete(session)
+      {:error, :not_found} -> :ok
+    end
+
+    :ok
+  end
+
+  @doc """
   Retrieves the chat session for the user scoped to a specific context (e.g.
   a particular visualization being edited), with messages preloaded.
 

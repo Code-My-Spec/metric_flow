@@ -61,14 +61,14 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       assert html =~ "Correlation"
     end
 
-    test "permits visualization QA route for the selected subscribed account", %{conn: conn} do
+    test "permits dashboards route for the selected subscribed account", %{conn: conn} do
       user = user_fixture()
       account = account_fixture(user)
       subscription_fixture(account, %{status: :active})
       conn = log_in_user(conn, user)
 
-      {:ok, view, _html} = live(conn, "/app/visualizations")
-      assert has_element?(view, "[data-role='empty-visualizations']")
+      {:ok, view, _html} = live(conn, "/app/dashboards")
+      assert has_element?(view, "[data-role='empty-user-dashboards']")
       refute has_element?(view, "[data-role='paywall']")
     end
 

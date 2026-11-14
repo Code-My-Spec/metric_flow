@@ -49,6 +49,7 @@ defmodule MetricFlow.Ai do
   defdelegate get_chat_session(scope, id), to: AiRepository
   defdelegate get_shared_chat_session(scope, id), to: AiRepository
   defdelegate get_chat_session_by_context(scope, context_type, context_id), to: AiRepository
+  defdelegate delete_chat_session_by_context(scope, context_type, context_id), to: AiRepository
   defdelegate update_chat_session(scope, session, attrs), to: AiRepository
   defdelegate create_chat_message(scope, attrs), to: AiRepository
   defdelegate get_feedback_for_insight(scope, insight_id), to: AiRepository

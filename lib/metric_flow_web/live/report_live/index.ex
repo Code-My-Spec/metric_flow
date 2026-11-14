@@ -20,9 +20,7 @@ defmodule MetricFlowWeb.ReportLive.Index do
 
   use MetricFlowWeb, :live_view
 
-  alias MetricFlow.Accounts
   alias MetricFlow.Dashboards
-  alias MetricFlow.Metrics
 
   # ---------------------------------------------------------------------------
   # Render
@@ -303,28 +301,11 @@ defmodule MetricFlowWeb.ReportLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
+  # Story 75: the old reports list is retired in favor of the one
+  # dashboards list at /app/dashboards; /reports/new, /reports/:id and
+  # /reports/generate are untouched.
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
-
-    current_user_role =
-      if socket.assigns.active_account_id do
-        Accounts.get_user_role(scope, scope.user.id, socket.assigns.active_account_id)
-      end
-
-    all_reports = Dashboards.list_visualizations(scope)
-
-    socket =
-      socket
-      |> assign(:page_title, "Reports")
-      |> assign(:all_reports, all_reports)
-      |> assign(:search, "")
-      |> assign(:metric_names, Metrics.list_metric_names(scope))
-      |> assign(:confirming_delete, nil)
-      |> assign(:can_modify, current_user_role in [:owner, :admin, :account_manager])
-      |> assign(:reports, all_reports)
-      |> assign(:favorite_reports, Enum.filter(all_reports, & &1.is_favorite))
-
-    {:ok, socket}
+    {:ok, redirect(socket, to: ~p"/app/dashboards")}
   end
 
   # ---------------------------------------------------------------------------

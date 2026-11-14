@@ -126,21 +126,11 @@ defmodule MetricFlowWeb.VisualizationLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def mount(_params, _session, %{assigns: %{paywall: paywall}} = socket)
-      when not is_nil(paywall) do
-    {:ok, socket}
-  end
-
+  # Story 75: the old saved-visualizations list is retired in favor of the
+  # one dashboards list at /app/dashboards; /visualizations/new and
+  # /visualizations/:id/edit (VisualizationLive.Editor) are untouched.
   def mount(_params, _session, socket) do
-    scope = socket.assigns.current_scope
-
-    socket =
-      socket
-      |> assign(:page_title, "Visualizations")
-      |> assign(:visualizations, Dashboards.list_visualizations(scope))
-      |> assign(:confirming_delete, nil)
-
-    {:ok, socket}
+    {:ok, redirect(socket, to: ~p"/app/dashboards")}
   end
 
   # ---------------------------------------------------------------------------

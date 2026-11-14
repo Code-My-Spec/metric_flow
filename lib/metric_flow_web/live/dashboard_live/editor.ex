@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Ai
   alias MetricFlow.Ai.DashboardBuilder
   alias MetricFlow.Dashboards
@@ -428,7 +429,22 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    scope = socket.assigns.current_scope
+    account_id = socket.assigns[:active_account_id]
+
+    # Story 75, criterion 1072: only roles with build access may start,
+    # edit or delete a dashboard -- a read-only member is refused outright,
+    # before any dashboard is created.
+    if account_id && !Authorization.can?(scope, :build, %{account_id: account_id}) do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to build dashboards.")
+        |> redirect(to: ~p"/app/dashboards")
+
+      {:ok, socket}
+    else
+      {:ok, socket}
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -870,7 +886,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
     socket
     |> assign_visualizations(visualizations)
-    |> autosave_draft_dashboard(visualizations)
+    |> autosave_draft_dashboard(visualizations, socket.assigns.dashboard_chat_pending_message)
   end
 
   defp visualizations_from_a2ui_spec(%{"components" => components}) do
@@ -913,7 +929,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # Story 74, rule 1: the first build saves a draft with no explicit Save.
   # Story 74, rule 7: every later change -- including this first one -- is
   # recorded as a version.
-  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations) do
+  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{} = dashboard}} = socket, visualizations, _request_text) do
     scope = socket.assigns.current_scope
 
     with :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations),
@@ -927,9 +943,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  defp autosave_draft_dashboard(socket, visualizations) do
+  defp autosave_draft_dashboard(socket, visualizations, request_text) do
     scope = socket.assigns.current_scope
-    name = draft_dashboard_name(socket.assigns.changeset)
+    name = draft_dashboard_name(socket.assigns.changeset, request_text)
     a2ui_spec = build_a2ui_spec(visualizations)
 
     with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name, "a2ui_spec" => a2ui_spec}),
@@ -994,12 +1010,27 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end)
   end
 
-  defp draft_dashboard_name(changeset) do
+  # Story 75, criterion 1068: a draft the agent builds (no name typed) is
+  # titled from Dana's own chat request rather than left as a fixed
+  # placeholder; an explicitly typed name always wins.
+  defp draft_dashboard_name(changeset, request_text) do
     case extract_name(changeset) do
-      "" -> "Untitled Dashboard"
+      "" -> title_from_request(request_text)
       name -> name
     end
   end
+
+  defp title_from_request(nil), do: "Untitled Dashboard"
+
+  defp title_from_request(text) do
+    case String.trim(text) do
+      "" -> "Untitled Dashboard"
+      trimmed -> trimmed |> String.slice(0, 60) |> capitalize_first()
+    end
+  end
+
+  defp capitalize_first(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest
+  defp capitalize_first(str), do: str
 
   # Story 74, rule 1 again: nothing is persisted for a turn that never builds
   # a dashboard (a failed or declined request leaves no draft to attach

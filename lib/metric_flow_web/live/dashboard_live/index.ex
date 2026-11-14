@@ -71,6 +71,19 @@ defmodule MetricFlowWeb.DashboardLive.Index do
         <h2 class="text-xl font-semibold mb-1">My Dashboards</h2>
         <p class="text-base-content/60 text-sm mb-4">Dashboards you've created</p>
 
+        <%!-- Search --%>
+        <div :if={@user_dashboards != []} data-role="dashboard-search" class="mb-4">
+          <form phx-change="search">
+            <input
+              type="text"
+              name="query"
+              value={@search_query}
+              placeholder="Search dashboards by name"
+              class="input input-bordered input-sm w-full max-w-xs"
+            />
+          </form>
+        </div>
+
         <%!-- Empty state --%>
         <div :if={@user_dashboards == []} data-role="empty-user-dashboards" class="mf-card p-8 text-center">
           <p class="text-base-content/60 mb-4">No dashboards yet</p>
@@ -79,16 +92,45 @@ defmodule MetricFlowWeb.DashboardLive.Index do
           </.link>
         </div>
 
+        <%!-- No results for the current search --%>
+        <div
+          :if={@user_dashboards != [] && @filtered_dashboards == []}
+          data-role="empty-search-results"
+          class="mf-card p-8 text-center"
+        >
+          <p class="text-base-content/60">No dashboards match your search</p>
+        </div>
+
         <%!-- Dashboard grid --%>
-        <div :if={@user_dashboards != []} class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div :if={@filtered_dashboards != []} class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div
-            :for={dashboard <- @user_dashboards}
+            :for={dashboard <- @filtered_dashboards}
             data-role="dashboard-card"
             data-dashboard-id={dashboard.id}
             data-built-in="false"
             class="mf-card p-5"
           >
-            <p class="font-semibold mb-1">{dashboard.name}</p>
+            <div :if={@renaming_id == dashboard.id} data-role={"rename-form-#{dashboard.id}"}>
+              <form phx-submit="rename">
+                <input type="hidden" name="dashboard_id" value={dashboard.id} />
+                <input
+                  type="text"
+                  name="name"
+                  value={dashboard.name}
+                  data-role={"rename-input-#{dashboard.id}"}
+                  class="input input-bordered input-sm w-full mb-1"
+                />
+                <div class="flex gap-2">
+                  <button type="submit" data-role={"confirm-rename-#{dashboard.id}"} class="btn btn-primary btn-xs">
+                    Save
+                  </button>
+                  <button type="button" phx-click="cancel_rename" data-role="cancel-rename" class="btn btn-ghost btn-xs">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+            <p :if={@renaming_id != dashboard.id} class="font-semibold mb-1">{dashboard.name}</p>
             <p :if={dashboard.description} class="text-sm text-base-content/60 mb-3">
               {dashboard.description}
             </p>
@@ -99,6 +141,30 @@ defmodule MetricFlowWeb.DashboardLive.Index do
               <.link navigate={~p"/app/dashboards/#{dashboard.id}/edit"} class="btn btn-ghost btn-sm" data-role={"edit-dashboard-#{dashboard.id}"}>
                 Edit with agent
               </.link>
+              <button
+                phx-click="start_rename"
+                phx-value-id={dashboard.id}
+                data-role={"rename-dashboard-#{dashboard.id}"}
+                class="btn btn-ghost btn-sm"
+              >
+                Rename
+              </button>
+              <button
+                phx-click="toggle_favorite"
+                phx-value-id={dashboard.id}
+                data-role={"favorite-dashboard-#{dashboard.id}"}
+                class={["btn btn-ghost btn-sm", dashboard.favorite && "text-warning"]}
+              >
+                {if dashboard.favorite, do: "★ Favorited", else: "☆ Favorite"}
+              </button>
+              <button
+                phx-click="duplicate"
+                phx-value-id={dashboard.id}
+                data-role={"duplicate-dashboard-#{dashboard.id}"}
+                class="btn btn-ghost btn-sm"
+              >
+                Duplicate
+              </button>
               <button
                 phx-click="delete"
                 phx-value-id={dashboard.id}
@@ -151,11 +217,29 @@ defmodule MetricFlowWeb.DashboardLive.Index do
     socket =
       socket
       |> assign(:page_title, "Dashboards")
-      |> assign(:user_dashboards, Dashboards.list_dashboards(scope))
       |> assign(:canned_dashboards, Dashboards.list_canned_dashboards())
       |> assign(:confirming_delete, nil)
+      |> assign(:renaming_id, nil)
+      |> assign(:search_query, "")
+      |> assign_dashboards(Dashboards.list_dashboards(scope))
 
     {:ok, socket}
+  end
+
+  # Story 75, criterion 1073: keeps @user_dashboards (the full list) and
+  # @filtered_dashboards (what the search box currently narrows it to) in
+  # sync whenever either the list or the query changes.
+  defp assign_dashboards(socket, user_dashboards) do
+    socket
+    |> assign(:user_dashboards, user_dashboards)
+    |> assign(:filtered_dashboards, filter_dashboards(user_dashboards, socket.assigns.search_query))
+  end
+
+  defp filter_dashboards(dashboards, ""), do: dashboards
+
+  defp filter_dashboards(dashboards, query) do
+    query = String.downcase(query)
+    Enum.filter(dashboards, &String.contains?(String.downcase(&1.name), query))
   end
 
   # ---------------------------------------------------------------------------
@@ -163,6 +247,29 @@ defmodule MetricFlowWeb.DashboardLive.Index do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_event("search", %{"query" => query}, socket) do
+    socket =
+      socket
+      |> assign(:search_query, query)
+      |> assign_dashboards(socket.assigns.user_dashboards)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("toggle_favorite", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    id = String.to_integer(id)
+    dashboard = Enum.find(socket.assigns.user_dashboards, &(&1.id == id))
+
+    case dashboard && Dashboards.update_dashboard(scope, dashboard, %{"favorite" => !dashboard.favorite}) do
+      {:ok, _updated} ->
+        {:noreply, assign_dashboards(socket, Dashboards.list_dashboards(scope))}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("delete", %{"id" => id}, socket) do
     {:noreply, assign(socket, :confirming_delete, String.to_integer(id))}
   end
@@ -181,7 +288,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
 
         socket =
           socket
-          |> assign(:user_dashboards, updated_dashboards)
+          |> assign_dashboards(updated_dashboards)
           |> assign(:confirming_delete, nil)
           |> put_flash(:info, "Dashboard deleted.")
 
@@ -193,5 +300,57 @@ defmodule MetricFlowWeb.DashboardLive.Index do
       {:error, :unauthorized} ->
         {:noreply, put_flash(socket, :error, "You can't delete that dashboard.")}
     end
+  end
+
+  # Story 75, criterion 1068: Dana can rename a dashboard from the list
+  # itself, not only from inside the builder.
+  def handle_event("start_rename", %{"id" => id}, socket) do
+    {:noreply, assign(socket, :renaming_id, String.to_integer(id))}
+  end
+
+  def handle_event("cancel_rename", _params, socket) do
+    {:noreply, assign(socket, :renaming_id, nil)}
+  end
+
+  def handle_event("duplicate", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    id = String.to_integer(id)
+    dashboard = Enum.find(socket.assigns.user_dashboards, &(&1.id == id))
+
+    case dashboard && Dashboards.duplicate_dashboard(scope, dashboard) do
+      {:ok, _new_dashboard} ->
+        socket =
+          socket
+          |> assign_dashboards(Dashboards.list_dashboards(scope))
+          |> put_flash(:info, "Dashboard duplicated.")
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("rename", %{"dashboard_id" => id, "name" => name}, socket) do
+    scope = socket.assigns.current_scope
+    id = String.to_integer(id)
+    dashboard = Enum.find(socket.assigns.user_dashboards, &(&1.id == id))
+
+    case dashboard && Dashboards.update_dashboard(scope, dashboard, %{"name" => name}) do
+      {:ok, updated} ->
+        socket =
+          socket
+          |> assign_dashboards(replace_dashboard(socket.assigns.user_dashboards, updated))
+          |> assign(:renaming_id, nil)
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, assign(socket, :renaming_id, nil)}
+    end
+  end
+
+  defp replace_dashboard(dashboards, updated) do
+    Enum.map(dashboards, fn d -> if d.id == updated.id, do: updated, else: d end)
   end
 end

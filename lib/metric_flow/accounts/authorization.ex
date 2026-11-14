@@ -76,6 +76,11 @@ defmodule MetricFlow.Accounts.Authorization do
   defp permitted?(:owner, :leave_account, _context), do: false
   defp permitted?(_role, :leave_account, _context), do: true
 
+  # Story 75: saving, editing and deleting a dashboard requires build access;
+  # every role except :read_only has it.
+  defp permitted?(:read_only, :build, _context), do: false
+  defp permitted?(_role, :build, _context), do: true
+
   defp permitted?(_role, _unknown_action, _context), do: false
 
   # ---------------------------------------------------------------------------

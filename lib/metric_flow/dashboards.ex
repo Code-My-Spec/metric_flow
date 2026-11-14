@@ -15,6 +15,7 @@ defmodule MetricFlow.Dashboards do
     deps: [MetricFlow, MetricFlow.Integrations, MetricFlow.Metrics],
     exports: [Dashboard, Visualization]
 
+  alias MetricFlow.Ai
   alias MetricFlow.Dashboards.ChartBuilder
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.DashboardsRepository
@@ -76,6 +77,38 @@ defmodule MetricFlow.Dashboards do
   end
 
   @doc """
+  Creates a copy of a dashboard: its name (suffixed "(copy)"), its current
+  spec/visualizations and date-range filter -- nothing else. The copy has
+  no chat history and no versions of its own (Story 75, criterion 1071).
+  """
+  @spec duplicate_dashboard(Scope.t(), Dashboard.t()) ::
+          {:ok, Dashboard.t()} | {:error, term()}
+  def duplicate_dashboard(%Scope{} = scope, %Dashboard{} = dashboard) do
+    with {:ok, loaded} <- DashboardsRepository.get_dashboard_with_visualizations(scope, dashboard.id),
+         {:ok, new_dashboard} <-
+           save_dashboard(scope, %{
+             "name" => "#{dashboard.name} (copy)",
+             "date_range" => dashboard.date_range,
+             "a2ui_spec" => dashboard.a2ui_spec
+           }),
+         :ok <-
+           replace_dashboard_visualizations(scope, new_dashboard, visualizations_from_dashboard(loaded)) do
+      {:ok, new_dashboard}
+    end
+  end
+
+  defp visualizations_from_dashboard(%Dashboard{dashboard_visualizations: dvs}) do
+    Enum.map(dvs, fn dv ->
+      %{
+        metric_name: dv.visualization.name,
+        chart_type: Map.get(dv.visualization.vega_spec || %{}, "chart_type", "line"),
+        position: dv.position,
+        vega_spec: dv.visualization.vega_spec
+      }
+    end)
+  end
+
+  @doc """
   Replaces all visualizations for a dashboard in a single transaction.
 
   Each visualization entry must be a map with `:metric_name`, `:chart_type`,
@@ -98,8 +131,13 @@ defmodule MetricFlow.Dashboards do
   @spec delete_dashboard(Scope.t(), integer()) ::
           {:ok, Dashboard.t()} | {:error, :not_found | :unauthorized}
   def delete_dashboard(%Scope{} = scope, id) do
-    with {:ok, dashboard} <- DashboardsRepository.get_dashboard(scope, id) do
-      delete_if_not_built_in(dashboard)
+    with {:ok, dashboard} <- DashboardsRepository.get_dashboard(scope, id),
+         {:ok, deleted} <- delete_if_not_built_in(dashboard) do
+      # Story 75, criterion 1069: deleting a dashboard also removes its chat
+      # history. Its versions cascade at the DB level already (dashboard_versions'
+      # dashboard_id references dashboards on_delete: :delete_all).
+      Ai.delete_chat_session_by_context(scope, :dashboard, id)
+      {:ok, deleted}
     end
   end
 

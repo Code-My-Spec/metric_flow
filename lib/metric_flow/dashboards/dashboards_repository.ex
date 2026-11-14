@@ -28,7 +28,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   def list_dashboards(%Scope{user: user}) do
     from(d in Dashboard,
       where: d.user_id == ^user.id and d.built_in == false,
-      order_by: [desc: d.inserted_at, desc: d.id]
+      order_by: [desc: d.favorite, desc: d.updated_at, desc: d.id]
     )
     |> Repo.all()
   end

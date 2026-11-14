@@ -56,7 +56,70 @@ defmodule MetricFlowWeb.DashboardLive.Show do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
+      <%!-- Story 75, criterion 1077/1079/1080: a user's own agent-built
+           dashboard shows its A2UI widgets, a filter that sticks, and an
+           Edit with agent link -- no chat, no versions (those are the
+           builder's, not the view page's). A built-in (built_in: true)
+           dashboard keeps the legacy "all metrics" view below unchanged. --%>
+      <div :if={@dashboard_view_mode == :a2ui}>
+        <div class="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold">{@dashboard.name}</h1>
+          </div>
+          <.link
+            navigate={~p"/app/dashboards/#{@dashboard.id}/edit"}
+            class="btn btn-primary btn-sm"
+            data-role={"edit-dashboard-#{@dashboard.id}"}
+          >
+            Edit with agent
+          </.link>
+        </div>
+
+        <div data-role="filter-control" class="mf-card p-3 mb-6 flex items-center gap-2">
+          <label class="text-sm text-base-content/70" for="show-dashboard-date-range">
+            Date range
+          </label>
+          <form phx-change="dashboard_filter_date_range">
+            <select
+              id="show-dashboard-date-range"
+              name="range"
+              class="select select-sm select-bordered"
+            >
+              <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
+              <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
+              <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            :for={{render, idx} <- Enum.with_index(@chart_render)}
+            data-role="visualization-card"
+            class="mf-card p-4"
+          >
+            <p class="font-semibold mb-2">{Enum.at(@a2ui_titles, idx)}</p>
+            <p :if={elem(render, 0) == :stat} data-role="stat-tile-value" class="text-3xl font-bold">
+              {elem(render, 1)}
+            </p>
+            <div
+              :if={elem(render, 0) == :chart}
+              id={"show-dashboard-chart-#{idx}"}
+              data-role="echarts-chart"
+              phx-hook="ECharts"
+              phx-update="ignore"
+              data-option={Jason.encode!(elem(render, 1))}
+              class="w-full h-32"
+            >
+            </div>
+            <p :if={elem(render, 0) == :no_data} data-role="no-data-message" class="text-sm text-base-content/60">
+              No data for this period
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div :if={@dashboard_view_mode != :a2ui}>
         <div class="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold">All Metrics</h1>
@@ -527,6 +590,15 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
     socket = assign(socket, :current_scope, scope)
     requested_dashboard = lookup_requested_dashboard(scope, params["id"])
+
+    if requested_dashboard && !requested_dashboard.built_in do
+      {:ok, mount_a2ui_dashboard(socket, scope, requested_dashboard)}
+    else
+      mount_legacy_dashboard(socket, scope, requested_dashboard)
+    end
+  end
+
+  defp mount_legacy_dashboard(socket, scope, requested_dashboard) do
     page_title = (requested_dashboard && requested_dashboard.name) || "All Metrics"
     metric_filter = template_metric_filter(requested_dashboard)
 
@@ -540,6 +612,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:ai_panel_insights, [])
           |> assign(:chat_panel_open, false)
           |> assign(:page_title, page_title)
+          |> assign(:dashboard_view_mode, :legacy)
 
         {:ok, socket}
 
@@ -585,10 +658,94 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:known_raw_metrics_list, @known_raw_metrics)
           |> assign(:define_derived_metric_panel_open, false)
           |> assign(:page_title, page_title)
+          |> assign(:dashboard_view_mode, :legacy)
           |> rebuild_chart_and_table()
 
         {:ok, socket}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Story 75: A2UI dashboard view (a user's own agent-built dashboard, not a
+  # built-in template)
+  # ---------------------------------------------------------------------------
+
+  defp mount_a2ui_dashboard(socket, scope, dashboard) do
+    {:ok, loaded} = Dashboards.get_dashboard_with_visualizations(scope, dashboard.id)
+    date_range = loaded.date_range || "30"
+    components = a2ui_dashboard_components(loaded)
+
+    socket
+    |> assign(:dashboard_view_mode, :a2ui)
+    |> assign(:dashboard, loaded)
+    |> assign(:a2ui_titles, Enum.map(components, &a2ui_component_title/1))
+    |> assign(:chart_render, Enum.map(components, &a2ui_build_chart_render(&1, scope, date_range)))
+    |> assign(:dashboard_date_range, date_range)
+    |> assign(:page_title, loaded.name)
+  end
+
+  defp a2ui_dashboard_components(%{dashboard_visualizations: dvs}) when is_list(dvs) do
+    dvs
+    |> Enum.sort_by(& &1.position)
+    |> Enum.map(&(&1.visualization.vega_spec || %{}))
+  end
+
+  defp a2ui_dashboard_components(_dashboard), do: []
+
+  defp a2ui_component_title(%{"title" => title}) when is_binary(title), do: title
+  defp a2ui_component_title(component), do: get_in(component, ["query", "metric"]) || "Untitled"
+
+  defp a2ui_component_metric(component), do: get_in(component, ["query", "metric"])
+
+  defp a2ui_component_chart_type(%{"type" => "stat"}), do: "text"
+  defp a2ui_component_chart_type(%{"chartType" => type}) when is_binary(type), do: type
+  defp a2ui_component_chart_type(_component), do: "line"
+
+  defp a2ui_date_range("7"), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_7_days)) |> Map.fetch!(:range)
+  defp a2ui_date_range("90"), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_90_days)) |> Map.fetch!(:range)
+  defp a2ui_date_range(_), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_30_days)) |> Map.fetch!(:range)
+
+  defp a2ui_query_values(component, scope, date_range_str) do
+    scope
+    |> Metrics.query_time_series(a2ui_component_metric(component), date_range: a2ui_date_range(date_range_str))
+    |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
+  end
+
+  defp a2ui_build_chart_render(component, scope, date_range_str) do
+    case a2ui_query_values(component, scope, date_range_str) do
+      [] -> {:no_data, nil}
+      values -> a2ui_render_chart_from_values(component, values)
+    end
+  end
+
+  defp a2ui_render_chart_from_values(component, values) do
+    case a2ui_component_chart_type(component) do
+      "text" ->
+        total = Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)
+        {:stat, a2ui_format_stat_value(total)}
+
+      chart_type ->
+        option = %{
+          "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
+          "yAxis" => %{"type" => "value"},
+          "series" => [a2ui_echarts_series(chart_type, Enum.map(values, &elem(&1, 1)))]
+        }
+
+        {:chart, option}
+    end
+  end
+
+  defp a2ui_echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
+  defp a2ui_echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
+  defp a2ui_echarts_series(_, data), do: %{"type" => "line", "data" => data}
+
+  defp a2ui_format_stat_value(value) do
+    value
+    |> round()
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
+    |> String.reverse()
   end
 
   # Canned dashboards are shared system-wide (any authenticated user can view
