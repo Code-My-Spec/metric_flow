@@ -472,7 +472,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_session_id, chat_session_id)
           |> assign(:dashboard_chat_pending_message, nil)
           |> assign(:dashboard_versions, Dashboards.list_dashboard_versions(dashboard))
-          |> assign(:dashboard_date_range, "30")
+          |> assign(:dashboard_date_range, dashboard.date_range || "30")
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -752,9 +752,25 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  # Story 74, rule 5: only re-runs what is shown -- no write, no tool call.
+  # Story 74, rule 5: changing the range only re-runs what is shown, not a
+  # model/tool call. Rule 8: the chosen value is saved with the dashboard
+  # itself so it survives a reopen -- there's nothing to save yet for a
+  # dashboard the agent hasn't built anything on.
   def handle_event("filter_date_range", %{"range" => range}, socket) do
-    {:noreply, assign(socket, :dashboard_date_range, range)}
+    socket = assign(socket, :dashboard_date_range, range)
+
+    case socket.assigns.dashboard do
+      %Dashboard{} = dashboard ->
+        scope = socket.assigns.current_scope
+
+        case Dashboards.update_dashboard(scope, dashboard, %{"date_range" => range}) do
+          {:ok, dashboard} -> {:noreply, assign(socket, :dashboard, dashboard)}
+          {:error, _} -> {:noreply, socket}
+        end
+
+      nil ->
+        {:noreply, socket}
+    end
   end
 
   # ---------------------------------------------------------------------------

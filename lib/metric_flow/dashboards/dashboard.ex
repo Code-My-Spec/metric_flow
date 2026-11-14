@@ -20,6 +20,7 @@ defmodule MetricFlow.Dashboards.Dashboard do
           name: String.t() | nil,
           description: String.t() | nil,
           built_in: boolean(),
+          date_range: String.t() | nil,
           user_id: integer() | nil,
           user: User.t() | Ecto.Association.NotLoaded.t(),
           dashboard_visualizations:
@@ -33,6 +34,7 @@ defmodule MetricFlow.Dashboards.Dashboard do
     field :name, :string
     field :description, :string
     field :built_in, :boolean, default: false
+    field :date_range, :string, default: "30"
 
     belongs_to :user, User
     has_many :dashboard_visualizations, DashboardVisualization
@@ -51,10 +53,11 @@ defmodule MetricFlow.Dashboards.Dashboard do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(dashboard, attrs) do
     dashboard
-    |> cast(attrs, [:name, :description, :user_id, :built_in])
+    |> cast(attrs, [:name, :description, :user_id, :built_in, :date_range])
     |> validate_required([:name, :user_id])
     |> validate_length(:name, min: 1, max: 255)
     |> validate_length(:description, max: 1000)
+    |> validate_inclusion(:date_range, ["7", "30", "90"])
     |> assoc_constraint(:user)
   end
 
