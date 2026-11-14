@@ -314,6 +314,23 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         </div>
       </div>
 
+      <%!-- Story 74, rule 5: an interactive control that only re-runs
+           metric queries and changes what is shown -- it never writes
+           anywhere or calls any tool. --%>
+      <div data-role="filter-control" class="mf-card p-3 mb-6 flex items-center gap-2">
+        <label class="text-sm text-base-content/70" for="dashboard-date-range">Date range</label>
+        <select
+          id="dashboard-date-range"
+          name="range"
+          phx-change="filter_date_range"
+          class="select select-sm select-bordered"
+        >
+          <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
+          <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
+          <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
+        </select>
+      </div>
+
       <%!-- Visualization canvas --%>
       <div
         id="visualization-canvas"
@@ -455,6 +472,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard_chat_session_id, chat_session_id)
           |> assign(:dashboard_chat_pending_message, nil)
           |> assign(:dashboard_versions, Dashboards.list_dashboard_versions(dashboard))
+          |> assign(:dashboard_date_range, "30")
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -495,6 +513,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard_chat_session_id, nil)
       |> assign(:dashboard_chat_pending_message, nil)
       |> assign(:dashboard_versions, [])
+      |> assign(:dashboard_date_range, "30")
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -733,6 +752,11 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
+  # Story 74, rule 5: only re-runs what is shown -- no write, no tool call.
+  def handle_event("filter_date_range", %{"range" => range}, socket) do
+    {:noreply, assign(socket, :dashboard_date_range, range)}
+  end
+
   # ---------------------------------------------------------------------------
   # Async dashboard chat result handlers
   # ---------------------------------------------------------------------------
@@ -806,6 +830,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
       metric_names ->
         context = socket.assigns.dashboard_chat_context
+        current_spec = existing_widgets_context(socket.assigns.chart_specs)
         runner = Application.get_env(:metric_flow, :command_runner)
 
         Task.async(fn ->
@@ -814,7 +839,8 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             trimmed,
             metric_names: metric_names,
             command_runner: runner,
-            multi_widget: true
+            multi_widget: true,
+            current_spec: current_spec
           )
         end)
 
@@ -828,6 +854,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         {:noreply, socket}
     end
   end
+
+  # Story 74 rule 4: a message sent on an already-built dashboard (fresh
+  # /new build or a reopened one via "Edit with agent") should tell the
+  # model what is already there, so it can refine or add to it rather than
+  # acting as if nothing exists.
+  defp existing_widgets_context([]), do: nil
+  defp existing_widgets_context(chart_specs), do: %{"existing_widgets" => chart_specs}
 
   defp append_chat_message(socket, message) do
     assign(socket, :dashboard_chat_messages, socket.assigns.dashboard_chat_messages ++ [message])

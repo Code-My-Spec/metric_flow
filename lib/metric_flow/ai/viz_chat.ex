@@ -150,6 +150,9 @@ defmodule MetricFlow.Ai.VizChat do
   into a single spec with "vconcat", "hconcat", or "concat" -- that produces
   one widget, not several. Each call to update_spec adds a new widget to the
   dashboard; it does not replace what you already added this turn.
+
+  When the user doesn't name a date range, default to the last 30 days
+  ending yesterday (today's incomplete data is not included).
   """
 
   defp build_system_prompt(current_spec, multi_widget) do
@@ -162,11 +165,22 @@ defmodule MetricFlow.Ai.VizChat do
 
         spec ->
           String.trim(@base_system_prompt) <>
-            "\n\nCurrent Vega-Lite spec:\n```json\n" <>
+            "\n\n" <> current_spec_label(multi_widget) <> ":\n```json\n" <>
             Jason.encode!(spec, pretty: true) <>
-            "\n```\nWhen editing, pass the COMPLETE updated spec to update_spec."
+            "\n```\n" <> current_spec_instruction(multi_widget)
       end
 
     if multi_widget, do: base <> "\n\n" <> String.trim(@multi_widget_guidance), else: base
   end
+
+  defp current_spec_label(true), do: "Existing widgets already on this dashboard"
+  defp current_spec_label(false), do: "Current Vega-Lite spec"
+
+  defp current_spec_instruction(true),
+    do:
+      "Call update_spec to add a new widget. To change one of these, pass back its " <>
+        "COMPLETE updated spec."
+
+  defp current_spec_instruction(false),
+    do: "When editing, pass the COMPLETE updated spec to update_spec."
 end
