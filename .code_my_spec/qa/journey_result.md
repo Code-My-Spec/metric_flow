@@ -2,32 +2,23 @@
 
 ## Status
 
-mixed
+pass
 
 Journeys 1-5 from the plan were walked live against the running app
 (`http://localhost:4070`, this worktree's dev server) and passed; each is
 codified as a `Phoenix.LiveViewTest` module under `test/journeys/` (see
 Phase 3 notes below) -- the prior attempt at this phase had pivoted to
 unrelated BDD-spec fixes without actually executing any journey; this run
-replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent") was added and walked
-across several coder stages: fail at commit 5d7b86d7 (no chat affordance at
-all), pass for chat-builds-one-visualization at 684d9a0/4db2d04, pass for
-draft autosave + reload persistence at 950932f -- and fail again at 950932f
-for mixed widget types in one chat message, which still collapses into a
-single Vega-Lite spec instead of separate dashboard elements. Re-walked at
-d4a75d8 (2026-11-14): still fails, now with a precise root cause (the model
-never told it may call `update_spec` more than once). Fixed at 455ea40
-(dashboard-chat-only system-prompt guidance) and confirmed live at
-de23c19+ on 2026-11-14 -- the real model now produces two separate
-widgets from one request. Missing-metric redirect, a named "Edit with
-agent" resume action, and versioning/restore remain untested/unbuilt. The
-journey test now covers build, draft autosave, and multi-widget (both the
-backend mechanism and the real prompt/tool guidance); the next stage
-(versioning/restore or "Edit with agent" history) is added below as the
-coder's next red. Some of this walking was
-done outside `start_task`/`evaluate_task` because of a graph deadlock
-(c2084903) that refused to re-offer `qa_journey` after a stage landed; see
-Issues.
+replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent")
+went through several fail/fix cycles on 2026-11-14 (no chat affordance,
+then multi-widget combining into one spec, then no draft-navigation on
+reload, then no versioning) and now passes for every rule exercised:
+build, multi-widget composition, draft autosave with reload, and
+per-change versioning. Missing-metric redirect and a distinctly-named
+"Edit with agent" resume action remain unexercised. See Journey 6 below
+for the consolidated detail; some of this walking was done outside
+`start_task`/`evaluate_task` because of a graph deadlock (c2084903) that
+refused to re-offer `qa_journey` after a stage landed -- see Issues.
 
 ## Journey Results
 
@@ -101,222 +92,74 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** partial (re-walked outside the task loop; graph deadlock c2084903
-tracked separately, see Issues)
+**Status:** pass (Story 74 rules 1, 2 and 7; rules on missing-metric
+redirect and a named "Edit with agent" resume action not yet exercised)
 
-**First walk (commit 5d7b86d7):** fail at step 2. `/app/dashboards/new` was
-the existing manual builder only ("Start from a template or blank canvas" +
-"+ Add Visualization"), with no chat affordance anywhere. Screenshot:
-`.code_my_spec/qa/journeys/screenshots/journey6_new_dashboard.png`.
+Walked across many coder stages on 2026-11-14; consolidated here rather
+than kept as a growing list of individual re-walk attempts (see git log
+for `test/journeys/build_a_screen_with_the_agent_test.exs` and this file's
+history if the detail is needed).
 
-**Re-walk (commit 4db2d04, this copy's app at `http://127.0.0.1:53149`):**
-the coder landed the first stage. Logged in as `qa@example.com` and opened
-`/app/dashboards/new`:
+- **Chat builds a visualization from natural language (684d9a0/4db2d04)
+  -- pass, confirmed live.** Sending a request on `/app/dashboards/new`
+  adds a real, working chart built from real metric data.
+- **Multi-widget composition (Story 74 rule 2; d4a75d8, then 455ea40) --
+  pass, confirmed live.** First failed: the real model combined multiple
+  requested widgets into one Vega-Lite `vconcat` spec, and said outright
+  it had no tool to create separate dashboard elements. Root cause: the
+  backend mechanism (multiple `update_spec` calls in one turn -> multiple
+  elements) existed, but nothing told the model it could use it. Fixed at
+  455ea40 (dashboard-chat-only system-prompt guidance, gated behind a
+  `multi_widget: true` opt so the single-visualization editor is
+  unaffected). Confirmed live by main (2026-11-14, de23c19+): one message
+  ("Add a stat tile showing total impressions and a line chart of
+  impressions over time") produced two separate `visualization-card`
+  elements. Main's screenshot of this
+  (`multiwidget_live.png`) lived in main's own agent scratch directory,
+  which QA's tools could not reach to copy into the project -- not
+  reproduced here. `journey6_stage5_vconcat_gap.png` (the earlier failing
+  state) remains for contrast.
+- **Draft autosave with reload (Story 74 rule 1) -- pass, confirmed live
+  and by test.** First build persisted a draft `Dashboard` (950932f), but
+  the LiveView never navigated off `/app/dashboards/new`, so a real
+  browser reload of `/new` showed an empty canvas even though the draft
+  existed under `/app/dashboards` -- found live by main (2026-11-14,
+  de23c19), not caught earlier because the original check reopened the
+  draft via a direct `/edit` visit rather than reloading `/new` itself.
+  Fixed at a8e2d7b: the editor now `push_patch`es to
+  `/app/dashboards/:id/edit` once the draft exists. `assert_patch`
+  assertion added, confirmed failing at de23c19/e41dd31 and passing at
+  a8e2d7b.
+- **Versioning (Story 74 rule 7) -- pass by test, not yet re-confirmed
+  live.** No `DashboardVersion` schema existed anywhere; added as a
+  failing `has_element?(view, "[data-role='dashboard-version-list']")`
+  assertion (confirmed failing at e41dd31). Fixed at a8e2d7b: every
+  successful chat-driven save (first build and every later change) now
+  records a `MetricFlow.Dashboards.DashboardVersion` snapshot, rendered as
+  a version list on the edit page. `mix test test/journeys/...`: 7/7
+  passed at a8e2d7b (confirmed by QA); coder additionally reports 12/12
+  journey tests and 232/232 across `dashboard_live`/`dashboards`/Story 29
+  spex/`visualization_live`, no new failures elsewhere.
+- **Live re-confirmation at a8e2d7b -- blocked on QA's own browser tool,
+  not attempted by main this round.** QA's packed-login script 504'd
+  twice in a row again at a8e2d7b, the same failure mode seen repeatedly
+  earlier this session even after main ruled out host load and the
+  leaked-browser accumulation; main has escalated this to CodeMySpec.
+  Confidence in this fix rests on the ExUnit suite (which directly
+  exercises the `push_patch` and version-recording behavior the live walk
+  would check) plus the coder's own broader regression run, not an
+  independent live walk this round.
+- **Missing-metric redirect to Integrations and a distinctly-named "Edit
+  with agent" resume action -- still not independently exercised.** Chat
+  history does resume on a plain `/edit` visit (confirmed since 950932f),
+  which covers the substance of "Edit with agent"; whether there is (or
+  should be) a distinctly-labeled entry point for it, and the
+  missing-metric-redirects-to-Integrations behavior, remain unwalked.
 
-- **Chat builds a visualization from natural language -- pass.** A "Build
-  with AI" panel (`[data-role='dashboard-chat-input']` /
-  `[data-role='dashboard-chat-send-btn']`) is present. Sending "Show me a
-  spend-over-time line chart" added a working line chart ("Spend Over
-  Time", plotting `total_cost` by date) to the canvas, with the agent's
-  reply explaining the metric choice and offering follow-ups. Screenshot:
-  `.code_my_spec/qa/journeys/screenshots/journey6_stage2_chat_built_chart.png`.
-- **Draft autosave on first build -- fail / not built (commit 4db2d04).**
-  Reloading the page after the chart was built returned to the blank
-  "/new" state with the chat history and chart gone; the URL never moved
-  off `/app/dashboards/new`. No dashboard record was created until an
-  explicit "Save Dashboard" click.
-- **Mixed widget types in one request, missing-metric redirect to
-  integrations, "Edit with agent" resuming a saved dashboard's history, and
-  per-change versioning with restore -- not independently re-tested at
-  4db2d04** (per main's guidance, since only `dashboard_live/editor.ex`
-  changed in 684d9a0).
-
-**Second re-walk (commit 950932f):** the coder landed draft autosave.
-
-- **Draft autosave on first build -- pass.** Building the same line chart
-  via chat created a real `Dashboard` (id 8, "Untitled Dashboard",
-  visible under My Dashboards) with no explicit save. Visiting
-  `/app/dashboards/8/edit` directly (simulating a reload/reopen) showed
-  the same chart and the full chat history ("You: Show me a
-  spend-over-time line chart" / "Agent: ..."), satisfying Story 74 rule 1
-  and the "refreshing the page shows the same dashboard" scenario.
-  Screenshots:
-  `.code_my_spec/qa/journeys/screenshots/journey6_stage3_after_build_950932f.png`,
-  `.code_my_spec/qa/journeys/screenshots/journey6_stage3_reopened_edit8.png`.
-- **Mixed widget types in one message -- fail / not built.** Asked (on the
-  same persisted dashboard) for "a line chart of revenue over time and a
-  headline stat of total conversions" in one message, after an earlier
-  turn had already added a stat tile. The agent's reply described adding
-  "three parts" (two headline stats side by side plus a line chart below
-  them), but the canvas gained exactly one new card, labeled "Custom" /
-  "line" -- the three parts are crammed into a single Vega-Lite spec
-  rather than created as separate stat-tile/chart dashboard elements.
-  `add_visualization_from_chat_spec/2` only ever appends one visualization
-  per chat turn, so a message asking for several distinct widget types
-  cannot produce several distinct widgets yet, contrary to Story 74 rule
-  2's scenario ("the dashboard shows a stat tile, a line chart and a
-  table in a layout"). Screenshot:
-  `.code_my_spec/qa/journeys/screenshots/journey6_stage4_multiwidget_gap.png`.
-- **Missing-metric redirect to integrations, "Edit with agent" as a named
-  resume action (distinct from just visiting `/edit`), and per-change
-  versioning with restore -- still not independently tested/built.**
-
-**Third re-walk (commit d4a75d8, "Support multiple widgets from one chat
-turn", 2026-11-14):** restarted this copy's app to serve d4a75d8 and
-re-walked build / reload / multi-widget live as `qa@example.com`.
-
-- **Chat builds a visualization, draft autosave + reload -- still pass,
-  no regression.** Logged in, opened `/app/dashboards/new`, built a chart
-  via chat; standard behavior unchanged from the prior two stages.
-- **Mixed widget types in one message -- still fails, now with a precise
-  root cause.** Asked "Show me a headline stat of total conversions and a
-  line chart of cost over time" (one message). The agent replied it had
-  created "two stacked views" and explained each, but the canvas still
-  gained exactly **one** card (`data-role="visualization-card"` count:
-  1), labeled "Custom" / "line". Inspecting that card's `data-spec`
-  attribute showed a single Vega-Lite spec using `vconcat` to stack a text
-  mark (the headline) over a line mark (the chart) -- a real improvement
-  over the earlier "three parts crammed into one spec losing information"
-  failure mode, but still one combined visualization, not two independent,
-  separately-draggable/removable dashboard elements as Story 74 rule 2's
-  scenario describes.
-
-  Followed up explicitly in the same chat: "Please add two separate
-  widgets to this dashboard: a headline stat tile for total clicks, and a
-  separate line chart widget for cost over time. They should be two
-  independent dashboard elements, not one combined chart." The agent's
-  reply is the most useful finding of this walk: *"I can't add two
-  independent widgets with the tools I have. `update_spec` reads and
-  writes one Vega-Lite spec, and I have no tool to create or manage
-  separate dashboard elements. If I put both in that spec, they would be a
-  single combined chart, which you said you don't want."* It then offered
-  two options, both acknowledging it cannot satisfy the request: use the
-  current spec for one widget and let the user create the other via the
-  dashboard's own "add widget" flow, or keep the combined chart.
-
-  Investigating the backend side (not just the live walk) found the
-  multi-widget mechanism d4a75d8 actually added: the `:command_runner`
-  test double for this stage (`VizChatStub.generate_initial/0`) scripts
-  the model calling `update_spec` **twice** in one turn (two tool calls,
-  two different specs), and the backend now creates a separate dashboard
-  element per `update_spec` call within a turn instead of overwriting --
-  that mechanism does work when exercised directly via ExUnit. The gap is
-  narrower than "the backend can't do it": **the backend can, but the
-  deployed model is never told it can call `update_spec` more than once
-  per turn**, so the live model always reaches for `vconcat` (or declines)
-  instead. This is a prompt / tool-description gap, not a persistence or
-  rendering bug.
-
-  The existing committed ExUnit test for this stage
-  (`test/journeys/build_a_screen_with_the_agent_test.exs`, "a single chat
-  message naming two distinct widget types produces two widgets") was
-  passing against d4a75d8 before this walk, but only because it reused
-  `VizChatStub.generate_initial/0` -- the unrealistic two-separate-calls
-  double -- giving a false-green signal for the live behavior actually
-  observed. Fixed as part of this walk: added
-  `VizChatStub.generate_multi_widget_combined/0`, which reproduces the
-  single-`vconcat`-spec response confirmed live (also had to route it
-  through `ClaudeCodeStub.completed_tool_call/3` + `sequence/1` rather
-  than a bare `tool_call/3` -- a bare one never reaches `:end_turn`, so
-  the agent loop kept re-calling `update_spec` with the same spec until a
-  turn cap, producing 25 duplicate cards in an early version of this fix,
-  caught by inspecting the mismatch rather than accepting it). The test
-  now correctly fails (`length(cards)`: `1`, expected `2`), matching the
-  live result exactly. Per the walk convention, the failing test is left
-  committed and no issue filed for it -- it's the coder's next work item,
-  specifically on the AI system prompt / tool description for `VizChat`,
-  not on rendering or persistence.
-
-  Screenshot: `.code_my_spec/qa/journeys/screenshots/journey6_stage5_vconcat_gap.png`.
-
-- **Missing-metric redirect to integrations, "Edit with agent" as a named
-  resume action, and per-change versioning with restore -- still not
-  independently tested/built; not re-attempted this walk since the
-  multi-widget stage ahead of them is still red.**
-
-**Fourth re-walk attempt (commit de23c19, 2026-11-14): partial -- live check
-could not complete because of the browser tool, not the app.** After the
-converse-guidance test was committed and the suite confirmed green at
-de23c19 via `mix test`/`exunit` (run 9980, no blocking problems), tried to
-re-walk the multi-widget stage live to see whether the real model now
-produces two cards. The app instance itself was healthy (`ensure_app_running`
-confirmed it serving `de23c19`, the correct commit). Host load was elevated
-(~15 on 10 cores, 35 orphaned chromedrivers per issue `fdd98643`) but not at
-the earlier 600+ spike. A single packed script (navigate to `/users/log-in`,
-wait for "Log in", fill the password-login fields, press Enter) hit a 504
-twice in a row -- the stop condition main gave for this attempt. No login,
-so no multi-widget result was captured this walk. The backend/prompt fix
-itself is verified by the committed test suite (5/5 passing, including the
-capture-based assertions on the real system prompt and tool description);
-only the live confirmation that the deployed model behaves accordingly is
-still outstanding, blocked on the browser tool's reliability under current
-host load, not on anything in the application.
-
-**Fifth re-walk attempt (commit de23c19, 2026-11-14): partial again --
-same cause.** Main confirmed load had dropped to ~7/10 cores and re-enabled
-the loop; the app instance was already confirmed serving `de23c19` (no
-restart needed). The same packed login script (navigate to `/users/log-in`,
-wait for "Log in", fill the password-login fields, press Enter) 504'd twice
-in a row again, with no other browser action attempted in between. Per
-main's stop condition, held here rather than retrying further; no login, so
-again no multi-widget result was captured. The committed test suite remains
-the only confirmed evidence that the fix works (5/5 passing at de23c19);
-live confirmation is still outstanding, blocked on browser tool reliability.
-
-**Sixth re-walk attempt (commit 74e65e3, 2026-11-14): partial again --
-same cause, with the leaked browsers cleared.** Main confirmed the orphaned
-chromedrivers were gone (only 3 remained, none orphaned) and load was down
-to ~7.5/10 cores; app instance confirmed already serving this commit. The
-same packed login script 504'd twice in a row again, with no other browser
-action attempted in between. This rules out both host load and the leaked-
-browser accumulation as the cause -- the browser tool itself is failing on
-this very first step regardless of machine state, consistent with main's
-escalation of this to CodeMySpec. No login, so still no live multi-widget
-result. The committed test suite (5/5 passing at de23c19/74e65e3, including
-both capture-based prompt/tool-description assertions) remains the only
-confirmed evidence the fix works.
-
-**Multi-widget stage -- pass live (2026-11-14, walked by main directly on
-this copy's app at de23c19+, since QA's own browser tool kept 504ing).**
-As `qa@example.com` on `/app/dashboards/new`, sent "Add a stat tile showing
-total impressions and a line chart of impressions over time". The real
-model produced two separate `[data-role='visualization-card']` elements --
-"Total Impressions" (text/stat) and "Impressions Over Time" (line), each
-with its own `vega-lite-chart` -- and replied "I added both widgets to the
-dashboard... both spec updates succeeded." This confirms the 455ea40 fix
-(per-widget `update_spec` guidance on the dashboard chat path) works
-against the real model, closing the gap recorded in the third/fifth/sixth
-re-walk attempts above. Story 74 rule 2's multi-widget scenario now passes
-live, matching the already-green capture-based test.
-
-**Draft-autosave-after-build -- real regression, found live by main
-(2026-11-14, same de23c19 walk).** QA's own attempts to independently
-re-verify this (two more packed-login scripts) 504'd twice in a row each
-time, with no other browser action in between, immediately after main's
-own session had just worked -- ruling out host load and the leaked-browser
-accumulation (both already ruled out in the sixth attempt above) and
-pointing at something specific to QA's own browser session/tool instance.
-Main completed the check directly instead: after the agent's build, the
-URL stays on `/app/dashboards/new` rather than navigating to the new
-draft's own page. Reloading that `/new` URL shows an empty canvas -- 0
-cards, 0 chat messages. The draft dashboard record does exist (visible
-under `/app/dashboards` with a working edit link), so the data is safe,
-but a plain page reload loses the user's view of it, breaking Story 74's
-"refreshing the page shows the same dashboard" scenario. This is likely not a new regression but a gap the earlier draft-autosave
-check never actually tested: that check (950932f) confirmed the draft
-persisted by visiting `/app/dashboards/:id/edit` directly, simulating a
-reopen -- it never reloaded `/app/dashboards/new` itself, so it would not
-have caught the LiveView failing to navigate there automatically. The new
-`assert_patch` assertion below targets that specific, previously-untested
-behavior directly.
-
-Not a regression anywhere tested: everything that worked before still
-works, and all capabilities tested to date work as described except
-multi-widget composition. Multi-widget composition (now understood as a
-prompt/tool-description gap, not a backend limitation), missing-metric
-guidance, and versioning/restore still have no code (or prompt) to attach
-to and remain open coder work, tracked via the still-committed failing test
-rather than a new issue.
+Not a regression anywhere tested: every previously-passing stage (1-5,
+plus this journey's earlier-passing stages) still passes. No new
+application issues filed this round -- every gap found became a failing
+test instead, each since fixed by the coder in the same session.
 
 ## Issues
 
@@ -336,9 +179,21 @@ leaked-browser load spike (fdd98643) each caused a 504 on the very first
 browser action attempted; both were reported to main and the walk resumed
 only once main confirmed recovery. Not an application defect.
 
+QA's browser tool (framework, escalated by main to CodeMySpec, not filed
+by this agent): after the host disk/load issue above resolved, QA's own
+packed-login browser script kept 504ing twice in a row on repeated
+attempts across multiple commits (de23c19, 74e65e3, a8e2d7b), even
+immediately after main's own browser session on the same app instance had
+just succeeded -- ruling out host load and the leaked-browser
+accumulation as the cause. Main did the multi-widget and draft-autosave
+live walks directly instead. Still unresolved as of this writing; QA's
+confidence in the versioning and draft-autosave fixes rests on the ExUnit
+suite, not an independent live walk.
+
 None newly filed against the application -- this run exercised already-
-shipped, previously-QA'd surfaces (plus the now-better-understood
-multi-widget gap, already tracked via the failing test) and found no new
+shipped, previously-QA'd surfaces (plus the now-fixed multi-widget,
+draft-autosave-navigation, and versioning gaps, each tracked via a
+failing test and since resolved by the coder) and found no new
 application defects.
 
 ## Phase 3 note
@@ -346,5 +201,5 @@ application defects.
 Per John's decision (answer to question `5df24200`), journeys are codified
 as `Phoenix.LiveViewTest` modules under `test/journeys/`, not Wallaby --
 consistent with the project's e2e testing ADR, which does not use Wallaby.
-All 6 files exist; 5 pass end-to-end, and journey 6 has 2/3 passing with the
-third committed failing at the multi-widget stage as described above.
+All 6 files exist and pass end-to-end (`mix test test/journeys`: confirmed
+green, including journey 6's 7 tests as of a8e2d7b).
