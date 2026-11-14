@@ -97,7 +97,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                 View
               </.link>
               <.link navigate={~p"/app/dashboards/#{dashboard.id}/edit"} class="btn btn-ghost btn-sm" data-role={"edit-dashboard-#{dashboard.id}"}>
-                Edit
+                Edit with agent
               </.link>
               <button
                 phx-click="delete"

@@ -120,6 +120,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               {if msg.role == :user, do: "You", else: "Agent"}
             </p>
             <p class="whitespace-pre-wrap">{msg.content}</p>
+            <.link
+              :if={Map.get(msg, :link)}
+              navigate={msg.link.href}
+              class="text-primary underline text-xs"
+            >
+              {msg.link.text}
+            </.link>
           </div>
         </div>
 
@@ -782,12 +789,18 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   defp send_dashboard_chat_message(socket, trimmed) do
     case socket.assigns.available_metrics do
       [] ->
-        error_msg = "No metrics are available yet. Connect a platform in Integrations to get started."
+        error_msg = "No metrics are available yet."
+
+        assistant_msg = %{
+          role: :assistant,
+          content: error_msg,
+          link: %{href: "/app/integrations", text: "Connect a platform"}
+        }
 
         socket =
           socket
           |> append_chat_message(%{role: :user, content: trimmed})
-          |> append_chat_message(%{role: :assistant, content: error_msg})
+          |> append_chat_message(assistant_msg)
 
         {:noreply, socket}
 
