@@ -2,7 +2,7 @@
 
 ## Status
 
-pass
+mixed
 
 Journeys 1-5 from the plan were walked live against the running app
 (`http://localhost:4070`, this worktree's dev server) and passed; each is
@@ -12,11 +12,12 @@ unrelated BDD-spec fixes without actually executing any journey; this run
 replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent")
 went through several fail/fix cycles on 2026-11-14 (no chat affordance,
 then multi-widget combining into one spec, then no draft-navigation on
-reload, then no versioning) and now passes for every rule exercised:
-build, multi-widget composition, draft autosave with reload, and
-per-change versioning. Missing-metric redirect and a distinctly-named
-"Edit with agent" resume action remain unexercised. See Journey 6 below
-for the consolidated detail; some of this walking was done outside
+reload, then no versioning, then chart type lost on reload) and now
+passes for build, multi-widget composition, draft autosave with reload,
+and per-change versioning with restore. Missing-metric redirect and a
+distinctly-named "Edit with agent" entry point are now codified as
+failing tests, handing the coder its next work. See Journey 6 below for
+the consolidated detail; some of this walking was done outside
 `start_task`/`evaluate_task` because of a graph deadlock (c2084903) that
 refused to re-offer `qa_journey` after a stage landed -- see Issues.
 
@@ -92,8 +93,9 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** pass (Story 74 rules 1, 2 and 7; rules on missing-metric
-redirect and a named "Edit with agent" resume action not yet exercised)
+**Status:** fail (rules 1, 2 and 7 pass; rules 3 and 4 -- missing-metric
+redirect and a named "Edit with agent" entry point -- fail, now codified
+as the coder's next work)
 
 Walked across many coder stages on 2026-11-14; consolidated here rather
 than kept as a growing list of individual re-walk attempts (see git log
@@ -129,7 +131,13 @@ history if the detail is needed).
   Fixed at a8e2d7b: the editor now `push_patch`es to
   `/app/dashboards/:id/edit` once the draft exists. `assert_patch`
   assertion added, confirmed failing at de23c19/e41dd31 and passing at
-  a8e2d7b.
+  a8e2d7b. Confirmed live by main (2026-11-14, a8e2d7b): on
+  `/app/dashboards/new`, one message produced 2 cards and the editor
+  moved to `/app/dashboards/11/edit`; a reload kept both cards, both
+  chat messages, and showed "Version 1 -- Nov 14, 2026 05:39" in the
+  version list. Screenshot (main's agent scratch, not copied into the
+  project):
+  `/Users/johndavenport/.codemyspec/agent_scratch/0521fa8d-76ea-41ee-97cc-ff698c2a5fb7/reload_after_build.png`.
 - **Versioning and restore (Story 74 rule 7) -- pass by test, not yet
   re-confirmed live.** No `DashboardVersion` schema existed anywhere;
   added as a failing `has_element?(view,
@@ -173,12 +181,26 @@ history if the detail is needed).
   had landed in this shared working copy mid-run. Re-ran clean afterward
   (9/9, stable across repeats); not test flakiness, just a race with
   concurrent work in a shared checkout.
-- **Missing-metric redirect to Integrations and a distinctly-named "Edit
-  with agent" resume action -- still not independently exercised.** Chat
-  history does resume on a plain `/edit` visit (confirmed since 950932f),
-  which covers the substance of "Edit with agent"; whether there is (or
-  should be) a distinctly-labeled entry point for it, and the
-  missing-metric-redirects-to-Integrations behavior, remain unwalked.
+- **Missing-metric redirect to Integrations (Story 74 rule 3) -- fail,
+  now codified.** Rule: "the agent says which metric is missing and
+  points her to integrations... offers a link to connect a platform."
+  With no synced metrics, the agent's chat reply does say "No metrics
+  are available yet. Connect a platform in Integrations to get
+  started." -- but that message renders as plain escaped text
+  (`<p class="whitespace-pre-wrap">{msg.content}</p>` in
+  `dashboard_live/editor.ex`), not an actual link. Added a test scoped
+  to the chat message itself (not the whole page, since the sidebar nav
+  already links to `/app/integrations` regardless, which would make an
+  unscoped assertion pass for the wrong reason -- caught and fixed
+  before committing). Confirmed failing: no `<a>` inside
+  `[data-role='dashboard-chat-message']` points there.
+- **"Edit with agent" entry point (Story 74 rule 4) -- fail, now
+  codified.** Chat history does resume on a plain `/edit` visit
+  (confirmed since 950932f), so the substance of the rule already
+  works; the dashboards index only offers a generic "Edit" link
+  (`data-role="edit-dashboard-:id"`), never the words "Edit with agent"
+  anywhere on the page. Added a test asserting that text appears after
+  building a dashboard; confirmed failing.
 
 Not a regression anywhere tested: every previously-passing stage (1-5,
 plus this journey's earlier-passing stages) still passes. No new
@@ -225,5 +247,7 @@ application defects.
 Per John's decision (answer to question `5df24200`), journeys are codified
 as `Phoenix.LiveViewTest` modules under `test/journeys/`, not Wallaby --
 consistent with the project's e2e testing ADR, which does not use Wallaby.
-All 6 files exist and pass end-to-end (`mix test test/journeys`: confirmed
-green, including journey 6's 7 tests as of a8e2d7b).
+All 6 files exist; 5 pass end-to-end. Journey 6 has 9/11 passing as of
+58026f9, with 2 committed failing (missing-metric redirect, "Edit with
+agent" entry point -- Story 74 rules 3 and 4), handing the coder its
+next work.

@@ -479,11 +479,69 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     Application.delete_env(:metric_flow, :command_runner)
 
     # Story 74, rule 7: "... with the ability to restore an earlier
-    # version." The version list added in a8e2d7b is display-only -- no
-    # restore handler or control exists anywhere in dashboard_live/
-    # editor.ex, and DashboardVersion's own moduledoc says it is
-    # "Immutable once written -- there is no changeset for" updates.
-    # Fails cleanly (no crash) rather than exercising anything real.
+    # version." Fixed at 58026f9: each version entry has a Restore
+    # button (restore_version event).
     assert has_element?(edit_view, "[data-role='restore-version']")
+  end
+
+  test "when no metrics exist, the agent's reply includes a link to connect a platform", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    # Deliberately no insert_metric! -- this user has no synced metrics.
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+    html =
+      render_submit(view, "send_dashboard_chat", %{"message" => "Show me a traffic dashboard"})
+
+    assert html =~ "No metrics are available yet"
+
+    # Story 74, rule 3: "... offers a link to connect a platform." Scope
+    # to the chat message itself, not the whole page -- the sidebar nav
+    # already links to /app/integrations regardless of the chat reply,
+    # which would make an unscoped `html =~ ~s(href="/app/integrations")`
+    # pass even though the reply has no link at all. The chat bubble
+    # renders message content as plain escaped text
+    # (`<p class="whitespace-pre-wrap">{msg.content}</p>` in
+    # dashboard_live/editor.ex), so mentioning Integrations in prose
+    # isn't an actual link.
+    chat_message_links =
+      html
+      |> Floki.parse_fragment!()
+      |> Floki.find("[data-role='dashboard-chat-message'] a[href='/app/integrations']")
+
+    assert chat_message_links != []
+  end
+
+  test "a saved dashboard has an \"Edit with agent\" entry point, not just a generic Edit link",
+       %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [_dashboard] = Dashboards.list_dashboards(scope)
+
+    {:ok, _index_view, index_html} = live(conn, ~p"/app/dashboards")
+
+    # Story 74, rule 4: "... choosing Edit with agent restores the
+    # conversation and the agent continues from the current dashboard."
+    # The dashboards index only offers a generic "Edit" link
+    # (data-role="edit-dashboard-:id" in dashboard_live/index.ex), not
+    # one labeled "Edit with agent". Visiting that link does restore the
+    # chat history (confirmed since 950932f), so the substance already
+    # works -- there's just no distinctly-labeled entry point for it.
+    assert index_html =~ "Edit with agent"
   end
 end
