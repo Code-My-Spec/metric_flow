@@ -3,16 +3,19 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
   Journey 6 from `.code_my_spec/qa/journey_plan.md` (Story 74): a user
   describes a dashboard in chat and the agent builds it as a draft.
 
-  Fails at step 2 -- there is no chat affordance on `/app/dashboards/new`
-  yet. Tracked in `.code_my_spec/qa/journey_result.md` Journey 6 as a real,
-  unbuilt feature (no draft/version fields on `Dashboard`, no multi-widget
-  chat authoring), not a UI defect to patch in this test.
+  Stage "Ask for a dashboard" (684d9a0): chat builds one visualization
+  from natural language -- confirmed live in
+  `.code_my_spec/qa/journey_result.md` Journey 6. Remaining stages (draft
+  autosave, multi-widget composition, missing-metric redirect, agent-chat
+  history, versioning/restore) are not built yet and are not asserted
+  here; see that same section for what was observed.
   """
 
-  use MetricFlowTest.ConnCase, async: true
+  use MetricFlowTest.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
+  import MetricFlowTest.MetricsFixtures
 
   alias MetricFlow.Accounts.Account
   alias MetricFlow.Accounts.AccountMember
@@ -39,24 +42,41 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     |> Repo.insert!()
   end
 
-  test "describing a dashboard in chat builds it as a draft", %{conn: conn} do
+  test "describing a dashboard in chat builds a visualization onto the canvas", %{conn: conn} do
     user = user_fixture()
     account = insert_account!(user)
     insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
 
     conn = log_in_user(conn, user)
 
     # Step 2: a chat affordance to describe the dashboard in natural language
     {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    assert has_element?(view, "[data-role='dashboard-chat-input']")
 
-    assert has_element?(view, "[data-role='dashboard-chat-input']"),
-           "Story 74 is not built: /app/dashboards/new has no chat affordance " <>
-             "to describe a dashboard (see journey_result.md Journey 6)"
+    # Step 3: the agent builds what was described, using real metric data
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.generate_initial()
+    )
 
-    # Steps 3-5 (unreached until the chat affordance above exists): submit
-    # "a headline stat, a spend-over-time line chart and a table of
-    # campaigns", assert a draft Dashboard is created with those widgets,
-    # then reopen it via "Edit with agent" and confirm chat history and a
-    # restorable version list persist with it.
+    render_submit(view, "send_dashboard_chat", %{
+      "message" => "Show me impressions over time as a line chart"
+    })
+
+    Process.sleep(100)
+    html = render(view)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    assert html =~ "I'll create a line chart showing impressions over time."
+    assert has_element?(view, "[data-role='vega-lite-chart']")
+
+    # Steps 4-5 (not built yet -- see journey_result.md Journey 6):
+    # reloading loses the chat and chart since there is no draft autosave,
+    # and there is no mixed stat-tile/chart/table response, missing-metric
+    # redirect to Integrations, "Edit with agent" history, or
+    # versioning/restore.
   end
 end
