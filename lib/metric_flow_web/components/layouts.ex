@@ -171,24 +171,6 @@ defmodule MetricFlowWeb.Layouts do
 
             <li>
               <details>
-                <summary>Visualizations</summary>
-                <ul>
-                  <li><a href={~p"/app/visualizations/new"}>New Visualization</a></li>
-                </ul>
-              </details>
-            </li>
-
-            <li>
-              <details>
-                <summary>Reports</summary>
-                <ul>
-                  <li><a href={~p"/app/reports/generate"}>Generate Report</a></li>
-                </ul>
-              </details>
-            </li>
-
-            <li>
-              <details>
                 <summary>Dashboards</summary>
                 <ul>
                   <li><a href={~p"/app/dashboards"}>All Dashboards</a></li>
