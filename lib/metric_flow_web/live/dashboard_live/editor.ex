@@ -402,6 +402,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
               id={"dashboard-chart-#{idx}"}
               data-role="echarts-chart"
               phx-hook="ECharts"
+              phx-update="ignore"
               data-option={Jason.encode!(elem(Enum.at(@chart_render, idx), 1))}
               class="w-full h-full"
             >
@@ -451,7 +452,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:changeset, changeset)
           |> assign(:visualizations, visualizations)
           |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
-          |> assign(:chart_render, resolve_chart_render(visualizations, scope))
+          |> assign(
+            :chart_render,
+            resolve_chart_render(visualizations, scope, date_range_for(dashboard.date_range || "30"))
+          )
           |> assign(:picker_open, false)
           |> assign(:picker_selected_metric, nil)
           |> assign(:picker_selected_chart_type, "line")
@@ -578,8 +582,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     socket =
       socket
       |> assign(:visualizations, visualizations)
-      |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
-      |> assign(:chart_render, resolve_chart_render(visualizations, scope))
+      |> assign(
+        :chart_render,
+        resolve_chart_render(visualizations, scope, date_range_for(socket.assigns.dashboard_date_range))
+      )
       |> assign(:picker_open, false)
       |> assign(:picker_selected_metric, nil)
       |> assign(:picker_selected_chart_type, "line")
@@ -665,7 +671,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           socket
           |> assign(:visualizations, visualizations)
           |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
-          |> assign(:chart_render, resolve_chart_render(visualizations, scope))
+          |> assign(
+            :chart_render,
+            resolve_chart_render(visualizations, scope, date_range_for(socket.assigns.dashboard_date_range))
+          )
           |> assign(:picker_open, false)
           |> assign(:viz_error, nil)
 
@@ -723,7 +732,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # itself so it survives a reopen -- there's nothing to save yet for a
   # dashboard the agent hasn't built anything on.
   def handle_event("filter_date_range", %{"range" => range}, socket) do
-    socket = assign(socket, :dashboard_date_range, range)
+    socket =
+      socket
+      |> assign(:dashboard_date_range, range)
+      |> assign_visualizations(socket.assigns.visualizations)
 
     case socket.assigns.dashboard do
       %Dashboard{} = dashboard ->
@@ -1147,11 +1159,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp assign_visualizations(socket, visualizations) do
     scope = socket.assigns.current_scope
+    date_range = date_range_for(socket.assigns.dashboard_date_range)
 
     socket
     |> assign(:visualizations, visualizations)
     |> assign(:chart_specs, resolve_chart_specs(visualizations, scope))
-    |> assign(:chart_render, resolve_chart_render(visualizations, scope))
+    |> assign(:chart_render, resolve_chart_render(visualizations, scope, date_range))
   end
 
   defp resolve_chart_specs(visualizations, scope) do
@@ -1169,26 +1182,27 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # stored vega_spec's "data" happens to say -- so this works the same for
   # a chat-built widget (named data source, no embedded values) and an
   # older template/library/manual one (embedded values, or none at all).
-  defp resolve_chart_render(visualizations, scope) do
-    Enum.map(visualizations, &build_chart_render(&1, scope))
+  defp resolve_chart_render(visualizations, scope, date_range) do
+    Enum.map(visualizations, &build_chart_render(&1, scope, date_range))
   end
 
   # Story 74 (main, live walk of a7ba770): a widget whose query resolves to
   # zero data points in range gets a clear message instead of a silent 0
   # stat or an empty chart -- checked once, ahead of the stat/chart split,
   # so neither branch has to re-derive "no data" on its own.
-  defp build_chart_render(viz, scope) do
-    case query_metric_values(viz, scope) do
+  defp build_chart_render(viz, scope, date_range) do
+    case query_metric_values(viz, scope, date_range) do
       [] -> {:no_data, nil}
-      values -> build_chart_render(viz, values, :values)
+      values -> render_chart_from_values(viz, values)
     end
   end
 
-  defp build_chart_render(%{chart_type: "text"}, values, :values) do
-    {:stat, Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)}
+  defp render_chart_from_values(%{chart_type: "text"}, values) do
+    total = Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)
+    {:stat, format_stat_value(total)}
   end
 
-  defp build_chart_render(viz, values, :values) do
+  defp render_chart_from_values(viz, values) do
     option = %{
       "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
       "yAxis" => %{"type" => "value"},
@@ -1196,6 +1210,17 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     }
 
     {:chart, option}
+  end
+
+  # Main's live walk (a7ba770): a stat tile's total should read like
+  # "125,706", not a raw float's "125706.0".
+  defp format_stat_value(value) do
+    value
+    |> round()
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
+    |> String.reverse()
   end
 
   # A template/library-inserted visualization carries no :vega_spec key at
@@ -1212,12 +1237,27 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
-  defp query_metric_values(viz, scope) do
-    {start_date, end_date} = Dashboards.default_date_range()
-
+  defp query_metric_values(viz, scope, date_range) do
     scope
-    |> Metrics.query_time_series(chart_metric_key(viz), date_range: {start_date, end_date})
+    |> Metrics.query_time_series(chart_metric_key(viz), date_range: date_range)
     |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
+  end
+
+  # Main's live walk (a7ba770 + seeds): the filter's chosen "7"/"30"/"90"
+  # range must actually change what's queried, not just its own label --
+  # reuses the same presets available_date_ranges/0 already defines for
+  # the filter UI elsewhere, so the two can never drift apart.
+  defp date_range_for(range_str) do
+    key =
+      case range_str do
+        "7" -> :last_7_days
+        "90" -> :last_90_days
+        _ -> :last_30_days
+      end
+
+    Dashboards.available_date_ranges()
+    |> Enum.find(&(&1.key == key))
+    |> Map.fetch!(:range)
   end
 
   defp echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
