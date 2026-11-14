@@ -715,6 +715,63 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       refute history.error_message == "no_locations_configured"
       assert history.error_message =~ "Google Business Profile"
     end
+
+    test "humanizes a Google Ads 400 bad_request error instead of dumping the raw error tuple" do
+      {user, scope} = user_with_scope()
+
+      integration =
+        %Integration{}
+        |> Integration.changeset(%{
+          user_id: user.id,
+          provider: :google_ads,
+          access_token: "access-token-#{System.unique_integer([:positive])}",
+          refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
+          expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
+          granted_scopes: [],
+          provider_metadata: %{"customer_id" => "0000000000"}
+        })
+        |> Repo.insert!()
+
+      sync_job = insert_sync_job!(user.id, integration.id, :google_ads)
+
+      bad_request_plug = fn conn ->
+        body = Jason.encode!(%{"error" => %{"message" => "Invalid customer ID 0000000000"}})
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(400, body)
+      end
+
+      capture_log(fn ->
+        perform_job(
+          SyncWorker,
+          job_args(integration.id, user.id, sync_job.id, bad_request_plug),
+          []
+        )
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message =~ "{:bad_request"
+      assert history.error_message =~ "Invalid customer ID 0000000000"
+    end
+
+    test "humanizes the error message when QuickBooks has no realm_id configured" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :quickbooks)
+      sync_job = insert_sync_job!(user.id, integration.id, :quickbooks)
+
+      capture_log(fn ->
+        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+      end)
+
+      [history] = SyncHistoryRepository.list_sync_history(scope)
+      assert history.status == :failed
+
+      refute history.error_message == "missing_realm_id"
+      assert history.error_message =~ "QuickBooks"
+    end
   end
 
   # ---------------------------------------------------------------------------
