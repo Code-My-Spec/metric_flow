@@ -214,6 +214,68 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     assert_patch(view, ~p"/app/dashboards/#{dashboard.id}/edit", 2_000)
   end
 
+  test "a chat-built stat tile keeps its own visualization type after reopening", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.generate_initial()
+    )
+
+    render_submit(view, "send_dashboard_chat", %{
+      "message" => "Add a stat tile and a line chart"
+    })
+
+    wait_for_chart(view)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    # Fresh mount, not the same `view` -- this is what actually exercises
+    # load_visualizations_from_dashboard/1's reload path, the same one a
+    # real browser reload hits.
+    {:ok, _edit_view, edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    # Story 74 rule 2: a stat tile stays a stat tile, not silently
+    # reclassified as a line chart. Confirmed live by main (2026-11-14,
+    # a8e2d7b): after reopening /edit, both cards' badges read "line",
+    # including the one built as a text mark ("Total Impressions"). Root
+    # cause: load_visualizations_from_dashboard/1 in dashboard_live/
+    # editor.ex derives chart_type via `Map.get(vega_spec, "chart_type")
+    # || "line"`, which only understands the stub
+    # %{"metric_name" => _, "chart_type" => _} shape, not a real
+    # chat-generated spec's "mark" key -- it should fall back to
+    # extract_chart_type_from_spec/1 (already defined in the same module)
+    # instead of hardcoding "line".
+    stat_tile_card =
+      edit_html
+      |> Floki.parse_fragment!()
+      |> Floki.find("[data-role='visualization-card']")
+      |> Enum.find(fn card -> Floki.text(card) =~ "Total Impressions" end)
+
+    refute is_nil(stat_tile_card), "expected a 'Total Impressions' card after reopening"
+
+    badge_text =
+      stat_tile_card
+      |> Floki.find(".badge")
+      |> Floki.text()
+      |> String.trim()
+
+    assert badge_text == "text"
+  end
+
   test "the agent's first build is saved as a draft, so a reload shows the same dashboard", %{
     conn: conn
   } do
@@ -383,5 +445,45 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     # DashboardVersion module anywhere in lib/), so this fails cleanly
     # rather than crashing -- the coder's next work item for this journey.
     assert has_element?(edit_view, "[data-role='dashboard-version-list']")
+  end
+
+  test "an earlier version can be restored", %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 10.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.generate_followup()
+    )
+
+    render_submit(edit_view, "send_dashboard_chat", %{
+      "message" => "Add clicks as a second series"
+    })
+
+    wait_for_chart(edit_view)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    # Story 74, rule 7: "... with the ability to restore an earlier
+    # version." The version list added in a8e2d7b is display-only -- no
+    # restore handler or control exists anywhere in dashboard_live/
+    # editor.ex, and DashboardVersion's own moduledoc says it is
+    # "Immutable once written -- there is no changeset for" updates.
+    # Fails cleanly (no crash) rather than exercising anything real.
+    assert has_element?(edit_view, "[data-role='restore-version']")
   end
 end

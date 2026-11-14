@@ -130,25 +130,49 @@ history if the detail is needed).
   `/app/dashboards/:id/edit` once the draft exists. `assert_patch`
   assertion added, confirmed failing at de23c19/e41dd31 and passing at
   a8e2d7b.
-- **Versioning (Story 74 rule 7) -- pass by test, not yet re-confirmed
-  live.** No `DashboardVersion` schema existed anywhere; added as a
-  failing `has_element?(view, "[data-role='dashboard-version-list']")`
-  assertion (confirmed failing at e41dd31). Fixed at a8e2d7b: every
-  successful chat-driven save (first build and every later change) now
-  records a `MetricFlow.Dashboards.DashboardVersion` snapshot, rendered as
-  a version list on the edit page. `mix test test/journeys/...`: 7/7
-  passed at a8e2d7b (confirmed by QA); coder additionally reports 12/12
-  journey tests and 232/232 across `dashboard_live`/`dashboards`/Story 29
-  spex/`visualization_live`, no new failures elsewhere.
-- **Live re-confirmation at a8e2d7b -- blocked on QA's own browser tool,
-  not attempted by main this round.** QA's packed-login script 504'd
-  twice in a row again at a8e2d7b, the same failure mode seen repeatedly
-  earlier this session even after main ruled out host load and the
-  leaked-browser accumulation; main has escalated this to CodeMySpec.
-  Confidence in this fix rests on the ExUnit suite (which directly
-  exercises the `push_patch` and version-recording behavior the live walk
-  would check) plus the coder's own broader regression run, not an
-  independent live walk this round.
+- **Versioning and restore (Story 74 rule 7) -- pass by test, not yet
+  re-confirmed live.** No `DashboardVersion` schema existed anywhere;
+  added as a failing `has_element?(view,
+  "[data-role='dashboard-version-list']")` assertion (confirmed failing
+  at e41dd31). Version recording fixed at a8e2d7b: every successful
+  chat-driven save now records a `DashboardVersion` snapshot, rendered as
+  a version list. Restore itself was still missing (the list was
+  display-only, and `DashboardVersion`'s own moduledoc said "Immutable
+  once written"); added a failing `has_element?(edit_view,
+  "[data-role='restore-version']")` assertion, confirmed failing. Fixed
+  at 58026f9: each version entry now has a Restore button
+  (`restore_version` event) that replaces the dashboard's current
+  visualizations with that version's snapshot and records the restore as
+  a new version, per the rule ("the restore appears as a new version in
+  the list"). `mix test test/journeys/...`: 9/9 passed at 58026f9
+  (confirmed by QA); coder additionally reports 14/14 journey tests and
+  220/220 across `dashboard_live`/`dashboards`/Story 29 spex/
+  `visualization_live`, no new failures elsewhere.
+- **Chart type lost on reload (found live by main, 2026-11-14, a8e2d7b)
+  -- pass by test.** After reopening `/edit`, a chat-built stat tile's
+  badge read "line" instead of "text" -- `load_visualizations_from_dashboard/1`
+  fell back to a literal `"line"` default whenever a saved
+  visualization's `vega_spec` was a real frozen spec (no explicit
+  `"chart_type"` key) rather than the ad-hoc marker shape. Added a
+  failing assertion scoped to a fresh `/edit` mount (the same path a real
+  browser reload hits); confirmed failing (`left: "line", right:
+  "text"`). Fixed at 58026f9: now derives the type from the spec's own
+  `mark` via `extract_chart_type_from_spec/1`, the same helper the
+  library-insert path already used.
+- **Live re-confirmation -- blocked on QA's own browser tool throughout
+  this round, including at 58026f9.** QA's packed-login script 504'd
+  twice in a row on every attempt across several commits (de23c19,
+  74e65e3, a8e2d7b), the same failure mode seen repeatedly even after
+  main ruled out host load and the leaked-browser accumulation; main has
+  escalated this to CodeMySpec. Confidence in the navigation, versioning,
+  restore and chart-type fixes rests on the ExUnit suite (which directly
+  exercises each) plus the coder's own broader regression runs, not an
+  independent live walk this round. One side effect worth noting: while
+  isolating the chart-type test, a run that should have failed instead
+  passed with no app-code change on QA's side -- the coder's 58026f9 fix
+  had landed in this shared working copy mid-run. Re-ran clean afterward
+  (9/9, stable across repeats); not test flakiness, just a race with
+  concurrent work in a shared checkout.
 - **Missing-metric redirect to Integrations and a distinctly-named "Edit
   with agent" resume action -- still not independently exercised.** Chat
   history does resume on a plain `/edit` visit (confirmed since 950932f),
