@@ -87,6 +87,37 @@ defmodule MetricFlowTest.DashboardBuilderStub do
     )
   end
 
+  @doc """
+  A build whose spec carries a top-level "title" the model chose itself
+  ("Daily Clicks"), worded differently from the user's own request
+  ("show me a bar chart of clicks by day") -- Story 75, criterion 1068:
+  the dashboard's name should come from that title, not from copying
+  the request text verbatim.
+  """
+  def generate_titled_bar_chart do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "set_dashboard_spec",
+        %{
+          "a2ui_json" =>
+            Jason.encode!(%{
+              "title" => "Daily Clicks",
+              "components" => [
+                %{
+                  "id" => "widget-0",
+                  "type" => "chart",
+                  "chartType" => "bar",
+                  "title" => "Clicks by Day",
+                  "query" => %{"metric" => "clicks"}
+                }
+              ]
+            })
+        },
+        completion_text: "I've created a bar chart of daily clicks."
+      )
+    )
+  end
+
   defp initial_components do
     [
       %{

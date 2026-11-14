@@ -1423,31 +1423,90 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       user = user_fixture()
       account = insert_account!(user)
       insert_member!(account, user, :owner)
-      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 10.0})
       scope = Scope.for_user(user)
 
       conn = log_in_user(conn, user)
 
       {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
-      build_chart_via_chat(view)
+
+      Application.put_env(
+        :metric_flow,
+        :command_runner,
+        MetricFlowTest.DashboardBuilderStub.generate_titled_bar_chart()
+      )
+
+      render_submit(view, "send_dashboard_chat", %{
+        "message" => "show me a bar chart of clicks by day"
+      })
+
+      wait_for_chart(view)
+
+      Application.delete_env(:metric_flow, :command_runner)
 
       assert [dashboard] = Dashboards.list_dashboards(scope)
 
       # Story 75, criterion 1068: "the dashboard has a title drawn from
-      # her request." draft_dashboard_name/1 (editor.ex) falls back to
-      # the literal "Untitled Dashboard" whenever no name was explicitly
-      # typed, which is always true for a chat-only build -- nothing
-      # derives a title from the chat request text.
-      refute dashboard.name == "Untitled Dashboard",
-             "expected the dashboard's title to be drawn from the chat request, not left as the default"
+      # her request." Main's live walk (3a78f72, 2026-11-14) found this
+      # only half-true: the chat build named the dashboard with Dana's
+      # raw request text verbatim ("Show me a bar chart of clicks by
+      # day"), not a title the agent chose -- the request copied, not
+      # titled. The stub's spec carries its own top-level "title",
+      # worded differently from the request on purpose, so this only
+      # passes once the dashboard's name actually comes from that
+      # title rather than the message text.
+      assert dashboard.name == "Daily Clicks",
+             "expected the dashboard's title to come from the spec's own title, not the raw request text"
 
       {:ok, _index_view, index_html} = live(conn, ~p"/app/dashboards")
 
-      # "...and she can rename it ... from the list." dashboard_live/
-      # index.ex only offers View/Edit/Delete per card -- no rename
-      # affordance there at all. Selector proposed, pending main's
-      # confirmation: data-role="rename-dashboard-#{id}".
+      assert index_html =~ "Daily Clicks"
+      refute index_html =~ "show me a bar chart of clicks by day"
+
+      # "...and she can rename it ... from the list." Settled and
+      # built: data-role="rename-dashboard-#{id}".
       assert index_html =~ ~s(data-role="rename-dashboard-#{dashboard.id}")
+    end)
+  end
+
+  test "the dashboard chat is told to give a chat-built dashboard a short title", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      {:ok, agent} = Agent.start_link(fn -> nil end)
+
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+      Application.put_env(:metric_flow, :command_runner, capturing_runner(agent))
+
+      render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions over time"})
+
+      args = wait_for_capture(agent)
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      refute is_nil(args), "the dashboard chat never reached the command_runner"
+
+      payload = decode_prompt_payload(args)
+
+      set_dashboard_spec_tool =
+        Enum.find(payload["available_tools"], &(&1["name"] == "set_dashboard_spec"))
+
+      refute is_nil(set_dashboard_spec_tool), "expected set_dashboard_spec to be offered"
+
+      description = set_dashboard_spec_tool["description"] || ""
+
+      # Story 75, criterion 1068 (main, 2026-11-14): the model needs to
+      # be told explicitly to choose a short title for the dashboard --
+      # set_dashboard_spec's description says nothing about a "title"
+      # field at all today.
+      assert Regex.match?(~r/title/i, description),
+             "expected set_dashboard_spec's description to tell the model to give the dashboard a short title"
     end)
   end
 
