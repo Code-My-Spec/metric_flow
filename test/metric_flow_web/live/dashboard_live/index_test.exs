@@ -5,6 +5,7 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
   import Phoenix.LiveViewTest
   import MetricFlowTest.UsersFixtures
 
+  alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Repo
 
@@ -17,18 +18,6 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
       name: "My Dashboard #{System.unique_integer([:positive])}",
       user_id: user.id,
       built_in: false
-    }
-
-    %Dashboard{}
-    |> Dashboard.changeset(Map.merge(defaults, attrs))
-    |> Repo.insert!()
-  end
-
-  defp canned_dashboard_fixture(user, attrs \\ %{}) do
-    defaults = %{
-      name: "Canned Dashboard #{System.unique_integer([:positive])}",
-      user_id: user.id,
-      built_in: true
     }
 
     %Dashboard{}
@@ -56,15 +45,18 @@ defmodule MetricFlowWeb.DashboardLive.IndexTest do
 
   describe "displays canned system dashboards with Built-in badge" do
     test "displays canned system dashboards with Built-in badge", %{conn: conn} do
+      # Story 75, criterion 1076: canned dashboards are system-provided and
+      # identical for every account, so they come from code
+      # (Dashboards.list_canned_dashboards/0), not a seeded DB row.
       user = user_fixture()
-      canned = canned_dashboard_fixture(user, %{name: "Traffic Overview"})
       conn = log_in_user(conn, user)
+      [canned | _] = Dashboards.list_canned_dashboards()
 
       capture_log(fn ->
         {:ok, lv, html} = live(conn, ~p"/app/dashboards")
 
         assert has_element?(lv, "[data-role='canned-dashboards']")
-        assert html =~ "Traffic Overview"
+        assert html =~ canned.name
 
         assert has_element?(
                  lv,

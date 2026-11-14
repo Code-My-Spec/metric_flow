@@ -37,17 +37,38 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   # list_canned_dashboards/0
   # ---------------------------------------------------------------------------
 
+  # Story 75, criterion 1076: built-in dashboards are system-provided and
+  # identical for every account, so they live in code rather than as
+  # dashboards rows seeded by a migration -- there is nothing per-account
+  # to persist, and no user can edit, rename or delete one. Negative ids
+  # keep them permanently distinct from any real, DB-assigned (positive
+  # serial) dashboard id.
+  @canned_dashboards [
+    %Dashboard{
+      id: -1,
+      name: "Marketing Overview",
+      description: "Impressions, clicks, conversions and engagement across every connected platform.",
+      built_in: true
+    },
+    %Dashboard{
+      id: -2,
+      name: "Revenue Analysis",
+      description: "Revenue, expenses and return on ad spend.",
+      built_in: true
+    },
+    %Dashboard{
+      id: -3,
+      name: "Platform Comparison",
+      description: "Cost, conversions and click-through rate side by side across platforms.",
+      built_in: true
+    }
+  ]
+
   @doc """
   Returns all system-provided built-in dashboards, ordered by name.
   """
   @spec list_canned_dashboards() :: list(Dashboard.t())
-  def list_canned_dashboards do
-    from(d in Dashboard,
-      where: d.built_in == true,
-      order_by: [asc: d.name, asc: d.id]
-    )
-    |> Repo.all()
-  end
+  def list_canned_dashboards, do: @canned_dashboards
 
   # ---------------------------------------------------------------------------
   # get_dashboard/2
@@ -254,6 +275,25 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   # ---------------------------------------------------------------------------
   # create_dashboard_version/2
   # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # delete_paper_trail_versions/1
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Deletes every paper_trail version row recorded for a dashboard.
+
+  paper_trail's `versions` table is polymorphic (item_type/item_id, no
+  foreign key), so these do not cascade when the dashboard row itself is
+  deleted -- this must be called explicitly (Story 75, criterion 1069).
+  """
+  @spec delete_paper_trail_versions(integer()) :: :ok
+  def delete_paper_trail_versions(dashboard_id) do
+    from(v in PaperTrail.Version, where: v.item_type == "Dashboard" and v.item_id == ^dashboard_id)
+    |> Repo.delete_all()
+
+    :ok
+  end
 
   @doc """
   Records a snapshot of a dashboard's visualizations as a new version.

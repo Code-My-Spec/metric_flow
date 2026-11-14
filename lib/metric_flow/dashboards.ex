@@ -134,9 +134,11 @@ defmodule MetricFlow.Dashboards do
     with {:ok, dashboard} <- DashboardsRepository.get_dashboard(scope, id),
          {:ok, deleted} <- delete_if_not_built_in(dashboard) do
       # Story 75, criterion 1069: deleting a dashboard also removes its chat
-      # history. Its versions cascade at the DB level already (dashboard_versions'
-      # dashboard_id references dashboards on_delete: :delete_all).
+      # history and its paper_trail versions (dashboard_versions' own
+      # dashboard_id already cascades at the DB level; paper_trail's shared,
+      # polymorphic versions table does not).
       Ai.delete_chat_session_by_context(scope, :dashboard, id)
+      DashboardsRepository.delete_paper_trail_versions(id)
       {:ok, deleted}
     end
   end

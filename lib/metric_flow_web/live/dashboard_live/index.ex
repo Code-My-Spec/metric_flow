@@ -38,8 +38,10 @@ defmodule MetricFlowWeb.DashboardLive.Index do
         </.link>
       </div>
 
-      <%!-- Canned dashboards section --%>
-      <div :if={@canned_dashboards != []} data-role="canned-dashboards" class="mb-8">
+      <%!-- Canned dashboards section -- hidden while actively searching
+           Dana's own dashboards (Story 75, criterion 1073: a search shows
+           only matching dashboards of hers, not unrelated templates). --%>
+      <div :if={@canned_dashboards != [] && @search_query == ""} data-role="canned-dashboards" class="mb-8">
         <h2 class="text-xl font-semibold mb-1">System Dashboards</h2>
         <p class="text-base-content/60 text-sm mb-4">Pre-built views ready to use</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
