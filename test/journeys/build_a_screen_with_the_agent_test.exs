@@ -1678,9 +1678,11 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       # Story 75, criterion 1076: dashboard_live/index.ex already
       # renders canned and user dashboards in separate sections -- but
-      # no built-in (built_in: true) dashboard row is ever seeded
-      # anywhere, so the canned section has nothing to show.
-      assert canned_section != [], "expected at least one built-in dashboard to exist and render"
+      # nothing currently shows up in the canned one, however built-ins
+      # are meant to be sourced (today, Dashboards.list_canned_dashboards/0
+      # queries for built_in: true rows, and none exist anywhere in this
+      # tree yet).
+      assert canned_section != [], "expected at least one built-in dashboard to be listed"
       assert user_section != []
     end)
   end
