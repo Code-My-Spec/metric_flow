@@ -151,17 +151,26 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
           <%!-- Main content area: empty state, no-session-selected, or message list --%>
 
-          <%!-- Empty state: no sessions at all and no active session --%>
+          <%!-- Home state: AI-first greeting shown whenever no session is active,
+               regardless of prior chat history (issue b7b4f72d). --%>
           <div
-            :if={!@active_session && @sessions == []}
+            :if={!@active_session}
             data-role="chat-empty-state"
             class="flex-1 flex flex-col items-center justify-center px-8 text-center"
           >
-            <h2 class="text-xl font-semibold">Ask me anything about your data</h2>
+            <h2 class="text-xl font-semibold">What can I help you with today?</h2>
             <p class="text-base-content/60 mt-2 max-w-prose">
               I have access to your metrics, correlations, and trends. Ask a question in plain language and I'll help you understand what's happening in your business.
             </p>
             <div class="flex flex-wrap gap-2 justify-center mt-6">
+              <button
+                phx-click="send_message"
+                phx-value-content="Show me something I don't know about my business."
+                data-role="example-prompt"
+                class="btn btn-ghost btn-sm"
+              >
+                Show me something I don't know about my business.
+              </button>
               <button
                 phx-click="send_message"
                 phx-value-content="Why did my revenue drop last week?"
@@ -187,27 +196,9 @@ defmodule MetricFlowWeb.AiLive.Chat do
                 What should I focus on to grow faster?
               </button>
             </div>
-          </div>
-
-          <%!-- No-session-selected state: sessions exist but none active --%>
-          <div
-            :if={!@active_session && @sessions != []}
-            data-role="no-session-selected"
-            class="flex-1 flex flex-col items-center justify-center px-8 text-center"
-          >
-            <p class="text-base-content/60">
-              Select a chat from the sidebar or start a new one.
+            <p :if={@sessions != []} class="text-xs text-base-content/40 mt-6">
+              Your previous chats are saved in the sidebar.
             </p>
-            <p class="text-xs text-base-content/40 mt-1">
-              Your previous chat history is saved in the sidebar.
-            </p>
-            <button
-              phx-click="new_chat"
-              data-role="new-chat-prompt-btn"
-              class="btn btn-primary btn-sm mt-4"
-            >
-              New Chat
-            </button>
           </div>
 
           <%!-- Message list: active session loaded --%>
@@ -328,6 +319,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
                   placeholder="Ask a question about your data…"
                   disabled={@streaming}
                   value={@input_value}
+                  aria-label="Message"
+                  phx-mounted={JS.focus()}
                   class="flex-1 textarea textarea-bordered resize-none text-sm max-h-36 leading-relaxed"
                 ></textarea>
                 <button

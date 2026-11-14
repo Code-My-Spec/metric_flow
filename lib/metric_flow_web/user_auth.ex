@@ -268,9 +268,9 @@ defmodule MetricFlowWeb.UserAuth do
     ~p"/app/users/settings"
   end
 
-  # Redirect new logins to the integrations LiveView so the flash message is rendered
-  # by Layouts.app which includes <.flash_group>.
-  def signed_in_path(_), do: ~p"/app/integrations"
+  # Redirect new logins to the AI chat LiveView, the default authenticated home
+  # screen (issue b7b4f72d); it also uses Layouts.app so the flash still renders.
+  def signed_in_path(_), do: ~p"/app/chat"
 
   @doc """
   Plug for routes that require the user to be authenticated.

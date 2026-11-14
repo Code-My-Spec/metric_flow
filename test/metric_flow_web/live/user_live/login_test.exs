@@ -34,7 +34,7 @@ defmodule MetricFlowWeb.UserLive.LoginTest do
       )
       |> submit_form(conn)
 
-    assert redirected_to(conn) == ~p"/app/integrations"
+    assert redirected_to(conn) == ~p"/app/chat"
     assert conn.resp_cookies["_metric_flow_web_user_remember_me"]
   end
 

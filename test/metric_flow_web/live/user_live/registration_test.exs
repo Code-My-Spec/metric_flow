@@ -54,7 +54,7 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/register")
-        |> follow_redirect(conn, ~p"/app/integrations")
+        |> follow_redirect(conn, ~p"/app/chat")
 
       assert {:ok, _conn} = result
     end

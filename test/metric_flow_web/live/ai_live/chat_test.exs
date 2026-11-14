@@ -61,23 +61,23 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         {:ok, lv, html} = mount_chat(conn, user)
 
         assert has_element?(lv, "[data-role='chat-empty-state']")
-        assert html =~ "Ask me anything about your data"
+        assert html =~ "What can I help you with today?"
         assert has_element?(lv, "[data-role='example-prompt']")
         assert has_element?(lv, "[data-role='no-sessions-state']")
       end)
     end
   end
 
-  describe "shows no-session-selected state when sessions exist but none is active" do
-    test "shows no-session-selected state when sessions exist but none is active", %{conn: conn} do
+  describe "shows the AI greeting when sessions exist but none is active" do
+    test "shows the AI greeting when sessions exist but none is active", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
       insert_chat_session!(user.id, account_id)
 
       capture_log(fn ->
-        {:ok, lv, _html} = mount_chat(conn, user)
+        {:ok, lv, html} = mount_chat(conn, user)
 
-        assert has_element?(lv, "[data-role='no-session-selected']")
-        refute has_element?(lv, "[data-role='chat-empty-state']")
+        assert has_element?(lv, "[data-role='chat-empty-state']")
+        assert html =~ "What can I help you with today?"
         assert has_element?(lv, "[data-role='session-item']")
       end)
     end
