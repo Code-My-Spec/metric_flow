@@ -118,6 +118,34 @@ defmodule MetricFlowTest.DashboardBuilderStub do
     )
   end
 
+  @doc """
+  A build whose spec carries one "table" component bound to impressions --
+  Story 75's view page (DashboardLive.Show) has no "table" clause in its
+  own A2UI chart-type typing, so a table widget silently falls back to
+  "line" there and renders as a line chart instead of a table.
+  """
+  def generate_table_widget do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "set_dashboard_spec",
+        %{
+          "a2ui_json" =>
+            Jason.encode!(%{
+              "components" => [
+                %{
+                  "id" => "widget-0",
+                  "type" => "table",
+                  "title" => "Impressions",
+                  "query" => %{"metric" => "impressions"}
+                }
+              ]
+            })
+        },
+        completion_text: "I've added a table of impressions."
+      )
+    )
+  end
+
   defp initial_components do
     [
       %{

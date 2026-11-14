@@ -1962,4 +1962,125 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert has_element?(show_view, "[data-role='edit-dashboard-#{dashboard.id}']")
     end)
   end
+
+  test "a table widget renders as a table on the view page, not a line chart", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+      Application.put_env(
+        :metric_flow,
+        :command_runner,
+        MetricFlowTest.DashboardBuilderStub.generate_table_widget()
+      )
+
+      render_submit(view, "send_dashboard_chat", %{"message" => "show me a table of impressions"})
+
+      refute is_nil(
+               wait_for(fn ->
+                 rendered = render(view)
+                 if rendered =~ "added a table of impressions", do: rendered, else: nil
+               end)
+             ),
+             "the table build never completed"
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, show_view, show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      # Main's review (76d8303, 2026-11-14): show.ex's own
+      # a2ui_component_chart_type has no "table" clause -- it falls
+      # through to the "line" default, so a table widget renders as an
+      # ECharts line chart on the view page instead of a table.
+      card =
+        show_html
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='visualization-card']")
+        |> Enum.find(&(Floki.text(&1) =~ "Impressions"))
+
+      refute is_nil(card), "expected an 'Impressions' card on the view page"
+
+      assert Floki.find(card, "table thead th") |> Floki.text() =~ "Date"
+      refute has_element?(show_view, "[data-role='echarts-chart']")
+    end)
+  end
+
+  test "a dashboard's saved platform filter is applied on the view page", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      insert_metric!(user, %{provider: :facebook_ads, metric_name: "impressions", value: 10.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      # Simulates a platform filter already saved from the builder
+      # (editor.ex's own "filter_platform" handler persists it the same
+      # way) -- not something this test invents.
+      {:ok, dashboard} =
+        Dashboards.update_dashboard(scope, dashboard, %{"platform_filter" => "google_ads"})
+
+      {:ok, _show_view, show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      # Main's review (76d8303, 2026-11-14): the view page's
+      # a2ui_query_values/3 only takes a date_range -- the saved
+      # platform_filter is never passed to Metrics.query_time_series,
+      # so the stat sums every platform's impressions (100 + 10 = 110)
+      # instead of only the saved one (100).
+      assert stat_tile_total(show_html) == 100.0,
+             "expected the view page to apply the saved platform filter (google_ads only)"
+    end)
+  end
+
+  test "changing the platform filter on the view page re-queries and persists it", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      insert_metric!(user, %{provider: :facebook_ads, metric_name: "impressions", value: 10.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      {:ok, show_view, _show_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      # Main's review (76d8303, 2026-11-14): the view page has no
+      # platform-filter control at all, unlike the builder's own
+      # [data-role='platform-filter'] (editor.ex) -- there's nothing to
+      # change the platform through on this page today.
+      assert has_element?(show_view, "[data-role='platform-filter']")
+
+      render_click(show_view, "filter_platform", %{"platform" => "google_ads"})
+
+      filtered_html = render(show_view)
+      assert stat_tile_total(filtered_html) == 100.0
+
+      {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+
+      assert stat_tile_total(reopened_html) == 100.0,
+             "expected the platform choice to persist across a fresh mount"
+    end)
+  end
 end
