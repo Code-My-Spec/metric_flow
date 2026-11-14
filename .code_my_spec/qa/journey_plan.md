@@ -162,6 +162,20 @@ NOTE: The database already has "QA Agency 454" (id 18) and various client accoun
 
 **Expected outcome:** User can view and switch between multiple accounts with different roles. Role-based UI restrictions apply correctly per account. Agency settings render for team accounts where the user has sufficient permissions.
 
+### Journey 6: Build a Screen with the Agent
+
+**Role:** A client user with synced metrics (Story 74 — Build and Refine a Dashboard by Chatting with an Agent).
+
+**Steps:**
+
+1. Log in as `qa@example.com`.
+2. Navigate to `/app/dashboards/new` and look for a chat affordance to describe a dashboard in natural language ("a headline stat, a spend-over-time line chart and a table of campaigns").
+3. Submit the chat request and confirm the agent builds the described elements onto the dashboard, saved as a draft without an explicit save.
+4. Open an existing agent-built dashboard and confirm an "Edit with agent" entry point restores its chat history and lets the agent continue refining it.
+5. Open the dashboard's version list and confirm each agent change was recorded, with the ability to restore an earlier version.
+
+**Expected outcome:** A user can describe and refine a multi-widget dashboard (stat tiles, charts, tables) through chat, with the dashboard autosaved as a draft, chat history and versions persisted per dashboard, and errors or missing metrics surfaced in chat without corrupting the dashboard.
+
 ## Notes
 
 The QA database contains real production-like data from actual OAuth integrations. Some OAuth tokens may be expired (check `expires_at` on integrations table). Expired tokens will cause "Sync Now" to fail or show "Needs Reconnection" status — this is expected behavior and tests Story 440 (Handle Expired or Invalid OAuth Credentials).

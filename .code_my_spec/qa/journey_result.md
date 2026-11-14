@@ -2,14 +2,19 @@
 
 ## Status
 
-pass
+mixed
 
-All 5 journeys from the plan were walked live against the running app
-(`http://localhost:4070`, this worktree's dev server) and passed. Each is
-now codified as a `Phoenix.LiveViewTest` module under `test/journeys/`
-(see Phase 3 notes below) — the prior attempt at this phase had pivoted to
+Journeys 1-5 from the plan were walked live against the running app
+(`http://localhost:4070`, this worktree's dev server) and passed; each is
+codified as a `Phoenix.LiveViewTest` module under `test/journeys/` (see
+Phase 3 notes below) — the prior attempt at this phase had pivoted to
 unrelated BDD-spec fixes without actually executing any journey; this run
-replaces that result.
+replaces that result. Journey 6 (Story 74, "Build a Screen with the Agent"),
+added and walked in a later session against this copy's app
+(`http://127.0.0.1:53149`, commit 5d7b86d7), fails: the feature it covers
+(chat-driven multi-widget dashboard building, with draft/version persistence)
+has not been built. That journey is codified as a failing test rather than a
+passing one, per Phase 3's handling of a real new-feature gap.
 
 ## Journey Results
 
@@ -80,6 +85,38 @@ unaffected since a real user always explicitly switches, but the Phase 3
 test accounts for this by not assuming a starting account.
 
 Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
+
+### Journey 6: Build a Screen with the Agent
+
+**Status:** fail
+
+Logged in as `qa@example.com` and opened `/app/dashboards/new` (real app, commit
+5d7b86d7). The page is the existing manual dashboard builder only: "Start from
+a template or blank canvas" (Financial Summary / Marketing Overview / Blank
+Canvas) plus "+ Add Visualization". There is no chat input, no "describe the
+dashboard you want" affordance, and no agent conversation panel anywhere on
+the page. The sidebar's only "Chat" entry (`Intelligence > Chat`) opens the
+general AI data-exploration chat (Story 10) at `/app/chat`, which is a
+separate feature from building dashboard widgets.
+
+Checked the code to confirm this isn't just a missing UI hook: the
+`Dashboard` schema (`lib/metric_flow/dashboards/dashboard.ex`) has only
+`name`, `description`, `built_in` — no draft/published status and no
+versioning. The only existing LLM-authoring surface, `VizChat`
+(`lib/metric_flow/ai/viz_chat.ex`), is wired into `VisualizationLive.Editor`
+and authors one `Visualization`'s Vega-Lite spec at a time; it has no
+concept of a dashboard-level draft, a mix of stat tiles/charts/tables/layout
+containers/interactive controls in one response, or a saved chat history tied
+to a dashboard with restorable versions. None of Story 74's acceptance
+criteria (draft-on-first-build, mixed widget types, missing-metric guidance
+redirecting to integrations, "Edit with agent" resuming history, per-change
+versioning with restore, control-driven re-querying without side effects,
+default 30-day range) have anywhere to attach in the current code.
+
+This is a real, unbuilt feature, not a UI bug: stopping at step 2 of the
+journey and codifying the gap as a failing test rather than filing an issue.
+
+Screenshot: `.code_my_spec/qa/journeys/screenshots/journey6_new_dashboard.png`
 
 ## Issues
 
