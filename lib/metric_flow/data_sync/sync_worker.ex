@@ -818,6 +818,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
       "#{format_date_range(date_range)}. Reconnect with an account that has access."
   end
 
+  defp format_error(:no_locations_configured, _integration, date_range) do
+    "No Google Business Profile locations configured#{format_date_range(date_range)}. " <>
+      "Go to the integration's account selection to choose a location."
+  end
+
   defp format_error(reason, _integration, _date_range), do: format_error(reason)
 
   @provider_display_names %{
