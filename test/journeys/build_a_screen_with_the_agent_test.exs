@@ -119,6 +119,21 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end
   end
 
+  defp wait_for(fun, deadline \\ System.monotonic_time(:millisecond) + 2000) do
+    case fun.() do
+      nil ->
+        if System.monotonic_time(:millisecond) >= deadline do
+          nil
+        else
+          Process.sleep(20)
+          wait_for(fun, deadline)
+        end
+
+      result ->
+        result
+    end
+  end
+
   defp capturing_runner(agent) do
     fn _exe, args, _opts ->
       Agent.update(agent, fn _ -> args end)
@@ -543,5 +558,195 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     # chat history (confirmed since 950932f), so the substance already
     # works -- there's just no distinctly-labeled entry point for it.
     assert index_html =~ "Edit with agent"
+  end
+
+  test "chat on a reopened dashboard is told about its existing widgets", %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    {:ok, agent} = Agent.start_link(fn -> nil end)
+
+    # Fresh mount -- the same path "Edit with agent" takes.
+    {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    Application.put_env(:metric_flow, :command_runner, capturing_runner(agent))
+
+    render_submit(edit_view, "send_dashboard_chat", %{"message" => "Make the line thicker"})
+
+    args = wait_for_capture(agent)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    refute is_nil(args), "the dashboard chat never reached the command_runner"
+
+    payload = decode_prompt_payload(args)
+
+    # Story 74 rule 4 / criterion 1062: "Edit with agent restores the
+    # conversation and the agent continues from the current dashboard."
+    # Confirmed live by main (2026-11-14, 58026f9): asked to refine a
+    # reopened dashboard, the real model replied "I also don't see a
+    # line chart or stat tile in this conversation, so there's nothing
+    # for me to edit." Root cause: dashboard_chat_context resets to nil
+    # on every /edit mount, and current_spec is never passed to
+    # VizChat.send_message on the dashboard chat path, so a message sent
+    # right after reopening carries no record of existing widgets at
+    # all. No Story 74 rule covers removing widgets through chat, so
+    # this only checks the widget is mentioned, not that the model is
+    # told it may delete anything.
+    full_payload_text = Jason.encode!(payload)
+    assert full_payload_text =~ "Impressions Over Time"
+  end
+
+  test "an interactive filter control re-queries metrics without writing anywhere", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    # Story 74 rule 5 / criterion 1063: "Interactive controls on a
+    # dashboard only re-run metric queries and change what is shown;
+    # they never write anywhere or call other tools." No concept of an
+    # interactive control dashboard element exists anywhere in
+    # dashboard_live/editor.ex -- update_spec only ever produces
+    # Vega-Lite visualization specs, so there's nothing to pick a value
+    # in and nothing that would re-query metrics on change.
+    assert has_element?(view, "[data-role='filter-control']")
+  end
+
+  test "a model error leaves the dashboard unchanged and lets the user retry", %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    cards_before =
+      view
+      |> render()
+      |> Floki.parse_fragment!()
+      |> Floki.find("[data-role='visualization-card']")
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.ClaudeCodeStub.error("model unavailable")
+    )
+
+    render_submit(view, "send_dashboard_chat", %{"message" => "Add a bar chart of clicks"})
+
+    html =
+      wait_for(fn ->
+        rendered = render(view)
+        if rendered =~ "Error", do: rendered, else: nil
+      end)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    # Story 74 rule 6 / criterion 1064: "Dana sees a clear error in the
+    # chat and the dashboard stays exactly as it was ... and she can
+    # retry the request."
+    assert html =~ "Error"
+
+    cards_after =
+      html
+      |> Floki.parse_fragment!()
+      |> Floki.find("[data-role='visualization-card']")
+
+    assert cards_after == cards_before
+    refute has_element?(view, "[data-role='dashboard-chat-send-btn'][disabled]")
+  end
+
+  test "a dashboard's filter values persist across a reopen", %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    edit_view
+    |> element("#dashboard-date-range")
+    |> render_change(%{"range" => "90"})
+
+    # Fresh mount -- the same thing a real reload or reopen does. The
+    # filter_date_range handler only does `assign(socket,
+    # :dashboard_date_range, range)`, and every mount (:new and :edit)
+    # hardcodes :dashboard_date_range back to "30" -- nothing persists
+    # the choice to the Dashboard record, so a fresh mount always shows
+    # 30 regardless of what was picked before.
+    {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+    # Story 74 rule 8 / criterion 1066: a filter control's value is
+    # "saved with the dashboard" and still shows on reopen.
+    assert reopened_html =~ ~s(value="90" selected)
+  end
+
+  test "the agent is told to default to the last 30 days when no range is named", %{
+    conn: conn
+  } do
+    {:ok, agent} = Agent.start_link(fn -> nil end)
+
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+    Application.put_env(:metric_flow, :command_runner, capturing_runner(agent))
+
+    render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions over time"})
+
+    args = wait_for_capture(agent)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    refute is_nil(args), "the dashboard chat never reached the command_runner"
+
+    payload = decode_prompt_payload(args)
+
+    # Story 74 rule 9 / criterion 1067: "When Dana does not name a date
+    # range, the agent uses the last 30 days ending yesterday." Nothing
+    # in VizChat's system prompt or tool descriptions mentions any
+    # default date range at all (confirmed: no match for "date range",
+    # "30 day" or "90 day" anywhere in viz_chat.ex or viz_tools/*.ex),
+    # so a request with no range named has no documented default to
+    # fall back to.
+    combined_text =
+      (payload["system_prompt"] || "") <>
+        Enum.map_join(payload["available_tools"], "", &(&1["description"] || ""))
+
+    assert Regex.match?(~r/last 30 days|30-day|30 day/i, combined_text)
   end
 end
