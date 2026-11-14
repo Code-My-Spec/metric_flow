@@ -156,12 +156,22 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           <li
             :for={{version, idx} <- Enum.with_index(@dashboard_versions)}
             data-role="dashboard-version"
-            class="text-sm text-base-content/70"
+            class="flex items-center justify-between gap-2 text-sm text-base-content/70"
           >
-            Version {length(@dashboard_versions) - idx} -- {Calendar.strftime(
-              version.inserted_at,
-              "%b %d, %Y %H:%M"
-            )}
+            <span>
+              Version {length(@dashboard_versions) - idx} -- {Calendar.strftime(
+                version.inserted_at,
+                "%b %d, %Y %H:%M"
+              )}
+            </span>
+            <button
+              phx-click="restore_version"
+              phx-value-id={version.id}
+              data-role="restore-version"
+              class="btn btn-ghost btn-xs"
+            >
+              Restore
+            </button>
           </li>
         </ul>
       </div>
@@ -687,6 +697,35 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
+  # Story 74, rule 7: restoring an earlier version shows what the dashboard
+  # looked like then, and the restore itself appears as a new version.
+  def handle_event("restore_version", %{"id" => id_str}, socket) do
+    id = String.to_integer(id_str)
+
+    case Enum.find(socket.assigns.dashboard_versions, &(&1.id == id)) do
+      nil ->
+        {:noreply, socket}
+
+      version ->
+        scope = socket.assigns.current_scope
+        dashboard = socket.assigns.dashboard
+        visualizations = visualizations_from_version(version)
+
+        case Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
+          :ok ->
+            socket =
+              socket
+              |> assign_visualizations(visualizations)
+              |> record_dashboard_version(dashboard, visualizations)
+
+            {:noreply, socket}
+
+          {:error, _} ->
+            {:noreply, socket}
+        end
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Async dashboard chat result handlers
   # ---------------------------------------------------------------------------
@@ -852,6 +891,20 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     end
   end
 
+  # A version's visualizations round-trip through jsonb as string-keyed maps;
+  # the rest of this module works in the atom-keyed shape `add_visualization_*`
+  # and `load_visualizations_from_dashboard/1` already use.
+  defp visualizations_from_version(%{visualizations: visualizations}) do
+    Enum.map(visualizations, fn viz ->
+      %{
+        metric_name: viz["metric_name"],
+        chart_type: viz["chart_type"],
+        position: viz["position"],
+        vega_spec: viz["vega_spec"]
+      }
+    end)
+  end
+
   defp draft_dashboard_name(changeset) do
     case extract_name(changeset) do
       "" -> "Untitled Dashboard"
@@ -973,7 +1026,9 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> Enum.map(fn dv ->
       vega_spec = dv.visualization.vega_spec || %{}
       metric_name = Map.get(vega_spec, "metric_name") || dv.visualization.name
-      chart_type = Map.get(vega_spec, "chart_type") || "line"
+
+      chart_type =
+        Map.get(vega_spec, "chart_type") || extract_chart_type_from_spec(vega_spec)
 
       %{
         metric_name: metric_name,
