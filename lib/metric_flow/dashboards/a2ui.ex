@@ -14,14 +14,56 @@ defmodule MetricFlow.Dashboards.A2ui do
   alias MetricFlow.Dashboards
   alias MetricFlow.Metrics
 
-  @doc "A component's display title, falling back to its bound metric name."
+  @doc "A component's display title, falling back to its bound metric name, humanized."
   @spec component_title(map()) :: String.t()
   def component_title(%{"title" => title}) when is_binary(title), do: title
-  def component_title(component), do: component_metric(component) || "Untitled"
 
-  @doc "The metric name a component is bound to, via its query."
+  def component_title(component) do
+    case component_metric(component) do
+      nil -> "Untitled"
+      metric -> humanize_metric_name(metric)
+    end
+  end
+
+  defp humanize_metric_name(metric_name) do
+    metric_name
+    |> String.replace("_", " ")
+    |> String.split()
+    |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  @doc """
+  Resolves the metric key a component is bound to: the chat-built
+  `{"query" => {"metric" => _}}` shape, the ad-hoc legacy
+  `{"metric_name" => _}` shape (`DashboardsRepository.replace_dashboard_visualizations/3`'s
+  own default for a dashboard saved before Story 74's A2UI rebuild), or a
+  frozen Vega-Lite spec's named data source (the old manual/library-insert
+  flow, retired in Story 75 but possibly still stored on an existing
+  dashboard) -- the same shapes `DashboardLive.Editor` has always had to
+  resolve when loading a dashboard's legacy `Visualization` rows. Nil only
+  when none of those apply; `build_chart_render/5` renders `:no_data`
+  rather than ever querying with it.
+  """
   @spec component_metric(map()) :: String.t() | nil
-  def component_metric(component), do: get_in(component, ["query", "metric"])
+  def component_metric(%{"query" => %{"metric" => metric}}) when is_binary(metric), do: metric
+
+  def component_metric(%{"metric_name" => metric_name}) when is_binary(metric_name),
+    do: metric_name
+
+  def component_metric(component) do
+    case named_vega_lite_source(component) do
+      [name | _] -> name
+      [] -> nil
+    end
+  end
+
+  defp named_vega_lite_source(%{"data" => %{"name" => name}}), do: [name]
+
+  defp named_vega_lite_source(%{"layer" => layers}) when is_list(layers) do
+    Enum.flat_map(layers, &named_vega_lite_source/1)
+  end
+
+  defp named_vega_lite_source(_), do: []
 
   @doc "A component's chart_type (\"text\", \"table\", or an ECharts chart type), defaulting to \"line\"."
   @spec component_chart_type(map()) :: String.t()
@@ -61,7 +103,11 @@ defmodule MetricFlow.Dashboards.A2ui do
           atom() | nil
         ) ::
           {:stat, String.t()} | {:table, list()} | {:chart, map()} | {:no_data, nil}
-  def build_chart_render(metric, chart_type, scope, date_range, platform \\ nil) do
+  def build_chart_render(metric, chart_type, scope, date_range, platform \\ nil)
+
+  def build_chart_render(nil, _chart_type, _scope, _date_range, _platform), do: {:no_data, nil}
+
+  def build_chart_render(metric, chart_type, scope, date_range, platform) do
     case query_values(metric, scope, date_range, platform) do
       [] -> {:no_data, nil}
       values -> render_from_values(chart_type, values)
@@ -84,7 +130,9 @@ defmodule MetricFlow.Dashboards.A2ui do
     {:stat, format_stat_value(total)}
   end
 
-  defp render_from_values("table", values), do: {:table, values}
+  defp render_from_values("table", values) do
+    {:table, Enum.map(values, fn {date, value} -> {date, format_table_value(value)} end)}
+  end
 
   defp render_from_values(chart_type, values) do
     option = %{
@@ -99,6 +147,17 @@ defmodule MetricFlow.Dashboards.A2ui do
   defp echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
   defp echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
   defp echarts_series(_, data), do: %{"type" => "line", "data" => data}
+
+  # A query's value is a float (the metrics table's column type); a table
+  # cell should read like the editor's "4005", not an unformatted
+  # "4005.0" -- rounded to a whole number, same as the stat tile's total,
+  # but without the stat's thousands-separator (a table is many rows, not
+  # one headline figure).
+  defp format_table_value(value) when is_float(value) or is_integer(value) do
+    value |> round() |> Integer.to_string()
+  end
+
+  defp format_table_value(value), do: value
 
   @doc "Formats a stat tile's total with thousands separators, e.g. 125706 -> \"125,706\"."
   @spec format_stat_value(number()) :: String.t()
