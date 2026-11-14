@@ -37,13 +37,16 @@ defmodule MetricFlow.Ai.VizChat do
 
   ## Returns
 
-    * `{:ok, %{text: String.t(), spec: map() | nil, context: [Alloy.Message.t()]}}`
+    * `{:ok, %{text: String.t(), spec: map() | nil, specs: [map()], context: [Alloy.Message.t()]}}`
+      -- `spec` is the last `update_spec` call (single-visualization callers'
+      contract, unchanged); `specs` is every `update_spec` call in order, for
+      a caller that can build more than one widget from one message.
     * `{:error, {:unresolvable_metric, [String.t()]}}` — the model referenced a
       metric name that doesn't exist for this account
     * `{:error, term()}`
   """
   @spec send_message([Alloy.Message.t()] | nil, String.t(), keyword()) ::
-          {:ok, %{text: String.t(), spec: map() | nil, context: [Alloy.Message.t()]}}
+          {:ok, %{text: String.t(), spec: map() | nil, specs: [map()], context: [Alloy.Message.t()]}}
           | {:error, term()}
   def send_message(messages, user_message, opts \\ []) do
     {metric_names, opts} = Keyword.pop(opts, :metric_names, [])
@@ -67,6 +70,7 @@ defmodule MetricFlow.Ai.VizChat do
          %{
            text: result.text || @fallback_text,
            spec: extract_spec(result),
+           specs: extract_specs(result),
            context: result.messages
          }}
 
@@ -88,6 +92,13 @@ defmodule MetricFlow.Ai.VizChat do
     |> Enum.find_value(fn
       %{name: "update_spec", structured_data: %{spec: spec}} -> spec
       _ -> nil
+    end)
+  end
+
+  defp extract_specs(%{tool_calls: tool_calls}) do
+    Enum.flat_map(tool_calls, fn
+      %{name: "update_spec", structured_data: %{spec: spec}} -> [spec]
+      _ -> []
     end)
   end
 

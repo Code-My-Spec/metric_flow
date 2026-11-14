@@ -10,13 +10,29 @@ defmodule MetricFlowTest.VizChatStub do
 
   alias MetricFlowTest.ClaudeCodeStub
 
-  @doc "Initial chart generation: a line chart of impressions over time."
+  @doc """
+  Initial chart generation: a headline stat tile followed by a line chart,
+  both over impressions -- two widgets from one request (Journey 6, Story
+  74 rule 2), without introducing a second metric no other caller of this
+  preset has synced. `extract_spec/1`'s existing reverse-and-find-first
+  still lands on the line chart (the last `update_spec` call), so every
+  single-widget caller of this preset keeps seeing exactly the same final
+  spec and text as before.
+  """
   def generate_initial do
-    ClaudeCodeStub.tool_call(
-      "update_spec",
-      %{"vega_lite_json" => Jason.encode!(line_chart_spec())},
-      text: "I'll create a line chart showing impressions over time."
-    )
+    ClaudeCodeStub.sequence([
+      ClaudeCodeStub.tool_call(
+        "update_spec",
+        %{"vega_lite_json" => Jason.encode!(stat_tile_spec())},
+        call_id: "call_1"
+      ),
+      ClaudeCodeStub.tool_call(
+        "update_spec",
+        %{"vega_lite_json" => Jason.encode!(line_chart_spec())},
+        call_id: "call_2"
+      ),
+      ClaudeCodeStub.text("I'll create a line chart showing impressions over time.")
+    ])
   end
 
   @doc "Follow-up refinement: adds clicks as a second layered series."
@@ -55,6 +71,20 @@ defmodule MetricFlowTest.VizChatStub do
       %{"vega_lite_json" => Jason.encode!(unresolvable_metric_spec())},
       text: "I'll create a chart for the discontinued_metric field."
     )
+  end
+
+  defp stat_tile_spec do
+    %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "data" => %{"name" => "impressions"},
+      "mark" => "text",
+      "encoding" => %{
+        "text" => %{"field" => "value", "type" => "quantitative", "aggregate" => "sum"}
+      },
+      "title" => "Total Impressions",
+      "width" => "container",
+      "height" => 100
+    }
   end
 
   defp line_chart_spec do

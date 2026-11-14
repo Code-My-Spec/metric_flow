@@ -673,7 +673,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info({ref, {:ok, %{text: text, spec: spec, context: updated_context}}}, socket)
+  def handle_info({ref, {:ok, %{text: text, specs: specs, context: updated_context}}}, socket)
       when is_reference(ref) do
     Process.demonitor(ref, [:flush])
 
@@ -685,7 +685,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> append_chat_message(assistant_msg)
       |> assign(:dashboard_chat_context, updated_context)
       |> assign(:dashboard_chat_generating, false)
-      |> add_visualization_from_chat_spec(spec)
+      |> add_visualizations_from_chat_specs(specs)
       |> persist_dashboard_chat_turn(user_text, text)
 
     {:noreply, socket}
@@ -763,19 +763,24 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> assign(:dashboard_chat_error, error_msg)
   end
 
-  defp add_visualization_from_chat_spec(socket, nil), do: socket
+  defp add_visualizations_from_chat_specs(socket, []), do: socket
 
-  defp add_visualization_from_chat_spec(socket, spec) do
-    next_position = length(socket.assigns.visualizations)
+  defp add_visualizations_from_chat_specs(socket, specs) do
+    start_position = length(socket.assigns.visualizations)
 
-    new_viz = %{
-      metric_name: extract_chat_metric_name(spec),
-      chart_type: extract_chart_type_from_spec(spec),
-      position: next_position,
-      vega_spec: custom_spec(spec)
-    }
+    new_vizzes =
+      specs
+      |> Enum.with_index(start_position)
+      |> Enum.map(fn {spec, position} ->
+        %{
+          metric_name: extract_chat_metric_name(spec),
+          chart_type: extract_chart_type_from_spec(spec),
+          position: position,
+          vega_spec: custom_spec(spec)
+        }
+      end)
 
-    visualizations = socket.assigns.visualizations ++ [new_viz]
+    visualizations = socket.assigns.visualizations ++ new_vizzes
 
     socket
     |> assign_visualizations(visualizations)
