@@ -11,6 +11,21 @@ defmodule MetricFlowWeb.Layouts do
 
   embed_templates "layouts/*"
 
+  @brand "Anderson BI"
+
+  # Blank when there's no page title (live_title's own `default` already
+  # shows the brand alone) or when the page title already is the brand,
+  # so the tab never reads "Anderson BI · Anderson BI".
+  defp title_suffix(page_title) do
+    title = page_title |> to_string() |> String.trim()
+
+    if title == "" or title == @brand do
+      ""
+    else
+      " · #{@brand}"
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # App layout — sidebar + full viewport
   # ---------------------------------------------------------------------------
