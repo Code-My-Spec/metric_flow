@@ -104,7 +104,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     html = render(view)
 
     cond do
-      has_element?(view, "[data-role='vega-lite-chart']") -> html
+      has_element?(view, "[data-role='echarts-chart']") -> html
       System.monotonic_time(:millisecond) >= deadline -> html
       true ->
         Process.sleep(20)
@@ -209,7 +209,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       html = build_chart_via_chat(view)
 
       assert html =~ "create a line chart showing impressions over time."
-      assert has_element?(view, "[data-role='vega-lite-chart']")
+      assert has_element?(view, "[data-role='echarts-chart']")
     end)
   end
 
@@ -331,7 +331,7 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
 
       assert reopened_html =~ "Show me impressions over time as a line chart"
-      assert reopened_html =~ ~s(data-role="vega-lite-chart")
+      assert reopened_html =~ ~s(data-role="echarts-chart")
     end)
   end
 
@@ -999,12 +999,10 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
       # Story 74's notes (get_story 74): "Charts are ECharts" -- replacing
       # the Vega-Lite rendering path this dashboard builder uses today.
-      # This only asserts the negative half (no Vega-Lite rendering
-      # remnant survives a chat build); it does not assert an ECharts
-      # container exists, since no ECharts markup convention has been
-      # established anywhere in this codebase yet -- see journey_result.md
-      # Journey 6 and the question raised to main about A2UI/ECharts
-      # specifics not yet being settled.
+      # Only the negative half (no Vega-Lite rendering remnant survives a
+      # chat build); the positive half (an ECharts container appears) is
+      # its own test below, now that main settled the markup convention
+      # ([data-role='echarts-chart'] with phx-hook="ECharts").
       refute html =~ "vega-embed"
       refute has_element?(view, "[data-role='vega-lite-chart']")
     end)
@@ -1028,6 +1026,185 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       # data-role="open-spec-panel", aria-label "Edit spec") that opens a
       # raw-spec text editor -- the opposite of chat-only authoring.
       refute has_element?(view, "[data-role='open-spec-panel']")
+    end)
+  end
+
+  test "a chat build leaves the dashboard's a2ui_spec non-empty with at least one component", %{
+    conn: conn
+  } do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      # Story 74's notes (get_story 74), field named by main: the builder
+      # agent's one write tool sets dashboard.a2ui_spec, an A2UI surface
+      # map with a "components" list. No such field exists on the
+      # Dashboard schema yet (confirmed: lib/metric_flow/dashboards/
+      # dashboard.ex has no a2ui_spec), and today's build path writes
+      # Vega-Lite Visualization rows instead. Map.get returns nil for a
+      # field the struct doesn't define rather than raising, so this
+      # fails as a clear assertion, not a crash.
+      a2ui_spec = Map.get(dashboard, :a2ui_spec)
+      refute is_nil(a2ui_spec), "expected dashboard.a2ui_spec to be set after a chat build"
+
+      components = a2ui_spec["components"] || []
+      assert length(components) > 0
+    end)
+  end
+
+  test "a2ui_spec components bind to metrics via query, not inline data", %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      # Story 74's notes: "data is fetched at render time, never pasted
+      # into the spec" -- each chart/stat component should carry a
+      # "query" map (at least a "metric" key) and no inline "values"/
+      # "data" rows. Fails at the same early guard as the test above,
+      # since a2ui_spec doesn't exist yet; kept as its own test per this
+      # file's one-test-per-criterion convention.
+      a2ui_spec = Map.get(dashboard, :a2ui_spec)
+      refute is_nil(a2ui_spec), "expected dashboard.a2ui_spec to be set after a chat build"
+
+      components = a2ui_spec["components"] || []
+      chart_or_stat_components = Enum.filter(components, &(&1["type"] in ["chart", "stat"]))
+
+      assert length(chart_or_stat_components) > 0
+
+      for component <- chart_or_stat_components do
+        query = component["query"]
+        refute is_nil(query), "expected component #{inspect(component["id"])} to carry a query"
+        assert Map.has_key?(query, "metric")
+        refute Map.has_key?(component, "values")
+        refute Map.has_key?(component, "data")
+      end
+    end)
+  end
+
+  test "the dashboard chat offers set_dashboard_spec and query_metrics, not update_spec", %{
+    conn: conn
+  } do
+    stage("Ask for a dashboard", fn ->
+      {:ok, agent} = Agent.start_link(fn -> nil end)
+
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+
+      Application.put_env(:metric_flow, :command_runner, capturing_runner(agent))
+
+      render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions over time"})
+
+      args = wait_for_capture(agent)
+
+      Application.delete_env(:metric_flow, :command_runner)
+
+      refute is_nil(args), "the dashboard chat never reached the command_runner"
+
+      payload = decode_prompt_payload(args)
+      tool_names = Enum.map(payload["available_tools"], & &1["name"])
+
+      # Story 74's notes (get_story 74): "a new builder-only agent
+      # replaces MetricFlow.Ai.VizChat and has one write tool that sets
+      # the A2UI blob (spec) on the dashboard record" -- named
+      # set_dashboard_spec per main's naming decision -- "reusing the
+      # QueryMetrics tool" (read-only, named query_metrics). Today the
+      # dashboard chat still sends update_spec (VizChat's Vega-Lite
+      # tool), never set_dashboard_spec or query_metrics.
+      assert "set_dashboard_spec" in tool_names
+      assert "query_metrics" in tool_names
+      refute "update_spec" in tool_names
+    end)
+  end
+
+  test "a chat build renders an ECharts container", %{conn: conn} do
+    stage("Ask for a dashboard", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      # Story 74's notes: "Charts are ECharts." Per main's naming
+      # decision: a [data-role='echarts-chart'] element with
+      # phx-hook="ECharts". No such hook exists anywhere in assets/js or
+      # lib/ yet (confirmed via grep), so this element can't be present.
+      assert has_element?(view, "[data-role='echarts-chart'][phx-hook='ECharts']")
+    end)
+  end
+
+  test "restoring a dashboard version adds a row to paper_trail's versions table", %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+      build_chart_via_chat(view)
+
+      assert [dashboard] = Dashboards.list_dashboards(scope)
+
+      # Story 74's notes (get_story 74): versioning uses the paper_trail
+      # dependency on the dashboard blob; restore creates a new version.
+      # paper_trail is not a dependency yet (confirmed: no match in
+      # mix.lock/mix.exs), so its "versions" table cannot exist either.
+      # to_regclass returns NULL for a missing relation rather than
+      # raising, so this fails as a clear assertion, not a crash.
+      result = Repo.query!("select to_regclass('versions')")
+      assert [[regclass]] = result.rows
+
+      refute is_nil(regclass),
+             "expected a paper_trail 'versions' table to exist (dependency not yet added)"
+
+      # Unreachable until the guard above passes: restoring an earlier
+      # version should insert a new paper_trail version row scoped to
+      # this dashboard.
+      {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      edit_view
+      |> element("[data-role='restore-version']")
+      |> render_click()
+
+      %{rows: [[count]]} =
+        Repo.query!(
+          "select count(*) from versions where item_type = 'Dashboard' and item_id = $1",
+          [dashboard.id]
+        )
+
+      assert count > 0
     end)
   end
 end
