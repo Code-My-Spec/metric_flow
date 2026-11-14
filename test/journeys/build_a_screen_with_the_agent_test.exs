@@ -2083,4 +2083,40 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
              "expected the platform choice to persist across a fresh mount"
     end)
   end
+
+  test "a legacy dashboard (Visualization rows, no a2ui_spec) opens on the view page with its widgets",
+       %{conn: conn} do
+    stage("Save and reopen", fn ->
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+      scope = Scope.for_user(user)
+
+      {:ok, dashboard} = Dashboards.save_dashboard(scope, %{"name" => "Legacy Dashboard"})
+
+      :ok =
+        Dashboards.replace_dashboard_visualizations(scope, dashboard, [
+          %{metric_name: "impressions", chart_type: "line", position: 0}
+        ])
+
+      conn = log_in_user(conn, user)
+
+      # Main's review (03d915c, 2026-11-14): a dashboard saved before
+      # Story 74's A2UI rebuild (Visualization rows, a2ui_spec nil)
+      # crashes the view page outright with "comparing
+      # m.normalized_metric_name with nil is forbidden". Root cause:
+      # a2ui_dashboard_components/1 derives a legacy component straight
+      # from the Visualization's raw vega_spec (the ad-hoc
+      # %{"metric_name" => _, "chart_type" => _} shape,
+      # replace_dashboard_visualizations/3's own default), but then
+      # calls the shared A2ui.component_metric/1 on it -- which only
+      # understands the chat-built {"query" => {"metric" => _}} shape
+      # and returns nil for this one, unlike the editor's own
+      # chart_metric_key/1, which already resolves this legacy shape
+      # without going through nil.
+      assert {:ok, _view, html} = live(conn, ~p"/app/dashboards/#{dashboard.id}")
+      assert html =~ "Impressions"
+    end)
+  end
 end
