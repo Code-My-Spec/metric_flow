@@ -26,23 +26,21 @@ defmodule MetricFlowSpex.Criterion829ClientCustomizesDashboardUnderWhiteLabeling
         {:ok, Map.put(context, :agency_conn, %{owner_conn | host: "branded829.metricflow.io"})}
       end
 
-      when_ "they customize their own dashboard", context do
+      when_ "they customize their own dashboard by chatting with the agent", context do
         {:ok, new_view, _html} = live(context.agency_conn, "/app/dashboards/new")
 
-        new_view
-        |> element("[data-role='add-visualization-btn']")
-        |> render_click()
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          MetricFlowTest.DashboardBuilderStub.generate_initial()
+        )
+
+        render_submit(new_view, "send_dashboard_chat", %{"message" => "Show me impressions"})
+        Process.sleep(100)
+        Application.delete_env(:metric_flow, :command_runner)
 
         new_view
-        |> element("[phx-click='select_metric'][phx-value-metric='impressions']")
-        |> render_click()
-
-        new_view
-        |> element("[data-role='confirm-add-btn']")
-        |> render_click()
-
-        new_view
-        |> element("form[phx-change='validate_name']")
+        |> form("form[phx-change='validate_name']")
         |> render_change(%{"dashboard" => %{"name" => "My Custom Dashboard"}})
 
         new_view

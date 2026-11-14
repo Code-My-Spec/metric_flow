@@ -27,14 +27,14 @@ defmodule MetricFlowSpex.Criterion826AgencyColorSchemeAppliedThroughoutInterface
 
       when_ "they navigate through the application", context do
         {:ok, dashboard_view, dashboard_html} = live(context.agency_conn, "/app/dashboard")
-        {:ok, reports_view, reports_html} = live(context.agency_conn, "/app/reports")
+        {:ok, dashboards_view, dashboards_html} = live(context.agency_conn, "/app/dashboards")
 
         {:ok,
          Map.merge(context, %{
            dashboard_view: dashboard_view,
            dashboard_html: dashboard_html,
-           reports_view: reports_view,
-           reports_html: reports_html
+           dashboards_view: dashboards_view,
+           dashboards_html: dashboards_html
          })}
       end
 
@@ -42,8 +42,8 @@ defmodule MetricFlowSpex.Criterion826AgencyColorSchemeAppliedThroughoutInterface
         assert context.dashboard_html =~ "#7788AA" or
                  has_element?(context.dashboard_view, "[data-white-label]")
 
-        assert context.reports_html =~ "#7788AA" or
-                 has_element?(context.reports_view, "[data-white-label]")
+        assert context.dashboards_html =~ "#7788AA" or
+                 has_element?(context.dashboards_view, "[data-white-label]")
 
         {:ok, context}
       end

@@ -24,9 +24,9 @@ defmodule MetricFlowSpex.AgencyCustomerKeepsAiAccessWhileFlaggedButSubscribedSpe
         {:ok, context}
       end
 
-      then_ "Jordan navigates to Visualizations and sees the full feature content with no paywall",
+      then_ "Jordan navigates to the dashboard builder and sees the full feature content with no paywall",
             context do
-        result = live(context.second_user_conn, "/app/visualizations")
+        result = live(context.second_user_conn, "/app/dashboards/new")
 
         case result do
           {:ok, view, _html} ->
@@ -40,12 +40,12 @@ defmodule MetricFlowSpex.AgencyCustomerKeepsAiAccessWhileFlaggedButSubscribedSpe
 
           {:error, {:redirect, %{to: path}}} ->
             flunk(
-              "Expected Jordan to keep access to /visualizations but was redirected to #{path}"
+              "Expected Jordan to keep access to /app/dashboards/new but was redirected to #{path}"
             )
 
           {:error, {:live_redirect, %{to: path}}} ->
             flunk(
-              "Expected Jordan to keep access to /visualizations but was live-redirected to #{path}"
+              "Expected Jordan to keep access to /app/dashboards/new but was live-redirected to #{path}"
             )
         end
       end
