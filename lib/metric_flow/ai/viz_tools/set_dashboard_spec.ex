@@ -26,9 +26,10 @@ defmodule MetricFlow.Ai.VizTools.SetDashboardSpec do
         "no separate edit tool. Shape: {\"title\": ..., \"components\": [...]}. The first " <>
         "time you build a dashboard, give it a short title describing what it shows -- a " <>
         "few words, never the user's raw request verbatim. Omit title on a later call to " <>
-        "leave the dashboard's existing name alone. Each \"chart\" or \"stat\" component " <>
-        "must carry a \"query\" map with a \"metric\" key naming an available metric -- " <>
-        "never embed \"data\" or \"values\"; real values are fetched at render time. " <>
+        "leave the dashboard's existing name alone. Each \"chart\", \"stat\" or \"table\" " <>
+        "component must carry a \"query\" map with a \"metric\" key naming an available " <>
+        "metric -- never embed \"data\" or \"values\"; real values are fetched at render " <>
+        "time. A \"table\" component renders that metric's values as rows. " <>
         "Filters are ordinary components bound to the dashboard's data model. When the " <>
         "user asks for several widgets, put all of them in this one call's components " <>
         "list -- never call this tool more than once for a single message."
@@ -86,13 +87,14 @@ defmodule MetricFlow.Ai.VizTools.SetDashboardSpec do
   defp validate_components(_),
     do: {:error, ~s(a2ui_json must be an object with a "components" list)}
 
-  defp validate_component(%{"type" => type} = component) when type in ["chart", "stat"] do
+  defp validate_component(%{"type" => type} = component)
+       when type in ["chart", "stat", "table"] do
     cond do
       Map.has_key?(component, "data") or Map.has_key?(component, "values") ->
         {:error, ~s(components must not embed "data" or "values" -- bind via "query" instead)}
 
       not match?(%{"metric" => m} when is_binary(m), component["query"]) ->
-        {:error, ~s(chart/stat components must carry a "query" map with a "metric" key)}
+        {:error, ~s(chart/stat/table components must carry a "query" map with a "metric" key)}
 
       true ->
         :ok
