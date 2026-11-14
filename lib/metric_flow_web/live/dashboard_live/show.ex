@@ -11,8 +11,11 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   use MetricFlowWeb, :live_view
 
+  import MetricFlowWeb.DashboardLive.Components
+
   alias MetricFlow.Ai
   alias MetricFlow.Dashboards
+  alias MetricFlow.Dashboards.A2ui
   alias MetricFlow.Metrics
   alias MetricFlow.Metrics.NormalizedMetric
 
@@ -92,30 +95,18 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           </form>
         </div>
 
+        <.platform_filter
+          available_platforms={@available_platforms}
+          selected_platform={@dashboard_platform_filter}
+        />
+
         <div class="space-y-4">
-          <div
+          <.widget_card
             :for={{render, idx} <- Enum.with_index(@chart_render)}
-            data-role="visualization-card"
-            class="mf-card p-4"
-          >
-            <p class="font-semibold mb-2">{Enum.at(@a2ui_titles, idx)}</p>
-            <p :if={elem(render, 0) == :stat} data-role="stat-tile-value" class="text-3xl font-bold">
-              {elem(render, 1)}
-            </p>
-            <div
-              :if={elem(render, 0) == :chart}
-              id={"show-dashboard-chart-#{idx}"}
-              data-role="echarts-chart"
-              phx-hook="ECharts"
-              phx-update="ignore"
-              data-option={Jason.encode!(elem(render, 1))}
-              class="w-full h-32"
-            >
-            </div>
-            <p :if={elem(render, 0) == :no_data} data-role="no-data-message" class="text-sm text-base-content/60">
-              No data for this period
-            </p>
-          </div>
+            chart_id={"show-dashboard-chart-#{idx}"}
+            title={Enum.at(@a2ui_titles, idx)}
+            render={render}
+          />
         </div>
       </div>
 
@@ -673,13 +664,16 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   defp mount_a2ui_dashboard(socket, scope, dashboard) do
     {:ok, loaded} = Dashboards.get_dashboard_with_visualizations(scope, dashboard.id)
     date_range = loaded.date_range || "30"
+    platform = loaded.platform_filter && String.to_existing_atom(loaded.platform_filter)
     components = a2ui_dashboard_components(loaded)
 
     socket
     |> assign(:dashboard_view_mode, :a2ui)
     |> assign(:dashboard, loaded)
-    |> assign(:a2ui_titles, Enum.map(components, &a2ui_component_title/1))
-    |> assign(:chart_render, Enum.map(components, &a2ui_build_chart_render(&1, scope, date_range)))
+    |> assign(:a2ui_titles, Enum.map(components, &A2ui.component_title/1))
+    |> assign(:available_platforms, A2ui.available_platforms(scope))
+    |> assign(:dashboard_platform_filter, platform)
+    |> assign(:chart_render, a2ui_chart_render(components, scope, date_range, platform))
     |> assign(:dashboard_date_range, date_range)
     |> assign(:page_title, loaded.name)
   end
@@ -698,60 +692,38 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   defp a2ui_dashboard_components(_dashboard), do: []
 
-  defp a2ui_component_title(%{"title" => title}) when is_binary(title), do: title
-  defp a2ui_component_title(component), do: get_in(component, ["query", "metric"]) || "Untitled"
-
-  defp a2ui_component_metric(component), do: get_in(component, ["query", "metric"])
-
-  defp a2ui_component_chart_type(%{"type" => "stat"}), do: "text"
-  defp a2ui_component_chart_type(%{"chartType" => type}) when is_binary(type), do: type
-  defp a2ui_component_chart_type(_component), do: "line"
-
-  defp a2ui_date_range("7"), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_7_days)) |> Map.fetch!(:range)
-  defp a2ui_date_range("90"), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_90_days)) |> Map.fetch!(:range)
-  defp a2ui_date_range(_), do: Dashboards.available_date_ranges() |> Enum.find(&(&1.key == :last_30_days)) |> Map.fetch!(:range)
-
-  defp a2ui_query_values(component, scope, date_range_str) do
-    scope
-    |> Metrics.query_time_series(a2ui_component_metric(component), date_range: a2ui_date_range(date_range_str))
-    |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
+  # Main's review (76d8303): this and the editor's own chart/query logic
+  # used to be two separate copies that could (and did) drift -- both now
+  # go through MetricFlow.Dashboards.A2ui so a table widget or a platform
+  # filter behaves identically on the view page and in the builder.
+  defp a2ui_chart_render(components, scope, date_range, platform) do
+    Enum.map(components, fn component ->
+      A2ui.build_chart_render(
+        A2ui.component_metric(component),
+        A2ui.component_chart_type(component),
+        scope,
+        date_range,
+        platform
+      )
+    end)
   end
 
-  defp a2ui_build_chart_render(component, scope, date_range_str) do
-    case a2ui_query_values(component, scope, date_range_str) do
-      [] -> {:no_data, nil}
-      values -> a2ui_render_chart_from_values(component, values)
+  defp apply_a2ui_platform_filter(socket, platform) do
+    scope = socket.assigns.current_scope
+    dashboard = socket.assigns.dashboard
+    date_range = socket.assigns.dashboard_date_range
+    components = a2ui_dashboard_components(dashboard)
+    platform_str = platform && Atom.to_string(platform)
+
+    socket =
+      socket
+      |> assign(:dashboard_platform_filter, platform)
+      |> assign(:chart_render, a2ui_chart_render(components, scope, date_range, platform))
+
+    case Dashboards.update_dashboard(scope, dashboard, %{"platform_filter" => platform_str}) do
+      {:ok, dashboard} -> assign(socket, :dashboard, dashboard)
+      {:error, _} -> socket
     end
-  end
-
-  defp a2ui_render_chart_from_values(component, values) do
-    case a2ui_component_chart_type(component) do
-      "text" ->
-        total = Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)
-        {:stat, a2ui_format_stat_value(total)}
-
-      chart_type ->
-        option = %{
-          "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
-          "yAxis" => %{"type" => "value"},
-          "series" => [a2ui_echarts_series(chart_type, Enum.map(values, &elem(&1, 1)))]
-        }
-
-        {:chart, option}
-    end
-  end
-
-  defp a2ui_echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
-  defp a2ui_echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
-  defp a2ui_echarts_series(_, data), do: %{"type" => "line", "data" => data}
-
-  defp a2ui_format_stat_value(value) do
-    value
-    |> round()
-    |> Integer.to_string()
-    |> String.reverse()
-    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
-    |> String.reverse()
   end
 
   # Canned dashboards are shared system-wide (any authenticated user can view
@@ -813,12 +785,13 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   def handle_event("dashboard_filter_date_range", %{"range" => range}, socket) do
     scope = socket.assigns.current_scope
     dashboard = socket.assigns.dashboard
+    platform = socket.assigns[:dashboard_platform_filter]
     components = a2ui_dashboard_components(dashboard)
 
     socket =
       socket
       |> assign(:dashboard_date_range, range)
-      |> assign(:chart_render, Enum.map(components, &a2ui_build_chart_render(&1, scope, range)))
+      |> assign(:chart_render, a2ui_chart_render(components, scope, range, platform))
 
     case Dashboards.update_dashboard(scope, dashboard, %{"date_range" => range}) do
       {:ok, dashboard} -> {:noreply, assign(socket, :dashboard, dashboard)}
@@ -830,7 +803,32 @@ defmodule MetricFlowWeb.DashboardLive.Show do
   # Event handlers
   # ---------------------------------------------------------------------------
 
+  # Story 74, rule 5: a platform filter is an ordinary interactive control
+  # bound to the dashboard's data model, like the date range -- it only
+  # re-runs what's shown and saves the chosen value with the dashboard.
+  # Guarded on dashboard_view_mode so this never shadows the legacy
+  # (built-in dashboard) "filter_platform" clauses just below, which the
+  # journey's own test (render_click(show_view, "filter_platform", ...))
+  # relies on reaching this clause instead when viewing an agent-built
+  # dashboard.
   @impl true
+  def handle_event(
+        "filter_platform",
+        %{"platform" => "all"},
+        %{assigns: %{dashboard_view_mode: :a2ui}} = socket
+      ) do
+    {:noreply, apply_a2ui_platform_filter(socket, nil)}
+  end
+
+  def handle_event(
+        "filter_platform",
+        %{"platform" => platform_str},
+        %{assigns: %{dashboard_view_mode: :a2ui}} = socket
+      ) do
+    platform = String.to_existing_atom(platform_str)
+    {:noreply, apply_a2ui_platform_filter(socket, platform)}
+  end
+
   def handle_event("filter_platform", %{"platform" => "all"}, socket) do
     socket = reload_dashboard_data(socket, selected_platform: nil)
     {:noreply, socket}

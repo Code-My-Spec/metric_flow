@@ -15,12 +15,14 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   use MetricFlowWeb, :live_view
 
+  import MetricFlowWeb.DashboardLive.Components
+
   alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Ai
   alias MetricFlow.Ai.DashboardBuilder
   alias MetricFlow.Dashboards
+  alias MetricFlow.Dashboards.A2ui
   alias MetricFlow.Dashboards.Dashboard
-  alias MetricFlow.Metrics
 
   # ---------------------------------------------------------------------------
   # Render
@@ -197,34 +199,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         <%!-- Story 74, rule 5: an interactive control, bound to the
              dashboard's data model like the date range -- only re-runs
              what's shown, never writes anywhere else. --%>
-        <div
-          :if={@available_platforms != []}
-          data-role="platform-filter"
-          class="mf-card p-3 mb-6 flex items-center gap-2"
-        >
-          <span class="text-sm text-base-content/70">Platform</span>
-          <button
-            phx-click="filter_platform"
-            phx-value-platform="all"
-            class={[
-              "btn btn-sm",
-              (is_nil(@dashboard_platform_filter) && "btn-primary") || "btn-ghost"
-            ]}
-          >
-            All
-          </button>
-          <button
-            :for={platform <- @available_platforms}
-            phx-click="filter_platform"
-            phx-value-platform={platform}
-            class={[
-              "btn btn-sm",
-              (@dashboard_platform_filter == platform && "btn-primary") || "btn-ghost"
-            ]}
-          >
-            {platform_display_name(platform)}
-          </button>
-        </div>
+        <.platform_filter
+          available_platforms={@available_platforms}
+          selected_platform={@dashboard_platform_filter}
+        />
 
         <%!-- Visualization canvas --%>
         <div
@@ -236,69 +214,13 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
             <p class="text-base-content/60">Add a visualization to get started</p>
           </div>
 
-          <div
+          <.widget_card
             :for={{viz, idx} <- Enum.with_index(@visualizations)}
-            data-role="visualization-card"
-            class="mf-card p-4"
-          >
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-semibold">{viz.metric_name}</span>
-              <span class="badge badge-ghost badge-sm">{viz.chart_type}</span>
-            </div>
-
-            <%!-- Story 74: "Charts are ECharts"; "Chat only: no hand-edit spec editor." --%>
-            <div
-              data-role="chart-preview"
-              class={
-                if elem(Enum.at(@chart_render, idx), 0) == :table,
-                  do: "mt-2 bg-base-200 rounded p-2 overflow-x-auto",
-                  else:
-                    "mt-2 h-32 bg-base-200 rounded overflow-hidden flex items-center justify-center"
-              }
-            >
-              <p
-                :if={elem(Enum.at(@chart_render, idx), 0) == :stat}
-                data-role="stat-tile-value"
-                class="text-3xl font-bold"
-              >
-                {elem(Enum.at(@chart_render, idx), 1)}
-              </p>
-              <div
-                :if={elem(Enum.at(@chart_render, idx), 0) == :chart}
-                id={"dashboard-chart-#{idx}"}
-                data-role="echarts-chart"
-                phx-hook="ECharts"
-                phx-update="ignore"
-                data-option={Jason.encode!(elem(Enum.at(@chart_render, idx), 1))}
-                class="w-full h-full"
-              >
-              </div>
-              <p
-                :if={elem(Enum.at(@chart_render, idx), 0) == :no_data}
-                data-role="no-data-message"
-                class="text-sm text-base-content/60"
-              >
-                No data for this period
-              </p>
-              <table
-                :if={elem(Enum.at(@chart_render, idx), 0) == :table}
-                class="table table-sm w-full"
-              >
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr :for={{date, value} <- elem(Enum.at(@chart_render, idx), 1)}>
-                    <td>{date}</td>
-                    <td>{value}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+            chart_id={"dashboard-chart-#{idx}"}
+            title={viz.metric_name}
+            chart_type={viz.chart_type}
+            render={Enum.at(@chart_render, idx)}
+          />
         </div>
       </div>
     </Layouts.app>
@@ -349,7 +271,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:dashboard, dashboard)
           |> assign(:changeset, changeset)
           |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-          |> assign(:available_platforms, available_platforms(scope))
+          |> assign(:available_platforms, A2ui.available_platforms(scope))
           |> assign(:viz_error, nil)
           |> assign(:dashboard_chat_messages, chat_messages)
           |> assign(:dashboard_chat_generating, false)
@@ -384,7 +306,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:visualizations, [])
       |> assign(:chart_render, [])
       |> assign(:available_metrics, Dashboards.list_available_metrics(scope))
-      |> assign(:available_platforms, available_platforms(scope))
+      |> assign(:available_platforms, A2ui.available_platforms(scope))
       |> assign(:viz_error, nil)
       |> assign(:dashboard_chat_messages, [])
       |> assign(:dashboard_chat_generating, false)
@@ -646,8 +568,8 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     |> Enum.with_index()
     |> Enum.map(fn {component, position} ->
       %{
-        metric_name: a2ui_component_title(component),
-        chart_type: a2ui_component_chart_type(component),
+        metric_name: A2ui.component_title(component),
+        chart_type: A2ui.component_chart_type(component),
         position: position,
         vega_spec: component
       }
@@ -678,27 +600,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         socket
     end
   end
-
-  defp a2ui_component_title(%{"title" => title}) when is_binary(title), do: title
-  defp a2ui_component_title(component), do: get_in(component, ["query", "metric"]) || "Untitled"
-
-  defp a2ui_component_chart_type(component),
-    do: a2ui_component_chart_type_or_nil(component) || "line"
-
-  # Returns nil (rather than defaulting) for anything that doesn't look like
-  # an A2UI component at all, so a caller juggling both shapes -- a
-  # reloaded Visualization row can hold either, depending on whether it was
-  # built via chat (A2UI) or the old template/library/manual paths
-  # (Vega-Lite) -- can fall through to its own Vega-Lite-specific handling.
-  defp a2ui_component_chart_type_or_nil(%{"type" => "stat"}), do: "text"
-  defp a2ui_component_chart_type_or_nil(%{"type" => "table"}), do: "table"
-
-  defp a2ui_component_chart_type_or_nil(%{"type" => "chart", "chartType" => type})
-       when is_binary(type),
-       do: type
-
-  defp a2ui_component_chart_type_or_nil(%{"type" => "chart"}), do: "line"
-  defp a2ui_component_chart_type_or_nil(_component), do: nil
 
   # Story 74, rule 1: the first thing the agent builds is saved as a draft
   # with no explicit Save -- once a dashboard already exists we just keep
@@ -944,7 +845,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
       chart_type =
         Map.get(vega_spec, "chart_type") ||
-          a2ui_component_chart_type_or_nil(vega_spec) ||
+          A2ui.component_chart_type_or_nil(vega_spec) ||
           extract_chart_type_from_spec(vega_spec)
 
       %{
@@ -987,61 +888,18 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   defp assign_visualizations(socket, visualizations) do
     scope = socket.assigns.current_scope
-    date_range = date_range_for(socket.assigns.dashboard_date_range)
+    date_range = socket.assigns.dashboard_date_range
     platform = socket.assigns[:dashboard_platform_filter]
 
     socket
     |> assign(:visualizations, visualizations)
-    |> assign(:chart_render, resolve_chart_render(visualizations, scope, date_range, platform))
-  end
-
-  # Story 74: "Charts are ECharts"; "data is fetched at render time and never
-  # pasted into the spec." Builds the render-time payload for each card
-  # straight from its metric key and chart_type -- not from whatever the
-  # stored vega_spec's "data" happens to say -- so this works the same for
-  # a chat-built widget (named data source, no embedded values) and an
-  # older template/library/manual one (embedded values, or none at all).
-  defp resolve_chart_render(visualizations, scope, date_range, platform) do
-    Enum.map(visualizations, &build_chart_render(&1, scope, date_range, platform))
-  end
-
-  # Story 74 (main, live walk of a7ba770): a widget whose query resolves to
-  # zero data points in range gets a clear message instead of a silent 0
-  # stat or an empty chart -- checked once, ahead of the stat/chart split,
-  # so neither branch has to re-derive "no data" on its own.
-  defp build_chart_render(viz, scope, date_range, platform) do
-    case query_metric_values(viz, scope, date_range, platform) do
-      [] -> {:no_data, nil}
-      values -> render_chart_from_values(viz, values)
-    end
-  end
-
-  defp render_chart_from_values(%{chart_type: "text"}, values) do
-    total = Enum.reduce(values, 0, fn {_date, value}, acc -> acc + value end)
-    {:stat, format_stat_value(total)}
-  end
-
-  defp render_chart_from_values(%{chart_type: "table"}, values), do: {:table, values}
-
-  defp render_chart_from_values(viz, values) do
-    option = %{
-      "xAxis" => %{"type" => "category", "data" => Enum.map(values, &elem(&1, 0))},
-      "yAxis" => %{"type" => "value"},
-      "series" => [echarts_series(viz.chart_type, Enum.map(values, &elem(&1, 1)))]
-    }
-
-    {:chart, option}
-  end
-
-  # Main's live walk (a7ba770): a stat tile's total should read like
-  # "125,706", not a raw float's "125706.0".
-  defp format_stat_value(value) do
-    value
-    |> round()
-    |> Integer.to_string()
-    |> String.reverse()
-    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
-    |> String.reverse()
+    |> assign(
+      :chart_render,
+      Enum.map(
+        visualizations,
+        &A2ui.build_chart_render(chart_metric_key(&1), &1.chart_type, scope, date_range, platform)
+      )
+    )
   end
 
   # A template/library-inserted visualization carries no :vega_spec key at
@@ -1059,60 +917,6 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
         end
     end
   end
-
-  defp query_metric_values(viz, scope, date_range, platform) do
-    opts = [date_range: date_range] |> maybe_put_provider(platform)
-
-    scope
-    |> Metrics.query_time_series(chart_metric_key(viz), opts)
-    |> Enum.map(fn %{date: date, value: value} -> {Date.to_iso8601(date), value} end)
-  end
-
-  defp maybe_put_provider(opts, nil), do: opts
-  defp maybe_put_provider(opts, platform), do: Keyword.put(opts, :provider, platform)
-
-  # Story 74, rule 5: "interactive controls... only re-run metric queries
-  # and change what is shown." Every provider any of the account's metrics
-  # has data from -- the same set a dashboard's charts/stats/tables can
-  # ever be bound to -- not scoped to this one dashboard's own components,
-  # so the control still offers a platform the account has even before any
-  # widget on this dashboard happens to use it.
-  defp available_platforms(scope) do
-    scope
-    |> Metrics.list_metric_providers()
-    |> Map.values()
-    |> Enum.uniq()
-    |> Enum.sort()
-  end
-
-  defp platform_display_name(platform) when is_atom(platform) do
-    platform
-    |> Atom.to_string()
-    |> String.replace("_", " ")
-    |> String.split()
-    |> Enum.map_join(" ", &String.capitalize/1)
-  end
-
-  # Main's live walk (a7ba770 + seeds): the filter's chosen "7"/"30"/"90"
-  # range must actually change what's queried, not just its own label --
-  # reuses the same presets available_date_ranges/0 already defines for
-  # the filter UI elsewhere, so the two can never drift apart.
-  defp date_range_for(range_str) do
-    key =
-      case range_str do
-        "7" -> :last_7_days
-        "90" -> :last_90_days
-        _ -> :last_30_days
-      end
-
-    Dashboards.available_date_ranges()
-    |> Enum.find(&(&1.key == key))
-    |> Map.fetch!(:range)
-  end
-
-  defp echarts_series("bar", data), do: %{"type" => "bar", "data" => data}
-  defp echarts_series("area", data), do: %{"type" => "line", "data" => data, "areaStyle" => %{}}
-  defp echarts_series(_, data), do: %{"type" => "line", "data" => data}
 
   # A stored vega_spec in the plain `%{"metric_name" => _, "chart_type" => _}` shape is an
   # ad-hoc entry meant to be regenerated live from current metric data on every load, as it
