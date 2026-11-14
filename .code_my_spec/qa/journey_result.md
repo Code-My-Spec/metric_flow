@@ -2,7 +2,7 @@
 
 ## Status
 
-mixed
+pass
 
 Journeys 1-5 from the plan were walked live against the running app
 (`http://localhost:4070`, this worktree's dev server) and passed; each is
@@ -15,14 +15,15 @@ multi-widget combining into one spec, no draft-navigation on reload, no
 versioning, chart type lost on reload, missing-metric redirect, "Edit
 with agent" label, no widget awareness after reopening, no filter
 control, no default date range, filter select not wrapped in a form,
-refine duplicating a widget instead of replacing it) and now passes
-every rule except one: refining a widget the model has renamed still
-duplicates it rather than updating in place, since the merge logic
-matches by exact title string rather than an id. The filter
-form-wrapping and exact-title refine fixes were landed by the coder
-directly in this shared working copy while this round's tests were
-being written, committed at 8b62d9c -- `lib/metric_flow_web/live/
-dashboard_live/editor.ex` is not among the files this agent committed.
+refine duplicating a widget instead of replacing it, refine still
+duplicating a renamed widget) and now passes every rule exercised.
+The filter form-wrapping and exact-title refine fixes landed at
+8b62d9c; the rename-safe widget_id fix landed at df2bd49. None of
+`lib/metric_flow_web/live/dashboard_live/editor.ex`,
+`lib/metric_flow/ai/viz_chat.ex` or `lib/metric_flow/ai/viz_tools/
+update_spec.ex` are among the files this agent committed -- all coder
+work, landed directly in this shared working copy while these tests
+were being written.
 See Journey 6 below for the consolidated detail; some of this walking
 was done outside `start_task`/`evaluate_task` because of a graph
 deadlock (c2084903) that refused to re-offer `qa_journey` after a stage
@@ -100,9 +101,9 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** fail (rules 1, 3, 5, 6, 7, 8 and 9 pass; rules 2/4 pass for
-an exact-title refine but fail when the model renames a widget while
-refining it -- criterion 1062, now codified as the coder's next work)
+**Status:** pass (rules 1-9 all pass, including a refine where the
+model renames the widget it's changing -- fixed at df2bd49 via a
+stable per-widget `widget_id`)
 
 Walked across many coder stages on 2026-11-14; consolidated here rather
 than kept as a growing list of individual re-walk attempts (see git log
@@ -296,20 +297,41 @@ history if the detail is needed).
   Flagged as an open question that `merge_chat_specs/3` matches by
   *exact* string equality on `"title"` -- since confirmed below as a
   real, codified gap.
-- **Refining a widget the model has renamed still duplicates it
-  (Story 74 rules 2/4, criterion 1062) -- fail, now codified.** Follow-up
-  to the bullet above: `merge_chat_specs/3` (8b62d9c) matches a
-  returned spec against an existing widget by exact string equality on
-  `"title"` -- the only identifier `update_spec`'s `input_schema`
-  carries. A real model asked to "change" a widget is free to rename it
-  in the same response. Added a test with a stub that renames
-  "Impressions Over Time" to "Daily Impressions" while changing the
-  mark to area (same underlying metric). Confirmed failing: 3 cards,
-  not 2 -- the title no longer matches, so the widget is appended as
-  new rather than updated in place, reproducing the same duplication
-  main saw live at 5ee7d7c, now through a title mismatch rather than a
-  missing merge step entirely. Needs an id/index-based match, not a
-  title-based one -- handed to the coder as its next `work_journey`.
+- **Refining a widget the model has renamed no longer duplicates it
+  (Story 74 rules 2/4, criterion 1062) -- pass.** Follow-up to the
+  bullet above: `merge_chat_specs/3` (8b62d9c) matched a returned spec
+  against an existing widget by exact string equality on `"title"` --
+  the only identifier `update_spec`'s `input_schema` carried. A real
+  model asked to "change" a widget is free to rename it in the same
+  response. Added a test with a stub that renames "Impressions Over
+  Time" to "Daily Impressions" while changing the mark to area (same
+  underlying metric). Confirmed failing at 8b62d9c (3 cards, not 2):
+  the title no longer matched, so the widget was appended as new
+  rather than updated in place, reproducing the duplication main saw
+  live at 5ee7d7c, now through a title mismatch rather than a missing
+  merge step entirely.
+
+  Fixed at df2bd49: `existing_widgets_context/1` now embeds a stable
+  `widget_id` (0-based position) in each existing widget sent to the
+  model; `update_spec` gains an optional `widget_id` argument, matched
+  first, falling back to the prior exact-title match when absent.
+  Updated the stub to supply `widget_id: 1` (the line chart's position
+  in the two-widget build fixture) alongside the renamed title,
+  modeling a model that does what it's told; confirmed passing.
+
+  Added a second, capture-based test (no scripted response) asserting
+  on the real prompt the dashboard chat sends after a build: the
+  system prompt mentions `widget_id` for existing widgets, and
+  `update_spec`'s own tool description tells the model to pass
+  `widget_id` back to update in place. Confirmed both this and the
+  stub-driven test fail for the right reasons with df2bd49's three
+  changed files reverted to their prior state (temporarily, then
+  restored) -- so neither is a false-pass that would stay green
+  regardless of the fix. No regressions found in isolated reruns of
+  `editor_test.exs` (18/18) and `test/metric_flow/ai/` (191/191); a
+  combined run of both together flaked to 207/209, not reproduced on
+  retry in isolation -- noted, not chased further, since neither
+  failure recurred.
 - **Default 30-day range when none is named (Story 74 rule 9 /
   criterion 1067) -- pass.** Rule: "When Dana does not name a date
   range, the agent uses the last 30 days ending yesterday." Nothing in
@@ -363,7 +385,5 @@ application defects.
 Per John's decision (answer to question `5df24200`), journeys are codified
 as `Phoenix.LiveViewTest` modules under `test/journeys/`, not Wallaby --
 consistent with the project's e2e testing ADR, which does not use Wallaby.
-All 6 files exist; 5 pass end-to-end. Journey 6 has 17/18 passing at
-8b62d9c, with 1 committed failing (refining a renamed widget still
-duplicates it -- Story 74 rules 2/4, criterion 1062), handing the
-coder its next work.
+All 6 files exist and pass end-to-end: 5 journeys, plus journey 6's
+19/19 at df2bd49.

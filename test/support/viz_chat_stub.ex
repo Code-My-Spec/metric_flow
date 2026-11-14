@@ -75,21 +75,28 @@ defmodule MetricFlowTest.VizChatStub do
 
   @doc """
   Refinement that changes an existing widget's chart type AND rewords
-  its title (QA journey 6, criterion 1062, 2026-11-14): `merge_chat_specs/3`
-  in `dashboard_live/editor.ex` matches a returned spec against an
-  existing widget by exact string equality on `\"title\"` -- the only
-  identifier `update_spec`'s `input_schema` carries. A real model asked
-  to \"change\" a widget is free to rename it in the same response (e.g.
-  \"Impressions Over Time\" -> \"Daily Impressions\", same metric, new
-  mark), which this preset reproduces: the title no longer matches, so
-  the match silently misses and the widget is appended as new instead
-  of updated in place.
+  its title, passing back the widget_id the model was given for it
+  (QA journey 6, criterion 1062, 2026-11-14; widget_id mechanism added
+  in df2bd49). `existing_widgets_context/1` in `dashboard_live/editor.ex`
+  gives each existing widget a stable `widget_id` (its 0-based
+  position); `update_spec`'s own description tells the model to pass
+  that same `widget_id` back to update a widget in place regardless of
+  whether it renames it. In the two-widget fixture `generate_initial/0`
+  builds (stat tile at position 0, line chart at position 1), the line
+  chart's `widget_id` is `1`. This preset models a real model doing
+  exactly what it's told: renaming \"Impressions Over Time\" to
+  \"Daily Impressions\" while changing its mark to area, and passing
+  `widget_id: 1` so the merge can target it despite the title no longer
+  matching.
   """
   def refine_to_area_chart_with_reworded_title do
     ClaudeCodeStub.sequence(
       ClaudeCodeStub.completed_tool_call(
         "update_spec",
-        %{"vega_lite_json" => Jason.encode!(reworded_area_chart_spec())},
+        %{
+          "vega_lite_json" => Jason.encode!(reworded_area_chart_spec()),
+          "widget_id" => 1
+        },
         completion_text: "I've changed it to an area chart."
       )
     )

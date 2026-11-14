@@ -829,19 +829,16 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
 
     # Story 74 rules 2/4, criterion 1062: refining an existing widget
-    # should update it in place, not duplicate it. merge_chat_specs/3
-    # (8b62d9c) matches a returned spec against an existing widget by
-    # exact string equality on "title" -- the only identifier
-    # update_spec's input_schema carries. A real model asked to "change"
-    # a widget is free to rename it in the same response (confirmed
-    # plausible, not yet observed live): here the stub renames
-    # "Impressions Over Time" to "Daily Impressions" while changing the
-    # same underlying metric's mark to area. The title no longer
-    # matches, so the match silently misses and the widget is appended
-    # as new instead of updated in place -- the same duplication main
-    # saw live at 5ee7d7c, now reproduced through a title mismatch
-    # rather than a missing merge step entirely. Needs an id/index-based
-    # match, not a title-based one.
+    # should update it in place, not duplicate it, even when the model
+    # renames it in the same response. merge_chat_specs/3 (8b62d9c)
+    # matched only by exact title, so a rename alone would have missed
+    # and duplicated -- that gap is why this test originally existed.
+    # df2bd49 added a stable widget_id per existing widget specifically
+    # so a rename can't break the match; this stub now supplies
+    # widget_id: 1 (the line chart's position) alongside the reworded
+    # title, modeling a model that does what it's told. See the
+    # capture-based test below for whether the model is actually told
+    # to do that.
     assert length(cards_after) == 2
 
     reworded_card = Enum.find(cards_after, &(Floki.text(&1) =~ "Daily Impressions"))
@@ -849,6 +846,54 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
     badge_text = reworded_card |> Floki.find(".badge") |> Floki.text() |> String.trim()
     assert badge_text == "area"
+  end
+
+  test "existing widgets are given a stable id, and the model is told to use it", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    {:ok, agent} = Agent.start_link(fn -> nil end)
+
+    Application.put_env(:metric_flow, :command_runner, capturing_runner(agent))
+
+    render_submit(view, "send_dashboard_chat", %{"message" => "Make the line thicker"})
+
+    args = wait_for_capture(agent)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    refute is_nil(args), "the dashboard chat never reached the command_runner"
+
+    payload = decode_prompt_payload(args)
+
+    # Story 74 rules 2/4, criterion 1062 (widget_id mechanism, df2bd49):
+    # a rename alone can't break the merge if the model is told to pass
+    # back the widget_id it was given for the widget it's changing.
+    # Asserts on the real payload the dashboard chat sends -- not a
+    # scripted response -- so this only passes once (a) each existing
+    # widget in the prompt actually carries a widget_id, and (b)
+    # update_spec's own tool description tells the model to pass that
+    # widget_id back to update in place.
+    system_prompt_text = payload["system_prompt"] || ""
+
+    assert system_prompt_text =~ ~r/widget_id/,
+           "expected the existing widgets in the system prompt to carry a widget_id"
+
+    update_spec_tool = Enum.find(payload["available_tools"], &(&1["name"] == "update_spec"))
+    update_spec_description = update_spec_tool["description"] || ""
+
+    assert Regex.match?(~r/widget_id.{0,120}(update|change).{0,20}in place/is, update_spec_description) or
+             Regex.match?(~r/(update|change).{0,20}in place.{0,120}widget_id/is, update_spec_description),
+           "expected update_spec's description to tell the model to pass widget_id to update a widget in place"
   end
 
   test "the agent is told to default to the last 30 days when no range is named", %{
