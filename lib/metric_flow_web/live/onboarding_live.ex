@@ -10,10 +10,10 @@ defmodule MetricFlowWeb.OnboardingLive do
       active_account_name={assigns[:active_account_name]}
     >
       <div class="mx-auto max-w-2xl text-center">
-        <.header>Welcome to MetricFlow</.header>
+        <.header>Welcome to Anderson BI</.header>
 
         <p class="mt-4">
-          Let's get started setting up your account. Connect a platform to bring your metrics into MetricFlow.
+          Let's get started setting up your account. Connect a platform to bring your metrics into Anderson BI.
         </p>
         <div
           id="onboarding-next-steps"

@@ -23,7 +23,7 @@ defmodule MetricFlow.Accounts.AccountOwnershipTransferNotifier do
     Hi #{recipient_email},
 
     #{previous_owner_email} wants to transfer ownership of the account
-    "#{account_name}" to you on MetricFlow.
+    "#{account_name}" to you on Anderson BI.
 
     Click the link below to confirm and accept ownership:
 
@@ -64,7 +64,7 @@ defmodule MetricFlow.Accounts.AccountOwnershipTransferNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"MetricFlow", "noreply@metric-flow.app"})
+      |> from({"Anderson BI", "noreply@metric-flow.app"})
       |> subject(subject)
       |> text_body(body)
 
