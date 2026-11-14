@@ -2,7 +2,7 @@
 
 ## Status
 
-pass
+mixed
 
 Journeys 1-5 from the plan were walked live against the running app
 (`http://localhost:4070`, this worktree's dev server) and passed; each is
@@ -16,12 +16,13 @@ versioning, chart type lost on reload, missing-metric redirect, "Edit
 with agent" label, no widget awareness after reopening, no filter
 control, no default date range, filter select not wrapped in a form,
 refine duplicating a widget instead of replacing it) and now passes
-every rule exercised, including error handling (already built,
-confirmed by a new test). The last two fixes (filter form-wrapping; widget replace-by-title on
-refine) were landed by the coder directly in this shared working copy
-while this round's tests were being written, committed at 8b62d9c --
-`lib/metric_flow_web/live/dashboard_live/editor.ex` is not among the
-files this agent committed.
+every rule except one: refining a widget the model has renamed still
+duplicates it rather than updating in place, since the merge logic
+matches by exact title string rather than an id. The filter
+form-wrapping and exact-title refine fixes were landed by the coder
+directly in this shared working copy while this round's tests were
+being written, committed at 8b62d9c -- `lib/metric_flow_web/live/
+dashboard_live/editor.ex` is not among the files this agent committed.
 See Journey 6 below for the consolidated detail; some of this walking
 was done outside `start_task`/`evaluate_task` because of a graph
 deadlock (c2084903) that refused to re-offer `qa_journey` after a stage
@@ -99,8 +100,9 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** pass (rules 1-9 all pass; rules 5/8's form-wrapping fix and
-rule 2/4's widget-replace-by-title fix both landed at 8b62d9c)
+**Status:** fail (rules 1, 3, 5, 6, 7, 8 and 9 pass; rules 2/4 pass for
+an exact-title refine but fail when the model renames a widget while
+refining it -- criterion 1062, now codified as the coder's next work)
 
 Walked across many coder stages on 2026-11-14; consolidated here rather
 than kept as a growing list of individual re-walk attempts (see git log
@@ -291,13 +293,23 @@ history if the detail is needed).
   duplicate cards before the fix, a false signal from my test
   infrastructure, not the app.
 
-  One open question for the coder, not yet exercised by a test: this
-  match is by *exact* string equality on `"title"`. A real model asked
-  to "change" a widget is likely, but not guaranteed, to echo its title
-  back verbatim -- any rewording would silently miss the match and
-  reproduce the duplication main saw. Flagging this, not asserting on
-  it, since it would require scripting a title variation main didn't
-  observe live.
+  Flagged as an open question that `merge_chat_specs/3` matches by
+  *exact* string equality on `"title"` -- since confirmed below as a
+  real, codified gap.
+- **Refining a widget the model has renamed still duplicates it
+  (Story 74 rules 2/4, criterion 1062) -- fail, now codified.** Follow-up
+  to the bullet above: `merge_chat_specs/3` (8b62d9c) matches a
+  returned spec against an existing widget by exact string equality on
+  `"title"` -- the only identifier `update_spec`'s `input_schema`
+  carries. A real model asked to "change" a widget is free to rename it
+  in the same response. Added a test with a stub that renames
+  "Impressions Over Time" to "Daily Impressions" while changing the
+  mark to area (same underlying metric). Confirmed failing: 3 cards,
+  not 2 -- the title no longer matches, so the widget is appended as
+  new rather than updated in place, reproducing the same duplication
+  main saw live at 5ee7d7c, now through a title mismatch rather than a
+  missing merge step entirely. Needs an id/index-based match, not a
+  title-based one -- handed to the coder as its next `work_journey`.
 - **Default 30-day range when none is named (Story 74 rule 9 /
   criterion 1067) -- pass.** Rule: "When Dana does not name a date
   range, the agent uses the last 30 days ending yesterday." Nothing in
@@ -351,5 +363,7 @@ application defects.
 Per John's decision (answer to question `5df24200`), journeys are codified
 as `Phoenix.LiveViewTest` modules under `test/journeys/`, not Wallaby --
 consistent with the project's e2e testing ADR, which does not use Wallaby.
-All 6 files exist and pass end-to-end: 5 journeys, plus journey 6's
-17/17 at 8b62d9c.
+All 6 files exist; 5 pass end-to-end. Journey 6 has 17/18 passing at
+8b62d9c, with 1 committed failing (refining a renamed widget still
+duplicates it -- Story 74 rules 2/4, criterion 1062), handing the
+coder its next work.

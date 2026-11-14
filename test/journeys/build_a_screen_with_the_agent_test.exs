@@ -787,6 +787,70 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     assert badge_text == "area"
   end
 
+  test "refining an existing widget replaces it even when the model rewords its title", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    cards_before =
+      view |> render() |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+
+    assert length(cards_before) == 2
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.refine_to_area_chart_with_reworded_title()
+    )
+
+    render_submit(view, "send_dashboard_chat", %{
+      "message" => "Change Impressions Over Time from a line chart to an area chart"
+    })
+
+    html =
+      wait_for(fn ->
+        rendered = render(view)
+        if rendered =~ "changed it to an area chart", do: rendered, else: nil
+      end)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    refute is_nil(html), "the refine chat turn never completed"
+
+    cards_after =
+      html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+
+    # Story 74 rules 2/4, criterion 1062: refining an existing widget
+    # should update it in place, not duplicate it. merge_chat_specs/3
+    # (8b62d9c) matches a returned spec against an existing widget by
+    # exact string equality on "title" -- the only identifier
+    # update_spec's input_schema carries. A real model asked to "change"
+    # a widget is free to rename it in the same response (confirmed
+    # plausible, not yet observed live): here the stub renames
+    # "Impressions Over Time" to "Daily Impressions" while changing the
+    # same underlying metric's mark to area. The title no longer
+    # matches, so the match silently misses and the widget is appended
+    # as new instead of updated in place -- the same duplication main
+    # saw live at 5ee7d7c, now reproduced through a title mismatch
+    # rather than a missing merge step entirely. Needs an id/index-based
+    # match, not a title-based one.
+    assert length(cards_after) == 2
+
+    reworded_card = Enum.find(cards_after, &(Floki.text(&1) =~ "Daily Impressions"))
+    refute is_nil(reworded_card), "expected a 'Daily Impressions' card after the rename"
+
+    badge_text = reworded_card |> Floki.find(".badge") |> Floki.text() |> String.trim()
+    assert badge_text == "area"
+  end
+
   test "the agent is told to default to the last 30 days when no range is named", %{
     conn: conn
   } do

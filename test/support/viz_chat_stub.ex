@@ -73,6 +73,28 @@ defmodule MetricFlowTest.VizChatStub do
     )
   end
 
+  @doc """
+  Refinement that changes an existing widget's chart type AND rewords
+  its title (QA journey 6, criterion 1062, 2026-11-14): `merge_chat_specs/3`
+  in `dashboard_live/editor.ex` matches a returned spec against an
+  existing widget by exact string equality on `\"title\"` -- the only
+  identifier `update_spec`'s `input_schema` carries. A real model asked
+  to \"change\" a widget is free to rename it in the same response (e.g.
+  \"Impressions Over Time\" -> \"Daily Impressions\", same metric, new
+  mark), which this preset reproduces: the title no longer matches, so
+  the match silently misses and the widget is appended as new instead
+  of updated in place.
+  """
+  def refine_to_area_chart_with_reworded_title do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "update_spec",
+        %{"vega_lite_json" => Jason.encode!(reworded_area_chart_spec())},
+        completion_text: "I've changed it to an area chart."
+      )
+    )
+  end
+
   @doc "A two-turn conversation: generate, then refine."
   def generate_then_followup do
     ClaudeCodeStub.sequence([
@@ -140,6 +162,21 @@ defmodule MetricFlowTest.VizChatStub do
         "y" => %{"field" => "value", "type" => "quantitative", "title" => "Impressions"}
       },
       "title" => "Impressions Over Time",
+      "width" => "container",
+      "height" => 400
+    }
+  end
+
+  defp reworded_area_chart_spec do
+    %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "data" => %{"name" => "impressions"},
+      "mark" => "area",
+      "encoding" => %{
+        "x" => %{"field" => "date", "type" => "temporal", "title" => "Date"},
+        "y" => %{"field" => "value", "type" => "quantitative", "title" => "Impressions"}
+      },
+      "title" => "Daily Impressions",
       "width" => "container",
       "height" => 400
     }
