@@ -289,19 +289,26 @@ against the real model, closing the gap recorded in the third/fifth/sixth
 re-walk attempts above. Story 74 rule 2's multi-widget scenario now passes
 live, matching the already-green capture-based test.
 
-**Draft-autosave-after-multi-widget-build -- not independently re-verified
-this session.** The multi-widget build above left the URL on
-`/app/dashboards/new` rather than navigating to a persisted id, so main
-asked QA to confirm a reload still restores the draft. QA's attempts to do
-so (two more packed-login scripts) 504'd twice in a row each time, with no
-other browser action in between, immediately after main's own session had
-just worked -- so this isn't host load or the leaked-browser accumulation
-(both already ruled out in the sixth attempt above); it looks specific to
-QA's own browser session/tool instance. Not re-attempted further this
-session; flagged to main. The original draft-autosave stage (building one
-visualization, then reopening via `/edit`) already passed live at 950932f
-and is not in question -- only whether it still holds after a build that
-now produces two widgets in one turn is unconfirmed.
+**Draft-autosave-after-build -- real regression, found live by main
+(2026-11-14, same de23c19 walk).** QA's own attempts to independently
+re-verify this (two more packed-login scripts) 504'd twice in a row each
+time, with no other browser action in between, immediately after main's
+own session had just worked -- ruling out host load and the leaked-browser
+accumulation (both already ruled out in the sixth attempt above) and
+pointing at something specific to QA's own browser session/tool instance.
+Main completed the check directly instead: after the agent's build, the
+URL stays on `/app/dashboards/new` rather than navigating to the new
+draft's own page. Reloading that `/new` URL shows an empty canvas -- 0
+cards, 0 chat messages. The draft dashboard record does exist (visible
+under `/app/dashboards` with a working edit link), so the data is safe,
+but a plain page reload loses the user's view of it, breaking Story 74's
+"refreshing the page shows the same dashboard" scenario. This is likely not a new regression but a gap the earlier draft-autosave
+check never actually tested: that check (950932f) confirmed the draft
+persisted by visiting `/app/dashboards/:id/edit` directly, simulating a
+reopen -- it never reloaded `/app/dashboards/new` itself, so it would not
+have caught the LiveView failing to navigate there automatically. The new
+`assert_patch` assertion below targets that specific, previously-untested
+behavior directly.
 
 Not a regression anywhere tested: everything that worked before still
 works, and all capabilities tested to date work as described except

@@ -185,6 +185,35 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     assert has_element?(view, "[data-role='vega-lite-chart']")
   end
 
+  test "the agent's first build navigates to the draft's own page, so a reload keeps it", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+    scope = Scope.for_user(user)
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    assert [dashboard] = Dashboards.list_dashboards(scope)
+
+    # Story 74, scenario: "refreshing the page shows the same dashboard".
+    # That requires the LiveView to actually navigate off /new to the
+    # draft's own URL once it exists -- a plain reload of /new itself
+    # can't restore anything, since mount/3 for :new always starts blank.
+    # Confirmed live by main (2026-11-14, de23c19): the draft dashboard
+    # record is created, but the URL stays on /app/dashboards/new and
+    # reloading it shows an empty canvas (0 cards, 0 chat messages). The
+    # existing test below (reopening via a direct /edit visit) still
+    # passes and is not evidence this works, since it never exercises
+    # /new's own reload path -- see journey_result.md Journey 6.
+    assert_patch(view, ~p"/app/dashboards/#{dashboard.id}/edit", 2_000)
+  end
+
   test "the agent's first build is saved as a draft, so a reload shows the same dashboard", %{
     conn: conn
   } do
