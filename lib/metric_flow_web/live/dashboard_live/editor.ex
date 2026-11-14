@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
 
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Ai
   alias MetricFlow.Ai.VizChat
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
@@ -394,6 +395,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       {:ok, dashboard} ->
         changeset = Dashboards.dashboard_changeset(dashboard, %{})
         visualizations = load_visualizations_from_dashboard(dashboard)
+        {chat_messages, chat_session_id} = load_dashboard_chat_history(scope, dashboard.id)
 
         socket =
           socket
@@ -412,10 +414,12 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> assign(:library_visualizations, Dashboards.list_visualizations(scope))
           |> assign(:spec_panel_open_index, nil)
           |> assign(:spec_error, nil)
-          |> assign(:dashboard_chat_messages, [])
+          |> assign(:dashboard_chat_messages, chat_messages)
           |> assign(:dashboard_chat_generating, false)
           |> assign(:dashboard_chat_error, nil)
           |> assign(:dashboard_chat_context, nil)
+          |> assign(:dashboard_chat_session_id, chat_session_id)
+          |> assign(:dashboard_chat_pending_message, nil)
           |> assign(:page_title, "Edit Dashboard")
 
         {:noreply, socket}
@@ -453,6 +457,8 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> assign(:dashboard_chat_generating, false)
       |> assign(:dashboard_chat_error, nil)
       |> assign(:dashboard_chat_context, nil)
+      |> assign(:dashboard_chat_session_id, nil)
+      |> assign(:dashboard_chat_pending_message, nil)
       |> assign(:page_title, "New Dashboard")
 
     {:noreply, socket}
@@ -671,6 +677,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       when is_reference(ref) do
     Process.demonitor(ref, [:flush])
 
+    user_text = socket.assigns.dashboard_chat_pending_message
     assistant_msg = %{role: :assistant, content: text}
 
     socket =
@@ -678,8 +685,10 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       |> append_chat_message(assistant_msg)
       |> assign(:dashboard_chat_context, updated_context)
       |> assign(:dashboard_chat_generating, false)
+      |> add_visualization_from_chat_spec(spec)
+      |> persist_dashboard_chat_turn(user_text, text)
 
-    {:noreply, add_visualization_from_chat_spec(socket, spec)}
+    {:noreply, socket}
   end
 
   def handle_info({ref, {:error, {:unresolvable_metric, names}}}, socket) when is_reference(ref) do
@@ -737,6 +746,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
           |> append_chat_message(%{role: :user, content: trimmed})
           |> assign(:dashboard_chat_generating, true)
           |> assign(:dashboard_chat_error, nil)
+          |> assign(:dashboard_chat_pending_message, trimmed)
 
         {:noreply, socket}
     end
@@ -765,7 +775,84 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       vega_spec: custom_spec(spec)
     }
 
-    assign_visualizations(socket, socket.assigns.visualizations ++ [new_viz])
+    visualizations = socket.assigns.visualizations ++ [new_viz]
+
+    socket
+    |> assign_visualizations(visualizations)
+    |> autosave_draft_dashboard(visualizations)
+  end
+
+  # Story 74, rule 1: the first thing the agent builds is saved as a draft
+  # with no explicit Save -- once a dashboard already exists we just keep
+  # replacing its visualizations on every later build.
+  defp autosave_draft_dashboard(%{assigns: %{dashboard: %Dashboard{}}} = socket, _visualizations),
+    do: socket
+
+  defp autosave_draft_dashboard(socket, visualizations) do
+    scope = socket.assigns.current_scope
+    name = draft_dashboard_name(socket.assigns.changeset)
+
+    with {:ok, dashboard} <- Dashboards.save_dashboard(scope, %{"name" => name}),
+         :ok <- Dashboards.replace_dashboard_visualizations(scope, dashboard, visualizations) do
+      assign(socket, :dashboard, dashboard)
+    else
+      _ -> socket
+    end
+  end
+
+  defp draft_dashboard_name(changeset) do
+    case extract_name(changeset) do
+      "" -> "Untitled Dashboard"
+      name -> name
+    end
+  end
+
+  # Story 74, rule 1 again: nothing is persisted for a turn that never builds
+  # a dashboard (a failed or declined request leaves no draft to attach
+  # history to). Once a dashboard exists, its chat session is created once
+  # -- with the dashboard's id already known, so there is no later backfill
+  # -- and reused for every later turn.
+  defp persist_dashboard_chat_turn(%{assigns: %{dashboard: nil}} = socket, _user_text, _assistant_text),
+    do: socket
+
+  defp persist_dashboard_chat_turn(socket, user_text, assistant_text) do
+    scope = socket.assigns.current_scope
+    {session_id, socket} = ensure_dashboard_chat_session(socket, scope, socket.assigns.dashboard)
+
+    persist_dashboard_chat_message(scope, session_id, :user, user_text)
+    persist_dashboard_chat_message(scope, session_id, :assistant, assistant_text)
+
+    socket
+  end
+
+  defp ensure_dashboard_chat_session(%{assigns: %{dashboard_chat_session_id: id}} = socket, _scope, _dashboard)
+       when not is_nil(id) do
+    {id, socket}
+  end
+
+  defp ensure_dashboard_chat_session(socket, scope, dashboard) do
+    case Ai.create_chat_session(scope, %{context_type: :dashboard, context_id: dashboard.id}) do
+      {:ok, session} -> {session.id, assign(socket, :dashboard_chat_session_id, session.id)}
+      {:error, _changeset} -> {nil, socket}
+    end
+  end
+
+  defp persist_dashboard_chat_message(_scope, nil, _role, _content), do: :ok
+
+  defp persist_dashboard_chat_message(scope, session_id, role, content) do
+    Ai.create_chat_message(scope, %{chat_session_id: session_id, role: role, content: content})
+    :ok
+  end
+
+  defp load_dashboard_chat_history(scope, dashboard_id) do
+    case Ai.get_chat_session_by_context(scope, :dashboard, dashboard_id) do
+      {:ok, session} ->
+        messages = Enum.map(session.chat_messages, &%{role: &1.role, content: &1.content})
+        {messages, session.id}
+
+      {:error, :not_found} ->
+        {[], nil}
+    end
   end
 
   defp extract_chat_metric_name(%{"title" => title}) when is_binary(title), do: title
