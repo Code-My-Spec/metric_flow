@@ -54,6 +54,25 @@ defmodule MetricFlowTest.VizChatStub do
     )
   end
 
+  @doc """
+  Refinement that changes an existing widget's chart type (QA journey 6,
+  2026-11-14): the real model, asked to change "Impressions Over Time"
+  from a line chart to an area chart, can only call `update_spec` with a
+  brand new spec -- its `input_schema` has no id/index/target parameter
+  to identify an existing widget by. The one signal it carries over is
+  the spec's own `"title"`, which stays "Impressions Over Time" here,
+  matching what a real model naming the same widget back would send.
+  """
+  def refine_to_area_chart do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "update_spec",
+        %{"vega_lite_json" => Jason.encode!(area_chart_spec())},
+        completion_text: "I've changed it to an area chart."
+      )
+    )
+  end
+
   @doc "A two-turn conversation: generate, then refine."
   def generate_then_followup do
     ClaudeCodeStub.sequence([
@@ -101,6 +120,21 @@ defmodule MetricFlowTest.VizChatStub do
       "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
       "data" => %{"name" => "impressions"},
       "mark" => "line",
+      "encoding" => %{
+        "x" => %{"field" => "date", "type" => "temporal", "title" => "Date"},
+        "y" => %{"field" => "value", "type" => "quantitative", "title" => "Impressions"}
+      },
+      "title" => "Impressions Over Time",
+      "width" => "container",
+      "height" => 400
+    }
+  end
+
+  defp area_chart_spec do
+    %{
+      "$schema" => "https://vega.github.io/schema/vega-lite/v5.json",
+      "data" => %{"name" => "impressions"},
+      "mark" => "area",
       "encoding" => %{
         "x" => %{"field" => "date", "type" => "temporal", "title" => "Date"},
         "y" => %{"field" => "value", "type" => "quantitative", "title" => "Impressions"}

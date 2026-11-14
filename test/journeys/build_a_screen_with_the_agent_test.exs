@@ -693,8 +693,20 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
 
     {:ok, edit_view, _edit_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
 
+    # Story 74 criteria 1063/1066: confirmed live by main (2026-11-14,
+    # 5ee7d7c on dashboard 11): choosing "Last 90 days" in a real
+    # browser fired zero filter_date_range events and no UPDATE
+    # dashboards -- the select isn't wrapped in a <form>, so there's
+    # nothing for the browser to submit the change through. Assert the
+    # structural fix before driving the change, and scope to
+    # [data-role='filter-control'] rather than a bare "form[phx-change]"
+    # -- the dashboard-name form above it also carries phx-change
+    # (phx-change="validate_name"), so an unscoped selector would match
+    # two forms once this one exists.
+    assert has_element?(edit_view, "[data-role='filter-control'] form[phx-change] select")
+
     edit_view
-    |> element("#dashboard-date-range")
+    |> element("[data-role='filter-control'] form[phx-change]")
     |> render_change(%{"range" => "90"})
 
     # Fresh mount -- the same thing a real reload or reopen does. The
@@ -708,6 +720,71 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     # Story 74 rule 8 / criterion 1066: a filter control's value is
     # "saved with the dashboard" and still shows on reopen.
     assert reopened_html =~ ~s(value="90" selected)
+  end
+
+  test "refining an existing widget replaces it instead of duplicating it", %{conn: conn} do
+    user = user_fixture()
+    account = insert_account!(user)
+    insert_member!(account, user, :owner)
+    insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
+
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/app/dashboards/new")
+    build_chart_via_chat(view)
+
+    cards_before =
+      view |> render() |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+
+    assert length(cards_before) == 2
+
+    Application.put_env(
+      :metric_flow,
+      :command_runner,
+      MetricFlowTest.VizChatStub.refine_to_area_chart()
+    )
+
+    render_submit(view, "send_dashboard_chat", %{
+      "message" => "Change Impressions Over Time from a line chart to an area chart"
+    })
+
+    # wait_for_chart/1 only polls for *any* existing chart element, which
+    # is already true from the first build -- it would return
+    # immediately without actually waiting for this refine's async
+    # result. Wait for the stub's own reply text instead.
+    html =
+      wait_for(fn ->
+        rendered = render(view)
+        if rendered =~ "changed it to an area chart", do: rendered, else: nil
+      end)
+
+    Application.delete_env(:metric_flow, :command_runner)
+
+    refute is_nil(html), "the refine chat turn never completed"
+
+    cards_after =
+      html |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+
+    # Story 74 rules 2/4 (refining an existing widget): confirmed live
+    # by main (2026-11-14, 5ee7d7c on dashboard 11): asked to change
+    # "Impressions Over Time" from a line chart to an area chart, the
+    # agent replied it changed it, but the canvas gained a THIRD card
+    # (was 2) -- both the original line-chart card and a new area-chart
+    # card remained. Root cause: add_visualizations_from_chat_specs/2
+    # unconditionally appends every update_spec call's result;
+    # update_spec's own input_schema has no id/index/target parameter at
+    # all, so the only signal available to identify "the existing
+    # widget" is the spec's own "title" (extract_chat_metric_name/1).
+    # The stub here reproduces exactly what the real model does: calls
+    # update_spec once with a new spec sharing the existing widget's
+    # title ("Impressions Over Time") but a different mark.
+    assert length(cards_after) == 2
+
+    impressions_card = Enum.find(cards_after, &(Floki.text(&1) =~ "Impressions Over Time"))
+    refute is_nil(impressions_card), "expected an 'Impressions Over Time' card to remain"
+
+    badge_text = impressions_card |> Floki.find(".badge") |> Floki.text() |> String.trim()
+    assert badge_text == "area"
   end
 
   test "the agent is told to default to the last 30 days when no range is named", %{

@@ -2,7 +2,7 @@
 
 ## Status
 
-mixed
+pass
 
 Journeys 1-5 from the plan were walked live against the running app
 (`http://localhost:4070`, this worktree's dev server) and passed; each is
@@ -14,13 +14,18 @@ went through many fail/fix cycles on 2026-11-14 (no chat affordance,
 multi-widget combining into one spec, no draft-navigation on reload, no
 versioning, chart type lost on reload, missing-metric redirect, "Edit
 with agent" label, no widget awareness after reopening, no filter
-control, no default date range) and now passes all of those plus error
-handling (already built, confirmed by a new test). Still failing and
-now codified: a filter control's value doesn't persist across a
-reopen, the one rule left for the coder. See Journey 6 below for the
-consolidated detail; some of this walking was done outside
-`start_task`/`evaluate_task` because of a graph deadlock (c2084903) that
-refused to re-offer `qa_journey` after a stage landed -- see Issues.
+control, no default date range, filter select not wrapped in a form,
+refine duplicating a widget instead of replacing it) and now passes
+every rule exercised, including error handling (already built,
+confirmed by a new test). The last two fixes (filter form-wrapping; widget replace-by-title on
+refine) were landed by the coder directly in this shared working copy
+while this round's tests were being written, committed at 8b62d9c --
+`lib/metric_flow_web/live/dashboard_live/editor.ex` is not among the
+files this agent committed.
+See Journey 6 below for the consolidated detail; some of this walking
+was done outside `start_task`/`evaluate_task` because of a graph
+deadlock (c2084903) that refused to re-offer `qa_journey` after a stage
+landed -- see Issues.
 
 ## Journey Results
 
@@ -94,9 +99,8 @@ Screenshots: `.code_my_spec/qa/journeys/screenshots/journey5_*.png`
 
 ### Journey 6: Build a Screen with the Agent
 
-**Status:** fail (rules 1, 2, 3, 4, 5, 6 and 9 pass; rule 8 -- filter
-values don't persist on reopen -- fails, now codified as the coder's
-next work)
+**Status:** pass (rules 1-9 all pass; rules 5/8's form-wrapping fix and
+rule 2/4's widget-replace-by-title fix both landed at 8b62d9c)
 
 Walked across many coder stages on 2026-11-14; consolidated here rather
 than kept as a growing list of individual re-walk attempts (see git log
@@ -244,21 +248,56 @@ history if the detail is needed).
   `:visualizations`. Reported this honestly rather than forcing a
   failing assertion main's instruction implied: the rule was already
   built, just never previously covered by a journey test.
-- **A filter's value persists on reopen (Story 74 rule 8 / criterion
-  1066) -- fail, now codified correctly.** Rule: a filter control's
-  value (e.g. a narrowed date range) is "saved with the dashboard" and
-  still shows on reopen. First version of this test only checked that
-  the filter-control element existed on the same view -- main caught
-  that this passed for the wrong reason once 1063 landed, since the
-  control is in-memory only and nothing about that assertion exercised
-  persistence. Rewrote to actually pick "Last 90 days" via
-  `render_change`, then mount `/edit` fresh (the same thing a real
-  reload does), and assert the reopened page still shows 90 selected.
-  Confirmed failing: `filter_date_range`'s handler only does
-  `assign(socket, :dashboard_date_range, range)`, and every mount
-  hardcodes it back to `"30"` -- nothing persists the choice to the
-  `Dashboard` record (which has no field for it at all: `name`,
-  `description`, `built_in` only).
+- **A filter's value persists on reopen, and a real browser can
+  actually trigger it (Story 74 rules 5/8 / criteria 1063/1066) --
+  pass.** First version of this test only checked that the
+  filter-control element existed on the same view -- main caught that
+  this passed for the wrong reason once 1063 landed, since the control
+  is in-memory only and nothing about that assertion exercised
+  persistence. Backend persistence landed at 5ee7d7c (`Dashboard` gains
+  a `date_range` field; `filter_date_range` now calls
+  `Dashboards.update_dashboard`). But main's live walk of 5ee7d7c in a
+  real browser found choosing "Last 90 days" fired zero
+  `filter_date_range` events and no `UPDATE dashboards` -- the `<select
+  phx-change="filter_date_range">` wasn't wrapped in a `<form>`, and
+  `render_change` in tests bypasses that requirement, so the suite was
+  green while the real UI did nothing. Rewrote the test to assert the
+  select sits inside `[data-role='filter-control'] form[phx-change]`
+  and drive the change through that form element (not a bare
+  `#dashboard-date-range` selector), then mount `/edit` fresh and
+  assert 90 is still selected. As this was being written, the coder
+  landed the structural fix in this same working copy, committed at
+  8b62d9c (`<form phx-change="filter_date_range">` wrapping the
+  `<select>`); confirmed passing.
+- **Refining an existing widget replaces it instead of duplicating it
+  (Story 74 rules 2/4) -- pass.** Confirmed live by main (2026-11-14,
+  5ee7d7c on dashboard 11): asked to change "Impressions Over Time"
+  from a line chart to an area chart, the agent said it changed it, but
+  the canvas gained a third card -- both the original line-chart card
+  and a new area-chart card remained (2 -> 3). `update_spec`'s own
+  `input_schema` has no id/index/target parameter to identify an
+  existing widget by; a spec's `"title"` is the only signal carried
+  over. Added a test with a stub reproducing exactly that shape (one
+  `update_spec` call with a new mark, same title as the existing
+  widget) and asserted the card count stays the same with the
+  original card's badge changed to "area". While writing this, the
+  coder landed `merge_chat_specs/3` in this same working copy,
+  committed at 8b62d9c: a returned spec's title is matched against the
+  pre-turn titles of existing `chart_specs`; a match updates that
+  widget in place, anything else appends as new. Confirmed passing.
+  Caught and fixed a bug in my own stub along the way: a bare `tool_call/3` (not wrapped in `completed_tool_call` +
+  `sequence`) never reaches `:end_turn`, so the agent loop kept
+  re-issuing the same `update_spec` call until some cap -- produced 27
+  duplicate cards before the fix, a false signal from my test
+  infrastructure, not the app.
+
+  One open question for the coder, not yet exercised by a test: this
+  match is by *exact* string equality on `"title"`. A real model asked
+  to "change" a widget is likely, but not guaranteed, to echo its title
+  back verbatim -- any rewording would silently miss the match and
+  reproduce the duplication main saw. Flagging this, not asserting on
+  it, since it would require scripting a title variation main didn't
+  observe live.
 - **Default 30-day range when none is named (Story 74 rule 9 /
   criterion 1067) -- pass.** Rule: "When Dana does not name a date
   range, the agent uses the last 30 days ending yesterday." Nothing in
@@ -312,7 +351,5 @@ application defects.
 Per John's decision (answer to question `5df24200`), journeys are codified
 as `Phoenix.LiveViewTest` modules under `test/journeys/`, not Wallaby --
 consistent with the project's e2e testing ADR, which does not use Wallaby.
-All 6 files exist; 5 pass end-to-end. Journey 6 has 15/16 passing as of
-a5e660d, with 1 committed failing (a filter control's value doesn't
-persist across a reopen -- Story 74 rule 8), handing the coder its
-next work.
+All 6 files exist and pass end-to-end: 5 journeys, plus journey 6's
+17/17 at 8b62d9c.
