@@ -24,11 +24,7 @@ defmodule MetricFlow.Ai.VizTools.UpdateSpec do
 
   @impl true
   def description,
-    do:
-      "Update the Vega-Lite v5 chart specification. Pass the COMPLETE spec as a JSON string. " <>
-        "To add more than one widget (e.g. a stat tile and a chart), call update_spec again " <>
-        "for another widget instead of combining them into one spec with vconcat, hconcat, " <>
-        "or concat."
+    do: "Update the Vega-Lite v5 chart specification. Pass the COMPLETE spec as a JSON string."
 
   @impl true
   def input_schema do
