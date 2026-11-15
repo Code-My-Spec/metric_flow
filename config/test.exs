@@ -3,9 +3,10 @@ import Config
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
-# CMS_E2E turns this env into a real, listening server against a real,
-# unsandboxed DB pool so a demo recording (journey 66a06609) can drive an
-# actual browser against it; mirrors CodeMySpecWeb's own config/test.exs.
+# CMS_E2E turns this env into a real, listening server so a demo recording
+# (journey 66a06609) can drive an actual browser against it. The repo stays
+# sandboxed; see the sql_sandbox config below for how a real browser's
+# requests still see that transaction.
 e2e? = System.get_env("CMS_E2E") in ~w(1 true)
 
 # Configure your database
@@ -110,14 +111,19 @@ config :metric_flow, :sql_sandbox, true
 config :phoenix_test, otp_app: :metric_flow, endpoint: MetricFlowWeb.Endpoint
 
 config :phoenix_test,
-  playwright: [
-    # The first Chromium launch on a cold machine takes longer than the 4s
-    # default.
-    browser_launch_timeout: 30_000,
-    browser: :chromium,
-    browser_context_opts:
-      if(dir = System.get_env("CMS_JOURNEY_VIDEO_DIR"),
-        do: [record_video: %{dir: dir}],
-        else: []
-      )
-  ]
+  # The library's own default per-action timeout (2s) is too short for a
+  # cold first page load under CMS_E2E -- asset compile plus the LiveView
+  # connect pushed it past 2s and flaked the recorder 2 of 3 runs.
+  playwright:
+    [
+      # The first Chromium launch on a cold machine takes longer than the 4s
+      # default.
+      browser_launch_timeout: 30_000,
+      browser: :chromium,
+      browser_context_opts:
+        if(dir = System.get_env("CMS_JOURNEY_VIDEO_DIR"),
+          do: [record_video: %{dir: dir}],
+          else: []
+        )
+    ] ++
+      if(e2e?, do: [timeout: 10_000], else: [])
