@@ -14,6 +14,18 @@ defmodule MetricFlowWeb.LiveAcceptance do
       end)
 
     Phoenix.Ecto.SQL.Sandbox.allow(socket.assigns.phoenix_ecto_sandbox, Ecto.Adapters.SQL.Sandbox)
+
+    # `allow/2` turns on trap_exit for this LiveView process (only under a real
+    # socket, i.e. only here), so a Task.async it started completing normally
+    # now arrives as {:EXIT, pid, :normal} instead of being invisible. No
+    # LiveView's own handle_info/2 expects that message; swallow only the
+    # normal case so an abnormal exit still surfaces.
+    socket =
+      attach_hook(socket, :sandbox_exits, :handle_info, fn
+        {:EXIT, _pid, :normal}, s -> {:halt, s}
+        _msg, s -> {:cont, s}
+      end)
+
     {:cont, socket}
   end
 end
