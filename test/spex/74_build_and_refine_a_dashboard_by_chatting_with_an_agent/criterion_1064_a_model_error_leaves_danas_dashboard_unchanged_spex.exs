@@ -27,7 +27,7 @@ defmodule MetricFlowSpex.Story74.Criterion1064Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         original_cards =
@@ -51,7 +51,7 @@ defmodule MetricFlowSpex.Story74.Criterion1064Spex do
           "message" => "Add a bar chart of clicks"
         })
 
-        Process.sleep(100)
+        await_dashboard_chat_completion(context.view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, context}

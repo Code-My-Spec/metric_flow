@@ -94,6 +94,29 @@ defmodule MetricFlowSpex.Case do
     end
   end
 
+  @doc "Waits for an asynchronous dashboard-chat reply to finish, including error replies."
+  def await_dashboard_chat_completion(view, timeout_ms \\ 5_000) do
+    deadline = System.monotonic_time(:millisecond) + timeout_ms
+    await_dashboard_chat_completion_until(view, deadline)
+  end
+
+  defp await_dashboard_chat_completion_until(view, deadline) do
+    cond do
+      Phoenix.LiveViewTest.has_element?(
+        view,
+        "[data-role='dashboard-chat-send-btn']:not([disabled])"
+      ) ->
+        :ok
+
+      System.monotonic_time(:millisecond) >= deadline ->
+        ExUnit.Assertions.flunk("dashboard chat did not finish within the deadline")
+
+      true ->
+        Process.sleep(20)
+        await_dashboard_chat_completion_until(view, deadline)
+    end
+  end
+
   # Owns the sandbox directly rather than borrowing
   # `MetricFlowTest.DataCase.setup_sandbox/1`: spex are a separate boundary
   # from test support, and reaching into DataCase would force MetricFlowSpex to

@@ -65,7 +65,7 @@ defmodule MetricFlowSpex.Story74.Criterion1067Spex do
         )
 
         render_submit(context.view, "send_dashboard_chat", %{"message" => "Show me traffic"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(context.view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, context}

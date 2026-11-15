@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Story74.Criterion1063Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         assert has_element?(view, "[data-role='platform-filter']")

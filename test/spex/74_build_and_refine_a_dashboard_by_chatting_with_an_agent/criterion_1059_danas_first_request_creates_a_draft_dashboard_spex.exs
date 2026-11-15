@@ -33,7 +33,7 @@ defmodule MetricFlowSpex.Story74.Criterion1059Spex do
           "message" => "Show me traffic and spend over the last 30 days"
         })
 
-        Process.sleep(100)
+        await_dashboard_chat_completion(context.view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, context}

@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.Story75.Criterion1073Spex do
           )
 
           render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-          Process.sleep(100)
+          await_dashboard_chat_completion(view)
           Application.delete_env(:metric_flow, :command_runner)
 
           {:ok, index_view, index_html} = live(context.owner_conn, ~p"/app/dashboards")

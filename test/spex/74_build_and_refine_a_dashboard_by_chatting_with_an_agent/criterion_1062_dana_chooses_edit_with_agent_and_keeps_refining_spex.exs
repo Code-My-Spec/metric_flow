@@ -25,7 +25,7 @@ defmodule MetricFlowSpex.Story74.Criterion1062Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, _index_view, index_html} = live(context.owner_conn, ~p"/app/dashboards")
@@ -76,7 +76,7 @@ defmodule MetricFlowSpex.Story74.Criterion1062Spex do
           "message" => "Add clicks as a second chart"
         })
 
-        Process.sleep(100)
+        await_dashboard_chat_completion(context.edit_view)
         Application.delete_env(:metric_flow, :command_runner)
 
         cards =

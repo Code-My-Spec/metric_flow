@@ -74,7 +74,7 @@ defmodule MetricFlowSpex.Story74.Criterion1060Spex do
             "Show me a headline stat, a spend-over-time line chart and a table of campaigns"
         })
 
-        Process.sleep(100)
+        await_dashboard_chat_completion(context.view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, context}

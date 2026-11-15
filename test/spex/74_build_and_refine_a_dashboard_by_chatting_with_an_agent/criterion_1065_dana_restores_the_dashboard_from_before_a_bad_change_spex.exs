@@ -26,7 +26,7 @@ defmodule MetricFlowSpex.Story74.Criterion1065Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         Application.put_env(
@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Story74.Criterion1065Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Add clicks as a second chart"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         Application.put_env(
@@ -46,7 +46,7 @@ defmodule MetricFlowSpex.Story74.Criterion1065Spex do
         )
 
         render_submit(view, "send_dashboard_chat", %{"message" => "Change it to an area chart"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(view)
         Application.delete_env(:metric_flow, :command_runner)
 
         {:ok, Map.put(context, :view, view)}
