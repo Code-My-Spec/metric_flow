@@ -146,6 +146,30 @@ defmodule MetricFlowTest.DashboardBuilderStub do
     )
   end
 
+  @doc """
+  Like `generate_initial/0`, but the spec also carries a top-level
+  "title" ("Impressions Overview") the agent chose -- used by the
+  Playwright demo twin to show the agent naming the dashboard
+  (criterion 1068's titling behavior) on the same stat+chart build
+  `generate_initial/0` produces, without changing `generate_initial/0`'s
+  own raw-request-text fallback behavior other tests rely on.
+  """
+  def generate_initial_titled do
+    ClaudeCodeStub.sequence(
+      ClaudeCodeStub.completed_tool_call(
+        "set_dashboard_spec",
+        %{
+          "a2ui_json" =>
+            Jason.encode!(%{
+              "title" => "Impressions Overview",
+              "components" => initial_components()
+            })
+        },
+        completion_text: "I'll create a line chart showing impressions over time."
+      )
+    )
+  end
+
   defp initial_components do
     [
       %{
