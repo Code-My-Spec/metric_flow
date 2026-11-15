@@ -136,7 +136,10 @@ init-worktree name target:
     MIX_ENV=dev mix deps.compile
     MIX_ENV=test mix deps.compile
 
-    echo "→ {{target}} ready: deps compiled for dev and test, dotenv copied where present"
+    # esbuild resolves imports from assets/node_modules, which git does not carry.
+    if [ -f assets/package-lock.json ]; then npm ci --prefix assets --no-audit --no-fund; fi
+
+    echo "→ {{target}} ready: deps compiled for dev and test, JS packages installed, dotenv copied where present"
 
 # === DEPLOY ==================================================================
 
