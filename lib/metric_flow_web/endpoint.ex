@@ -1,6 +1,14 @@
 defmodule MetricFlowWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :metric_flow
 
+  # Lets a real browser hitting this endpoint over actual HTTP (CMS_E2E) see
+  # the same sandboxed transaction a test set up, via the `user_agent`
+  # metadata phoenix_test_playwright's Case module encodes. Must come before
+  # any other plug (https://hexdocs.pm/phoenix_ecto/Phoenix.Ecto.SQL.Sandbox.html).
+  if Application.compile_env(:metric_flow, :sql_sandbox) do
+    plug Phoenix.Ecto.SQL.Sandbox
+  end
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
@@ -12,8 +20,8 @@ defmodule MetricFlowWeb.Endpoint do
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
+    websocket: [connect_info: [:user_agent, session: @session_options]],
+    longpoll: [connect_info: [:user_agent, session: @session_options]]
 
   # Plain HTTP healthcheck for kamal-proxy. Short-circuits before
   # Plug.Static so it doesn't touch the rest of the pipeline.

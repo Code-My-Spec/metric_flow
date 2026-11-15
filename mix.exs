@@ -114,6 +114,7 @@ defmodule MetricFlow.MixProject do
       {:floki, "~> 0.38.0"},
       # Testing (ADR: e2e_testing)
       {:req_cassette, "~> 0.6", only: :test},
+      {:phoenix_test_playwright, "~> 0.19.0", only: :test, runtime: false},
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},

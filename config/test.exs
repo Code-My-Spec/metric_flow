@@ -3,6 +3,11 @@ import Config
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
+# CMS_E2E turns this env into a real, listening server against a real,
+# unsandboxed DB pool so a demo recording (journey 66a06609) can drive an
+# actual browser against it; mirrors CodeMySpecWeb's own config/test.exs.
+e2e? = System.get_env("CMS_E2E") in ~w(1 true)
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -19,9 +24,18 @@ config :metric_flow, MetricFlow.Repo,
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :metric_flow, MetricFlowWeb.Endpoint,
-  http: [ip: {127, 0, 0, 1}, port: 4002],
+  http: [
+    ip: {127, 0, 0, 1},
+    # Deliberately not 4002, so an e2e server and an ordinary `mix test` can't
+    # collide on the port.
+    port:
+      if(e2e?,
+        do: String.to_integer(System.get_env("CMS_E2E_PORT") || "4102"),
+        else: 4002
+      )
+  ],
   secret_key_base: "m8YRvmIEM5DxsJnx7oxc4rhAvYmPX8FGq7Wr57xE7JXKKslzrgej720Y6N0iAmTO",
-  server: false
+  server: e2e?
 
 # In test we don't send emails
 config :metric_flow, MetricFlow.Mailer, adapter: Swoosh.Adapters.Test
@@ -83,3 +97,27 @@ config :metric_flow, :google_openid_configuration, %{
   "jwks_uri" => "https://www.googleapis.com/oauth2/v3/certs",
   "revocation_endpoint" => "https://oauth2.googleapis.com/revoke"
 }
+
+# A real Chromium hits the endpoint over actual HTTP, outside any test
+# process; this is the documented way it still sees a test's own data
+# (https://hexdocs.pm/phoenix_ecto/Phoenix.Ecto.SQL.Sandbox.html) — the
+# plug lives in endpoint.ex, the LiveView allow-hook in live_acceptance.ex.
+config :metric_flow, :sql_sandbox, true
+
+# phoenix_test_playwright drives a real Chromium against the endpoint above.
+# Video recording only when a demo asks for one (CMS_JOURNEY_VIDEO_DIR unset
+# otherwise) — mirrors CodeMySpecWeb's own config/test.exs.
+config :phoenix_test, otp_app: :metric_flow, endpoint: MetricFlowWeb.Endpoint
+
+config :phoenix_test,
+  playwright: [
+    # The first Chromium launch on a cold machine takes longer than the 4s
+    # default.
+    browser_launch_timeout: 30_000,
+    browser: :chromium,
+    browser_context_opts:
+      if(dir = System.get_env("CMS_JOURNEY_VIDEO_DIR"),
+        do: [record_video: %{dir: dir}],
+        else: []
+      )
+  ]

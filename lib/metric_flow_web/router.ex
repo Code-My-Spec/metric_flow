@@ -3,6 +3,14 @@ defmodule MetricFlowWeb.Router do
 
   import MetricFlowWeb.UserAuth
 
+  # Lets a LiveView mounted over a real socket (CMS_E2E, phoenix_test_playwright)
+  # see the test's sandboxed data; must run before any hook below that queries
+  # the repo. A plain `def` can't be called from this module's own top-level
+  # router code before the module finishes compiling, so this is an attribute.
+  @sandbox_on_mount if Application.compile_env(:metric_flow, :sql_sandbox),
+                      do: [MetricFlowWeb.LiveAcceptance],
+                      else: []
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -74,11 +82,13 @@ defmodule MetricFlowWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [
-        {MetricFlowWeb.UserAuth, :require_authenticated},
-        {MetricFlowWeb.WhiteLabelHook, :load_white_label},
-        {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account}
-      ] do
+      on_mount:
+        @sandbox_on_mount ++
+          [
+            {MetricFlowWeb.UserAuth, :require_authenticated},
+            {MetricFlowWeb.WhiteLabelHook, :load_white_label},
+            {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account}
+          ] do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
       live "/accounts", AccountLive.Index, :index
@@ -129,12 +139,14 @@ defmodule MetricFlowWeb.Router do
 
     # Paywalled routes — require active subscription for AI features
     live_session :require_subscription,
-      on_mount: [
-        {MetricFlowWeb.UserAuth, :require_authenticated},
-        {MetricFlowWeb.WhiteLabelHook, :load_white_label},
-        {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account},
-        {MetricFlowWeb.Hooks.RequireSubscriptionHook, :require_subscription}
-      ] do
+      on_mount:
+        @sandbox_on_mount ++
+          [
+            {MetricFlowWeb.UserAuth, :require_authenticated},
+            {MetricFlowWeb.WhiteLabelHook, :load_white_label},
+            {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account},
+            {MetricFlowWeb.Hooks.RequireSubscriptionHook, :require_subscription}
+          ] do
       # Visualization routes
       live "/visualizations", VisualizationLive.Index, :index
       live "/visualizations/new", VisualizationLive.Editor, :new
@@ -165,12 +177,12 @@ defmodule MetricFlowWeb.Router do
     # nothing to set up. Its own session rather than the `/app` scope, because the
     # path is `/onboarding` and the tests and links say so.
     live_session :onboarding,
-      on_mount: [{MetricFlowWeb.UserAuth, :require_authenticated}] do
+      on_mount: @sandbox_on_mount ++ [{MetricFlowWeb.UserAuth, :require_authenticated}] do
       live "/onboarding", OnboardingLive, :index
     end
 
     live_session :current_user,
-      on_mount: [{MetricFlowWeb.UserAuth, :mount_current_scope}] do
+      on_mount: @sandbox_on_mount ++ [{MetricFlowWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/forgot-password", UserLive.ForgotPassword, :new
