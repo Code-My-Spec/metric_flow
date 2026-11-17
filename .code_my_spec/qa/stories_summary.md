@@ -1,12 +1,5 @@
 # Stories
 
-## Story 73 — Automated demo releases, QA gates, and environment isolation
-
-As a product owner, I want two independently deployed demo channels so that prospects can explore tested features and forthcoming work without affecting production.
-
-- A new development build becomes available
-- A demo deployment fails or host is not configured
-
 ## Story 55 — Persistent Context-Aware Anderson BI Assistant Across Workspaces
 
 As a business user, I want an AI conversation panel alongside every analytical workspace so that I can discuss the information I am viewing without leaving it.
@@ -19,27 +12,21 @@ As a business user, I want to expand a Platforms menu to switch directly among m
 
 _No acceptance criteria._
 
-## Story 57 — Searchable Categorized Integrations Catalog
-
-As a business user, I want to search and filter an integration catalog so that I can quickly find and connect the systems my business uses.
-
-_No acceptance criteria._
-
 ## Story 58 — Native Read-Only BigCommerce Data Integration
 
 As a store owner, I want to connect my BigCommerce store to Anderson BI so that I can analyze orders, products, customers, and sales alongside marketing and accounting data.
 
 _No acceptance criteria._
 
-## Story 60 — Google Sheets and CSV Excel Business Data Imports
-
-As a business owner, I want to import spreadsheets into Anderson BI so that I can analyze custom data not available through a native integration.
-
-_No acceptance criteria._
-
 ## Story 62 — Enforce Read-Only Access Across All External Data Integrations
 
 As a business owner, I want every connected platform to be accessed strictly for reading data so that Anderson BI can analyze my business without changing any external records or operations.
+
+_No acceptance criteria._
+
+## Story 59 — QuickBooks Enterprise Desktop Read-Only Connector Feasibility and Prototype
+
+As a business owner using QuickBooks Enterprise Desktop, I want Anderson BI to synchronize my financial data securely so that I can analyze it alongside my other business systems.
 
 _No acceptance criteria._
 
@@ -56,12 +43,6 @@ As an independent marketer, I want to describe the dashboard I want in chat and 
 - Dana restores the dashboard from before a bad change
 - Dana narrows to 90 days and the filter is still there on reopen
 - Dana asks for traffic without naming a range
-
-## Story 59 — QuickBooks Enterprise Desktop Read-Only Connector Feasibility and Prototype
-
-As a business owner using QuickBooks Enterprise Desktop, I want Anderson BI to synchronize my financial data securely so that I can analyze it alongside my other business systems.
-
-_No acceptance criteria._
 
 ## Story 61 — HubSpot CRM and Stripe Payments Integrations
 
@@ -135,24 +116,6 @@ As a client user, I want my QuickBooks income account data synced daily so that 
 - Backfill returns less than 548 days of data when the account itself has less history available.
 - If the QuickBooks API rejects the request (expired authorization, insufficient permissions, or an unrecognized company) the sync for that integration fails with the error surfaced.
 - Sync failures are logged with enough detail to diagnose them and are visible in Sync History.
-
-## Story 75 — Save, List and Reopen Dashboards
-
-As an independent marketer, I want to name and save my dashboards and find them again in one list so that I can reopen them with current data.
-
-- The agent titles Dana's new dashboard and she renames it
-- Dana deletes a dashboard she no longer needs
-- Dana backs out of deleting a dashboard
-- Dana duplicates a dashboard to try a variation
-- A read-only member cannot start a dashboard
-- Dana searches her dashboards by name
-- Dana searches for a dashboard that does not exist
-- Dana favorites a dashboard
-- Dana sees built-in dashboards apart from her own
-- Dana opens a dashboard and chooses to edit it
-- The old reports page is gone
-- Dana changes a filter on the view page and it sticks
-- Dana finds versions only when editing
 
 ## Story 39 — Fetch and Select Google Business Profile Locations Across Multiple Accounts
 
@@ -611,9 +574,9 @@ As an agency user, I want to easily switch between client accounts I have access
 - Client listing shows access level and origination status
 - Agency switches between client accounts
 - Navigation clearly displays the current client context
-- Read-only agency user views reports and dashboards
-- Read-only agency user cannot modify reports or integrations
-- Account manager agency user modifies reports and integrations
+- Read-only agency user views dashboards
+- Read-only agency user cannot save, edit or delete dashboards or modify integrations
+- Account manager agency user saves, edits and deletes dashboards and modifies integrations
 - Account manager agency user cannot delete the account or manage users
 - Admin agency user can do everything except delete the account
 - Admin agency user cannot delete the account
@@ -898,26 +861,6 @@ As a client user, I want to see AI-curated correlation insights so that I can qu
 - User can switch to the full ranked list
 - Mode selection persists as a saved preference
 
-## Story 28 — AI Insights and Suggestions
-
-As a client user, I want to get AI-powered suggestions based on my correlation data so that I can make informed decisions about where to invest.
-
-- User can enable AI Suggestions option in Smart mode
-- AI analyzes correlation data and provides actionable recommendations (e.g., Increase Google Ads budget based on 0.85 correlation with revenue)
-- Each chart or visualization can have an AI info button
-- Clicking AI button shows context-specific insights or opens chat about that metric
-- AI suggestions are based on correlation strength, trends, and business context
-- User can provide feedback on suggestions (helpful or not helpful)
-- AI learns from feedback to improve future suggestions
-- User enables AI Suggestions in Smart mode
-- AI provides an actionable recommendation from a strong correlation
-- No suggestion is fabricated when no correlation is strong enough
-- Chart displays an AI info button
-- Clicking the AI button opens context-specific insights
-- Suggestions reflect correlation strength, trend, and business context together
-- User marks a suggestion as helpful or not helpful
-- AI's future suggestions reflect prior feedback
-
 ## Story 11 — Account Deletion (Owner Only)
 
 As an account owner, I want to delete my account permanently so that I can remove all my data from the system.
@@ -969,6 +912,26 @@ As a user who signed up under an agency, I want to subscribe to the agency's pla
 - New customer billing is paused while the agency's Stripe account is disconnected
 - Billing context cannot change without canceling and re-subscribing
 
+## Story 28 — AI Insights and Suggestions
+
+As a client user, I want to get AI-powered suggestions based on my correlation data so that I can make informed decisions about where to invest.
+
+- User can enable AI Suggestions option in Smart mode
+- AI analyzes correlation data and provides actionable recommendations (e.g., Increase Google Ads budget based on 0.85 correlation with revenue)
+- Each chart or visualization can have an AI info button
+- Clicking AI button shows context-specific insights or opens chat about that metric
+- AI suggestions are based on correlation strength, trends, and business context
+- User can provide feedback on suggestions (helpful or not helpful)
+- AI learns from feedback to improve future suggestions
+- User enables AI Suggestions in Smart mode
+- AI provides an actionable recommendation from a strong correlation
+- No suggestion is fabricated when no correlation is strong enough
+- Chart displays an AI info button
+- Clicking the AI button opens context-specific insights
+- Suggestions reflect correlation strength, trend, and business context together
+- User marks a suggestion as helpful or not helpful
+- AI's future suggestions reflect prior feedback
+
 ## Story 64 — Ranked Correlations Workspace with Positive Inverse Sorting and Unified Date Controls
 
 As a business user, I want to rank positive and inverse relationships across my connected business data over selected date ranges so that I can quickly investigate which metrics move together or in opposite directions.
@@ -987,21 +950,15 @@ As a business user, I want to expand connected platforms into categories and met
 
 _No acceptance criteria._
 
-## Story 67 — Evidence-Grounded AI Explanations and Advisory Guidance for Discoveries
+## Story 66 — Proactive Business Discovery Engine and Ranked Findings
 
-As a business owner, I want Anderson BI to explain discovered findings and suggest evidence-based next steps so that I can make informed decisions without surrendering control of my connected business systems.
+As a business owner, I want Anderson BI to proactively discover important patterns and changes in my connected business data so that I can learn what is happening without already knowing what questions to ask.
 
 _No acceptance criteria._
 
 ## Story 68 — Unified Anderson Intelligence Feed and First-Run Experience
 
 As a business owner, I want to see a concise prioritized summary of newly discovered business findings when I open Anderson BI so that I immediately understand what deserves my attention.
-
-_No acceptance criteria._
-
-## Story 66 — Proactive Business Discovery Engine and Ranked Findings
-
-As a business owner, I want Anderson BI to proactively discover important patterns and changes in my connected business data so that I can learn what is happening without already knowing what questions to ask.
 
 _No acceptance criteria._
 
@@ -1025,12 +982,55 @@ As a prospective customer, I want realistic connected sample business data so th
 - A visitor explores the sample fictional business
 - A visitor changes a filter or saves an exploratory view
 
+## Story 75 — Save, List and Reopen Dashboards
+
+As an independent marketer, I want to name and save my dashboards and find them again in one list so that I can reopen them with current data.
+
+- The agent titles Dana's new dashboard and she renames it
+- Dana deletes a dashboard she no longer needs
+- Dana backs out of deleting a dashboard
+- Dana duplicates a dashboard to try a variation
+- A read-only member cannot start a dashboard
+- Dana searches her dashboards by name
+- Dana searches for a dashboard that does not exist
+- Dana favorites a dashboard
+- Dana sees built-in dashboards apart from her own
+- Dana opens a dashboard and chooses to edit it
+- The old reports page is gone
+- Dana changes a filter on the view page and it sticks
+- Dana finds versions only when editing
+
 ## Story 72 — Working read-only demo analytics and AI assistant
 
 As a prospective customer, I want to try analytics, correlations, and the assistant against demo data so that I can evaluate how the product behaves.
 
 - A visitor changes analytical selections and asks a question
 - An anonymous visitor tries to invoke an unsafe or costly action
+
+## Story 67 — Evidence-Grounded AI Explanations and Advisory Guidance for Discoveries
+
+As a business owner, I want Anderson BI to explain discovered findings and suggest evidence-based next steps so that I can make informed decisions without surrendering control of my connected business systems.
+
+_No acceptance criteria._
+
+## Story 57 — Searchable Categorized Integrations Catalog
+
+As a business user, I want to search and filter an integration catalog so that I can quickly find and connect the systems my business uses.
+
+_No acceptance criteria._
+
+## Story 60 — Google Sheets and CSV Excel Business Data Imports
+
+As a business owner, I want to import spreadsheets into Anderson BI so that I can analyze custom data not available through a native integration.
+
+_No acceptance criteria._
+
+## Story 73 — Automated demo releases, QA gates, and environment isolation
+
+As a product owner, I want two independently deployed demo channels so that prospects can explore tested features and forthcoming work without affecting production.
+
+- A new development build becomes available
+- A demo deployment fails or host is not configured
 
 ## Story 13 — Post-Registration Onboarding Welcome
 
