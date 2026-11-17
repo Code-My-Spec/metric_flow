@@ -83,7 +83,8 @@ defmodule MetricFlow.Dashboards do
   @spec duplicate_dashboard(Scope.t(), Dashboard.t()) ::
           {:ok, Dashboard.t()} | {:error, term()}
   def duplicate_dashboard(%Scope{} = scope, %Dashboard{} = dashboard) do
-    with {:ok, loaded} <- DashboardsRepository.get_dashboard_with_visualizations(scope, dashboard.id),
+    with {:ok, loaded} <-
+           DashboardsRepository.get_dashboard_with_visualizations(scope, dashboard.id),
          {:ok, new_dashboard} <-
            save_dashboard(scope, %{
              "name" => "#{dashboard.name} (copy)",
@@ -91,7 +92,11 @@ defmodule MetricFlow.Dashboards do
              "a2ui_spec" => dashboard.a2ui_spec
            }),
          :ok <-
-           replace_dashboard_visualizations(scope, new_dashboard, visualizations_from_dashboard(loaded)) do
+           replace_dashboard_visualizations(
+             scope,
+             new_dashboard,
+             visualizations_from_dashboard(loaded)
+           ) do
       {:ok, new_dashboard}
     end
   end

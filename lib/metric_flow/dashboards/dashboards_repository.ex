@@ -46,7 +46,8 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
     %Dashboard{
       id: -1,
       name: "Marketing Overview",
-      description: "Impressions, clicks, conversions and engagement across every connected platform.",
+      description:
+        "Impressions, clicks, conversions and engagement across every connected platform.",
       built_in: true
     },
     %Dashboard{
@@ -284,7 +285,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   """
   @spec delete_paper_trail_versions(integer()) :: :ok
   def delete_paper_trail_versions(dashboard_id) do
-    from(v in PaperTrail.Version, where: v.item_type == "Dashboard" and v.item_id == ^dashboard_id)
+    from(v in PaperTrail.Version,
+      where: v.item_type == "Dashboard" and v.item_id == ^dashboard_id
+    )
     |> Repo.delete_all()
 
     :ok
