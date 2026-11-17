@@ -287,6 +287,27 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     end
   end
 
+  describe "the editor highlights the saved platform filter on a fresh mount" do
+    test "a dashboard saved with a platform filter highlights that platform, not 'All' (issue f50d37e9)",
+         %{conn: conn} do
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions"})
+      insert_metric!(user, %{provider: :facebook_ads, metric_name: "clicks"})
+      dashboard = dashboard_fixture(user, %{platform_filter: "facebook_ads"})
+      conn = log_in_user(conn, user)
+
+      {:ok, lv, _html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      # Before the fix, platform_filter was assigned as the raw DB string
+      # while the shared component compares against atoms, so no button
+      # matched -- not even "All".
+      assert has_element?(lv, "button[phx-value-platform='facebook_ads'].btn-primary")
+      refute has_element?(lv, "button[phx-value-platform='all'].btn-primary")
+    end
+  end
+
   describe "refining an existing dashboard through chat replaces it with the model's complete new spec" do
     test "a refine turn's returned spec becomes the dashboard's new components, not an addition",
          %{conn: conn} do
