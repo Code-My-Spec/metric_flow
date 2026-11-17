@@ -13,6 +13,19 @@
 # it on (config/test.exs) and `--include e2e` runs it deliberately.
 ExUnit.start(exclude: [:needs_cassette, :e2e])
 
+# A real Chromium needs real built assets to request -- `priv/static` is
+# gitignored and nothing else in `mix test`'s own path builds it. Without
+# this, a fresh or cleaned checkout 404s app.js, the LiveView socket never
+# connects, and the first chat message a stage waits on never arrives
+# (demo walk, journey 66a06609, "Ask for a dashboard").
+if System.get_env("CMS_E2E") in ~w(1 true) do
+  {output, status} = System.cmd("mix", ["assets.build"], cd: File.cwd!(), stderr_to_stdout: true)
+
+  if status != 0 do
+    raise "mix assets.build failed ahead of a CMS_E2E run:\n#{output}"
+  end
+end
+
 Ecto.Adapters.SQL.Sandbox.mode(MetricFlow.Repo, :manual)
 
 MetricFlowTest.HermeticHttp.install()
