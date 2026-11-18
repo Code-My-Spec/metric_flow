@@ -69,6 +69,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         |> put_return_to(request_params)
 
       OAuthStateStore.store(state, bound_params)
+      Logger.info("YouTube authorize redirect: #{redact_authorize_url(url)}")
       redirect(conn, external: url)
     else
       _ ->
@@ -191,6 +192,10 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         |> redirect(to: ~p"/app/integrations/connect/youtube/accounts")
 
       {:error, reason} ->
+        Logger.warning(
+          "YouTube callback failed: reason=#{inspect(reason)} google_error=#{inspect(params["error"])}"
+        )
+
         message =
           case reason do
             :consent_denied ->
@@ -303,6 +308,18 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   end
 
   # Private Helpers
+
+  # The authorize URL minus the per-user bits, for diagnosing what Google got.
+  defp redact_authorize_url(url) do
+    uri = URI.parse(url)
+
+    query =
+      (uri.query || "")
+      |> URI.decode_query()
+      |> Map.drop(["state", "client_id", "nonce"])
+
+    "#{uri.host}#{uri.path} #{inspect(query)}"
+  end
 
   # A single product's connect page shows its "connected" result state for
   # exactly this message.
