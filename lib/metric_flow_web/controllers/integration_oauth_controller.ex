@@ -107,8 +107,13 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   # Google products have no sign-in of their own: they all ride the one
   # Google consent, landing back on the product's page by default.
   def request(conn, %{"provider" => provider_str} = params)
-      when provider_str in @google_product_strs do
-    return_to = safe_return_to(params["return_to"]) || "/app/integrations/connect/#{provider_str}"
+      when provider_str in ["google" | @google_product_strs] do
+    return_to =
+      safe_return_to(params["return_to"]) ||
+        if provider_str == "google",
+          do: "/app/onboarding/connect?step=google",
+          else: "/app/integrations/connect/#{provider_str}"
+
     request(conn, %{params | "provider" => "google_bundle"} |> Map.put("return_to", return_to))
   end
 
