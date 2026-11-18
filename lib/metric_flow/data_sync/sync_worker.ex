@@ -246,21 +246,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
         sync_type = determine_sync_type(integration_id)
         plans = plan_modules(scope, integration, product, sync_type)
 
-        cond do
-          match?({:ok, [_ | _]}, plans) and
-              Enum.all?(elem(plans, 1), fn {_mod, range} -> already_current?(range) end) ->
-            record_up_to_date(scope, integration, sync_job_id, sync_type, started_at)
-
-          true ->
-            sync_with_fresh_tokens(
-              scope,
-              integration,
-              sync_job_id,
-              sync_type,
-              plans,
-              {http_plug, breakdown},
-              started_at
-            )
+        if all_current?(plans) do
+          record_up_to_date(scope, integration, sync_job_id, sync_type, started_at)
+        else
+          sync_with_fresh_tokens(
+            scope,
+            integration,
+            sync_job_id,
+            sync_type,
+            plans,
+            {http_plug, breakdown},
+            started_at
+          )
         end
     end
   end
@@ -323,6 +320,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp refetch_last_day_if_idempotent(range, _provider), do: range
+
+  defp all_current?({:ok, [_ | _] = plans}),
+    do: Enum.all?(plans, fn {_mod, range} -> already_current?(range) end)
+
+  defp all_current?(_plans), do: false
 
   defp already_current?({%Date{} = from, %Date{} = to}), do: Date.compare(from, to) == :gt
   defp already_current?(_), do: false
@@ -634,20 +636,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         {:ok, integration}
 
       Integration.has_refresh_token?(integration) ->
-        case Integrations.refresh_token(scope, integration) do
-          {:ok, refreshed} ->
-            {:ok, refreshed}
-
-          {:error, reason} ->
-            Logger.warning(
-              "SyncWorker token refresh failed integration_id=#{integration.id} " <>
-                "provider=#{integration.provider} reason=#{inspect(reason)}"
-            )
-
-            if Integration.expired?(integration),
-              do: {:error, :token_expired},
-              else: {:ok, integration}
-        end
+        scope |> Integrations.refresh_token(integration) |> refresh_result(integration)
 
       not Integration.expired?(integration) ->
         {:ok, integration}
@@ -655,6 +644,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
       true ->
         {:error, :token_expired}
     end
+  end
+
+  defp refresh_result({:ok, refreshed}, _integration), do: {:ok, refreshed}
+
+  # A failed refresh only matters once the current token has actually expired.
+  defp refresh_result({:error, reason}, integration) do
+    Logger.warning(
+      "SyncWorker token refresh failed integration_id=#{integration.id} " <>
+        "provider=#{integration.provider} reason=#{inspect(reason)}"
+    )
+
+    if Integration.expired?(integration), do: {:error, :token_expired}, else: {:ok, integration}
   end
 
   defp build_fetch_opts(http_plug, date_range, breakdown) do
