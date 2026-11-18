@@ -21,8 +21,6 @@ defmodule MetricFlow.Onboarding.Tools do
   `(args, %{scope: Scope.t()}) -> {:ok, map()} | {:error, String.t()}`.
   """
 
-  require Logger
-
   alias MetricFlow.AccountAccess
   alias MetricFlow.Onboarding
   alias MetricFlow.Users.Scope
@@ -58,10 +56,6 @@ defmodule MetricFlow.Onboarding.Tools do
          :ok <- check_write(spec, ctx) do
       spec.run.(args, ctx)
     end
-  rescue
-    e ->
-      Logger.error("[onboarding-tools] #{name} crashed: #{Exception.message(e)}")
-      {:error, "The tool failed unexpectedly. Try again or check the integrations page."}
   end
 
   @doc "The chat-mode tools as Alloy inline tools, acting on the scope's account."
