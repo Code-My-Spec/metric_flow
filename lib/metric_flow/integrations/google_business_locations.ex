@@ -230,7 +230,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
 
   defp build_url(account_id, nil) do
     # account_id is like "accounts/123"
-    "#{@api_base}/#{account_id}/locations?readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,primaryCategory"
+    "#{@api_base}/#{account_id}/locations?readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories"
   end
 
   defp build_url(account_id, page_token) do
@@ -320,7 +320,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocations do
         store_code: Map.get(loc, "storeCode"),
         address: format_address(Map.get(loc, "storefrontAddress")),
         website: Map.get(loc, "websiteUri"),
-        category: get_in(loc, ["primaryCategory", "displayName"]),
+        category: get_in(loc, ["categories", "primaryCategory", "displayName"]),
         hours: get_in(loc, ["regularHours", "periods"])
       }
     end)

@@ -14,7 +14,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/102071280510983396749/locations"
       },
       "response": {
@@ -236,7 +236,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/101278802778449119998/locations"
       },
       "response": {
@@ -290,7 +290,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/108126458178788284065/locations"
       },
       "response": {
@@ -344,7 +344,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/116111111699025841107/locations"
       },
       "response": {
@@ -406,7 +406,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/103187461587544587917/locations"
       },
       "response": {
@@ -467,7 +467,7 @@
           ]
         },
         "method": "GET",
-        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri",
+        "query_string": "readMask=name,title,storeCode,storefrontAddress,websiteUri,regularHours,categories",
         "uri": "https://mybusinessbusinessinformation.googleapis.com/v1/accounts/112744062439041474778/locations"
       },
       "response": {

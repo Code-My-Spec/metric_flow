@@ -69,7 +69,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
             "postalCode" => "62701"
           },
           "websiteUri" => "https://mycoffeeshop.example.com",
-          "primaryCategory" => %{"displayName" => "Coffee Shop"}
+          "categories" => %{"primaryCategory" => %{"displayName" => "Coffee Shop"}}
         }
       ]
     }
@@ -94,7 +94,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
           "storeCode" => "P1-001",
           "storefrontAddress" => nil,
           "websiteUri" => nil,
-          "primaryCategory" => nil
+          "categories" => nil
         }
       ],
       "nextPageToken" => "next_page_token_abc"
@@ -110,7 +110,7 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
           "storeCode" => "P2-001",
           "storefrontAddress" => nil,
           "websiteUri" => nil,
-          "primaryCategory" => nil
+          "categories" => nil
         }
       ]
     })
@@ -243,6 +243,31 @@ defmodule MetricFlow.Integrations.GoogleBusinessLocationsTest do
                )
 
       assert location.website == "https://mycoffeeshop.example.com"
+    end
+
+    test "readMask only names real top-level Location fields" do
+      # Google 400s the whole request on an unknown mask field; primaryCategory
+      # lives under `categories`, not at the top level.
+      test_pid = self()
+
+      plug = fn conn ->
+        send(test_pid, {:read_mask, Plug.Conn.fetch_query_params(conn).query_params["readMask"]})
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, location_api_response("accounts/123456789"))
+      end
+
+      GoogleBusinessLocations.list_locations(integration_with_account_ids(), http_plug: plug)
+
+      assert_received {:read_mask, mask}
+
+      valid =
+        ~w(name languageCode storeCode title phoneNumbers categories storefrontAddress websiteUri
+           regularHours specialHours serviceArea labels adWordsLocationExtensions latlng
+           openInfo metadata profile relationshipData moreHours serviceItems)
+
+      assert mask |> String.split(",") |> Enum.reject(&(&1 in valid)) == []
     end
 
     test "location :category matches primaryCategory displayName from the API response" do
