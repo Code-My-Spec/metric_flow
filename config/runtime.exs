@@ -218,11 +218,22 @@ if config_env() == :prod do
 
   # Cloak vault key from environment (ADR: deployment)
   if cloak_key = env!("CLOAK_KEY", :string, nil) do
+    # AES-256 needs exactly 32 bytes. A wrong-length key boots fine and then
+    # 500s on the first encrypted write, so fail at boot instead.
+    key =
+      case Base.decode64(cloak_key) do
+        {:ok, <<_::binary-size(32)>> = key} ->
+          key
+
+        _ ->
+          raise "CLOAK_KEY must be base64 of exactly 32 bytes (e.g. `:crypto.strong_rand_bytes(32) |> Base.encode64()`)"
+      end
+
     config :metric_flow, MetricFlow.Vault,
       ciphers: [
         default: {
           Cloak.Ciphers.AES.GCM,
-          tag: "AES.GCM.V1", key: Base.decode64!(cloak_key), iv_length: 12
+          tag: "AES.GCM.V1", key: key, iv_length: 12
         }
       ]
   end
