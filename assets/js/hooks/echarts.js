@@ -1,4 +1,4 @@
-import * as echarts from "echarts"
+import * as echarts from "../../vendor/echarts"
 
 const ECharts = {
   mounted() {

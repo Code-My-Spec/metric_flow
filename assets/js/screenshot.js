@@ -1,4 +1,4 @@
-import { toCanvas } from "html-to-image";
+import { toCanvas } from "../vendor/html-to-image";
 
 export async function captureScreenshot() {
   // Suppress 404 noise from html-to-image trying to fetch url(#id) SVG refs
