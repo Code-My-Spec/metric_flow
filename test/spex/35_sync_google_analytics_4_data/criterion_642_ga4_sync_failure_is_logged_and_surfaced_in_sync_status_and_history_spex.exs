@@ -16,9 +16,14 @@ defmodule MetricFlowSpex.Ga4SyncFailureIsLoggedAndSurfacedInSyncStatusAndHistory
       end
 
       when_ "the failure is recorded", context do
-        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
-        view |> element("[data-role='trigger-daily-sync']") |> render_click()
+        # The daily Google sync skips a product with nothing selected;
+        # syncing the product itself surfaces why it can't sync.
+        {:ok, dashboard, _html} =
+          live(context.owner_conn, "/app/integrations/google_analytics/dashboard")
+
+        dashboard |> element("[data-role='sync-now']") |> render_click()
         Oban.drain_queue(queue: :sync)
+        {:ok, view, _html} = live(context.owner_conn, "/app/integrations/sync-history")
         {:ok, Map.put(context, :view, view)}
       end
 

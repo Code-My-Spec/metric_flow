@@ -30,8 +30,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
     refresh_token =
       Map.get(overrides, :refresh_token, "refresh-token-#{System.unique_integer([:positive])}")
 
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -41,7 +40,6 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       granted_scopes: [],
       provider_metadata: %{"property_id" => "properties/123456789"}
     })
-    |> Repo.insert!()
   end
 
   defp insert_expired_integration_with_refresh!(user_id, provider \\ :google_analytics) do
@@ -52,8 +50,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
   defp insert_expired_integration_without_refresh!(user_id, provider \\ :google_analytics) do
     expired_at = DateTime.add(DateTime.utc_now(), -3600, :second)
 
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -63,7 +60,6 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       granted_scopes: [],
       provider_metadata: %{"property_id" => "properties/123456789"}
     })
-    |> Repo.insert!()
   end
 
   defp insert_sync_job!(user_id, integration_id, provider \\ :google_analytics, overrides \\ %{}) do
@@ -708,8 +704,12 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       integration = insert_integration!(user.id, :google_business)
       sync_job = insert_sync_job!(user.id, integration.id, :google_business)
 
+      # Syncing Business Profile itself (a full Google sync skips a product
+      # with nothing selected).
+      args = Map.put(job_args(integration.id, user.id, sync_job.id), "product", "google_business")
+
       capture_log(fn ->
-        perform_job(SyncWorker, job_args(integration.id, user.id, sync_job.id), [])
+        perform_job(SyncWorker, args, [])
       end)
 
       [history] = SyncHistoryRepository.list_sync_history(scope)
@@ -723,8 +723,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       {user, scope} = user_with_scope()
 
       integration =
-        %Integration{}
-        |> Integration.changeset(%{
+        MetricFlowTest.IntegrationsFixtures.put_integration!(%{
           user_id: user.id,
           account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
           provider: :google_ads,
@@ -734,7 +733,6 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
           granted_scopes: [],
           provider_metadata: %{"customer_id" => "0000000000"}
         })
-        |> Repo.insert!()
 
       sync_job = insert_sync_job!(user.id, integration.id, :google_ads)
 
@@ -775,6 +773,119 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
       refute history.error_message == "missing_realm_id"
       assert history.error_message =~ "QuickBooks"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # The one Google integration
+  # ---------------------------------------------------------------------------
+
+  describe "perform/1 on the :google integration" do
+    # Records each request's host and JSON body, answering GA4-shaped empty rows.
+    defp recording_plug(test_pid) do
+      fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        send(test_pid, {:request, conn.host, body})
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, Jason.encode!(%{"rows" => []}))
+      end
+    end
+
+    defp requests(acc \\ []) do
+      receive do
+        {:request, host, body} -> requests([{host, body} | acc])
+      after
+        0 -> Enum.reverse(acc)
+      end
+    end
+
+    test "syncs only products that are granted and have a selection" do
+      {user, scope} = user_with_scope()
+
+      # Analytics: granted + property selected. Search Console: granted, no
+      # site. Ads and Business Profile: not granted.
+      integration = insert_integration!(user.id, :google_analytics)
+      insert_integration!(user.id, :google_search_console, %{})
+      assert integration.provider == :google
+      sync_job = insert_sync_job!(user.id, integration.id, :google)
+
+      capture_log(fn ->
+        assert :ok =
+                 perform_job(
+                   SyncWorker,
+                   job_args(integration.id, user.id, sync_job.id, recording_plug(self())),
+                   []
+                 )
+      end)
+
+      hosts = requests() |> Enum.map(&elem(&1, 0)) |> Enum.uniq()
+      assert hosts == ["analyticsdata.googleapis.com"]
+
+      assert [%{provider: :google_analytics, status: :success}] =
+               SyncHistoryRepository.list_sync_history(scope)
+
+      assert {:ok, %{status: :completed}} = SyncJobRepository.get_sync_job(scope, sync_job.id)
+    end
+
+    test "a job naming a product syncs just that product" do
+      {user, scope} = user_with_scope()
+      integration = insert_integration!(user.id, :google_analytics)
+      sync_job = insert_sync_job!(user.id, integration.id, :google_search_console)
+
+      args =
+        integration.id
+        |> job_args(user.id, sync_job.id)
+        |> Map.put("product", "google_search_console")
+
+      capture_log(fn -> perform_job(SyncWorker, args, []) end)
+
+      assert [%{provider: :google_search_console, status: :failed}] =
+               SyncHistoryRepository.list_sync_history(scope)
+    end
+
+    test "each product's incremental window starts after its own last metric" do
+      {user, _scope} = user_with_scope()
+      integration = insert_integration!(user.id, :google_analytics)
+      prior_job = insert_sync_job!(user.id, integration.id, :google, %{status: :completed})
+
+      # A prior sync makes this one incremental.
+      %MetricFlow.DataSync.SyncHistory{}
+      |> MetricFlow.DataSync.SyncHistory.changeset(%{
+        user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
+        integration_id: integration.id,
+        sync_job_id: prior_job.id,
+        provider: :google_analytics,
+        status: :success,
+        records_synced: 1,
+        started_at: DateTime.utc_now(),
+        completed_at: DateTime.utc_now()
+      })
+      |> Repo.insert!()
+
+      last = Date.add(Date.utc_today(), -4)
+
+      MetricFlowTest.MetricsFixtures.insert_metric!(user, %{
+        provider: :google_analytics,
+        recorded_at: DateTime.new!(last, ~T[00:00:00], "Etc/UTC")
+      })
+
+      sync_job = insert_sync_job!(user.id, integration.id, :google)
+
+      capture_log(fn ->
+        perform_job(
+          SyncWorker,
+          job_args(integration.id, user.id, sync_job.id, recording_plug(self())),
+          []
+        )
+      end)
+
+      assert [{"analyticsdata.googleapis.com", body} | _] = requests()
+
+      assert %{"dateRanges" => [%{"startDate" => start_date}]} = Jason.decode!(body)
+      assert start_date == Date.to_iso8601(Date.add(last, 1))
     end
   end
 

@@ -67,7 +67,7 @@ defmodule MetricFlowWeb.GoogleBundleCallbackTest do
     %{conn: log_in_user(conn, user), scope: account_scope_fixture(user)}
   end
 
-  test "a full-scope bundle callback connects every Google product and redirects", %{
+  test "a full-scope bundle callback connects every Google product on one integration", %{
     conn: conn,
     scope: scope
   } do
@@ -86,7 +86,11 @@ defmodule MetricFlowWeb.GoogleBundleCallbackTest do
 
     assert redirected_to(conn) == "/app/onboarding/connect?step=google"
 
-    for p <- [:google_analytics, :google_ads, :google_search_console, :google_business, :youtube],
+    for p <- [:google_analytics, :google_ads, :google_search_console, :google_business],
         do: assert(Integrations.connected?(scope, p), "#{p} not connected")
+
+    # One row holds every Google product; YouTube connects on its own.
+    assert [%{provider: :google}] = Integrations.list_integrations(scope)
+    refute Integrations.connected?(scope, :youtube)
   end
 end

@@ -130,7 +130,7 @@ defmodule MetricFlowWeb.MCPEndpointTest do
   } do
     result = call_tool(conn, token, session, "get_setup_status", %{account_id: client.id})
     refute result["isError"]
-    assert [_, _, _] = Jason.decode!(text(result))["connections"]
+    assert [_, _, _, _] = Jason.decode!(text(result))["connections"]
 
     link =
       call_tool(conn, token, session, "get_connect_link", %{

@@ -21,8 +21,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
   end
 
   defp insert_integration!(user_id) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: :google_analytics,
@@ -31,7 +30,6 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_sync_job!(user_id, integration_id) do

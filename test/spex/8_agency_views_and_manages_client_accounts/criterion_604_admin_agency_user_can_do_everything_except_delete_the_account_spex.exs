@@ -52,7 +52,7 @@ defmodule MetricFlowSpex.AdminAgencyUserCanDoEverythingExceptDeleteTheAccountSpe
         {:ok, integrations_view, _html} = live(context.admin_conn, "/app/integrations")
 
         integrations_view
-        |> element("[data-role='disconnect-integration']")
+        |> element("[data-platform='google_ads'] [data-role='disconnect-integration']")
         |> render_click()
 
         disconnect_html =

@@ -1,7 +1,8 @@
 defmodule MetricFlowWeb.IntegrationLive.Index do
   @moduledoc """
   The account's data sources, grouped by sign-in: Google (Analytics, Ads,
-  Search Console, Business Profile, YouTube), Meta and QuickBooks.
+  Search Console, Business Profile — one integration), YouTube, Meta and
+  QuickBooks.
 
   Each product shows its `MetricFlow.Onboarding` status, what it syncs, when
   it last synced, and one primary action — sync, choose what to sync, or
@@ -39,6 +40,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   # Provider display names for flashes and the disconnect dialog.
   @provider_names %{
+    google: "Google",
     youtube: "YouTube",
     google_analytics: "Google Analytics",
     google_ads: "Google Ads",
@@ -111,6 +113,16 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
               >
                 {group_action_label(conn)}
               </.link>
+              <button
+                :if={conn.key == :google and conn.state != :not_connected and @can_modify}
+                id="disconnect-google"
+                data-role="disconnect-integration"
+                phx-click="confirm_disconnect"
+                phx-value-provider="google"
+                class="btn btn-ghost btn-sm shrink-0 text-error"
+              >
+                Disconnect Google
+              </button>
             </header>
 
             <div
@@ -181,7 +193,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
               <h3 class="font-bold text-lg">Disconnect {disc_provider_name}?</h3>
               <p class="py-4" data-role="disconnect-warning">
                 Are you sure you want to disconnect <strong>{disc_provider_name}</strong>?
-                This will affect all platforms that use this connection.
+                <%= if Integrations.google_product?(@disconnecting) do %>
+                  It stops syncing; your Google sign-in stays connected for the other Google products.
+                <% else %>
+                  This will affect all platforms that use this connection.
+                <% end %>
                 Historical data will remain available, but no new data will sync after disconnecting.
               </p>
               <div class="modal-action">
@@ -416,7 +432,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       |> Enum.map(fn conn ->
         products =
           Enum.map(conn.products, fn product ->
-            integration = Map.get(by_provider, product.key)
+            # A Google product lives on the account's one Google integration.
+            integration =
+              if product.status != :not_granted,
+                do: Map.get(by_provider, Integrations.integration_provider(product.key))
 
             status =
               if integration && needs_reconnect?(integration),
@@ -622,10 +641,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       ) do
     result = %{records_synced: count, completed_at: completed_at}
 
-    # Store result under each platform key that maps to this provider,
-    # since the template looks up by platform key (e.g. :google_analytics),
-    # not by OAuth provider (e.g. :google).
-    platform_keys = platform_keys_for_provider(provider)
+    # Store result under the product's platform key. The Google
+    # integration's own event (`:google`) only ends the spinners: each Google
+    # product reports its own count in a per-product event.
+    platform_keys = if provider == :google, do: [], else: platform_keys_for_provider(provider)
 
     sync_results =
       Enum.reduce(platform_keys, socket.assigns.sync_results, fn key, acc ->
@@ -674,16 +693,17 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     "Sync failed for #{provider_display_name(provider)}. Please check your connection and try again."
   end
 
+  # Events from the Google integration (`:google`) cover its products.
   defp platform_keys_for_provider(provider) do
-    @data_platforms
-    |> Enum.filter(&(&1.provider == provider))
-    |> Enum.map(& &1.key)
+    for p <- @data_platforms,
+        p.provider == provider or Integrations.integration_provider(p.provider) == provider,
+        do: p.key
   end
 
   defp remove_platform_keys_for_provider(syncing, provider) do
-    @data_platforms
-    |> Enum.filter(&(&1.provider == provider))
-    |> Enum.reduce(syncing, fn p, acc -> MapSet.delete(acc, p.key) end)
+    provider
+    |> platform_keys_for_provider()
+    |> Enum.reduce(syncing, &MapSet.delete(&2, &1))
   end
 
   # Emails the account's owners and admins once when an integration's credentials expire, and clears
@@ -750,10 +770,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   defp format_datetime(_), do: ""
 
-  # Google products share one OAuth grant; `Onboarding.disconnect/2` avoids
-  # revoking the token while sibling Google products still use it.
+  # `Onboarding.disconnect/2` knows a Google product only stops syncing,
+  # while `:google` disconnects the whole Google sign-in.
   defp disconnect_provider(scope, provider) do
-    if provider in Onboarding.product_keys() do
+    if provider == :google or provider in Onboarding.product_keys() do
       case Onboarding.disconnect(scope, provider) do
         :ok -> {:ok, provider}
         other -> other

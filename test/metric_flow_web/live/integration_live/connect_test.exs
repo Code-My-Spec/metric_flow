@@ -96,9 +96,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
 
     attrs = Map.merge(defaults, overrides)
 
-    %Integration{}
-    |> Integration.changeset(attrs)
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(attrs)
   end
 
   # ---------------------------------------------------------------------------

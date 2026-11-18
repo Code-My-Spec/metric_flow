@@ -88,6 +88,6 @@ defmodule MetricFlowWeb.Journeys.IntegrationDashboardAndDataSyncTest do
     refute dashboard_html =~ ~s(data-role="onboarding-prompt")
     assert dashboard_html =~ ~s(data-role="vega-lite-chart")
 
-    assert integration.provider == :google_ads
+    assert integration.provider == :google
   end
 end

@@ -176,7 +176,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
       assert changeset.valid?
     end
 
-    test "accepts all valid provider enum values (:github, :gitlab, :bitbucket, :google, :google_ads, :facebook_ads, :google_analytics, :quickbooks)" do
+    test "accepts all valid provider enum values (:github, :gitlab, :bitbucket, :google, :facebook_ads, :quickbooks)" do
       user = user_fixture()
 
       providers = [
@@ -184,9 +184,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
         :gitlab,
         :bitbucket,
         :google,
-        :google_ads,
         :facebook_ads,
-        :google_analytics,
         :quickbooks
       ]
 
@@ -196,6 +194,15 @@ defmodule MetricFlow.Integrations.IntegrationTest do
 
         assert changeset.valid?, "expected #{provider} to be valid"
         assert get_change(changeset, :provider) == provider
+      end
+    end
+
+    test "rejects per-product Google providers (they live on the one :google integration)" do
+      user = user_fixture()
+
+      for provider <- [:google_analytics, :google_ads, :google_search_console, :google_business] do
+        attrs = %{valid_attrs(user.id) | provider: provider}
+        refute Integration.changeset(new_integration(), attrs).valid?
       end
     end
 

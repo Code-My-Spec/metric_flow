@@ -26,7 +26,7 @@ defmodule MetricFlow.Onboarding.Tools do
   alias MetricFlow.Users.Scope
   alias MetricFlow.Users.User
 
-  @connection_enum ["google", "facebook_ads", "quickbooks"]
+  @connection_enum ["google", "youtube", "facebook_ads", "quickbooks"]
   @product_enum ~w(google_analytics google_ads google_search_console google_business youtube facebook_ads quickbooks)
 
   @account_prop %{
@@ -88,9 +88,10 @@ defmodule MetricFlow.Onboarding.Tools do
         description:
           "Show which data sources are connected and what each is set to sync. Call this first. " <>
             "Connections are Google (Analytics, Ads, Search Console, Business Profile under one sign-in), " <>
-            "Meta (Facebook/Instagram ads) and QuickBooks. Product status is one of: not_connected, " <>
-            "not_granted (Google connected but that product unticked on Google's consent screen — " <>
-            "reconnect Google and tick it), reconnect (token expired), needs_selection, ready.",
+            "YouTube (its own sign-in), Meta (Facebook/Instagram ads) and QuickBooks. Product status " <>
+            "is one of: not_connected, not_granted (Google connected but that product unticked on " <>
+            "Google's consent screen — reconnect Google and tick it), reconnect (token expired), " <>
+            "needs_selection, ready.",
         input_schema: object(%{}),
         run: fn _args, %{scope: scope} -> {:ok, %{connections: render_status(scope)}} end
       },
@@ -98,7 +99,8 @@ defmodule MetricFlow.Onboarding.Tools do
         name: "get_connect_link",
         description:
           "Get the link the customer must open to connect a data source (only the customer can " <>
-            "complete the provider's consent screen). One Google link covers all Google products. " <>
+            "complete the provider's consent screen). One Google link covers Analytics, Ads, Search " <>
+            "Console and Business Profile; YouTube has its own link. " <>
             "After they connect, call get_setup_status, then list_sync_options.",
         input_schema:
           object(%{connection: %{type: "string", enum: @connection_enum}}, ["connection"]),
@@ -117,8 +119,9 @@ defmodule MetricFlow.Onboarding.Tools do
         name: "list_sync_options",
         description:
           "List what a connected product can sync, live from the provider: GA4 properties, " <>
-            "Google Ads accounts, Search Console sites, Business Profile locations, Meta ad " <>
-            "accounts or QuickBooks income accounts. Returns ids to pass to save_sync_selection.",
+            "Google Ads accounts, Search Console sites, Business Profile locations, YouTube " <>
+            "channels, Meta ad accounts or QuickBooks income accounts. Returns ids to pass to " <>
+            "save_sync_selection.",
         input_schema: object(%{product: %{type: "string", enum: @product_enum}}, ["product"]),
         run: fn %{"product" => p}, %{scope: scope} ->
           with {:ok, product} <- parse(p, @product_enum),
@@ -173,11 +176,14 @@ defmodule MetricFlow.Onboarding.Tools do
         name: "disconnect_product",
         write: true,
         description:
-          "Disconnect one product. Destructive: syncing stops and the customer must reconnect. " <>
+          "Disconnect one product, or \"google\" for the whole Google sign-in. Destructive: " <>
+            "syncing stops. A single Google product just stops syncing (pick again to resume); " <>
+            "disconnecting Google or any other product means the customer must reconnect. " <>
             "Only do this when the customer asked for it.",
-        input_schema: object(%{product: %{type: "string", enum: @product_enum}}, ["product"]),
+        input_schema:
+          object(%{product: %{type: "string", enum: ["google" | @product_enum]}}, ["product"]),
         run: fn %{"product" => p}, %{scope: scope} ->
-          with {:ok, product} <- parse(p, @product_enum),
+          with {:ok, product} <- parse(p, ["google" | @product_enum]),
                :ok <- wrap_ok(Onboarding.disconnect(scope, product)) do
             {:ok, %{product: p, disconnected: true}}
           end

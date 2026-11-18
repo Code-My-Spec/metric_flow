@@ -11,7 +11,10 @@ defmodule MetricFlowSpex.Criterion970SyncFailureRetriedBeforeMarkedFailedAndLogg
       given_(:user_logged_in_as_owner)
 
       given_ "a Google Ads account will keep failing to sync", context do
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
+          provider_metadata: %{"customer_id" => "1234567890"}
+        )
+
         {:ok, context}
       end
 

@@ -74,7 +74,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       assert {:ok, integration} =
                IntegrationRepository.upsert_integration(
                  scope_in(owner, client),
-                 :google_ads,
+                 :google,
                  token_attrs()
                )
 
@@ -83,7 +83,7 @@ defmodule MetricFlow.AccountOwnershipTest do
 
       assert [%Integration{id: id}] = Integrations.list_integrations(scope_in(teammate, client))
       assert id == integration.id
-      assert Integrations.connected?(scope_in(teammate, client), :google_ads)
+      assert Integrations.connected?(scope_in(teammate, client), :google)
     end
 
     test "synced metrics are read by every member and not by other accounts", %{
@@ -112,7 +112,7 @@ defmodule MetricFlow.AccountOwnershipTest do
     } do
       IntegrationRepository.upsert_integration(
         scope_in(owner, client),
-        :google_ads,
+        :google,
         token_attrs()
       )
 
@@ -123,7 +123,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       assert Metrics.list_metrics(scope_in(outsider, client)) == []
 
       assert {:error, :not_found} =
-               Integrations.get_integration(scope_in(outsider, client), :google_ads)
+               Integrations.get_integration(scope_in(outsider, client), :google)
     end
 
     test "dashboards created by one member belong to the account", %{client: client, owner: owner} do
@@ -153,7 +153,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       {:ok, _} =
         IntegrationRepository.upsert_integration(
           scope_in(owner, client),
-          :google_ads,
+          :google,
           token_attrs()
         )
 
@@ -168,18 +168,18 @@ defmodule MetricFlow.AccountOwnershipTest do
 
       scope = scope_in(agency_admin, client)
 
-      assert [%Integration{provider: :google_ads}] = Integrations.list_integrations(scope)
+      assert [%Integration{provider: :google}] = Integrations.list_integrations(scope)
 
       assert {:ok, updated} =
-               Integrations.update_provider_metadata(scope, :google_ads, %{
+               Integrations.update_provider_metadata(scope, :google, %{
                  "customer_id" => "123"
                })
 
       assert updated.provider_metadata["customer_id"] == "123"
-      assert {:ok, _job} = DataSync.sync_integration(scope, :google_ads)
+      assert {:ok, _job} = DataSync.sync_integration(scope, :google)
 
       # The client's owner sees the agency's change.
-      {:ok, seen} = Integrations.get_integration(scope_in(owner, client), :google_ads)
+      {:ok, seen} = Integrations.get_integration(scope_in(owner, client), :google)
       assert seen.provider_metadata["customer_id"] == "123"
     end
 
@@ -216,7 +216,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       {:ok, _} =
         IntegrationRepository.upsert_integration(
           scope_in(owner, client),
-          :google_ads,
+          :google,
           token_attrs()
         )
 
@@ -233,15 +233,15 @@ defmodule MetricFlow.AccountOwnershipTest do
       assert [_] = Integrations.list_integrations(scope)
 
       assert {:error, :unauthorized} =
-               Integrations.update_provider_metadata(scope, :google_ads, %{"customer_id" => "1"})
+               Integrations.update_provider_metadata(scope, :google, %{"customer_id" => "1"})
 
-      assert {:error, :unauthorized} = Integrations.disconnect(scope, :google_ads)
-      assert {:error, :unauthorized} = Integrations.delete_integration(scope, :google_ads)
+      assert {:error, :unauthorized} = Integrations.disconnect(scope, :google)
+      assert {:error, :unauthorized} = Integrations.delete_integration(scope, :google)
 
       assert {:error, :unauthorized} =
                IntegrationRepository.upsert_integration(scope, :quickbooks, token_attrs())
 
-      assert {:error, :unauthorized} = DataSync.sync_integration(scope, :google_ads)
+      assert {:error, :unauthorized} = DataSync.sync_integration(scope, :google)
       refute AccountAccess.can_write?(scope)
       assert [_] = Integrations.list_integrations(scope)
     end
@@ -266,19 +266,19 @@ defmodule MetricFlow.AccountOwnershipTest do
       {:ok, first} =
         IntegrationRepository.upsert_integration(
           scope_in(owner, client),
-          :google_ads,
+          :google,
           token_attrs()
         )
 
       {:ok, _} =
-        Integrations.update_provider_metadata(scope_in(owner, client), :google_ads, %{
+        Integrations.update_provider_metadata(scope_in(owner, client), :google, %{
           "customer_id" => "555"
         })
 
       {:ok, second} =
         IntegrationRepository.upsert_integration(
           scope_in(admin, client),
-          :google_ads,
+          :google,
           token_attrs(%{access_token: "fresh-token", provider_metadata: %{"email" => "b@x.com"}})
         )
 
@@ -287,7 +287,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       assert Repo.aggregate(from(i in Integration, where: i.account_id == ^client.id), :count) ==
                1
 
-      {:ok, stored} = Integrations.get_integration(scope_in(owner, client), :google_ads)
+      {:ok, stored} = Integrations.get_integration(scope_in(owner, client), :google)
       assert stored.access_token == "fresh-token"
       assert stored.provider_metadata["customer_id"] == "555"
       assert stored.provider_metadata["email"] == "b@x.com"
@@ -297,7 +297,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       client: client,
       owner: owner
     } do
-      attrs = Map.merge(token_attrs(), %{provider: :google_ads})
+      attrs = Map.merge(token_attrs(), %{provider: :google})
 
       {:ok, _} =
         %Integration{account_id: client.id, user_id: owner.id}
@@ -321,14 +321,14 @@ defmodule MetricFlow.AccountOwnershipTest do
       assert {:ok, a} =
                IntegrationRepository.upsert_integration(
                  scope_in(owner, client),
-                 :google_ads,
+                 :google,
                  token_attrs()
                )
 
       assert {:ok, b} =
                IntegrationRepository.upsert_integration(
                  scope_in(owner, other_account),
-                 :google_ads,
+                 :google,
                  token_attrs()
                )
 
@@ -389,7 +389,7 @@ defmodule MetricFlow.AccountOwnershipTest do
       member!(b, user, :owner)
       legacy_metric!(user.id)
       legacy_metric!(user.id)
-      legacy_integration!(user.id, "google_ads")
+      legacy_integration!(user.id, "google")
 
       assert [entry] = Enum.filter(LegacyOwnership.report(), &(&1.user_id == user.id))
       assert entry.email == user.email
@@ -443,13 +443,13 @@ defmodule MetricFlow.AccountOwnershipTest do
       {:ok, existing} =
         IntegrationRepository.upsert_integration(
           scope_in(owner, client),
-          :google_ads,
+          :google,
           token_attrs()
         )
 
-      legacy_id = legacy_integration!(owner.id, "google_ads")
+      legacy_id = legacy_integration!(owner.id, "google")
 
-      assert {:ok, %{skipped_integrations: ["google_ads"]}} =
+      assert {:ok, %{skipped_integrations: ["google"]}} =
                LegacyOwnership.assign(owner.id, client.id)
 
       assert [%{id: id}] = Integrations.list_integrations(scope_in(owner, client))

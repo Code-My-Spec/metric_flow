@@ -1,16 +1,18 @@
 defmodule MetricFlowWeb.OnboardingLive.Connect do
   @moduledoc """
   Data-source setup wizard: Connect Google → pick what to sync → Connect
-  Meta → pick → Connect QuickBooks → pick → Done.
+  YouTube → pick channels → Connect Meta → pick → Connect QuickBooks → pick
+  → Done.
 
   One step per connection (one OAuth grant each). Google is a single
   sign-in covering Analytics, Ads, Search Console and Business Profile; the
-  step then lists each product with its own inline picker. Every step can be
-  skipped, and the wizard resumes at the first unfinished connection.
+  step then lists each product with its own inline picker. YouTube has its
+  own sign-in. Every step can be skipped, and the wizard resumes at the
+  first unfinished connection.
 
   All data and actions go through `MetricFlow.Onboarding`.
 
-  Route: GET /app/onboarding/connect[?step=google|facebook_ads|quickbooks|done]
+  Route: GET /app/onboarding/connect[?step=google|youtube|facebook_ads|quickbooks|done]
   """
 
   use MetricFlowWeb, :live_view
@@ -20,7 +22,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
   alias MetricFlow.Accounts
   alias MetricFlow.Onboarding
 
-  @steps [:google, :facebook_ads, :quickbooks, :done]
+  @steps [:google, :youtube, :facebook_ads, :quickbooks, :done]
   @search_threshold 6
   @synced_note "Syncing — first data usually appears within a few minutes; full history can take up to an hour."
 
@@ -115,6 +117,9 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
 
           <p :if={@current.key == :google} class="mb-4 text-sm text-base-content/60">
             Google will ask you to tick each product — leave them all ticked to set everything up at once.
+          </p>
+          <p :if={@current.key == :youtube} class="mb-4 text-sm text-base-content/60">
+            You'll pick which channels to sync right after signing in with Google.
           </p>
           <p :if={@current.key == :quickbooks} class="mb-4 text-sm text-base-content/60">
             You'll pick your company on Intuit's screen. You need to be a QuickBooks admin.
@@ -642,6 +647,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
   defp ready_products(conn), do: Enum.filter(conn.products, &(&1.status == :ready))
 
   defp step_label(:google), do: "Google"
+  defp step_label(:youtube), do: "YouTube"
   defp step_label(:facebook_ads), do: "Meta"
   defp step_label(:quickbooks), do: "QuickBooks"
   defp step_label(:done), do: "Done"

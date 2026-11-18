@@ -106,6 +106,7 @@ defmodule MetricFlow.DataSync do
                  user_id: AccountAccess.user_id(scope),
                  sync_job_id: sync_job.id
                }
+               |> maybe_put_product(provider)
                |> maybe_put_breakdown(opts)
                |> maybe_put_test_http_plug(provider)
              )
@@ -134,6 +135,14 @@ defmodule MetricFlow.DataSync do
     end
   end
 
+  # A Google product syncs only its own slice of the account's `:google`
+  # integration; `:google` itself syncs every product that is set up.
+  defp maybe_put_product(args, provider) do
+    if Integrations.google_product?(provider),
+      do: Map.put(args, :product, Atom.to_string(provider)),
+      else: args
+  end
+
   defp maybe_put_breakdown(args, opts) do
     case Keyword.get(opts, :breakdown) do
       nil -> args
@@ -150,17 +159,23 @@ defmodule MetricFlow.DataSync do
     plug_store = Module.concat([MetricFlowTest, PlugStore])
 
     if Code.ensure_loaded?(plug_store) do
-      case :erlang.apply(plug_store, :get_provider_plug, [provider]) do
-        {:ok, plug} ->
-          # Oban.insert/1 persists args to Postgres via Jason, unlike
-          # Oban.Testing.perform_job/3's own round-trip (native JSON module,
-          # what PlugStore's JSON.Encoder targets) -- Jason has no Function
-          # encoder, so the key is resolved here rather than the raw plug.
-          key = :erlang.apply(plug_store, :store, [plug])
-          Map.put(args, :http_plug, key)
+      # Oban.insert/1 persists args to Postgres via Jason, unlike
+      # Oban.Testing.perform_job/3's own round-trip (native JSON module,
+      # what PlugStore's JSON.Encoder targets) -- Jason has no Function
+      # encoder, so each key is resolved here rather than the raw plug.
+      # A Google sync runs several products, so it carries one per product.
+      products = if provider == :google, do: Integrations.google_products(), else: [provider]
 
-        :error ->
-          args
+      plugs =
+        for product <- products,
+            {:ok, plug} <- [:erlang.apply(plug_store, :get_provider_plug, [product])],
+            into: %{},
+            do: {Atom.to_string(product), :erlang.apply(plug_store, :store, [plug])}
+
+      cond do
+        plugs == %{} -> args
+        provider == :google -> Map.put(args, :http_plugs, plugs)
+        true -> Map.put(args, :http_plug, plugs[Atom.to_string(provider)])
       end
     else
       args

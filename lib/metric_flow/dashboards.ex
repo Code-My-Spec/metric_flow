@@ -370,7 +370,7 @@ defmodule MetricFlow.Dashboards do
           platforms =
             scope
             |> Integrations.list_integrations()
-            |> Enum.map(& &1.provider)
+            |> Integrations.connected_products()
             |> Enum.filter(&data_platform?/1)
             |> Enum.uniq()
 
@@ -443,12 +443,12 @@ defmodule MetricFlow.Dashboards do
 
     connected_platforms =
       integrations
-      |> Enum.map(& &1.provider)
+      |> Integrations.connected_products()
       |> Enum.filter(&data_platform?/1)
       |> Enum.uniq()
 
-    # Normalize compound providers (e.g. :google → [:google_analytics, :google_ads])
-    # so the Metrics query uses valid provider enum values.
+    # Normalize the compound :google provider into its products so the
+    # Metrics query uses valid provider enum values.
     metric_provider = normalize_metric_provider(platform)
 
     metric_query_opts =
@@ -682,15 +682,13 @@ defmodule MetricFlow.Dashboards do
   # Maps compound Integration providers to their Metric provider equivalents.
   # :google is an Integration-level provider that covers both google_analytics
   # and google_ads, but Metrics are stored under the specific sub-providers.
-  defp normalize_metric_provider(:google), do: [:google_analytics, :google_ads]
+  defp normalize_metric_provider(:google), do: Integrations.google_products()
   defp normalize_metric_provider(other), do: other
 
   # A platform is anything the metrics query can be filtered by: a leaf provider,
-  # or a compound one that `normalize_metric_provider/1` expands into leaves.
-  # `:google` is the second kind — one OAuth connection granting Analytics and
-  # Ads — and it is a provider an `Integration` row really holds. Filtering the
-  # platform list to leaves only, while the query filter accepted the compound,
-  # meant the commonest integration on the platform contributed no filter at all.
+  # or the compound `:google` that `normalize_metric_provider/1` expands into
+  # its products. Connected platforms are listed per product
+  # (`Integrations.connected_products/1`).
   defp data_platform?(provider) do
     provider in @data_providers or is_list(normalize_metric_provider(provider))
   end

@@ -64,9 +64,7 @@ defmodule MetricFlow.DashboardsTest do
 
     attrs = Map.merge(defaults, overrides)
 
-    %Integration{}
-    |> Integration.changeset(attrs)
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(attrs)
   end
 
   # ---------------------------------------------------------------------------
@@ -123,23 +121,24 @@ defmodule MetricFlow.DashboardsTest do
       assert Map.has_key?(sessions_stats.stats, :count)
     end
 
-    test "connected_platforms reflects the provider atoms of the user's current integrations" do
+    test "connected_platforms lists the Google products the Google integration grants" do
       {user, scope} = user_with_scope()
-      insert_integration!(user.id, :google)
+      insert_integration!(user.id, :google_analytics)
+      insert_integration!(user.id, :google_ads)
 
       assert {:ok, %{connected_platforms: platforms}} = Dashboards.get_dashboard_data(scope, [])
 
-      assert :google in platforms
+      assert Enum.sort(platforms) == [:google_ads, :google_analytics]
     end
 
     test "available_filters.platforms is derived from connected integrations" do
       {user, scope} = user_with_scope()
-      insert_integration!(user.id, :google)
+      insert_integration!(user.id, :google_analytics)
       insert_metric!(user.id)
 
       assert {:ok, %{available_filters: filters}} = Dashboards.get_dashboard_data(scope, [])
 
-      assert :google in filters.platforms
+      assert :google_analytics in filters.platforms
     end
 
     test "available_filters.metric_names contains all distinct metric names for the user" do

@@ -28,6 +28,8 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   plug :pin_requested_account when action in [:request]
 
+  @google_product_strs Enum.map(Integrations.google_products(), &Atom.to_string/1)
+
   # A connect link from an agent names the account it is for
   # (`Onboarding.connect_path/3`), so the connection lands there rather than
   # on whichever account happens to be active in this browser.
@@ -55,17 +57,16 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   by the state value. The provider echoes the state back in the callback,
   allowing retrieval without cookies.
   """
-  def request(conn, %{"provider" => "youtube"}) do
+  def request(conn, %{"provider" => "youtube"} = request_params) do
     scope = youtube_scope(conn)
 
     with :ok <- Integrations.authorize_youtube_connection(scope),
          {:ok, %{url: url, session_params: params}} <- Integrations.authorize_url(:youtube),
          state when is_binary(state) <- params[:state] || params["state"] do
       bound_params =
-        Map.merge(params, %{
-          youtube_user_id: scope.user.id,
-          youtube_account_id: scope.account_id
-        })
+        params
+        |> Map.merge(%{youtube_user_id: scope.user.id, youtube_account_id: scope.account_id})
+        |> put_return_to(request_params)
 
       OAuthStateStore.store(state, bound_params)
       redirect(conn, external: url)
@@ -101,6 +102,14 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         |> put_flash(:error, "Couldn't start the Google connection. Please try again.")
         |> redirect(to: safe_return_to(params["return_to"]) || ~p"/app/onboarding/connect")
     end
+  end
+
+  # Google products have no sign-in of their own: they all ride the one
+  # Google consent, landing back on the product's page by default.
+  def request(conn, %{"provider" => provider_str} = params)
+      when provider_str in @google_product_strs do
+    return_to = safe_return_to(params["return_to"]) || "/app/integrations/connect/#{provider_str}"
+    request(conn, %{params | "provider" => "google_bundle"} |> Map.put("return_to", return_to))
   end
 
   def request(conn, %{"provider" => provider_str} = params) do
@@ -173,6 +182,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
       {:ok, token} ->
         conn
         |> put_session(:youtube_pending_authorization, token)
+        |> put_session(:youtube_return_to, return_to_from(session_params))
         |> redirect(to: ~p"/app/integrations/connect/youtube/accounts")
 
       {:error, reason} ->
@@ -198,13 +208,19 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   def callback(conn, %{"provider" => provider_str} = params) do
     session_params = fetch_session_params(params)
 
-    if Map.get(session_params, :google_bundle) || Map.get(session_params, "google_bundle"),
-      do: google_bundle_callback(conn, params, session_params),
-      else: provider_callback(conn, provider_str, params, session_params)
+    # Every Google product connects through the one Google consent.
+    if Map.get(session_params, :google_bundle) || Map.get(session_params, "google_bundle") ||
+         provider_str in @google_product_strs,
+       do: google_bundle_callback(conn, provider_str, params, session_params),
+       else: provider_callback(conn, provider_str, params, session_params)
   end
 
-  defp google_bundle_callback(conn, params, session_params) do
-    return_to = return_to_from(session_params) || ~p"/app/onboarding/connect"
+  defp google_bundle_callback(conn, provider_str, params, session_params) do
+    return_to =
+      return_to_from(session_params) ||
+        if provider_str in @google_product_strs,
+          do: "/app/integrations/connect/#{provider_str}",
+          else: ~p"/app/onboarding/connect"
 
     result =
       if params["error"],
@@ -227,7 +243,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
       {:ok, %{connected: connected}} ->
         conn
-        |> put_flash(:info, "Google connected — #{length(connected)} product(s) ready to set up.")
+        |> put_flash(:info, bundle_success_message(return_to, connected))
         |> redirect(to: return_to)
 
       {:error, reason} ->
@@ -283,6 +299,14 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   # Private Helpers
 
+  # A single product's connect page shows its "connected" result state for
+  # exactly this message.
+  defp bundle_success_message("/app/integrations/connect/" <> _, _connected),
+    do: "Successfully connected!"
+
+  defp bundle_success_message(_return_to, connected),
+    do: "Google connected — #{length(connected)} product(s) ready to set up."
+
   # `return_to` lets the setup wizard (or an agent's connect link) bring the
   # user back where they started. Only in-app paths are honoured.
   defp put_return_to(session_params, params) do
@@ -336,12 +360,8 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   @callback_provider_map %{
     "google" => :google,
-    "google_ads" => :google_ads,
-    "google_analytics" => :google_analytics,
     "facebook_ads" => :facebook_ads,
     "quickbooks" => :quickbooks,
-    "google_search_console" => :google_search_console,
-    "google_business" => :google_business,
     "google_business_reviews" => :google_business_reviews,
     "codemyspec" => :codemyspec
   }

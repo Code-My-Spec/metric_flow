@@ -58,7 +58,7 @@ defmodule MetricFlowSpex.AccountManagerAgencyUserSavesEditsAndDeletesDashboardsA
         {:ok, integrations_view, _html} = live(context.acctmgr_conn, "/app/integrations")
 
         integrations_view
-        |> element("[data-role='disconnect-integration']")
+        |> element("#disconnect-google")
         |> render_click()
 
         integrations_view

@@ -514,8 +514,8 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
     DataSync.sync_integration(scope, :facebook_ads, breakdown: :adset)
   end
 
-  defp sync_integration(scope, :google_ads, %{google_ads: true}) do
-    DataSync.sync_integration(scope, :google_ads, breakdown: :ad_group)
+  defp sync_integration(scope, :google, %{google_ads: true}) do
+    DataSync.sync_integration(scope, :google, breakdown: :ad_group)
   end
 
   defp sync_integration(scope, provider, _breakdowns) do

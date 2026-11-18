@@ -130,6 +130,12 @@ defmodule MetricFlowSpex.Fixtures do
 
   For specs that need an existing integration to exercise view/modify
   permissions against, without a real OAuth connect flow to drive.
+
+  A Google product (`:google_analytics`, `:google_ads`, …) is connected the
+  way the app connects it: on the account's one `:google` integration, with
+  that product's scope granted and `provider_metadata` (its selection)
+  merged in. Calling it for several Google products builds up that one
+  integration.
   """
   @spec create_integration_for(String.t(), atom(), keyword()) :: Integration.t()
   def create_integration_for(email, provider, opts \\ []) do
@@ -137,8 +143,7 @@ defmodule MetricFlowSpex.Fixtures do
     expires_at = Keyword.get(opts, :expires_at, DateTime.add(DateTime.utc_now(), 3600, :second))
     provider_metadata = Keyword.get(opts, :provider_metadata, %{})
 
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user.id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       provider: provider,
@@ -148,7 +153,6 @@ defmodule MetricFlowSpex.Fixtures do
       granted_scopes: ["email", "profile"],
       provider_metadata: provider_metadata
     })
-    |> Repo.insert!()
   end
 
   @doc """
@@ -163,7 +167,7 @@ defmodule MetricFlowSpex.Fixtures do
     integration =
       Repo.get_by!(Integration,
         account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
-        provider: provider
+        provider: MetricFlow.Integrations.integration_provider(provider)
       )
 
     integration
@@ -186,7 +190,7 @@ defmodule MetricFlowSpex.Fixtures do
 
     Repo.get_by!(Integration,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
-      provider: provider
+      provider: MetricFlow.Integrations.integration_provider(provider)
     )
     |> Integration.changeset(%{expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)})
     |> Repo.update!()
@@ -225,12 +229,7 @@ defmodule MetricFlowSpex.Fixtures do
     user = Users.get_user_by_email(email)
     attrs = Map.new(attrs)
 
-    unless Repo.get_by(Integration,
-             account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
-             provider: :google_business
-           ) do
-      create_integration_for(email, :google_business, provider_metadata: %{"email" => email})
-    end
+    create_integration_for(email, :google_business, provider_metadata: %{"email" => email})
 
     review_date = Map.get(attrs, :review_date, Date.utc_today())
     star_rating = Map.get(attrs, :star_rating, 5)

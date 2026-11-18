@@ -13,8 +13,9 @@ defmodule MetricFlowSpex.DisconnectedIntegrationShowsNoNextScheduledSyncSpex do
 
         {:ok, view, _html} = live(context.owner_conn, "/app/integrations")
 
+        # Google Ads' integration is the account's one Google sign-in.
         view
-        |> element("[data-role='disconnect-integration']")
+        |> element("#disconnect-google")
         |> render_click()
 
         view

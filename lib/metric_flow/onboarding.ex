@@ -1,8 +1,13 @@
 defmodule MetricFlow.Onboarding do
   @moduledoc """
   Data-source setup as one model: **connections** (one OAuth grant each —
-  Google, Meta, QuickBooks) → **products** (GA4, Google Ads, …) →
+  Google, YouTube, Meta, QuickBooks) → **products** (GA4, Google Ads, …) →
   **selections** (the property / account / site each product syncs).
+
+  Every Google product (GA4, Ads, Search Console, Business Profile) lives on
+  the account's single `:google` integration: one token, one row, with each
+  product's selection under its own provider_metadata key. YouTube is its
+  own connection with its own OAuth flow and integration.
 
   This is the single API behind the setup wizard, the in-app agent's tools
   and the MCP server, so all three agree on what "connected" and "ready"
@@ -12,8 +17,8 @@ defmodule MetricFlow.Onboarding do
   Product status, in order of progress:
 
     * `:not_connected`   — no grant yet for this product's connection
-    * `:not_granted`     — the connection exists but the user unticked this
-                           product's scope on the consent screen
+    * `:not_granted`     — the connection exists but its grant lacks this
+                           product's scope (unticked on the consent screen)
     * `:reconnect`       — the token expired and cannot be refreshed
     * `:needs_selection` — connected, nothing picked to sync yet
     * `:ready`           — connected with a saved selection
@@ -32,15 +37,19 @@ defmodule MetricFlow.Onboarding do
     %{
       key: :google,
       name: "Google",
-      description:
-        "Analytics, Ads, Search Console, Business Profile and YouTube with one sign-in",
+      description: "Analytics, Ads, Search Console and Business Profile with one sign-in",
       products: [
         :google_analytics,
         :google_ads,
         :google_search_console,
-        :google_business,
-        :youtube
+        :google_business
       ]
+    },
+    %{
+      key: :youtube,
+      name: "YouTube",
+      description: "Channel and video analytics, and revenue for monetized channels",
+      products: [:youtube]
     },
     %{
       key: :facebook_ads,
@@ -176,12 +185,13 @@ defmodule MetricFlow.Onboarding do
 
   defp product_status(product, integrations) do
     info = Map.fetch!(@products, product)
-    integration = Map.get(integrations, product)
+    integration = Map.get(integrations, Integrations.integration_provider(product))
     selected = selected_ids(product, integration)
 
     status =
       cond do
-        is_nil(integration) -> google_or_not_connected(product, integrations)
+        is_nil(integration) -> :not_connected
+        not Integrations.product_granted?(integration, product) -> :not_granted
         unusable_token?(integration) -> :reconnect
         selected == [] -> :needs_selection
         true -> :ready
@@ -193,16 +203,6 @@ defmodule MetricFlow.Onboarding do
       selected: selected,
       connected_as: integration && get_in(integration.provider_metadata || %{}, ["email"])
     })
-  end
-
-  # A Google product with no row of its own, while a sibling Google product
-  # is connected, means the user declined that product's scope.
-  defp google_or_not_connected(product, integrations) do
-    google = Enum.find(@connections, &(&1.key == :google)).products
-
-    if product in google and Enum.any?(google, &Map.has_key?(integrations, &1)),
-      do: :not_granted,
-      else: :not_connected
   end
 
   defp unusable_token?(integration) do
@@ -249,7 +249,7 @@ defmodule MetricFlow.Onboarding do
   def connect_path(:google, return_to),
     do: "/app/integrations/oauth/google_bundle?" <> URI.encode_query(%{return_to: return_to})
 
-  def connect_path(provider, return_to) when provider in [:facebook_ads, :quickbooks],
+  def connect_path(provider, return_to) when provider in [:youtube, :facebook_ads, :quickbooks],
     do: "/app/integrations/oauth/#{provider}?" <> URI.encode_query(%{return_to: return_to})
 
   @doc """
@@ -349,34 +349,25 @@ defmodule MetricFlow.Onboarding do
     end
   end
 
-  @doc "Disconnects a product (revoking its token where the provider supports it)."
+  @doc """
+  Disconnects a product. A Google product only has its selection cleared —
+  it stops syncing while the Google sign-in keeps serving the others.
+  `:google` disconnects the whole Google sign-in; any other product is
+  disconnected outright (revoking its token where the provider supports it).
+  """
   @spec disconnect(Scope.t(), atom()) :: :ok | {:error, term()}
+  def disconnect(%Scope{} = scope, :google), do: ok(Integrations.disconnect(scope, :google))
+
   def disconnect(%Scope{} = scope, product) do
     with {:ok, _} <- fetch_product(product) do
-      # Google products share one grant; revoking the token for one would
-      # silently disconnect its siblings, so only the last one revokes.
-      result =
-        if shares_google_grant?(scope, product),
-          do: Integrations.delete_integration(scope, product),
-          else: Integrations.disconnect(scope, product)
-
-      case result do
-        {:ok, _} -> :ok
-        :ok -> :ok
-        other -> other
-      end
+      if Integrations.google_product?(product),
+        do: ok(Integrations.clear_product_selection(scope, product)),
+        else: ok(Integrations.disconnect(scope, product))
     end
   end
 
-  defp shares_google_grant?(scope, product) do
-    google = Enum.find(@connections, &(&1.key == :google)).products
-
-    product in google and
-      Enum.any?(
-        Integrations.list_integrations(scope),
-        &(&1.provider in google and &1.provider != product)
-      )
-  end
+  defp ok({:ok, _}), do: :ok
+  defp ok({:error, _} = error), do: error
 
   @doc "Queues a sync for a product now."
   @spec sync_now(Scope.t(), atom()) :: {:ok, map()} | {:error, term()}
@@ -402,7 +393,8 @@ defmodule MetricFlow.Onboarding do
   def explain_error(:no_youtube_channels), do: "No channel on this Google account."
 
   def explain_error(:missing_youtube_scopes),
-    do: "YouTube access wasn't granted — reconnect Google and tick YouTube."
+    do:
+      "YouTube access wasn't granted — reconnect YouTube and allow channel and analytics access."
 
   def explain_error(:no_accounts_configured),
     do: "No Business Profile accounts are visible to this Google login."

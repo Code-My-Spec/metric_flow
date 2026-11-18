@@ -735,6 +735,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       socket
       |> assign(:current_scope, scope)
       |> assign(:youtube_pending_token, session["youtube_pending_authorization"])
+      |> assign(:youtube_return_to, session["youtube_return_to"] || ~p"/app/integrations")
       |> assign(:youtube_error, nil)
       |> assign(:youtube_revenue_granted, false)
       |> assign(:youtube_form, to_form(%{"channel_ids" => []}))
@@ -812,13 +813,6 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # ---------------------------------------------------------------------------
 
   @impl true
-  @google_family_providers [
-    :google_ads,
-    :google_analytics,
-    :google_search_console,
-    :google_business
-  ]
-
   def handle_event("connect", %{"provider" => "youtube"}, socket) do
     scope = socket.assigns.current_scope
 
@@ -850,7 +844,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
          socket
          |> assign(:youtube_pending_token, nil)
          |> put_flash(:info, "YouTube channels saved successfully.")
-         |> push_navigate(to: ~p"/app/integrations")}
+         |> push_navigate(to: socket.assigns.youtube_return_to)}
 
       {:error, reason} ->
         message =
@@ -865,28 +859,23 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     end
   end
 
+  # Google products all connect through the one Google sign-in (the OAuth
+  # controller sends them to it); one the sign-in already grants needs no
+  # new consent.
   def handle_event("connect", %{"provider" => provider_str}, socket) do
-    provider_atom = String.to_existing_atom(provider_str)
-    scope = socket.assigns.current_scope
+    granted? =
+      Enum.any?(Integrations.google_products(), fn product ->
+        Atom.to_string(product) == provider_str and
+          product_integration(socket.assigns.integrations, product) != nil
+      end)
 
-    reuse_result =
-      if provider_atom in @google_family_providers,
-        do: Integrations.reuse_google_token(scope, provider_atom),
-        else: {:error, :not_applicable}
-
-    case reuse_result do
-      {:ok, _integration} ->
+    if granted?,
+      do:
         {:noreply,
          socket
-         |> put_flash(
-           :info,
-           "Connected using your existing Google sign-in — no separate authorization needed."
-         )
-         |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
-
-      {:error, _reason} ->
-        {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/#{provider_str}")}
-    end
+         |> put_flash(:info, "Already connected through your Google sign-in.")
+         |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")},
+      else: {:noreply, redirect(socket, to: ~p"/app/integrations/oauth/#{provider_str}")}
   end
 
   def handle_event("save_account_selection", params, socket) do
@@ -1293,14 +1282,25 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       build_unknown_provider(provider_atom, provider_str)
   end
 
+  # A Google product is connected when the account's Google sign-in grants
+  # its scope.
   defp fetch_existing_integration(socket, provider_atom) do
     case Integrations.get_integration(socket.assigns.current_scope, provider_atom) do
-      {:ok, integration} -> integration
-      {:error, _} -> nil
+      {:ok, integration} ->
+        if Integrations.product_granted?(integration, provider_atom), do: integration
+
+      {:error, _} ->
+        nil
     end
   end
 
   defp fetch_authorize_url(provider_atom) do
+    if Integrations.google_product?(provider_atom),
+      do: ~p"/app/integrations/oauth/#{provider_atom}",
+      else: fetch_provider_authorize_url(provider_atom)
+  end
+
+  defp fetch_provider_authorize_url(provider_atom) do
     alias MetricFlow.Integrations.OAuthStateStore
 
     case Integrations.authorize_url(provider_atom) do
@@ -1509,13 +1509,21 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
   defp metadata_key_for_provider(_), do: "property_id"
 
-  defp provider_connected?(integrations, provider_key) do
-    Enum.any?(integrations, fn i -> i.provider == provider_key end)
+  defp provider_connected?(integrations, provider_key),
+    do: not is_nil(product_integration(integrations, provider_key))
+
+  # The integration holding `provider_key` — for a Google product, the
+  # account's Google sign-in, but only when it grants that product.
+  defp product_integration(integrations, provider_key) do
+    integration =
+      Enum.find(integrations, &(&1.provider == Integrations.integration_provider(provider_key)))
+
+    if integration && Integrations.product_granted?(integration, provider_key), do: integration
   end
 
   # :expired only when the token can't be refreshed silently.
   defp tile_state(integrations, provider_key) do
-    case Enum.find(integrations, &(&1.provider == provider_key)) do
+    case product_integration(integrations, provider_key) do
       nil ->
         :none
 

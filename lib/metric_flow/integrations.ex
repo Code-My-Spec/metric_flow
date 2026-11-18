@@ -49,12 +49,10 @@ defmodule MetricFlow.Integrations do
   # Delegated repository functions
   # ---------------------------------------------------------------------------
 
-  defdelegate get_integration(scope, provider), to: IntegrationRepository
   defdelegate list_integrations(scope), to: IntegrationRepository
   defdelegate list_all_active_integrations(), to: IntegrationRepository
   defdelegate delete_integration(scope, provider), to: IntegrationRepository
   defdelegate delete_all_integrations(scope), to: IntegrationRepository
-  defdelegate connected?(scope, provider), to: IntegrationRepository
   defdelegate get_integration_by_id(id), to: IntegrationRepository
   defdelegate update_integration(scope, provider, attrs), to: IntegrationRepository
   defdelegate authorize_write(scope, provider), to: IntegrationRepository
@@ -197,21 +195,129 @@ defmodule MetricFlow.Integrations do
   end
 
   # ---------------------------------------------------------------------------
-  # One Google grant for every Google product
+  # One Google integration for every Google product
   # ---------------------------------------------------------------------------
 
-  # Product provider => the API scopes that product's sync needs (all required).
-  @google_product_scopes %{
-    google_analytics: ["https://www.googleapis.com/auth/analytics.readonly"],
-    google_ads: ["https://www.googleapis.com/auth/adwords"],
-    google_search_console: ["https://www.googleapis.com/auth/webmasters.readonly"],
-    google_business: ["https://www.googleapis.com/auth/business.manage"],
-    youtube: MetricFlow.Integrations.Providers.YouTube.required_scopes()
-  }
+  # Google products live on the account's single `:google` integration: one
+  # token, one row. Each product needs its API scope(s) granted and its
+  # selection saved under its own provider_metadata key(s) — the keys don't
+  # collide, so one row holds every product's selection. `clear` lists the
+  # keys dropped when that one product is disconnected.
+  @google_products [
+    google_analytics: %{
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+      selection_key: "property_id",
+      clear: ["property_id"]
+    },
+    google_ads: %{
+      scopes: ["https://www.googleapis.com/auth/adwords"],
+      selection_key: "customer_id",
+      clear: ["customer_id", "login_customer_id"]
+    },
+    google_search_console: %{
+      scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
+      selection_key: "site_url",
+      clear: ["site_url"]
+    },
+    google_business: %{
+      scopes: ["https://www.googleapis.com/auth/business.manage"],
+      selection_key: "included_locations",
+      clear: ["included_locations"]
+    }
+  ]
+
+  @doc "The Google products held by the account's `:google` integration."
+  @spec google_products() :: [atom()]
+  def google_products, do: Keyword.keys(@google_products)
+
+  @doc "True for a Google product (`:google_analytics`, `:google_ads`, …)."
+  @spec google_product?(term()) :: boolean()
+  def google_product?(product), do: Keyword.has_key?(@google_products, product)
 
   @doc "The Google API scopes each Google product needs, keyed by product provider."
   @spec google_product_scopes() :: %{atom() => [String.t()]}
-  def google_product_scopes, do: @google_product_scopes
+  def google_product_scopes, do: Map.new(@google_products, fn {k, v} -> {k, v.scopes} end)
+
+  @doc """
+  The integration provider that holds `product`: `:google` for every Google
+  product, otherwise the product itself.
+  """
+  @spec integration_provider(atom()) :: atom()
+  def integration_provider(product) do
+    if google_product?(product), do: :google, else: product
+  end
+
+  @doc """
+  The data products `integrations` connect: the `:google` integration
+  expands to the Google products its grant covers; any other integration is
+  its own product.
+  """
+  @spec connected_products([Integration.t()]) :: [atom()]
+  def connected_products(integrations) do
+    Enum.flat_map(integrations, fn
+      %Integration{provider: :google} = google ->
+        Enum.filter(google_products(), &product_granted?(google, &1))
+
+      %Integration{provider: provider} ->
+        [provider]
+    end)
+  end
+
+  @doc "True when `integration`'s grant covers every scope `product` needs."
+  @spec product_granted?(Integration.t(), atom()) :: boolean()
+  def product_granted?(%Integration{granted_scopes: granted}, product) do
+    case Keyword.fetch(@google_products, product) do
+      {:ok, %{scopes: scopes}} -> Enum.all?(scopes, &(&1 in (granted || [])))
+      :error -> true
+    end
+  end
+
+  @doc "True when `product` has a selection saved on `integration`."
+  @spec product_selected?(Integration.t(), atom()) :: boolean()
+  def product_selected?(%Integration{provider_metadata: meta}, product) do
+    case Keyword.fetch(@google_products, product) do
+      {:ok, %{selection_key: key}} -> List.wrap((meta || %{})[key]) not in [[], [""], [nil]]
+      :error -> false
+    end
+  end
+
+  @doc """
+  Disconnects one Google product: clears its selection from the account's
+  `:google` integration so it stops syncing. The Google sign-in (and every
+  other product) stays connected.
+  """
+  @spec clear_product_selection(Scope.t(), atom()) :: {:ok, Integration.t()} | {:error, term()}
+  def clear_product_selection(%Scope{} = scope, product) do
+    with {:ok, %{clear: keys}} <- Keyword.fetch(@google_products, product) |> ok_or_unknown(),
+         {:ok, integration} <- get_integration(scope, product) do
+      IntegrationRepository.update_integration(scope, :google, %{
+        provider_metadata: Map.drop(integration.provider_metadata || %{}, keys)
+      })
+    end
+  end
+
+  defp ok_or_unknown({:ok, _} = ok), do: ok
+  defp ok_or_unknown(:error), do: {:error, :unknown_product}
+
+  @doc """
+  The account's integration for `provider`. A Google product resolves to the
+  account's single `:google` integration.
+  """
+  @spec get_integration(Scope.t(), atom()) :: {:ok, Integration.t()} | {:error, :not_found}
+  def get_integration(%Scope{} = scope, provider),
+    do: IntegrationRepository.get_integration(scope, integration_provider(provider))
+
+  @doc """
+  True when the account has `provider` connected. A Google product counts as
+  connected when the account's `:google` integration grants its scope.
+  """
+  @spec connected?(Scope.t(), atom()) :: boolean()
+  def connected?(%Scope{} = scope, provider) do
+    case get_integration(scope, provider) do
+      {:ok, integration} -> product_granted?(integration, provider)
+      {:error, _} -> false
+    end
+  end
 
   @doc """
   Builds one Google consent URL covering every Google product.
@@ -220,8 +326,8 @@ defmodule MetricFlow.Integrations do
   URI (already registered with Google), asks for every product scope at once,
   and sets `include_granted_scopes` so the grant merges with anything the
   user consented to before. Google shows per-scope checkboxes, so the user
-  may grant only some products; `handle_google_bundle_callback/3` connects
-  exactly the ones granted.
+  may grant only some products; the `:google` integration records exactly
+  the scopes granted.
 
   The returned `session_params` carry `google_bundle: true`, which is how
   the callback tells this flow apart from a plain Google Analytics connect.
@@ -230,11 +336,8 @@ defmodule MetricFlow.Integrations do
           {:ok, %{url: String.t(), session_params: map()}} | {:error, term()}
   def google_bundle_authorize_url do
     with {:ok, mod} <- fetch_provider(:google_analytics) do
-      # YouTube revenue is optional: requested, but not needed to connect YouTube.
       scope =
-        (["openid", "email", "profile"] ++
-           List.flatten(Map.values(@google_product_scopes)) ++
-           [MetricFlow.Integrations.Providers.YouTube.revenue_scope()])
+        (["openid", "email", "profile"] ++ Enum.flat_map(@google_products, &elem(&1, 1).scopes))
         |> Enum.join(" ")
 
       config =
@@ -253,64 +356,27 @@ defmodule MetricFlow.Integrations do
   end
 
   @doc """
-  Completes the single Google grant: exchanges the code once, then connects
-  every Google product whose scope the user actually granted.
+  Completes the single Google grant: exchanges the code once and upserts the
+  account's one `:google` integration with the token and the scopes granted.
+  Selections already saved survive (provider_metadata is merged).
 
-  Each product keeps its own integration row (sync is per product), all
-  sharing the one token. Selections already saved on a product survive the
-  reconnect — only tokens and identity fields are replaced.
-
-  Returns `{:ok, %{connected: [atom()], not_granted: [atom()]}}`.
+  Returns `{:ok, %{connected: [product], not_granted: [product]}}`.
   """
   @spec handle_google_bundle_callback(Scope.t(), map(), map()) ::
           {:ok, %{connected: [atom()], not_granted: [atom()]}} | {:error, term()}
   def handle_google_bundle_callback(%Scope{} = scope, session_params, callback_params) do
-    with {:ok, mod} <- fetch_provider(:google_analytics),
+    with :ok <- require_state(session_params),
+         {:ok, mod} <- fetch_provider(:google_analytics),
          config = build_callback_config(mod, session_params),
-         {:ok, result} <- exchange_and_normalize(mod.strategy(), config, callback_params, mod) do
-      attrs = build_integration_attrs(result.token, result.normalized)
-      granted = attrs.granted_scopes
-
+         {:ok, result} <- exchange_and_normalize(mod.strategy(), config, callback_params, mod),
+         attrs = build_integration_attrs(result.token, result.normalized),
+         {:ok, integration} <- IntegrationRepository.upsert_integration(scope, :google, attrs) do
       {connected, not_granted} =
-        @google_product_scopes
-        |> Enum.split_with(fn {_product, scopes} -> Enum.all?(scopes, &(&1 in granted)) end)
+        Enum.split_with(google_products(), &product_granted?(integration, &1))
 
-      with :ok <- upsert_google_products(scope, Enum.map(connected, &elem(&1, 0)), attrs) do
-        {:ok,
-         %{
-           connected: connected |> Enum.map(&elem(&1, 0)) |> Enum.sort(),
-           not_granted: not_granted |> Enum.map(&elem(&1, 0)) |> Enum.sort()
-         }}
-      end
+      {:ok, %{connected: Enum.sort(connected), not_granted: Enum.sort(not_granted)}}
     end
   end
-
-  defp upsert_google_products(scope, products, attrs) do
-    Enum.reduce_while(products, :ok, fn product, :ok ->
-      merged =
-        case IntegrationRepository.get_integration(scope, product) do
-          {:ok, existing} ->
-            %{
-              attrs
-              | provider_metadata:
-                  Map.merge(
-                    existing.provider_metadata || %{},
-                    stringify_keys(attrs.provider_metadata)
-                  )
-            }
-
-          _ ->
-            attrs
-        end
-
-      case IntegrationRepository.upsert_integration(scope, product, merged) do
-        {:ok, _} -> {:cont, :ok}
-        {:error, _} = err -> {:halt, err}
-      end
-    end)
-  end
-
-  defp stringify_keys(map), do: Map.new(map, fn {k, v} -> {to_string(k), v} end)
 
   # ---------------------------------------------------------------------------
   # Social login ("Continue with Google")
@@ -586,80 +652,6 @@ defmodule MetricFlow.Integrations do
     end
   end
 
-  @google_family_providers [
-    :google_ads,
-    :google_analytics,
-    :google_search_console,
-    :google_business
-  ]
-
-  @doc """
-  Connects `target_provider` by reusing an existing Google-family
-  integration's token, instead of a fresh OAuth authorization.
-
-  `google_ads`, `google_analytics`, `google_search_console` and
-  `google_business` are all authorized under the same Google OAuth app and
-  consent screen, so a user who already granted access via one of them does
-  not need to grant it again for another -- Google issues one token per
-  app-user pair, not one per MetricFlow provider.
-
-  Returns `{:error, :no_existing_google_token}` when no other usable
-  Google-family integration exists, so the caller can fall back to a fresh
-  OAuth authorization.
-  """
-  @spec reuse_google_token(Scope.t(), atom()) ::
-          {:ok, Integration.t()} | {:error, :no_existing_google_token | Ecto.Changeset.t()}
-  def reuse_google_token(%Scope{} = scope, target_provider)
-      when target_provider in @google_family_providers do
-    case find_reusable_google_integration(scope, target_provider) do
-      nil ->
-        {:error, :no_existing_google_token}
-
-      source ->
-        attrs = %{
-          access_token: source.access_token,
-          refresh_token: source.refresh_token,
-          expires_at: source.expires_at,
-          granted_scopes: source.granted_scopes
-        }
-
-        IntegrationRepository.upsert_integration(scope, target_provider, attrs)
-    end
-  end
-
-  defp find_reusable_google_integration(scope, target_provider) do
-    required_scopes = required_api_scopes(target_provider)
-
-    scope
-    |> list_integrations()
-    |> Enum.find(fn integration ->
-      integration.provider in @google_family_providers and
-        integration.provider != target_provider and
-        (not Integration.expired?(integration) or Integration.has_refresh_token?(integration)) and
-        required_scopes != [] and
-        Enum.all?(required_scopes, &(&1 in (integration.granted_scopes || [])))
-    end)
-  end
-
-  # Each Google-family provider is authorized under its own distinct API
-  # scope (adwords, analytics.readonly, webmasters.readonly, business.manage)
-  # -- Google only grants API access to scopes actually consented to, so a
-  # token is only safely reusable for another provider when it already
-  # carries that provider's required scope.
-  defp required_api_scopes(target_provider) do
-    case fetch_provider(target_provider) do
-      {:ok, mod} ->
-        mod.config()
-        |> Keyword.get(:authorization_params, [])
-        |> Keyword.get(:scope, "")
-        |> parse_scopes()
-        |> Enum.filter(&String.starts_with?(&1, "https://"))
-
-      {:error, _} ->
-        []
-    end
-  end
-
   @doc """
   Attempts to refresh the OAuth access token for an integration using the
   stored refresh token.
@@ -748,10 +740,6 @@ defmodule MetricFlow.Integrations do
 
   # Token endpoints per provider for OAuth2 refresh (not discoverable via OIDC at refresh time)
   defp token_url_for(:google), do: "https://oauth2.googleapis.com/token"
-  defp token_url_for(:google_analytics), do: "https://oauth2.googleapis.com/token"
-  defp token_url_for(:google_ads), do: "https://oauth2.googleapis.com/token"
-  defp token_url_for(:google_search_console), do: "https://oauth2.googleapis.com/token"
-  defp token_url_for(:google_business), do: "https://oauth2.googleapis.com/token"
   defp token_url_for(:facebook_ads), do: "https://graph.facebook.com/v21.0/oauth/access_token"
   defp token_url_for(:quickbooks), do: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
   defp token_url_for(_), do: "/oauth/token"
@@ -763,7 +751,7 @@ defmodule MetricFlow.Integrations do
   @doc """
   Lists GA4 properties accessible to the user's Google integration.
 
-  Fetches the integration for the `:google` provider, then queries the Google
+  Fetches the account's `:google` integration, then queries the Google
   Analytics Admin API for available properties. Returns `{:error, :not_found}`
   when no Google integration exists.
 
@@ -774,7 +762,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_accounts(Scope.t(), atom(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_accounts(%Scope{} = scope, provider \\ :google_analytics, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
+    with {:ok, integration} <- get_integration(scope, provider) do
       GoogleAccounts.list_ga4_properties(integration, opts)
     end
   end
@@ -785,7 +773,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_ads_customers(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_ads_customers(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_ads) do
+    with {:ok, integration} <- get_integration(scope, :google_ads) do
       GoogleAdsAccounts.list_customers(integration, opts)
     end
   end
@@ -796,8 +784,7 @@ defmodule MetricFlow.Integrations do
   @spec list_search_console_sites(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_search_console_sites(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <-
-           IntegrationRepository.get_integration(scope, :google_search_console) do
+    with {:ok, integration} <- get_integration(scope, :google_search_console) do
       GoogleSearchConsoleSites.list_sites(integration, opts)
     end
   end
@@ -833,7 +820,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_business_locations(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_business_locations(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_business),
+    with {:ok, integration} <- get_integration(scope, :google_business),
          {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
       GoogleBusinessLocations.list_locations(fresh, opts)
     end
@@ -847,7 +834,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_business_accounts(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_business_accounts(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :google_business),
+    with {:ok, integration} <- get_integration(scope, :google_business),
          {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
       GoogleBusinessLocations.list_accounts(fresh, opts)
     end
@@ -873,9 +860,12 @@ defmodule MetricFlow.Integrations do
           {:ok, Integration.t()} | {:error, term()}
   def update_provider_metadata(%Scope{} = scope, provider, new_metadata)
       when is_map(new_metadata) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, provider) do
+    with {:ok, integration} <- get_integration(scope, provider) do
       merged = Map.merge(integration.provider_metadata || %{}, new_metadata)
-      IntegrationRepository.update_integration(scope, provider, %{provider_metadata: merged})
+
+      IntegrationRepository.update_integration(scope, integration.provider, %{
+        provider_metadata: merged
+      })
     end
   end
 
