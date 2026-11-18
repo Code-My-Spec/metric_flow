@@ -19,6 +19,10 @@ defmodule MetricFlowSpex.Criterion987FailingLocationSkippedWithoutFailingOtherLo
           }
         )
 
+        MetricFlowTest.SyncStub.stub_google_business_success(:google_business_reviews,
+          fail_location: "does-not-exist"
+        )
+
         {:ok, context}
       end
 

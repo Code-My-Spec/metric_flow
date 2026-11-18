@@ -1,6 +1,6 @@
 defmodule MetricFlow.DataSync.SyncHistoryRepository do
   @moduledoc """
-  Data access layer for SyncHistory read operations filtered by user_id.
+  Data access layer for SyncHistory read operations filtered by account_id.
 
   All operations are scoped via the Scope struct for multi-tenant isolation.
   Provides list_sync_history/2 with filter options (provider, limit, offset),
@@ -10,6 +10,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.DataSync.SyncHistory
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
@@ -21,12 +22,12 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns sync history records for the scoped user with optional filtering and
+  Returns sync history records for the scope's account with optional filtering and
   pagination, ordered by most recently completed.
 
   Supports filtering by provider and pagination via limit and offset options.
   Invalid provider values return an empty list. Returns an empty list when no
-  records exist for the scoped user.
+  records exist for the scope's account.
   """
   @spec list_sync_history(Scope.t(), keyword()) :: list(SyncHistory.t())
   def list_sync_history(%Scope{} = scope, opts \\ []) do
@@ -49,7 +50,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Retrieves a single sync history record for the scoped user by ID.
+  Retrieves a single sync history record for the scope's account by ID.
 
   Returns {:ok, sync_history} when found or {:error, :not_found} when the
   record does not exist or belongs to a different user.
@@ -73,7 +74,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Creates a new sync history record for the scoped user.
+  Creates a new sync history record for the scope's account.
 
   Merges user_id from the scope into attrs before inserting. The scope's
   user_id always takes precedence over any user_id in the attrs map. Validates
@@ -81,11 +82,12 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   """
   @spec create_sync_history(Scope.t(), map()) ::
           {:ok, SyncHistory.t()} | {:error, Ecto.Changeset.t()}
-  def create_sync_history(%Scope{user: user}, attrs) do
-    attrs_with_user = Map.put(attrs, :user_id, user.id)
+  def create_sync_history(%Scope{} = scope, attrs) do
+    user_id = AccountAccess.user_id(scope) || Map.get(attrs, :user_id)
+    attrs = Map.drop(attrs, [:user_id, :account_id])
 
-    %SyncHistory{}
-    |> SyncHistory.changeset(attrs_with_user)
+    %SyncHistory{user_id: user_id, account_id: AccountAccess.account_id(scope)}
+    |> SyncHistory.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -125,25 +127,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepository do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp scoped_history(%Scope{user: user, account_id: account_id}) when is_integer(account_id) do
-    integrations =
-      from(i in MetricFlow.Integrations.Integration,
-        join: m in MetricFlow.Accounts.AccountMember,
-        on: m.account_id == i.account_id,
-        where: i.provider == :youtube and i.account_id == ^account_id and m.user_id == ^user.id,
-        select: i.id
-      )
-
-    from(sh in SyncHistory,
-      where:
-        (sh.provider != :youtube and sh.user_id == ^user.id) or
-          (sh.provider == :youtube and sh.integration_id in subquery(integrations))
-    )
-  end
-
-  defp scoped_history(%Scope{user: user}) do
-    from(sh in SyncHistory, where: sh.provider != :youtube and sh.user_id == ^user.id)
-  end
+  defp scoped_history(%Scope{} = scope), do: AccountAccess.scope_query(SyncHistory, scope)
 
   defp validate_provider_opt(opts) do
     case Keyword.get(opts, :provider) do

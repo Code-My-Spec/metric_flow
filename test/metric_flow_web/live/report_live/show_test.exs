@@ -17,6 +17,7 @@ defmodule MetricFlowWeb.ReportLive.ShowTest do
     defaults = %{
       name: "Test Report #{System.unique_integer([:positive])}",
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       vega_spec: %{"$schema" => "https://vega.github.io/schema/vega-lite/v5.json"},
       shareable: false
     }

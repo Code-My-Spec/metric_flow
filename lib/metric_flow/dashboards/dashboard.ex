@@ -41,6 +41,7 @@ defmodule MetricFlow.Dashboards.Dashboard do
     field :favorite, :boolean, default: false
     field :platform_filter, :string
 
+    field :account_id, :integer
     belongs_to :user, User
     has_many :dashboard_visualizations, DashboardVisualization
     has_many :visualizations, through: [:dashboard_visualizations, :visualization]
@@ -61,6 +62,7 @@ defmodule MetricFlow.Dashboards.Dashboard do
     |> cast(attrs, [
       :name,
       :description,
+      :account_id,
       :user_id,
       :built_in,
       :date_range,
@@ -68,11 +70,12 @@ defmodule MetricFlow.Dashboards.Dashboard do
       :favorite,
       :platform_filter
     ])
-    |> validate_required([:name, :user_id])
+    |> validate_required([:name, :account_id])
     |> validate_length(:name, min: 1, max: 255)
     |> validate_length(:description, max: 1000)
     |> validate_inclusion(:date_range, ["7", "30", "90"])
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
   end
 
   @doc """

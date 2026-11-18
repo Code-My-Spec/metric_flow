@@ -351,13 +351,9 @@ defmodule MetricFlow.Ai.AiRepository do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp get_account_id(%Scope{account_id: account_id}) when not is_nil(account_id) do
-    account_id
-  end
-
-  defp get_account_id(%Scope{} = scope) do
-    Accounts.get_personal_account_id(scope)
-  end
+  # The scope's active account (membership-checked), or the user's default
+  # account -- the same resolution every account-owned context uses.
+  defp get_account_id(%Scope{} = scope), do: MetricFlow.AccountAccess.account_id(scope)
 
   defp maybe_filter_suggestion_type(query, nil), do: query
   defp maybe_filter_suggestion_type(query, type), do: where(query, suggestion_type: ^type)

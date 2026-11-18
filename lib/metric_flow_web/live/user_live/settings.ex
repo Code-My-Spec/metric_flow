@@ -110,6 +110,12 @@ defmodule MetricFlowWeb.UserLive.Settings do
             </.link>
           <% end %>
         </div>
+
+        <div id="agent-access" class="border rounded-lg p-4 text-sm text-base-content/70">
+          <span class="font-medium text-base-content">Connect an AI agent:</span>
+          add <code class="text-xs select-all">{url(~p"/mcp")}</code>
+          as an MCP server in Claude, ChatGPT or another client, then sign in when asked.
+        </div>
       </div>
     </Layouts.app>
     """

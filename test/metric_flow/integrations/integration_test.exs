@@ -21,6 +21,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
   defp valid_attrs(user_id) do
     %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: :google,
       access_token: "access-token-value",
       refresh_token: "refresh-token-value",
@@ -70,14 +71,14 @@ defmodule MetricFlow.Integrations.IntegrationTest do
       assert get_change(changeset, :provider_metadata) == %{"provider_user_id" => "12345"}
     end
 
-    test "validates user_id is required" do
+    test "validates account_id is required (user_id is only who created it)" do
       user = user_fixture()
-      attrs = Map.delete(valid_attrs(user.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id), :account_id)
 
       changeset = Integration.changeset(new_integration(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "validates provider is required" do
@@ -199,7 +200,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
     end
 
     test "validates user association exists (assoc_constraint triggers on insert)" do
-      attrs = valid_attrs(-1)
+      attrs = %{valid_attrs(user_fixture().id) | user_id: -1}
 
       {:error, changeset} =
         new_integration()
@@ -209,7 +210,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
       assert %{user: ["does not exist"]} = errors_on(changeset)
     end
 
-    test "enforces unique constraint on user_id and provider combination" do
+    test "enforces unique constraint on account_id and provider combination" do
       user = user_fixture()
       attrs = valid_attrs(user.id)
 
@@ -220,7 +221,7 @@ defmodule MetricFlow.Integrations.IntegrationTest do
         |> Integration.changeset(attrs)
         |> Repo.insert()
 
-      assert %{user_id: ["has already been taken"]} = errors_on(changeset)
+      assert %{account_id: ["has already been taken"]} = errors_on(changeset)
     end
 
     test "allows same provider for different users" do

@@ -95,6 +95,20 @@ config :metric_flow, MetricFlow.Vault,
     }
   ]
 
+# OAuth authorization server for MCP clients (Claude, ChatGPT, ...). Only the
+# authorization-code grant (PKCE S256 enforced in OAuthController) and refresh.
+config :metric_flow, ExOauth2Provider,
+  repo: MetricFlow.Repo,
+  resource_owner: MetricFlow.Users.User,
+  access_token: MetricFlow.Oauth.AccessToken,
+  application: MetricFlow.Oauth.Application,
+  access_grant: MetricFlow.Oauth.AccessGrant,
+  grant_flows: ~w(authorization_code),
+  use_refresh_token: true,
+  access_token_expires_in: 7200,
+  # Redirect URIs are checked per client (HTTPS, or http on localhost).
+  force_ssl_in_redirect_uri: false
+
 # Oban job processing (ADR: background_job_processing)
 config :metric_flow, Oban,
   repo: MetricFlow.Repo,

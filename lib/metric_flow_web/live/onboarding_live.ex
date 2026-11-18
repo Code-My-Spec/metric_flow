@@ -30,10 +30,10 @@ defmodule MetricFlowWeb.OnboardingLive do
           <div class="mt-5 flex flex-col gap-3 sm:flex-row">
             <.link
               id="onboarding-connect-platforms"
-              navigate={~p"/app/integrations"}
+              navigate={~p"/app/onboarding/connect"}
               class="inline-flex justify-center rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2"
             >
-              Connect your platforms
+              Connect your data
             </.link>
             <.link
               id="onboarding-open-dashboard"

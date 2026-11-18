@@ -42,8 +42,10 @@ defmodule MetricFlowSpex.Story51.Criterion1050Spex do
         selector =
           "[data-role='daily-location-metric'][data-location-id='accounts/123/locations/456'][data-metric='call_clicks'][data-date='#{context.metric_date}']"
 
-        assert has_element?(context.dashboard, selector, "11")
-        refute has_element?(context.dashboard, selector, "7")
+        # Word-boundary match: the element also shows the date, and a date
+        # like 2026-11-17 contains a bare "7".
+        assert has_element?(context.dashboard, selector, ~r/\b11\b/)
+        refute has_element?(context.dashboard, selector, ~r/\b7\b/)
         {:ok, context}
       end
     end

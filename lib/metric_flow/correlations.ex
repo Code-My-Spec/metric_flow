@@ -21,7 +21,6 @@ defmodule MetricFlow.Correlations do
   alias MetricFlow.Integrations
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
-  alias MetricFlow.Users.User
 
   # ---------------------------------------------------------------------------
   # Delegated repository functions
@@ -90,14 +89,15 @@ defmodule MetricFlow.Correlations do
   """
   @spec schedule_daily_correlations() :: {:ok, integer()}
   def schedule_daily_correlations do
-    user_ids =
+    account_ids =
       Integrations.list_all_active_integrations()
-      |> Enum.map(& &1.user_id)
+      |> Enum.map(& &1.account_id)
+      |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
 
     count =
-      user_ids
-      |> Enum.map(&Scope.for_user(%User{id: &1}))
+      account_ids
+      |> Enum.map(&Scope.for_account/1)
       |> Enum.filter(&schedulable?/1)
       |> Enum.count(&schedule_user_correlations/1)
 
@@ -196,7 +196,7 @@ defmodule MetricFlow.Correlations do
     end
   end
 
-  defp create_and_enqueue(%Scope{user: user} = scope, attrs) do
+  defp create_and_enqueue(%Scope{} = scope, attrs) do
     goal_metric_name = Map.get(attrs, :goal_metric_name) || Map.get(attrs, "goal_metric_name")
     time_window = Map.get(attrs, :time_window) || Map.get(attrs, "time_window") || :days_90
 
@@ -204,7 +204,7 @@ defmodule MetricFlow.Correlations do
 
     case CorrelationsRepository.create_correlation_job(scope, job_attrs) do
       {:ok, job} ->
-        %{job_id: job.id, user_id: user.id, account_id: job.account_id}
+        %{job_id: job.id, user_id: scope.user && scope.user.id, account_id: job.account_id}
         |> CorrelationWorker.new()
         |> Oban.insert()
 

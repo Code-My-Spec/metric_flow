@@ -34,11 +34,11 @@ defmodule MetricFlowWeb.OnboardingLive.IndexTest do
                "choose the accounts or properties to sync"
              )
 
-      assert has_element?(view, "#onboarding-connect-platforms[href='/app/integrations']")
+      assert has_element?(view, "#onboarding-connect-platforms[href='/app/onboarding/connect']")
       assert has_element?(view, "#onboarding-open-dashboard[href='/app/dashboard']")
 
       view |> element("#onboarding-connect-platforms") |> render_click()
-      assert_redirect(view, ~p"/app/integrations")
+      assert_redirect(view, ~p"/app/onboarding/connect")
     end
 
     test "redirects unauthenticated user to login", %{conn: conn} do

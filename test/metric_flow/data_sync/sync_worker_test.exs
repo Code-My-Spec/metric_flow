@@ -12,7 +12,6 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Metrics
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -20,7 +19,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -34,6 +33,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: refresh_token,
@@ -55,6 +55,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: nil,
@@ -70,6 +71,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
       Map.merge(
         %{
           user_id: user_id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
           integration_id: integration_id,
           provider: provider,
           status: :pending
@@ -283,7 +285,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
       # Worker must have attempted refresh. On failure (expected since no real OAuth endpoint
       # is configured in tests), a SyncHistory record with :failed status is persisted.
-      scope = Scope.for_user(user)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
       histories = SyncHistoryRepository.list_sync_history(scope)
       assert match?([_], histories)
     end
@@ -380,7 +382,8 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
 
       stored_metrics = Metrics.list_metrics(scope)
       assert stored_metrics != []
-      assert Enum.all?(stored_metrics, &(&1.user_id == user.id))
+      # Synced data belongs to the integration's account.
+      assert Enum.all?(stored_metrics, &(&1.account_id == integration.account_id))
     end
 
     test "creates SyncHistory with status :success when all metrics persist successfully" do
@@ -723,6 +726,7 @@ defmodule MetricFlow.DataSync.SyncWorkerTest do
         %Integration{}
         |> Integration.changeset(%{
           user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
           provider: :google_ads,
           access_token: "access-token-#{System.unique_integer([:positive])}",
           refresh_token: "refresh-token-#{System.unique_integer([:positive])}",

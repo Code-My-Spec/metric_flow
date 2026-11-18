@@ -1,6 +1,6 @@
 defmodule MetricFlow.DataSync.SyncJobRepository do
   @moduledoc """
-  Data access layer for SyncJob CRUD operations filtered by user_id.
+  Data access layer for SyncJob CRUD operations filtered by account_id.
 
   All operations are scoped via the Scope struct for multi-tenant isolation.
   Provides list_sync_jobs/1 for listing all jobs, get_sync_job/2 for single
@@ -14,6 +14,7 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.DataSync.SyncJob
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
@@ -24,16 +25,13 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns all sync jobs for the scoped user, ordered by most recently created.
+  Returns all sync jobs for the scope's account, ordered by most recently created.
 
   Returns an empty list when no sync jobs exist for the user.
   """
   @spec list_sync_jobs(Scope.t()) :: list(SyncJob.t())
-  def list_sync_jobs(%Scope{user: user}) do
-    from(sj in SyncJob,
-      where: sj.user_id == ^user.id,
-      order_by: [desc: sj.inserted_at, desc: sj.id]
-    )
+  def list_sync_jobs(%Scope{} = scope) do
+    from(sj in scoped(scope), order_by: [desc: sj.inserted_at, desc: sj.id])
     |> Repo.all()
   end
 
@@ -42,15 +40,15 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Retrieves a single sync job for the scoped user by ID.
+  Retrieves a single sync job for the scope's account by ID.
 
   Returns {:ok, sync_job} when found or {:error, :not_found} when the sync job
   does not exist or belongs to a different user.
   """
   @spec get_sync_job(Scope.t(), integer()) :: {:ok, SyncJob.t()} | {:error, :not_found}
-  def get_sync_job(%Scope{user: user}, id) do
+  def get_sync_job(%Scope{} = scope, id) do
     result =
-      from(sj in SyncJob, where: sj.user_id == ^user.id and sj.id == ^id)
+      from(sj in scoped(scope), where: sj.id == ^id)
       |> Repo.one()
 
     case result do
@@ -64,21 +62,21 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Creates a new sync job for the scoped user and integration.
+  Creates a new sync job for the scope's account and integration.
 
   Merges user_id from the scope and integration_id into attrs before inserting.
   Defaults status to :pending when not provided.
   """
   @spec create_sync_job(Scope.t(), integer(), map()) ::
           {:ok, SyncJob.t()} | {:error, Ecto.Changeset.t()}
-  def create_sync_job(%Scope{user: user}, integration_id, attrs) do
+  def create_sync_job(%Scope{} = scope, integration_id, attrs) do
     attrs_with_ids =
       attrs
-      |> Map.put(:user_id, user.id)
+      |> Map.drop([:user_id, :account_id])
       |> Map.put(:integration_id, integration_id)
       |> Map.put_new(:status, :pending)
 
-    %SyncJob{}
+    %SyncJob{user_id: AccountAccess.user_id(scope), account_id: AccountAccess.account_id(scope)}
     |> SyncJob.changeset(attrs_with_ids)
     |> Repo.insert()
   end
@@ -100,6 +98,7 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
     attrs_with_ids =
       attrs
       |> Map.put(:user_id, integration.user_id)
+      |> Map.put(:account_id, integration.account_id)
       |> Map.put(:integration_id, integration.id)
       |> Map.put(:provider, integration.provider)
       |> Map.put_new(:status, :pending)
@@ -118,7 +117,7 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
 
   Sets started_at when transitioning to :running. Sets completed_at when
   transitioning to :completed, :failed, or :cancelled. Returns
-  {:error, :not_found} when the sync job does not exist for the scoped user.
+  {:error, :not_found} when the sync job does not exist for the scope's account.
   """
   @spec update_sync_job_status(Scope.t(), integer(), atom()) ::
           {:ok, SyncJob.t()} | {:error, :not_found}
@@ -166,6 +165,8 @@ defmodule MetricFlow.DataSync.SyncJobRepository do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp scoped(%Scope{} = scope), do: AccountAccess.scope_query(SyncJob, scope)
 
   defp maybe_put_started_at(attrs, :running, now), do: Map.put(attrs, :started_at, now)
   defp maybe_put_started_at(attrs, _status, _now), do: attrs

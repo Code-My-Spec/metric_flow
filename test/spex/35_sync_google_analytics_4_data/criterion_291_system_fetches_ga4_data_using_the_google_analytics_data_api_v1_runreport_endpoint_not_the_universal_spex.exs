@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       when_ "a GA4 sync completion event is broadcast to the LiveView", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_completed,
            %{
              provider: :google_analytics,
@@ -93,7 +95,9 @@ defmodule MetricFlowSpex.SystemFetchesGa4DataUsingTheGoogleAnalyticsDataApiV1Run
       when_ "a GA4 sync failure event is broadcast with an API error", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google_analytics,

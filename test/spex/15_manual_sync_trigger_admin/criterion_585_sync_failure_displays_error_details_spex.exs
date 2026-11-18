@@ -13,7 +13,9 @@ defmodule MetricFlowSpex.SyncFailureDisplaysErrorDetailsSpex do
 
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed, %{provider: :google_analytics, reason: "API rate limit exceeded"}}
         )
 

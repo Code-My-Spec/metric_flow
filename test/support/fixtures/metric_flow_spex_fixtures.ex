@@ -99,6 +99,7 @@ defmodule MetricFlowSpex.Fixtures do
     |> Visualization.changeset(%{
       name: name,
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       vega_spec: %{"chart_type" => "custom"}
     })
     |> Repo.insert!()
@@ -116,7 +117,11 @@ defmodule MetricFlowSpex.Fixtures do
     user = Users.get_user_by_email(email)
 
     %Dashboard{}
-    |> Dashboard.changeset(%{name: name, user_id: user.id})
+    |> Dashboard.changeset(%{
+      name: name,
+      user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user)
+    })
     |> Repo.insert!()
   end
 
@@ -135,6 +140,7 @@ defmodule MetricFlowSpex.Fixtures do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       provider: provider,
       access_token: "spex-access-token-#{System.unique_integer([:positive])}",
       refresh_token: "spex-refresh-token-#{System.unique_integer([:positive])}",
@@ -155,7 +161,10 @@ defmodule MetricFlowSpex.Fixtures do
     user = Users.get_user_by_email(email)
 
     integration =
-      Repo.get_by!(Integration, user_id: user.id, provider: provider)
+      Repo.get_by!(Integration,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
+        provider: provider
+      )
 
     integration
     |> Integration.changeset(%{
@@ -175,7 +184,10 @@ defmodule MetricFlowSpex.Fixtures do
   def expire_integration_for(email, provider) do
     user = Users.get_user_by_email(email)
 
-    Repo.get_by!(Integration, user_id: user.id, provider: provider)
+    Repo.get_by!(Integration,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
+      provider: provider
+    )
     |> Integration.changeset(%{expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)})
     |> Repo.update!()
   end
@@ -213,7 +225,10 @@ defmodule MetricFlowSpex.Fixtures do
     user = Users.get_user_by_email(email)
     attrs = Map.new(attrs)
 
-    unless Repo.get_by(Integration, user_id: user.id, provider: :google_business) do
+    unless Repo.get_by(Integration,
+             account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
+             provider: :google_business
+           ) do
       create_integration_for(email, :google_business, provider_metadata: %{"email" => email})
     end
 
@@ -263,6 +278,7 @@ defmodule MetricFlowSpex.Fixtures do
       Repo.insert!(%Visualization{
         name: Map.get(attrs, :name, "Spex Visualization #{System.unique_integer([:positive])}"),
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
         vega_spec: Map.get(attrs, :vega_spec),
         shareable: Map.get(attrs, :shareable, false)
       })
@@ -377,6 +393,7 @@ defmodule MetricFlowSpex.Fixtures do
 
     defaults = %{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       provider: :google_ads,
       status: :success,
       records_synced: 10,
@@ -403,7 +420,11 @@ defmodule MetricFlowSpex.Fixtures do
       {:sync_completed,
        %{provider: provider, records_synced: 1, completed_at: DateTime.utc_now()}}
 
-    Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user.id}:sync", message)
+    Phoenix.PubSub.broadcast(
+      MetricFlow.PubSub,
+      MetricFlowTest.UsersFixtures.sync_topic_for(user),
+      message
+    )
   end
 
   def grant_client_account_access(email, client_account_id, access_level, is_originator) do
@@ -445,7 +466,8 @@ defmodule MetricFlowSpex.Fixtures do
       name: name,
       description: "System-provided #{name} dashboard",
       built_in: true,
-      user_id: user.id
+      user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user)
     })
 
     :ok

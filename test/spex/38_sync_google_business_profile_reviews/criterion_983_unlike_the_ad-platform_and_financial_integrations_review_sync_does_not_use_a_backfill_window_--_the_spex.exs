@@ -16,6 +16,7 @@ defmodule MetricFlowSpex.Criterion983ReviewSyncHasNoBackfillWindowSpex do
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 
+        MetricFlowTest.SyncStub.stub_google_business_success(:google_business_reviews)
         {:ok, context}
       end
 

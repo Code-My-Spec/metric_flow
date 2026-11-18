@@ -11,7 +11,6 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -20,7 +19,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   defp dashboard_fixture(user, attrs \\ %{}) do
     defaults = %{
       name: "My Test Dashboard #{System.unique_integer([:positive])}",
-      user_id: user.id
+      user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
     }
 
     %Dashboard{}
@@ -49,7 +49,10 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
   # A command_runner scripting exactly one set_dashboard_spec tool call (the
   # dashboard chat's only write tool, Story 74) followed by its completion text.
-  defp set_dashboard_spec_stub(spec, completion_text \\ "I'll create a line chart showing impressions over time.") do
+  defp set_dashboard_spec_stub(
+         spec,
+         completion_text \\ "I'll create a line chart showing impressions over time."
+       ) do
     MetricFlowTest.ClaudeCodeStub.sequence(
       MetricFlowTest.ClaudeCodeStub.completed_tool_call(
         "set_dashboard_spec",
@@ -154,7 +157,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          set_dashboard_spec_stub(line_chart_spec())
+        )
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Show me impressions over time as a line chart"
@@ -230,7 +237,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          set_dashboard_spec_stub(line_chart_spec())
+        )
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Show me impressions over time as a line chart"
@@ -255,13 +266,17 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       account = insert_account!(user)
       insert_member!(account, user, :owner)
       insert_metric!(user, %{metric_name: "impressions"})
-      scope = Scope.for_user(user)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
         {:ok, lv, _html} = live(conn, ~p"/app/dashboards/new")
 
-        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(line_chart_spec()))
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          set_dashboard_spec_stub(line_chart_spec())
+        )
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Show me impressions over time as a line chart"
@@ -280,7 +295,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         |> element("form[phx-change='filter_date_range']")
         |> render_change(%{"range" => "90"})
 
-        {:ok, _reopened_view, reopened_html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+        {:ok, _reopened_view, reopened_html} =
+          live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
 
         assert reopened_html =~ ~s(value="90" selected)
       end)
@@ -339,7 +355,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
         refined_spec =
           put_in(initial_spec, ["components", Access.at(1), "chartType"], "area")
 
-        Application.put_env(:metric_flow, :command_runner, set_dashboard_spec_stub(refined_spec, "I've changed it to an area chart."))
+        Application.put_env(
+          :metric_flow,
+          :command_runner,
+          set_dashboard_spec_stub(refined_spec, "I've changed it to an area chart.")
+        )
 
         render_submit(lv, "send_dashboard_chat", %{
           "message" => "Change Impressions Over Time to an area chart"

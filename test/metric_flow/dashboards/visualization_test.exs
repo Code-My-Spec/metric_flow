@@ -25,6 +25,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
     %{
       name: "Monthly Revenue",
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       vega_spec: valid_vega_spec()
     }
   end
@@ -60,6 +61,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       attrs = %{
         name: "My Chart",
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         vega_spec: spec,
         shareable: true
       }
@@ -82,14 +84,14 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "returns an invalid changeset when `user_id` is absent" do
+    test "returns an invalid changeset when `account_id` is absent" do
       user = user_fixture()
-      attrs = Map.delete(valid_attrs(user.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id), :account_id)
 
       changeset = Visualization.changeset(new_visualization(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "returns an invalid changeset when `vega_spec` is absent" do
@@ -182,7 +184,7 @@ defmodule MetricFlow.Dashboards.VisualizationTest do
     end
 
     test "triggers `assoc_constraint` error on insert when `user_id` references a non-existent user" do
-      attrs = valid_attrs(-1)
+      attrs = %{valid_attrs(user_fixture().id) | user_id: -1}
 
       {:error, changeset} =
         new_visualization()

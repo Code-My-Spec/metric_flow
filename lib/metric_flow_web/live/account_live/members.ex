@@ -255,7 +255,7 @@ defmodule MetricFlowWeb.AccountLive.Members do
         {:ok, redirect(socket, to: "/app/accounts")}
 
       accounts ->
-        account = ActiveAccountHook.primary_account(accounts)
+        account = ActiveAccountHook.active_account(accounts, scope.user)
         members = Accounts.list_account_members(scope, account.id)
         user_role = Accounts.get_user_role(scope, scope.user.id, account.id)
         can_manage = can_manage?(user_role)

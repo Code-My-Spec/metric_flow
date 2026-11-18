@@ -21,12 +21,14 @@ defmodule MetricFlow.Integrations do
   require Logger
 
   alias Assent.Strategy.OAuth2, as: AssentOAuth2
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Integrations.FacebookAdsAccounts
   alias MetricFlow.Integrations.GoogleAccounts
   alias MetricFlow.Integrations.GoogleAdsAccounts
   alias MetricFlow.Integrations.GoogleBusinessLocations
   alias MetricFlow.Integrations.GoogleSearchConsoleSites
   alias MetricFlow.Integrations.Integration
+  alias MetricFlow.Integrations.IntegrationNotifier
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Integrations.QuickBooksAccounts
   alias MetricFlow.Users.Scope
@@ -55,6 +57,7 @@ defmodule MetricFlow.Integrations do
   defdelegate connected?(scope, provider), to: IntegrationRepository
   defdelegate get_integration_by_id(id), to: IntegrationRepository
   defdelegate update_integration(scope, provider, attrs), to: IntegrationRepository
+  defdelegate authorize_write(scope, provider), to: IntegrationRepository
 
   @doc """
   Disconnects an integration by revoking tokens with the provider (if
@@ -70,6 +73,38 @@ defmodule MetricFlow.Integrations do
       revoke_provider_token(provider, integration)
       IntegrationRepository.delete_integration(scope, provider)
     end
+  end
+
+  @doc """
+  Emails the account's owners and admins that `integration` must be
+  reconnected, then stamps `reconnection_notified_at` so they are told once
+  per expiry. Runs as housekeeping on the account (any member's page view may
+  trigger it), not as the viewing member.
+  """
+  @spec notify_reconnection_required(Integration.t(), String.t()) ::
+          {:ok, Integration.t()} | {:error, term()}
+  def notify_reconnection_required(
+        %Integration{account_id: account_id} = integration,
+        provider_name
+      )
+      when is_integer(account_id) do
+    account_id
+    |> AccountAccess.admin_emails()
+    |> Enum.each(&IntegrationNotifier.deliver_reconnection_required(&1, provider_name))
+
+    put_reconnection_notified_at(integration, DateTime.utc_now())
+  end
+
+  @doc "Sets or clears `reconnection_notified_at` on an account's integration."
+  @spec put_reconnection_notified_at(Integration.t(), DateTime.t() | nil) ::
+          {:ok, Integration.t()} | {:error, term()}
+  def put_reconnection_notified_at(%Integration{account_id: account_id} = integration, value)
+      when is_integer(account_id) do
+    IntegrationRepository.update_integration(
+      Scope.for_account(account_id),
+      integration.provider,
+      %{reconnection_notified_at: value}
+    )
   end
 
   defp revoke_provider_token(provider, integration) do
@@ -160,6 +195,122 @@ defmodule MetricFlow.Integrations do
       IntegrationRepository.upsert_integration(scope, provider, attrs)
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # One Google grant for every Google product
+  # ---------------------------------------------------------------------------
+
+  # Product provider => the API scopes that product's sync needs (all required).
+  @google_product_scopes %{
+    google_analytics: ["https://www.googleapis.com/auth/analytics.readonly"],
+    google_ads: ["https://www.googleapis.com/auth/adwords"],
+    google_search_console: ["https://www.googleapis.com/auth/webmasters.readonly"],
+    google_business: ["https://www.googleapis.com/auth/business.manage"],
+    youtube: MetricFlow.Integrations.Providers.YouTube.required_scopes()
+  }
+
+  @doc "The Google API scopes each Google product needs, keyed by product provider."
+  @spec google_product_scopes() :: %{atom() => [String.t()]}
+  def google_product_scopes, do: @google_product_scopes
+
+  @doc """
+  Builds one Google consent URL covering every Google product.
+
+  The flow rides the Google Analytics provider's OAuth client and redirect
+  URI (already registered with Google), asks for every product scope at once,
+  and sets `include_granted_scopes` so the grant merges with anything the
+  user consented to before. Google shows per-scope checkboxes, so the user
+  may grant only some products; `handle_google_bundle_callback/3` connects
+  exactly the ones granted.
+
+  The returned `session_params` carry `google_bundle: true`, which is how
+  the callback tells this flow apart from a plain Google Analytics connect.
+  """
+  @spec google_bundle_authorize_url() ::
+          {:ok, %{url: String.t(), session_params: map()}} | {:error, term()}
+  def google_bundle_authorize_url do
+    with {:ok, mod} <- fetch_provider(:google_analytics) do
+      # YouTube revenue is optional: requested, but not needed to connect YouTube.
+      scope =
+        (["openid", "email", "profile"] ++
+           List.flatten(Map.values(@google_product_scopes)) ++
+           [MetricFlow.Integrations.Providers.YouTube.revenue_scope()])
+        |> Enum.join(" ")
+
+      config =
+        mod.config()
+        |> Keyword.update(:authorization_params, [], fn params ->
+          params
+          |> Keyword.put(:scope, scope)
+          |> Keyword.put(:include_granted_scopes, "true")
+        end)
+        |> with_static_discovery(mod.strategy())
+
+      with {:ok, %{session_params: params} = result} <- mod.strategy().authorize_url(config) do
+        {:ok, %{result | session_params: Map.put(params, :google_bundle, true)}}
+      end
+    end
+  end
+
+  @doc """
+  Completes the single Google grant: exchanges the code once, then connects
+  every Google product whose scope the user actually granted.
+
+  Each product keeps its own integration row (sync is per product), all
+  sharing the one token. Selections already saved on a product survive the
+  reconnect — only tokens and identity fields are replaced.
+
+  Returns `{:ok, %{connected: [atom()], not_granted: [atom()]}}`.
+  """
+  @spec handle_google_bundle_callback(Scope.t(), map(), map()) ::
+          {:ok, %{connected: [atom()], not_granted: [atom()]}} | {:error, term()}
+  def handle_google_bundle_callback(%Scope{} = scope, session_params, callback_params) do
+    with {:ok, mod} <- fetch_provider(:google_analytics),
+         config = build_callback_config(mod, session_params),
+         {:ok, result} <- exchange_and_normalize(mod.strategy(), config, callback_params, mod) do
+      attrs = build_integration_attrs(result.token, result.normalized)
+      granted = attrs.granted_scopes
+
+      {connected, not_granted} =
+        @google_product_scopes
+        |> Enum.split_with(fn {_product, scopes} -> Enum.all?(scopes, &(&1 in granted)) end)
+
+      with :ok <- upsert_google_products(scope, Enum.map(connected, &elem(&1, 0)), attrs) do
+        {:ok,
+         %{
+           connected: connected |> Enum.map(&elem(&1, 0)) |> Enum.sort(),
+           not_granted: not_granted |> Enum.map(&elem(&1, 0)) |> Enum.sort()
+         }}
+      end
+    end
+  end
+
+  defp upsert_google_products(scope, products, attrs) do
+    Enum.reduce_while(products, :ok, fn product, :ok ->
+      merged =
+        case IntegrationRepository.get_integration(scope, product) do
+          {:ok, existing} ->
+            %{
+              attrs
+              | provider_metadata:
+                  Map.merge(
+                    existing.provider_metadata || %{},
+                    stringify_keys(attrs.provider_metadata)
+                  )
+            }
+
+          _ ->
+            attrs
+        end
+
+      case IntegrationRepository.upsert_integration(scope, product, merged) do
+        {:ok, _} -> {:cont, :ok}
+        {:error, _} = err -> {:halt, err}
+      end
+    end)
+  end
+
+  defp stringify_keys(map), do: Map.new(map, fn {k, v} -> {to_string(k), v} end)
 
   # ---------------------------------------------------------------------------
   # Social login ("Continue with Google")
@@ -384,7 +535,7 @@ defmodule MetricFlow.Integrations do
 
       Logger.warning(
         "[OAuth] strategy.callback result keys=#{inspect(Map.keys(result))}, " <>
-          "user_data=#{inspect(user_data)}, type=#{inspect(is_map(user_data))}"
+          "user_data_keys=#{inspect(if is_map(user_data), do: Map.keys(user_data), else: nil)}"
       )
 
       case provider_mod.normalize_user(user_data) do
@@ -392,9 +543,7 @@ defmodule MetricFlow.Integrations do
           {:ok, %{token: token, normalized: normalized}}
 
         {:error, reason} = err ->
-          Logger.warning(
-            "[OAuth] normalize_user failed: #{inspect(reason)}, user_data=#{inspect(user_data)}"
-          )
+          Logger.warning("[OAuth] normalize_user failed: #{inspect(reason)}")
 
           err
       end
@@ -554,15 +703,32 @@ defmodule MetricFlow.Integrations do
             |> maybe_preserve_refresh_token(integration)
             |> maybe_preserve_provider_metadata(integration)
 
-          IntegrationRepository.update_integration(scope, integration.provider, attrs)
+          # A token refresh is housekeeping, not a member's change, so any
+          # member's read (or a background sync) may trigger it.
+          IntegrationRepository.update_integration(
+            refresh_scope(scope, integration),
+            integration.provider,
+            attrs
+          )
 
         {:error, reason} ->
           {:error, reason}
       end
     end
   rescue
-    _ -> {:error, :token_refresh_failed}
+    e ->
+      Logger.warning("Token refresh raised for #{integration.provider}: #{Exception.message(e)}")
+
+      {:error, :token_refresh_failed}
   end
+
+  defp refresh_scope(scope, %Integration{account_id: account_id}) when is_integer(account_id) do
+    if AccountAccess.account_id(scope) == account_id,
+      do: Scope.for_account(account_id),
+      else: scope
+  end
+
+  defp refresh_scope(scope, _integration), do: scope
 
   # Assent OIDC strategies use `client_authentication_method` (string) but
   # OAuth2.grant_access_token expects `:auth_method` (atom).

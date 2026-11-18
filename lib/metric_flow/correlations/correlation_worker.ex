@@ -26,14 +26,13 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   alias MetricFlow.Correlations.Math
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
-  alias MetricFlow.Users.User
 
   @impl Oban.Worker
   @spec perform(Oban.Job.t()) :: :ok | {:error, term()}
   def perform(%Oban.Job{args: args}) do
     job_id = Map.get(args, "job_id")
     user_id = Map.get(args, "user_id")
-    account_id = Map.get(args, "account_id")
+    account_id = Map.get(args, "account_id") || job_account_id(job_id)
     scope = build_scope(user_id, account_id)
 
     Logger.info("CorrelationWorker starting job_id=#{job_id} user_id=#{user_id}")
@@ -59,11 +58,21 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
   # Private — orchestration
   # ---------------------------------------------------------------------------
 
-  defp build_scope(user_id, account_id) do
-    %User{id: user_id}
-    |> Scope.for_user()
-    |> Scope.put_account_id(account_id)
+  # Jobs enqueued before account_id was carried in args: the job row knows.
+  defp job_account_id(job_id) when is_integer(job_id) do
+    case MetricFlow.Repo.get(MetricFlow.Correlations.CorrelationJob, job_id) do
+      %{account_id: account_id} -> account_id
+      nil -> nil
+    end
   end
+
+  defp job_account_id(_job_id), do: nil
+
+  # Correlations run on the account's data, whoever started them.
+  defp build_scope(_user_id, account_id) when is_integer(account_id),
+    do: Scope.for_account(account_id)
+
+  defp build_scope(_user_id, _account_id), do: %Scope{user: nil, account_id: nil}
 
   defp mark_running(scope, job) do
     CorrelationsRepository.update_correlation_job(scope, job, %{
@@ -220,7 +229,7 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
 
         case CorrelationsRepository.create_correlation_job(queued_scope, job_attrs) do
           {:ok, new_job} ->
-            %{job_id: new_job.id, user_id: scope.user.id, account_id: account_id}
+            %{job_id: new_job.id, account_id: account_id}
             |> __MODULE__.new()
             |> Oban.insert()
 
@@ -272,10 +281,10 @@ defmodule MetricFlow.Correlations.CorrelationWorker do
     end
   end
 
-  defp broadcast_job_update(%Scope{user: user}, job) do
+  defp broadcast_job_update(_scope, job) do
     Phoenix.PubSub.broadcast(
       MetricFlow.PubSub,
-      "user:#{user.id}:correlations",
+      MetricFlow.AccountAccess.correlations_topic(job.account_id),
       {:correlation_job_updated, job}
     )
   end

@@ -18,6 +18,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3_600, :second),
@@ -31,6 +32,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
     %SyncJob{}
     |> SyncJob.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       provider: provider,
       status: :completed
@@ -41,6 +43,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   defp insert_sync_history!(user_id, integration_id, sync_job_id, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       sync_job_id: sync_job_id,
       provider: :google_analytics,

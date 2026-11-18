@@ -158,6 +158,21 @@ defmodule MetricFlowWeb.AiLive.Chat do
             <p class="text-base-content/60 mt-2 max-w-prose">
               I have access to your metrics, correlations, and trends. Ask a question in plain language and I'll help you understand what's happening in your business.
             </p>
+            <div
+              :if={@nothing_connected}
+              id="chat-no-data"
+              class="mt-6 flex max-w-prose flex-col items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4 text-sm sm:flex-row sm:text-left"
+            >
+              <span class="text-base-content/70">
+                No data is connected yet, so there's nothing to analyze. Connect Google, Meta or QuickBooks first — or ask me to help you set it up.
+              </span>
+              <.link
+                navigate={~p"/app/onboarding/connect"}
+                class="btn btn-primary btn-sm shrink-0"
+              >
+                Set up data sources
+              </.link>
+            </div>
             <div class="flex flex-wrap gap-2 justify-center mt-6">
               <button
                 phx-click="send_message"
@@ -368,6 +383,7 @@ defmodule MetricFlowWeb.AiLive.Chat do
       |> assign(:pending_context_id, nil)
       |> assign(:show_sidebar, false)
       |> assign(:page_title, "AI Chat")
+      |> assign(:nothing_connected, MetricFlow.Onboarding.nothing_connected?(scope))
 
     {:ok, socket}
   end

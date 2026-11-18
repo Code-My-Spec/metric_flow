@@ -15,6 +15,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       name: "My Dashboard",
       description: "A description of the dashboard",
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       built_in: false
     }
   end
@@ -89,14 +90,14 @@ defmodule MetricFlow.Dashboards.DashboardTest do
       assert %{name: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "returns an invalid changeset and adds a user_id error when user_id is absent" do
+    test "returns an invalid changeset and adds an account_id error when account_id is absent" do
       user = user_fixture()
-      attrs = Map.delete(valid_attrs(user.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id), :account_id)
 
       changeset = Dashboard.changeset(new_dashboard(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "returns an invalid changeset when name is an empty string" do
@@ -195,7 +196,7 @@ defmodule MetricFlow.Dashboards.DashboardTest do
     end
 
     test "triggers the user assoc_constraint and surfaces \"does not exist\" error on insert with a non-existent user_id" do
-      attrs = valid_attrs(-1)
+      attrs = %{valid_attrs(user_fixture().id) | user_id: -1}
 
       {:error, changeset} =
         new_dashboard()

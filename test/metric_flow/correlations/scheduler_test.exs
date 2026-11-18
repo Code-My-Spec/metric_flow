@@ -12,7 +12,6 @@ defmodule MetricFlow.Correlations.SchedulerTest do
   alias MetricFlow.Correlations.Scheduler
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -45,13 +44,14 @@ defmodule MetricFlow.Correlations.SchedulerTest do
   defp user_with_scope do
     user = user_fixture()
     create_personal_account!(user)
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
   defp insert_metric!(user_id, overrides) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       metric_type: "traffic",
       metric_name: "sessions",
       value: 100.0,

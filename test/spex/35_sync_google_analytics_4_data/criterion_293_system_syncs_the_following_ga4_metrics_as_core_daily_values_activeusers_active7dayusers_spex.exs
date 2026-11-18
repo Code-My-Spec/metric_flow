@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       when_ "a GA4 sync completion event is broadcast with the expected records count", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_completed,
            %{
              provider: :google_analytics,
@@ -80,7 +82,9 @@ defmodule MetricFlowSpex.SystemSyncsTheFollowingGa4MetricsAsCoreDailyValuesSpex 
       when_ "a GA4 sync failure event is broadcast due to a metric fetch error", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google_analytics,

@@ -1,6 +1,6 @@
 defmodule MetricFlow.Integrations.IntegrationRepository do
   @moduledoc """
-  Data access layer for Integration CRUD operations filtered by user_id.
+  Data access layer for Integration CRUD operations filtered by account_id.
 
   All operations are scoped via the Scope struct for multi-tenant isolation.
   Provides upsert_integration/3 for OAuth callback handling,
@@ -14,6 +14,7 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
@@ -23,7 +24,7 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Retrieves a single integration for the scoped user and provider.
+  Retrieves the scope's account integration for the provider.
 
   Returns {:ok, integration} when found or {:error, :not_found} when absent.
   Cloak automatically decrypts access_token and refresh_token on load.
@@ -59,9 +60,8 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   end
 
   @doc """
-  Returns all integrations for the scoped user, ordered by most recently created.
-
-  Returns an empty list when no integrations exist for the user.
+  Returns all integrations of the scope's account, ordered by most recently
+  created. Every member of the account sees them.
   """
   @spec list_integrations(Scope.t()) :: list(Integration.t())
   def list_integrations(%Scope{} = scope) do
@@ -71,56 +71,39 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
     |> Repo.all()
   end
 
-  defp scoped_integrations(%Scope{user: user, account_id: account_id})
-       when is_integer(account_id) do
-    memberships =
-      from(m in MetricFlow.Accounts.AccountMember,
-        where: m.user_id == ^user.id and m.account_id == ^account_id,
-        select: m.account_id
-      )
-
-    from(i in Integration,
-      where:
-        (i.provider != :youtube and i.user_id == ^user.id) or
-          (i.provider == :youtube and i.account_id == ^account_id and
-             i.account_id in subquery(memberships))
-    )
+  defp scoped_integrations(%Scope{} = scope) do
+    AccountAccess.scope_query(Integration, scope)
   end
-
-  defp scoped_integrations(%Scope{user: user}) do
-    from(i in Integration, where: i.user_id == ^user.id and i.provider != :youtube)
-  end
-
-  def authorize_write(%Scope{user: user, account_id: account_id}, :youtube)
-      when is_integer(account_id) do
-    allowed =
-      from(m in MetricFlow.Accounts.AccountMember,
-        where:
-          m.user_id == ^user.id and m.account_id == ^account_id and
-            m.role in [:owner, :admin, :account_manager]
-      )
-      |> Repo.exists?()
-
-    if allowed, do: :ok, else: {:error, :unauthorized}
-  end
-
-  def authorize_write(%Scope{}, :youtube), do: {:error, :unauthorized}
-  def authorize_write(%Scope{}, _provider), do: :ok
 
   @doc """
-  Creates a new integration with encrypted tokens.
+  Checks that the scope may change the account's integrations (connect,
+  select, disconnect, sync): owner, admin or account_manager members, or a
+  background system scope. The same rule applies to every provider.
+  """
+  @spec authorize_write(Scope.t(), atom()) :: :ok | {:error, :unauthorized}
+  def authorize_write(%Scope{} = scope, _provider) do
+    case AccountAccess.authorize_write(scope) do
+      {:ok, _account_id} -> :ok
+      {:error, _} = error -> error
+    end
+  end
 
-  Merges user_id from the scope into attrs before inserting. Validates provider
-  support and enforces the unique constraint on (user_id, provider).
+  @doc """
+  Creates a new integration with encrypted tokens in the scope's account.
+
+  Records the scope's user as the connector. Enforces the unique constraint
+  on (account_id, provider).
   """
   @spec create_integration(Scope.t(), map()) ::
-          {:ok, Integration.t()} | {:error, Ecto.Changeset.t()}
-  def create_integration(%Scope{user: user}, attrs) do
-    attrs_with_user = Map.put(attrs, :user_id, user.id)
+          {:ok, Integration.t()} | {:error, Ecto.Changeset.t() | :unauthorized}
+  def create_integration(%Scope{} = scope, attrs) do
+    with {:ok, account_id} <- AccountAccess.authorize_write(scope) do
+      attrs = Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
 
-    %Integration{}
-    |> Integration.changeset(attrs_with_user)
-    |> Repo.insert()
+      %Integration{user_id: AccountAccess.user_id(scope), account_id: account_id}
+      |> Integration.changeset(attrs)
+      |> Repo.insert()
+    end
   end
 
   @doc """
@@ -162,15 +145,16 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   end
 
   @doc """
-  Deletes every integration belonging to the scoped user, regardless of
+  Deletes every integration belonging to the scope's account, regardless of
   provider.
 
   Used when the account through which these connections are managed is
   being deleted permanently.
   """
   @spec delete_all_integrations(Scope.t()) :: :ok
-  def delete_all_integrations(%Scope{user: user}) do
-    from(i in Integration, where: i.user_id == ^user.id and i.provider != :youtube)
+  def delete_all_integrations(%Scope{} = scope) do
+    Integration
+    |> AccountAccess.scope_query(scope)
     |> Repo.delete_all()
 
     :ok
@@ -192,61 +176,62 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   Used to identify integrations requiring token refresh.
   """
   @spec with_expired_tokens(Scope.t()) :: list(Integration.t())
-  def with_expired_tokens(%Scope{user: user}) do
+  def with_expired_tokens(%Scope{} = scope) do
     now = DateTime.utc_now()
 
-    from(i in Integration,
-      where: i.user_id == ^user.id and i.expires_at < ^now
-    )
+    scope
+    |> scoped_integrations()
+    |> where([i], i.expires_at < ^now)
     |> Repo.all()
   end
 
   @doc """
-  Creates or updates an integration based on the unique (user_id, provider)
-  constraint.
+  Creates or updates the scope's account integration for `provider`, based on
+  the unique (account_id, provider) constraint -- one connection per provider
+  per account, whoever connects it.
 
-  Merges user_id from the scope and the given provider into attrs before
-  upserting. Used during OAuth callbacks for both first-time connections and
-  reconnections.
+  On reconnect the tokens and scopes are replaced (user_id keeps recording
+  who first connected it), a missing refresh token keeps the stored one, and provider_metadata is merged so
+  saved selections (property, site, location, channels...) survive.
   """
   @spec upsert_integration(Scope.t(), atom(), map()) ::
-          {:ok, Integration.t()} | {:error, Ecto.Changeset.t()}
-  def upsert_integration(%Scope{user: user, account_id: account_id} = scope, :youtube, attrs) do
-    with :ok <- authorize_write(scope, :youtube) do
+          {:ok, Integration.t()} | {:error, Ecto.Changeset.t() | :unauthorized}
+  def upsert_integration(%Scope{} = scope, provider, attrs) do
+    with {:ok, account_id} <- AccountAccess.authorize_write(scope) do
       attrs =
         Map.drop(attrs, [:user_id, :account_id, :provider, "user_id", "account_id", "provider"])
 
-      %Integration{user_id: user.id, account_id: account_id, provider: :youtube}
+      %Integration{
+        user_id: AccountAccess.user_id(scope),
+        account_id: account_id,
+        provider: provider
+      }
       |> Integration.changeset(attrs)
       |> Repo.insert(
-        on_conflict:
-          {:replace,
-           [
-             :access_token,
-             :refresh_token,
-             :expires_at,
-             :granted_scopes,
-             :provider_metadata,
-             :reconnection_notified_at,
-             :updated_at
-           ]},
+        on_conflict: reconnect_update(),
         conflict_target: [:account_id, :provider],
         returning: true
       )
     end
   end
 
-  def upsert_integration(%Scope{user: user}, provider, attrs) do
-    attrs_with_user_and_provider =
-      attrs
-      |> Map.put(:user_id, user.id)
-      |> Map.put(:provider, provider)
-
-    changeset = Integration.changeset(%Integration{}, attrs_with_user_and_provider)
-
-    Repo.insert(changeset,
-      on_conflict: {:replace_all_except, [:id, :inserted_at]},
-      conflict_target: {:unsafe_fragment, "(user_id, provider) WHERE provider <> 'youtube'"}
+  defp reconnect_update do
+    from(i in Integration,
+      update: [
+        set: [
+          access_token: fragment("EXCLUDED.access_token"),
+          refresh_token: fragment("COALESCE(EXCLUDED.refresh_token, ?)", i.refresh_token),
+          expires_at: fragment("EXCLUDED.expires_at"),
+          granted_scopes: fragment("EXCLUDED.granted_scopes"),
+          provider_metadata:
+            fragment(
+              "COALESCE(?, '{}'::jsonb) || EXCLUDED.provider_metadata",
+              i.provider_metadata
+            ),
+          reconnection_notified_at: fragment("EXCLUDED.reconnection_notified_at"),
+          updated_at: fragment("EXCLUDED.updated_at")
+        ]
+      ]
     )
   end
 
@@ -275,6 +260,9 @@ defmodule MetricFlow.Integrations.IntegrationRepository do
   """
   @spec list_all_active_integrations() :: list(Integration.t())
   def list_all_active_integrations do
-    Repo.all(Integration)
+    # Legacy rows whose owner has not been assigned yet have no account and
+    # cannot be synced on anyone's behalf.
+    from(i in Integration, where: not is_nil(i.account_id))
+    |> Repo.all()
   end
 end

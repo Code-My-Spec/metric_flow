@@ -73,6 +73,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       %Metric{}
       |> Metric.changeset(%{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         metric_type: "revenue",
         metric_name: "revenue",
         value: 1000.0 + i,
@@ -85,6 +86,7 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       %Metric{}
       |> Metric.changeset(%{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         metric_type: "advertising",
         metric_name: "clicks",
         value: 50.0 + i,

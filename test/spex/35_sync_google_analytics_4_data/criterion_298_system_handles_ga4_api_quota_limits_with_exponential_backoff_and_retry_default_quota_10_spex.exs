@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       when_ "a GA4 sync failure event with a quota exceeded error is broadcast", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google_analytics,
@@ -81,7 +83,9 @@ defmodule MetricFlowSpex.SystemHandlesGa4ApiQuotaLimitsWithExponentialBackoffAnd
       when_ "a GA4 sync failure event with attempt details is broadcast", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google_analytics,

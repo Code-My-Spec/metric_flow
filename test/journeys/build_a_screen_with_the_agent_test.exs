@@ -104,8 +104,12 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     html = render(view)
 
     cond do
-      has_element?(view, "[data-role='echarts-chart']") -> html
-      System.monotonic_time(:millisecond) >= deadline -> html
+      has_element?(view, "[data-role='echarts-chart']") ->
+        html
+
+      System.monotonic_time(:millisecond) >= deadline ->
+        html
+
       true ->
         Process.sleep(20)
         wait_for_chart(view, deadline)
@@ -153,7 +157,11 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
         Jason.encode!(%{
           "type" => "result",
           "is_error" => false,
-          "structured_output" => %{"stop_reason" => "end_turn", "text" => "ok", "tool_calls" => []}
+          "structured_output" => %{
+            "stop_reason" => "end_turn",
+            "text" => "ok",
+            "tool_calls" => []
+          }
         })
 
       {envelope, 0}
@@ -393,7 +401,8 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       )
 
       render_submit(view, "send_dashboard_chat", %{
-        "message" => "Add a headline stat of total clicks and a line chart of impressions over time"
+        "message" =>
+          "Add a headline stat of total clicks and a line chart of impressions over time"
       })
 
       html = wait_for_chart(view)
@@ -466,7 +475,9 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       insert_metric!(user, %{provider: :google_ads, metric_name: "impressions", value: 100.0})
       scope = Scope.for_user(user)
 
-      Ai.viz_chat(scope, nil, "Show me impressions over time", command_runner: capturing_runner(agent))
+      Ai.viz_chat(scope, nil, "Show me impressions over time",
+        command_runner: capturing_runner(agent)
+      )
 
       args = Agent.get(agent, & &1)
       refute is_nil(args), "the visualization chat never reached the command_runner"
@@ -819,7 +830,10 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       build_chart_via_chat(view)
 
       cards_before =
-        view |> render() |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+        view
+        |> render()
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='visualization-card']")
 
       assert length(cards_before) == 2
 
@@ -892,7 +906,10 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       build_chart_via_chat(view)
 
       cards_before =
-        view |> render() |> Floki.parse_fragment!() |> Floki.find("[data-role='visualization-card']")
+        view
+        |> render()
+        |> Floki.parse_fragment!()
+        |> Floki.find("[data-role='visualization-card']")
 
       assert length(cards_before) == 2
 
@@ -1265,7 +1282,9 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       Application.delete_env(:metric_flow, :command_runner)
 
       before_restore_count = paper_trail_version_count(dashboard.id)
-      assert before_restore_count >= 2, "expected at least two versions after a build and a refine"
+
+      assert before_restore_count >= 2,
+             "expected at least two versions after a build and a refine"
 
       # Main's review (10fd033, 2026-11-14): the editor's version list
       # and restore still run entirely on the hand-rolled
@@ -1405,9 +1424,10 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "switching the date-range filter to 90 days changes the queried data, not just its label", %{
-    conn: conn
-  } do
+  test "switching the date-range filter to 90 days changes the queried data, not just its label",
+       %{
+         conn: conn
+       } do
     stage("Refine the dashboard", fn ->
       user = user_fixture()
       account = insert_account!(user)
@@ -1424,7 +1444,8 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
         provider: :google_ads,
         metric_name: "impressions",
         value: 50.0,
-        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
+        recorded_at:
+          DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
       })
 
       scope = Scope.for_user(user)
@@ -1458,7 +1479,9 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
     end)
   end
 
-  test "a stat tile's total renders as a thousands-separated number, not a raw float", %{conn: conn} do
+  test "a stat tile's total renders as a thousands-separated number, not a raw float", %{
+    conn: conn
+  } do
     stage("Ask for a dashboard", fn ->
       user = user_fixture()
       account = insert_account!(user)
@@ -1622,7 +1645,8 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
       assert paper_trail_version_count(dashboard.id) == 0,
              "expected the dashboard's versions to be deleted along with it"
 
-      assert Ai.get_chat_session_by_context(scope, :dashboard, dashboard.id) == {:error, :not_found},
+      assert Ai.get_chat_session_by_context(scope, :dashboard, dashboard.id) ==
+               {:error, :not_found},
              "expected the dashboard's chat history to be deleted along with it"
     end)
   end
@@ -1893,7 +1917,8 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
         provider: :google_ads,
         metric_name: "impressions",
         value: 50.0,
-        recorded_at: DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
+        recorded_at:
+          DateTime.new!(Date.add(Date.utc_today(), -60), ~T[00:00:00.000000], "Etc/UTC")
       })
 
       scope = Scope.for_user(user)

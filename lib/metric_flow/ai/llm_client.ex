@@ -117,7 +117,8 @@ defmodule MetricFlow.Ai.LlmClient do
     run_opts = [
       provider: LlmProvider.chat_provider(opts),
       system_prompt: system_prompt,
-      messages: to_alloy_messages(messages)
+      messages: to_alloy_messages(messages),
+      tools: Keyword.get(opts, :tools, [])
     ]
 
     case Alloy.stream(nil, on_chunk, run_opts) do

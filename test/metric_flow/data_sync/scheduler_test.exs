@@ -19,6 +19,7 @@ defmodule MetricFlow.DataSync.SchedulerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -33,6 +34,7 @@ defmodule MetricFlow.DataSync.SchedulerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -47,6 +49,7 @@ defmodule MetricFlow.DataSync.SchedulerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), -3_600, :second),
@@ -60,6 +63,7 @@ defmodule MetricFlow.DataSync.SchedulerTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3_600, :second),
@@ -143,7 +147,11 @@ defmodule MetricFlow.DataSync.SchedulerTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 
@@ -155,7 +163,11 @@ defmodule MetricFlow.DataSync.SchedulerTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 
@@ -167,7 +179,11 @@ defmodule MetricFlow.DataSync.SchedulerTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 
@@ -188,7 +204,11 @@ defmodule MetricFlow.DataSync.SchedulerTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 

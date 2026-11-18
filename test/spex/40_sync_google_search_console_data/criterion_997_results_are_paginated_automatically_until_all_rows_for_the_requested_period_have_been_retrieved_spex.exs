@@ -12,7 +12,9 @@ defmodule MetricFlowSpex.ResultsArePaginatedAutomaticallyUntilAllRowsRetrievedSp
       given_ "a property whose sync period requires more than one page of API results", context do
         MetricFlowSpex.Fixtures.create_integration_for(
           context.owner_email,
-          :google_search_console, provider_metadata: %{"site_url" => "https://example.com/"})
+          :google_search_console,
+          provider_metadata: %{"site_url" => "https://example.com/"}
+        )
 
         {:ok, context}
       end

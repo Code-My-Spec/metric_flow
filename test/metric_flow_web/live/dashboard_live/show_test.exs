@@ -17,6 +17,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3_600, :second),
@@ -31,6 +32,7 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
 
     defaults = %{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       metric_type: "traffic",
       metric_name: "sessions",
       value: 100.0,
@@ -79,7 +81,12 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
 
         assert has_element?(lv, "[data-role='onboarding-prompt']")
         assert html =~ "Connect"
-        assert has_element?(lv, "[data-role='onboarding-prompt'] a[href='/app/integrations']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='onboarding-prompt'] a[href='/app/onboarding/connect']"
+               )
+
         refute has_element?(lv, "[data-role='metrics-dashboard']")
       end)
     end
@@ -101,6 +108,42 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
         assert has_element?(lv, "[data-role='multi-series-chart']")
         assert has_element?(lv, "[data-role='data-table']")
         refute has_element?(lv, "[data-role='onboarding-prompt']")
+      end)
+    end
+  end
+
+  describe "Finish setup checklist" do
+    test "shows while a connected source has nothing selected, linking to the wizard", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      # provider_metadata %{} — connected, no property picked yet.
+      insert_integration!(user)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
+
+        assert has_element?(lv, "#finish-setup-google[data-state='needs_selection']")
+        assert has_element?(lv, "#finish-setup-link[href='/app/onboarding/connect']")
+      end)
+    end
+
+    test "is hidden once every connected source has a selection", %{conn: conn} do
+      user = user_fixture()
+
+      user
+      |> insert_integration!()
+      |> Integration.changeset(%{provider_metadata: %{"property_id" => "properties/1"}})
+      |> Repo.update!()
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/dashboard")
+
+        assert has_element?(lv, "[data-role='metrics-dashboard']")
+        refute has_element?(lv, "#finish-setup")
       end)
     end
   end
@@ -319,7 +362,8 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
           name: "Marketing Overview",
           description: "System-provided Marketing Overview dashboard",
           built_in: true,
-          user_id: user.id
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
         })
 
       conn = log_in_user(conn, user)

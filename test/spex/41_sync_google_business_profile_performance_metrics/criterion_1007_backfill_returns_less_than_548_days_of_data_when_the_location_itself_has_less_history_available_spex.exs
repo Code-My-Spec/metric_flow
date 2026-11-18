@@ -15,6 +15,7 @@ defmodule MetricFlowSpex.Criterion1007BackfillReturnsLessThan548DaysWhenLocation
           provider_metadata: %{"included_locations" => ["locations/123456789"]}
         )
 
+        MetricFlowTest.SyncStub.stub_google_business_success(:google_business)
         {:ok, context}
       end
 

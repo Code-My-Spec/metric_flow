@@ -13,10 +13,19 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
   # Fixtures
   # ---------------------------------------------------------------------------
 
+  # The editor is paywalled per account; a user's visualizations live in
+  # their (subscribed) account.
+  defp subscribed_user_fixture do
+    user = user_with_account_fixture()
+    MetricFlowTest.BillingFixtures.active_subscription_fixture(default_account_id(user))
+    user
+  end
+
   defp visualization_fixture(user, attrs \\ %{}) do
     defaults = %{
       name: "My Test Visualization #{System.unique_integer([:positive])}",
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       vega_spec: %{"$schema" => "https://vega.github.io/schema/vega-lite/v5.json"},
       shareable: false
     }
@@ -32,7 +41,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "renders new visualization page with name field and metric selector" do
     test "renders new visualization page with name field and metric selector", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -49,7 +58,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "renders edit visualization page loading existing visualization data" do
     test "renders edit visualization page loading existing visualization data", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       visualization = visualization_fixture(user, %{name: "My Existing Viz"})
       conn = log_in_user(conn, user)
 
@@ -64,7 +73,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "shows available metrics from connected integrations in metric selector" do
     test "shows available metrics from connected integrations in metric selector", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
 
@@ -79,7 +88,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "shows empty state in metric selector when no metrics are available" do
     test "shows empty state in metric selector when no metrics are available", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -92,7 +101,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "toggles metric selection on select_metric click" do
     test "toggles metric selection on select_metric click", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
 
@@ -114,7 +123,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
     test "selects chart type on select_chart_type click and highlights active button", %{
       conn: conn
     } do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -132,7 +141,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "previews chart with Vega-Lite spec when preview_chart is clicked" do
     test "previews chart with Vega-Lite spec when preview_chart is clicked", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
 
@@ -150,7 +159,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "disables preview button when no metrics are selected" do
     test "disables preview button when no metrics are selected", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -163,7 +172,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "validates name field on change and shows inline error for blank name" do
     test "validates name field on change and shows inline error for blank name", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -177,7 +186,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "saves visualization and shows success flash" do
     test "saves visualization and shows success flash", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
 
@@ -197,7 +206,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
     test "shows validation errors when saving with blank name or no metrics selected", %{
       conn: conn
     } do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       insert_editor_test_metrics!(user)
       conn = log_in_user(conn, user)
 
@@ -216,7 +225,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
 
   describe "toggles shareable flag on toggle_shareable click" do
     test "toggles shareable flag on toggle_shareable click", %{conn: conn} do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -235,7 +244,7 @@ defmodule MetricFlowWeb.VisualizationLive.EditorTest do
     test "redirects to visualizations with error when editing non-existent visualization", %{
       conn: conn
     } do
-      user = user_fixture()
+      user = subscribed_user_fixture()
       conn = log_in_user(conn, user)
 
       capture_log(fn ->

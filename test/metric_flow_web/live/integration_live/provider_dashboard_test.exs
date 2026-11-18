@@ -15,6 +15,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
   defp create_integration(user, provider, opts \\ %{}) do
     defaults = %{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       provider: provider,
       access_token: "test_token_#{System.unique_integer([:positive])}",
       refresh_token: "test_refresh",

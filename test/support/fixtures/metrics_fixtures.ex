@@ -8,7 +8,8 @@ defmodule MetricFlowTest.MetricsFixtures do
   alias MetricFlow.Repo
 
   @doc """
-  Inserts a metric record for the given user with optional attribute overrides.
+  Inserts a metric record for the given user's default account (or
+  `attrs[:account_id]`) with optional attribute overrides.
 
   Defaults to a "sessions" traffic metric from Google Analytics recorded
   yesterday so it falls within the default 30-day range.
@@ -18,6 +19,7 @@ defmodule MetricFlowTest.MetricsFixtures do
 
     defaults = %{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       metric_type: "traffic",
       metric_name: "sessions",
       value: 100.0,

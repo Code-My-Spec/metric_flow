@@ -18,6 +18,7 @@ defmodule MetricFlowWeb.Journeys.NewUserRegistrationToFirstDashboardTest do
     defaults = %{
       name: "Marketing Overview",
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       built_in: true
     }
 

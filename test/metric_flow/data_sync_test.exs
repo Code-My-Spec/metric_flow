@@ -10,7 +10,6 @@ defmodule MetricFlow.DataSyncTest do
   alias MetricFlow.DataSync.SyncWorker
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -18,7 +17,7 @@ defmodule MetricFlow.DataSyncTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -33,6 +32,7 @@ defmodule MetricFlow.DataSyncTest do
   defp insert_integration!(user_id, provider \\ :google_analytics, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -62,6 +62,7 @@ defmodule MetricFlow.DataSyncTest do
       Map.merge(
         %{
           user_id: user_id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
           integration_id: integration_id,
           provider: provider,
           status: :pending
@@ -88,6 +89,7 @@ defmodule MetricFlow.DataSyncTest do
 
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       sync_job_id: sync_job_id,
       provider: provider,
@@ -156,7 +158,11 @@ defmodule MetricFlow.DataSyncTest do
 
       assert_enqueued(
         worker: MetricFlow.DataSync.SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
   end
@@ -192,7 +198,11 @@ defmodule MetricFlow.DataSyncTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 
@@ -208,7 +218,11 @@ defmodule MetricFlow.DataSyncTest do
 
       assert_enqueued(
         worker: SyncWorker,
-        args: %{integration_id: integration.id, user_id: user.id}
+        args: %{
+          integration_id: integration.id,
+          user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+        }
       )
     end
 

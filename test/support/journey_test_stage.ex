@@ -18,7 +18,8 @@ defmodule MetricFlowTest.JourneyTestStage do
     fun.(session)
   rescue
     error in [ExUnit.AssertionError] ->
-      reraise %{error | message: "Journey stage \"#{name}\" failed: #{error.message}"}, __STACKTRACE__
+      reraise %{error | message: "Journey stage \"#{name}\" failed: #{error.message}"},
+              __STACKTRACE__
 
     error ->
       reraise "Journey stage \"#{name}\" failed: #{Exception.message(error)}", __STACKTRACE__

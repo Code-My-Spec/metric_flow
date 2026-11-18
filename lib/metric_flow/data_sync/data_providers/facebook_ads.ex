@@ -121,6 +121,9 @@ defmodule MetricFlow.DataSync.DataProviders.FacebookAds do
         {"access_token", access_token},
         {"fields", fields},
         {"time_range", time_range},
+        # One row per day. Without it Meta aggregates the whole range into a
+        # single row dated `since`, so a backfill lands on one day.
+        {"time_increment", "1"},
         {"level", level},
         {"limit", to_string(@page_limit)}
       ]

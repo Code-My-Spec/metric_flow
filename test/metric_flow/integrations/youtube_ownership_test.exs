@@ -28,7 +28,7 @@ defmodule MetricFlow.Integrations.YouTubeOwnershipTest do
 
   test "connections are isolated by account even for the same user" do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     first = account(scope)
     second = account(scope)
     first_scope = Scope.put_account_id(scope, first.id)
@@ -47,7 +47,10 @@ defmodule MetricFlow.Integrations.YouTubeOwnershipTest do
 
     refute other.id == connection.id
 
-    stranger = Scope.for_user(user_fixture()) |> Scope.put_account_id(first.id)
+    stranger =
+      MetricFlowTest.UsersFixtures.account_scope_fixture(user_fixture())
+      |> Scope.put_account_id(first.id)
+
     assert {:error, :not_found} = IntegrationRepository.get_integration(stranger, :youtube)
 
     assert {:error, :unauthorized} =
@@ -58,7 +61,7 @@ defmodule MetricFlow.Integrations.YouTubeOwnershipTest do
 
   test "read-only members cannot change connections and managers cannot transfer ownership" do
     owner = user_fixture()
-    owner_scope = Scope.for_user(owner)
+    owner_scope = MetricFlowTest.UsersFixtures.account_scope_fixture(owner)
     client = account(owner_scope)
     owner_scope = Scope.put_account_id(owner_scope, client.id)
     reader = user_fixture()
@@ -68,8 +71,13 @@ defmodule MetricFlow.Integrations.YouTubeOwnershipTest do
     assert {:ok, _} =
              Accounts.add_user_to_account(owner_scope, manager.id, client.id, :account_manager)
 
-    reader_scope = Scope.for_user(reader) |> Scope.put_account_id(client.id)
-    manager_scope = Scope.for_user(manager) |> Scope.put_account_id(client.id)
+    reader_scope =
+      MetricFlowTest.UsersFixtures.account_scope_fixture(reader)
+      |> Scope.put_account_id(client.id)
+
+    manager_scope =
+      MetricFlowTest.UsersFixtures.account_scope_fixture(manager)
+      |> Scope.put_account_id(client.id)
 
     assert {:ok, original} =
              IntegrationRepository.upsert_integration(owner_scope, :youtube, credentials())
@@ -101,7 +109,7 @@ defmodule MetricFlow.Integrations.YouTubeOwnershipTest do
   end
 
   test "rapid account switches preserve the last explicit selection" do
-    scope = Scope.for_user(user_fixture())
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user_fixture())
     first = account(scope)
     second = account(scope)
 

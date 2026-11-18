@@ -6,7 +6,6 @@ defmodule MetricFlow.Metrics.ReviewMetricsTest do
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Metrics.ReviewMetrics
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -14,7 +13,7 @@ defmodule MetricFlow.Metrics.ReviewMetricsTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -26,6 +25,7 @@ defmodule MetricFlow.Metrics.ReviewMetricsTest do
     %Metric{}
     |> Metric.changeset(%{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       metric_type: "reviews",
       metric_name: "review_count",
       value: count * 1.0,
@@ -39,6 +39,7 @@ defmodule MetricFlow.Metrics.ReviewMetricsTest do
     %Metric{}
     |> Metric.changeset(%{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       metric_type: "reviews",
       metric_name: "review_rating",
       value: rating,

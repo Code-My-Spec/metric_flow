@@ -39,7 +39,12 @@ defmodule MetricFlowWeb.Journeys.IntegrationDashboardAndDataSyncTest do
   end
 
   defp canned_dashboard_fixture(user, attrs \\ %{}) do
-    defaults = %{name: "Marketing Overview", user_id: user.id, built_in: true}
+    defaults = %{
+      name: "Marketing Overview",
+      user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
+      built_in: true
+    }
 
     %Dashboard{}
     |> Dashboard.changeset(Map.merge(defaults, attrs))
@@ -52,7 +57,13 @@ defmodule MetricFlowWeb.Journeys.IntegrationDashboardAndDataSyncTest do
     user = user_fixture()
     account = insert_account!(user)
     insert_member!(account, user, :owner)
-    integration = integration_fixture(user, %{provider: :google_ads})
+    # A selected ad account: Sync Now is offered once there is something to sync.
+    integration =
+      integration_fixture(user, %{
+        provider: :google_ads,
+        provider_metadata: %{"email" => user.email, "customer_id" => "1234567890"}
+      })
+
     insert_metric!(user, %{provider: :google_ads, metric_name: "clicks", value: 42.0})
 
     conn = log_in_user(conn, user)

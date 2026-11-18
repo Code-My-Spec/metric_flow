@@ -52,7 +52,9 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
       when_ "a GA4 initial backfill sync completion event is broadcast", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_completed,
            %{
              provider: :google_analytics,
@@ -108,7 +110,9 @@ defmodule MetricFlowSpex.OnFirstSyncSystemBackfillsUp548DaysOfHistoricalGa4DataS
       when_ "a regular (non-initial) GA4 sync completion event is broadcast", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_completed,
            %{
              provider: :google_analytics,

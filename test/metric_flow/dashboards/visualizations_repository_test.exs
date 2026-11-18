@@ -6,7 +6,6 @@ defmodule MetricFlow.Dashboards.VisualizationsRepositoryTest do
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Dashboards.VisualizationsRepository
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -14,7 +13,7 @@ defmodule MetricFlow.Dashboards.VisualizationsRepositoryTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -34,6 +33,7 @@ defmodule MetricFlow.Dashboards.VisualizationsRepositoryTest do
       %{
         name: "Test Visualization",
         user_id: user_id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
         vega_spec: valid_vega_spec()
       },
       overrides

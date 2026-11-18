@@ -55,14 +55,29 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   def fetch_metrics(%Integration{} = integration, opts \\ []) do
     with :ok <- check_not_expired(integration),
          {:ok, location_ids} <- resolve_locations(integration) do
-      metrics =
-        Enum.flat_map(location_ids, fn location_id ->
-          performance = fetch_performance_metrics(integration, location_id, opts)
-          reviews = fetch_review_metrics(integration, location_id, opts)
-          performance ++ reviews
+      # A location that can't be fetched is skipped so it doesn't sink the
+      # others. But when every location fails on access (revoked token, lost
+      # permission), the sync fails so the user sees it — that used to be
+      # recorded as "success, 0 records".
+      results =
+        Enum.map(location_ids, fn location_id ->
+          with {:ok, performance} <- fetch_performance_metrics(integration, location_id, opts),
+               {:ok, reviews} <- fetch_review_metrics(integration, location_id, opts) do
+            {:ok, performance ++ reviews}
+          end
         end)
 
-      {:ok, metrics}
+      case Enum.split_with(results, &match?({:ok, _}, &1)) do
+        {[], [{:error, reason} | _]} ->
+          {:error, reason}
+
+        {oks, errors} ->
+          Enum.each(errors, fn {:error, r} ->
+            Logger.warning("GBP location skipped: #{inspect(r)}")
+          end)
+
+          {:ok, Enum.flat_map(oks, fn {:ok, m} -> m end)}
+      end
     end
   end
 
@@ -120,11 +135,15 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
 
     try do
       response = MetricFlow.DataSync.ProviderHttp.request!(req_opts)
-      handle_performance_response(response, location_id)
+
+      case handle_performance_response(response, location_id) do
+        {:error, _} = err -> err
+        metrics -> {:ok, metrics}
+      end
     rescue
       e ->
         Logger.warning("GBP Performance API failed for #{location_id}: #{Exception.message(e)}")
-        []
+        {:ok, []}
     end
   end
 
@@ -159,6 +178,12 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
       |> Enum.flat_map(&transform_daily_metric(&1, location_id))
     end)
   end
+
+  defp handle_performance_response(%Req.Response{status: 401}, _location_id),
+    do: {:error, :unauthorized}
+
+  defp handle_performance_response(%Req.Response{status: 403}, _location_id),
+    do: {:error, :insufficient_permissions}
 
   defp handle_performance_response(%Req.Response{status: status, body: body}, location_id) do
     Logger.warning("GBP Performance API returned #{status} for #{location_id}: #{inspect(body)}")
@@ -227,11 +252,14 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusiness do
   defp fetch_review_metrics(integration, location_id, opts) do
     case fetch_review_pages(integration, location_id, opts, nil, [], @max_review_pages) do
       {:ok, reviews} ->
-        transform_reviews(reviews, location_id)
+        {:ok, transform_reviews(reviews, location_id)}
+
+      {:error, reason} when reason in [:unauthorized, :insufficient_permissions] ->
+        {:error, reason}
 
       {:error, reason} ->
         Logger.warning("GBP reviews fetch failed for #{location_id}: #{inspect(reason)}")
-        []
+        {:ok, []}
     end
   end
 

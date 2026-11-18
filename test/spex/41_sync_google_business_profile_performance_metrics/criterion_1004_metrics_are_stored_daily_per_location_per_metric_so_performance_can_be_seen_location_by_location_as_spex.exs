@@ -15,6 +15,7 @@ defmodule MetricFlowSpex.Criterion1004MetricsStoredDailyPerLocationPerMetricSpex
           provider_metadata: %{"included_locations" => ["locations/111", "locations/222"]}
         )
 
+        MetricFlowTest.SyncStub.stub_google_business_success(:google_business)
         {:ok, context}
       end
 

@@ -40,7 +40,7 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
   def get_correlation_result(%Scope{} = scope, id) do
     account_id = get_account_id(scope)
 
-    case Repo.get_by(CorrelationResult, id: id, account_id: account_id) do
+    case account_id && Repo.get_by(CorrelationResult, id: id, account_id: account_id) do
       nil -> {:error, :not_found}
       result -> {:ok, result}
     end
@@ -79,7 +79,7 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
   def get_correlation_job(%Scope{} = scope, id) do
     account_id = get_account_id(scope)
 
-    case Repo.get_by(CorrelationJob, id: id, account_id: account_id) do
+    case account_id && Repo.get_by(CorrelationJob, id: id, account_id: account_id) do
       nil -> {:error, :not_found}
       job -> {:ok, job}
     end
@@ -202,16 +202,9 @@ defmodule MetricFlow.Correlations.CorrelationsRepository do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  # Prefers the scope's own account_id, set by callers with an account
-  # switcher via `Scope.put_account_id/2`, since `get_personal_account_id/1`
-  # resolves an arbitrary account unrelated to one the user has switched to.
-  defp get_account_id(%Scope{account_id: account_id}) when not is_nil(account_id) do
-    account_id
-  end
-
-  defp get_account_id(%Scope{} = scope) do
-    MetricFlow.Accounts.get_personal_account_id(scope)
-  end
+  # The scope's active account (membership-checked), or the user's default
+  # account -- see MetricFlow.AccountAccess.account_id/1.
+  defp get_account_id(%Scope{} = scope), do: MetricFlow.AccountAccess.account_id(scope)
 
   defp filter_results(query, opts) do
     query
