@@ -1,6 +1,6 @@
 defmodule MetricFlow.Metrics.MetricRepository do
   @moduledoc """
-  Data access layer for Metric CRUD and query operations filtered by user_id.
+  Data access layer for Metric CRUD and query operations filtered by account_id.
 
   All operations are scoped via the Scope struct for multi-tenant isolation.
   Provides list_metrics/2 with filter options (provider, metric_type,
@@ -14,6 +14,7 @@ defmodule MetricFlow.Metrics.MetricRepository do
 
   import Ecto.Query
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Metrics.DerivedMetricDefinition
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Repo
@@ -24,15 +25,15 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns all metrics for the scoped user with optional filter and pagination
+  Returns all metrics for the scope's account with optional filter and pagination
   options.
 
   Filters by provider, metric_type, metric_name, or date_range, with
   limit/offset for pagination. Results are ordered by recorded_at descending.
   """
   @spec list_metrics(Scope.t(), keyword()) :: list(Metric.t())
-  def list_metrics(%Scope{user: user}, opts \\ []) do
-    from(m in Metric, where: m.user_id == ^user.id)
+  def list_metrics(%Scope{} = scope, opts \\ []) do
+    scoped(scope)
     |> apply_provider_filter(opts)
     |> apply_metric_type_filter(opts)
     |> apply_metric_name_filter(opts)
@@ -48,15 +49,17 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Retrieves a single metric record by ID for the scoped user.
+  Retrieves a single metric record by ID for the scope's account.
 
   Returns {:ok, metric} when found or {:error, :not_found} when the metric
   does not exist or belongs to a different user.
   """
   @spec get_metric(Scope.t(), integer()) :: {:ok, Metric.t()} | {:error, :not_found}
-  def get_metric(%Scope{user: user}, id) do
+  def get_metric(%Scope{} = scope, id) do
     result =
-      from(m in Metric, where: m.user_id == ^user.id and m.id == ^id)
+      scope
+      |> scoped()
+      |> where([m], m.id == ^id)
       |> Repo.one()
 
     case result do
@@ -70,17 +73,17 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Inserts a single metric record for the scoped user.
+  Inserts a single metric record for the scope's account.
 
   Merges user_id from the scope into attrs before inserting. The scope's
   user_id always takes precedence over any user_id in the attrs map.
   """
   @spec create_metric(Scope.t(), map()) :: {:ok, Metric.t()} | {:error, Ecto.Changeset.t()}
-  def create_metric(%Scope{user: user}, attrs) do
-    attrs_with_user = Map.put(attrs, :user_id, user.id)
+  def create_metric(%Scope{} = scope, attrs) do
+    attrs = Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
 
-    %Metric{}
-    |> Metric.changeset(attrs_with_user)
+    %Metric{user_id: AccountAccess.user_id(scope), account_id: AccountAccess.account_id(scope)}
+    |> Metric.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -89,25 +92,33 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Bulk-inserts a list of metric attribute maps for the scoped user in a single
+  Bulk-inserts a list of metric attribute maps for the scope's account in a single
   database operation.
 
   Returns {:ok, count} where count is the number of inserted records.
   """
   @spec create_metrics(Scope.t(), list(map())) :: {:ok, integer()} | {:error, term()}
-  def create_metrics(%Scope{user: user}, attrs_list) do
-    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+  def create_metrics(%Scope{} = scope, attrs_list) do
+    case AccountAccess.account_id(scope) do
+      nil ->
+        {:error, :no_account}
 
-    entries =
-      Enum.map(attrs_list, fn attrs ->
-        attrs
-        |> Map.put(:user_id, user.id)
-        |> Map.put(:inserted_at, now)
-        |> Map.put(:updated_at, now)
-      end)
+      account_id ->
+        now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+        user_id = AccountAccess.user_id(scope)
 
-    {count, _} = Repo.insert_all(Metric, entries)
-    {:ok, count}
+        entries =
+          Enum.map(attrs_list, fn attrs ->
+            attrs
+            |> Map.put(:user_id, user_id)
+            |> Map.put(:account_id, account_id)
+            |> Map.put(:inserted_at, now)
+            |> Map.put(:updated_at, now)
+          end)
+
+        {count, _} = Repo.insert_all(Metric, entries)
+        {:ok, count}
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -115,16 +126,18 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Deletes all metric records for the scoped user belonging to a specific
+  Deletes all metric records for the scope's account belonging to a specific
   provider.
 
   Returns {:ok, count} where count is the number of deleted records. Used when
   a provider integration is disconnected.
   """
   @spec delete_metrics_by_provider(Scope.t(), atom()) :: {:ok, integer()}
-  def delete_metrics_by_provider(%Scope{user: user}, provider) do
+  def delete_metrics_by_provider(%Scope{} = scope, provider) do
     {count, _} =
-      from(m in Metric, where: m.user_id == ^user.id and m.provider == ^provider)
+      scope
+      |> scoped()
+      |> where([m], m.provider == ^provider)
       |> Repo.delete_all()
 
     {:ok, count}
@@ -145,13 +158,13 @@ defmodule MetricFlow.Metrics.MetricRepository do
   """
   @spec delete_metrics_by_location_and_date(Scope.t(), atom(), String.t(), Date.t()) ::
           {:ok, integer()}
-  def delete_metrics_by_location_and_date(%Scope{user: user}, provider, location_id, date) do
+  def delete_metrics_by_location_and_date(%Scope{} = scope, provider, location_id, date) do
     start_dt = date_to_start_of_day(date)
     end_dt = date_to_end_of_day(date)
 
     {count, _} =
-      from(m in Metric,
-        where: m.user_id == ^user.id and m.provider == ^provider,
+      from(m in scoped(scope),
+        where: m.provider == ^provider,
         where: m.recorded_at >= ^start_dt and m.recorded_at <= ^end_dt,
         where: fragment("?->>'location_id' = ?", m.dimensions, ^location_id)
       )
@@ -172,9 +185,9 @@ defmodule MetricFlow.Metrics.MetricRepository do
   permanently.
   """
   @spec delete_all_metrics(Scope.t()) :: :ok
-  def delete_all_metrics(%Scope{user: user}) do
-    from(m in Metric, where: m.user_id == ^user.id) |> Repo.delete_all()
-    from(d in DerivedMetricDefinition, where: d.user_id == ^user.id) |> Repo.delete_all()
+  def delete_all_metrics(%Scope{} = scope) do
+    scope |> scoped() |> Repo.delete_all()
+    DerivedMetricDefinition |> AccountAccess.scope_query(scope) |> Repo.delete_all()
     :ok
   end
 
@@ -192,10 +205,10 @@ defmodule MetricFlow.Metrics.MetricRepository do
   """
   @spec query_time_series(Scope.t(), String.t(), keyword()) ::
           list(%{date: Date.t(), value: float()})
-  def query_time_series(%Scope{user: user}, metric_name, opts) do
+  def query_time_series(%Scope{} = scope, metric_name, opts) do
     date_range = resolve_time_series_date_range(opts)
 
-    from(m in Metric, where: m.user_id == ^user.id)
+    scoped(scope)
     |> apply_metric_name_or_normalized(metric_name)
     |> apply_provider_filter(opts)
     |> apply_date_range_filter_with_default(date_range)
@@ -206,7 +219,7 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   @doc """
-  Returns the most recent date any metric was recorded for the scoped user,
+  Returns the most recent date any metric was recorded for the scope's account,
   or nil if they have no metric data at all.
 
   Used to anchor lookback windows (e.g. correlation analysis) to the
@@ -214,14 +227,14 @@ defmodule MetricFlow.Metrics.MetricRepository do
   historical data commonly falls outside a fixed recent window.
   """
   @spec get_latest_metric_date(Scope.t()) :: Date.t() | nil
-  def get_latest_metric_date(%Scope{user: user}) do
-    from(m in Metric, where: m.user_id == ^user.id)
+  def get_latest_metric_date(%Scope{} = scope) do
+    scoped(scope)
     |> select([m], max(fragment("?::date", m.recorded_at)))
     |> Repo.one()
   end
 
   @doc """
-  Returns the most recent date any metric was recorded for the scoped user
+  Returns the most recent date any metric was recorded for the scope's account
   from the given provider, or nil if that provider has no metric data yet.
 
   Used to anchor a sync's date_range to the provider's own last-synced date
@@ -229,8 +242,10 @@ defmodule MetricFlow.Metrics.MetricRepository do
   on every run.
   """
   @spec get_latest_metric_date(Scope.t(), atom()) :: Date.t() | nil
-  def get_latest_metric_date(%Scope{user: user}, provider) do
-    from(m in Metric, where: m.user_id == ^user.id and m.provider == ^provider)
+  def get_latest_metric_date(%Scope{} = scope, provider) do
+    scope
+    |> scoped()
+    |> where([m], m.provider == ^provider)
     |> select([m], max(fragment("?::date", m.recorded_at)))
     |> Repo.one()
   end
@@ -241,10 +256,10 @@ defmodule MetricFlow.Metrics.MetricRepository do
   discover whether a metric spans more than one platform.
   """
   @spec list_providers_for_metric(Scope.t(), String.t(), keyword()) :: list(atom())
-  def list_providers_for_metric(%Scope{user: user}, metric_name, opts \\ []) do
+  def list_providers_for_metric(%Scope{} = scope, metric_name, opts \\ []) do
     date_range = resolve_time_series_date_range(opts)
 
-    from(m in Metric, where: m.user_id == ^user.id)
+    scoped(scope)
     |> apply_metric_name_or_normalized(metric_name)
     |> apply_date_range_filter_with_default(date_range)
     |> distinct(true)
@@ -270,9 +285,9 @@ defmodule MetricFlow.Metrics.MetricRepository do
           max: float(),
           count: integer()
         }
-  def aggregate_metrics(%Scope{user: user}, metric_name, opts) do
+  def aggregate_metrics(%Scope{} = scope, metric_name, opts) do
     result =
-      from(m in Metric, where: m.user_id == ^user.id)
+      scoped(scope)
       |> apply_metric_name_or_normalized(metric_name)
       |> apply_provider_filter(opts)
       |> apply_date_range_filter(opts)
@@ -293,13 +308,13 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns a sorted list of distinct metric names available for the scoped user.
+  Returns a sorted list of distinct metric names available for the scope's account.
 
   Used by Goals UI for metric selection and dashboard configuration.
   """
   @spec list_metric_names(Scope.t(), keyword()) :: list(String.t())
-  def list_metric_names(%Scope{user: user}, opts \\ []) do
-    from(m in Metric, where: m.user_id == ^user.id)
+  def list_metric_names(%Scope{} = scope, opts \\ []) do
+    scoped(scope)
     |> apply_provider_filter(opts)
     |> distinct(true)
     |> order_by([m], asc: m.metric_name)
@@ -308,15 +323,14 @@ defmodule MetricFlow.Metrics.MetricRepository do
   end
 
   @doc """
-  Returns distinct normalized metric names for the scoped user, sorted alphabetically.
+  Returns distinct normalized metric names for the scope's account, sorted alphabetically.
 
   These are canonical cross-provider names (e.g. "clicks", "impressions", "users")
   suitable for aggregation, display, and LLM context.
   """
   @spec list_normalized_metric_names(Scope.t(), keyword()) :: list(String.t())
-  def list_normalized_metric_names(%Scope{user: user}, opts \\ []) do
-    from(m in Metric,
-      where: m.user_id == ^user.id,
+  def list_normalized_metric_names(%Scope{} = scope, opts \\ []) do
+    from(m in scoped(scope),
       where: not is_nil(m.normalized_metric_name) and m.normalized_metric_name != ""
     )
     |> apply_provider_filter(opts)
@@ -332,15 +346,15 @@ defmodule MetricFlow.Metrics.MetricRepository do
 
   @doc """
   Returns a map of metric_name => provider for all distinct metric name/provider
-  pairs for the scoped user.
+  pairs for the scope's account.
 
   When a metric name has data from multiple providers, the first provider
   (alphabetically) is returned. Used by Dashboards to annotate summary stats
   with their originating platform.
   """
   @spec list_metric_providers(Scope.t(), keyword()) :: %{String.t() => atom()}
-  def list_metric_providers(%Scope{user: user}, opts \\ []) do
-    from(m in Metric, where: m.user_id == ^user.id)
+  def list_metric_providers(%Scope{} = scope, opts \\ []) do
+    scoped(scope)
     |> apply_provider_filter(opts)
     |> apply_date_range_filter(opts)
     |> group_by([m], [m.metric_name, m.provider])
@@ -352,6 +366,8 @@ defmodule MetricFlow.Metrics.MetricRepository do
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp scoped(%Scope{} = scope), do: AccountAccess.scope_query(Metric, scope)
 
   # Match on normalized_metric_name first, fall back to metric_name for backward compat
   defp apply_metric_name_or_normalized(query, name) do
@@ -464,19 +480,24 @@ defmodule MetricFlow.Metrics.MetricRepository do
   as data rather than by an engineer changing aggregation code.
   """
   @spec list_derived_metric_definitions(Scope.t()) :: list(DerivedMetricDefinition.t())
-  def list_derived_metric_definitions(%Scope{user: user}) do
-    from(d in DerivedMetricDefinition, where: d.user_id == ^user.id)
+  def list_derived_metric_definitions(%Scope{} = scope) do
+    DerivedMetricDefinition
+    |> AccountAccess.scope_query(scope)
     |> Repo.all()
   end
 
   @doc """
-  Creates a derived metric definition for the scoped user.
+  Creates a derived metric definition for the scope's account.
   """
   @spec create_derived_metric_definition(Scope.t(), map()) ::
           {:ok, DerivedMetricDefinition.t()} | {:error, Ecto.Changeset.t()}
-  def create_derived_metric_definition(%Scope{user: user}, attrs) do
-    %DerivedMetricDefinition{}
-    |> DerivedMetricDefinition.changeset(Map.put(attrs, "user_id", user.id))
-    |> Repo.insert()
+  def create_derived_metric_definition(%Scope{} = scope, attrs) do
+    with {:ok, account_id} <- AccountAccess.authorize_write(scope) do
+      attrs = Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
+
+      %DerivedMetricDefinition{user_id: AccountAccess.user_id(scope), account_id: account_id}
+      |> DerivedMetricDefinition.changeset(attrs)
+      |> Repo.insert()
+    end
   end
 end

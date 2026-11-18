@@ -95,6 +95,8 @@ defmodule MetricFlow.MixProject do
       {:paper_trail, "~> 1.0"},
       # MCP server (tool definitions for LLM agent)
       {:anubis_mcp, "~> 1.1.0"},
+      # OAuth authorization server so MCP clients connect by URL and sign in
+      {:ex_oauth2_provider, "~> 0.5.7"},
       # Data providers (ADR: data_provider_apis)
       {:google_api_analytics_data, "~> 0.17"},
       # Environment variables (ADR: dotenvy)

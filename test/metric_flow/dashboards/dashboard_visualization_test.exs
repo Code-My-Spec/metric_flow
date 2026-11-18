@@ -16,7 +16,8 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
     %Dashboard{}
     |> Dashboard.changeset(%{
       name: "Test Dashboard #{System.unique_integer([:positive])}",
-      user_id: user_id
+      user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id)
     })
     |> Repo.insert!()
   end
@@ -26,6 +27,7 @@ defmodule MetricFlow.Dashboards.DashboardVisualizationTest do
     |> Visualization.changeset(%{
       name: "Test Visualization #{System.unique_integer([:positive])}",
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       vega_spec: %{"mark" => "bar"}
     })
     |> Repo.insert!()

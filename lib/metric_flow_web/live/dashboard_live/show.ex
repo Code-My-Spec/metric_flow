@@ -11,6 +11,8 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
   use MetricFlowWeb, :live_view
 
+  import MetricFlowWeb.SetupComponents, only: [finish_setup_checklist: 1]
+
   import MetricFlowWeb.DashboardLive.Components
 
   alias MetricFlow.Ai
@@ -268,15 +270,21 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           </.link>
         </div>
 
-        <div :if={not @has_integrations} data-role="onboarding-prompt" class="mf-card p-8 text-center">
+        <div
+          :if={not @has_integrations}
+          data-role="onboarding-prompt"
+          class="mx-auto max-w-xl rounded-box border border-base-300 bg-base-100 p-8 text-center"
+        >
           <h2 class="text-xl font-semibold">Connect Your Platforms</h2>
           <p class="mt-2 text-base-content/60">
-            Connect your marketing and financial platforms to start seeing unified metrics, AI insights, and recommendations.
+            Your metrics appear here once a platform is connected. One Google sign-in covers Analytics, Ads, Search Console, Business Profile and YouTube; Meta and QuickBooks take one more each.
           </p>
-          <a href="/app/integrations" class="btn btn-primary mt-6">
-            Connect Integrations
-          </a>
+          <.link navigate={~p"/app/onboarding/connect"} class="btn btn-primary mt-6">
+            Set up data sources
+          </.link>
         </div>
+
+        <.finish_setup_checklist :if={@has_integrations} status={assigns[:setup_status] || []} />
 
         <div :if={@has_integrations} data-role="metrics-dashboard">
           <%!-- Filter controls --%>
@@ -609,7 +617,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
 
       true ->
         if Phoenix.LiveView.connected?(socket) do
-          Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
+          MetricFlow.DataSync.subscribe_sync_events(scope)
         end
 
         available_date_ranges = Dashboards.available_date_ranges()
@@ -631,6 +639,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
         socket =
           socket
           |> assign(:has_integrations, true)
+          |> assign(:setup_status, MetricFlow.Onboarding.status(scope))
           |> assign(:dashboard_data, dashboard_data)
           |> assign(:available_date_ranges, available_date_ranges)
           |> assign(:selected_platform, nil)
@@ -983,6 +992,10 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> reload_dashboard_data([])
 
         {:noreply, socket}
+
+      {:error, :unauthorized} ->
+        {:noreply,
+         put_flash(socket, :error, "Could not add derived metric: you have read-only access.")}
 
       {:error, changeset} ->
         message = changeset |> changeset_error_summary()

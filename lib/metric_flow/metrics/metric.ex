@@ -54,6 +54,7 @@ defmodule MetricFlow.Metrics.Metric do
     field :provider, Ecto.Enum, values: @providers
     field :dimensions, :map, default: %{}
 
+    field :account_id, :integer
     belongs_to :user, User
 
     timestamps(type: :utc_datetime_usec)
@@ -69,6 +70,7 @@ defmodule MetricFlow.Metrics.Metric do
   def changeset(metric, attrs) do
     metric
     |> cast(attrs, [
+      :account_id,
       :user_id,
       :metric_type,
       :metric_name,
@@ -78,9 +80,17 @@ defmodule MetricFlow.Metrics.Metric do
       :provider,
       :dimensions
     ])
-    |> validate_required([:user_id, :metric_type, :metric_name, :value, :recorded_at, :provider])
+    |> validate_required([
+      :account_id,
+      :metric_type,
+      :metric_name,
+      :value,
+      :recorded_at,
+      :provider
+    ])
     |> validate_dimensions()
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
   end
 
   # ---------------------------------------------------------------------------

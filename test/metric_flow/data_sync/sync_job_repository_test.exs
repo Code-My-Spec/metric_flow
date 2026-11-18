@@ -7,7 +7,6 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
   alias MetricFlow.DataSync.SyncJobRepository
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -15,7 +14,7 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -23,6 +22,7 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
@@ -36,6 +36,7 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
     Map.merge(
       %{
         user_id: user_id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
         integration_id: integration_id,
         provider: :google_analytics,
         status: :pending
@@ -252,8 +253,9 @@ defmodule MetricFlow.DataSync.SyncJobRepositoryTest do
       user = user_fixture()
       integration = insert_integration!(user.id)
 
+      # A user with no membership has no account to create the job in.
       fake_user = %MetricFlow.Users.User{id: -1}
-      scope = Scope.for_user(fake_user)
+      scope = MetricFlow.Users.Scope.for_user(fake_user)
       attrs = %{provider: :google_analytics}
 
       assert {:error, changeset} = SyncJobRepository.create_sync_job(scope, integration.id, attrs)

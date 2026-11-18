@@ -48,6 +48,50 @@ defmodule MetricFlowWeb.Router do
     get "/verify/always-failing", VerifyController, :always_failing
   end
 
+  # Agent access over MCP (streamable HTTP). OAuth bearer tokens, no session.
+  pipeline :mcp do
+    plug MetricFlowWeb.Plugs.MCPAuth
+  end
+
+  scope "/mcp" do
+    pipe_through :mcp
+    forward "/", Anubis.Server.Transport.StreamableHTTP.Plug, server: MetricFlowWeb.MCP.Server
+  end
+
+  # OAuth authorization server for MCP clients: the browser half (consent)...
+  scope "/oauth", MetricFlowWeb do
+    pipe_through :browser
+
+    get "/authorize", OAuthController, :authorize
+    post "/authorize", OAuthController, :create
+    delete "/authorize", OAuthController, :delete
+  end
+
+  # ...and the machine half (no CSRF).
+  scope "/oauth", MetricFlowWeb do
+    pipe_through :api
+
+    post "/token", OAuthController, :token
+    post "/revoke", OAuthController, :revoke
+    post "/register", OAuthController, :register
+  end
+
+  # MCP clients fall back to /register when they can't fetch the metadata.
+  scope "/", MetricFlowWeb do
+    pipe_through :api
+
+    post "/register", OAuthController, :register
+  end
+
+  scope "/.well-known", MetricFlowWeb do
+    pipe_through :api
+
+    get "/oauth-protected-resource", OAuthController, :protected_resource_metadata
+    get "/oauth-protected-resource/*path", OAuthController, :protected_resource_metadata
+    get "/oauth-authorization-server", OAuthController, :authorization_server_metadata
+    get "/oauth-authorization-server/*path", OAuthController, :authorization_server_metadata
+  end
+
   # Health check for Caddy reverse proxy and Docker healthcheck
   scope "/" do
     get "/health", MetricFlowWeb.HealthController, :index
@@ -98,6 +142,7 @@ defmodule MetricFlowWeb.Router do
       live "/help/account-origination", HelpLive.AccountOrigination, :index
 
       # Integration routes (LiveView)
+      live "/onboarding/connect", OnboardingLive.Connect, :index
       live "/integrations", IntegrationLive.Index, :index
       live "/integrations/connect", IntegrationLive.Connect, :index
       live "/integrations/connect/:provider", IntegrationLive.Connect, :detail
@@ -177,7 +222,12 @@ defmodule MetricFlowWeb.Router do
     # nothing to set up. Its own session rather than the `/app` scope, because the
     # path is `/onboarding` and the tests and links say so.
     live_session :onboarding,
-      on_mount: @sandbox_on_mount ++ [{MetricFlowWeb.UserAuth, :require_authenticated}] do
+      on_mount:
+        @sandbox_on_mount ++
+          [
+            {MetricFlowWeb.UserAuth, :require_authenticated},
+            {MetricFlowWeb.Hooks.ActiveAccountHook, :load_active_account}
+          ] do
       live "/onboarding", OnboardingLive, :index
     end
 

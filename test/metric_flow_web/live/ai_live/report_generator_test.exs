@@ -33,7 +33,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "renders report generator page with prompt form and Generate Chart button" do
     test "renders report generator page with prompt form and Generate Chart button", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
 
       capture_log(fn ->
         {:ok, lv, html} = mount_report_generator(conn, user)
@@ -48,7 +48,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "shows empty state when no chart has been generated" do
     test "shows empty state when no chart has been generated", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_report_generator(conn, user)
@@ -63,7 +63,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "updates prompt text on change without calling any context" do
     test "updates prompt text on change without calling any context", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_report_generator(conn, user)
@@ -79,7 +79,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "disables generate button when prompt is blank or generation is in progress", %{
       conn: conn
     } do
-      user = user_fixture()
+      user = user_with_account_fixture()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_report_generator(conn, user)
@@ -92,7 +92,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
     test "shows chart preview section with Vega-Lite container after successful generation", %{
       conn: conn
     } do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
       capture_log(fn ->
@@ -110,7 +110,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "shows error message when generation fails" do
     test "shows error message when generation fails", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ClaudeCodeStub.error("generation failed"))
 
       capture_log(fn ->
@@ -127,7 +127,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "shows save section with name input after chart is generated" do
     test "shows save section with name input after chart is generated", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
       capture_log(fn ->
@@ -144,7 +144,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "saves visualization and shows confirmation with link to visualizations" do
     test "saves visualization and shows confirmation with link to visualizations", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
       capture_log(fn ->
@@ -164,7 +164,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "shows save error when save name is blank" do
     test "shows save error when save name is blank", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
       capture_log(fn ->
@@ -182,7 +182,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "disables save button when vega_spec is nil or save name is blank" do
     test "disables save button when vega_spec is nil or save name is blank", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
 
       capture_log(fn ->
         {:ok, lv, _html} = mount_report_generator(conn, user)
@@ -194,7 +194,7 @@ defmodule MetricFlowWeb.AiLive.ReportGeneratorTest do
 
   describe "resets state when Generate Another is clicked after saving" do
     test "resets state when Generate Another is clicked after saving", %{conn: conn} do
-      user = user_fixture()
+      user = user_with_account_fixture()
       setup_command_runner(ReportGeneratorStub.generate_weekly_revenue_bar_chart())
 
       capture_log(fn ->

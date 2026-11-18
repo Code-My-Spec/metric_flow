@@ -18,6 +18,7 @@ defmodule MetricFlow.Metrics.ReviewMetrics do
 
   import Ecto.Query
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
@@ -53,8 +54,8 @@ defmodule MetricFlow.Metrics.ReviewMetrics do
           review_total_count: list(rolling_metric()),
           review_average_rating: list(rolling_metric())
         }
-  def query_rolling_review_metrics(%Scope{user: user}, opts \\ []) do
-    daily_rows = fetch_daily_review_aggregates(user.id, opts)
+  def query_rolling_review_metrics(%Scope{} = scope, opts \\ []) do
+    daily_rows = fetch_daily_review_aggregates(scope, opts)
     compute_rolling_metrics(daily_rows)
   end
 
@@ -62,10 +63,10 @@ defmodule MetricFlow.Metrics.ReviewMetrics do
   # Private — data fetching
   # ---------------------------------------------------------------------------
 
-  defp fetch_daily_review_aggregates(user_id, opts) do
+  defp fetch_daily_review_aggregates(scope, opts) do
     base =
-      from(m in Metric,
-        where: m.user_id == ^user_id and m.metric_type == "reviews"
+      from(m in AccountAccess.scope_query(Metric, scope),
+        where: m.metric_type == "reviews"
       )
 
     base

@@ -7,6 +7,12 @@ defmodule MetricFlow.Metrics.EntityMetricRepository do
   alias MetricFlow.Repo
   alias MetricFlow.Users.Scope
 
+  # Background sync jobs act through a system scope built from the
+  # account-owned integration.
+  def authorize(%Scope{user: nil, account_id: account_id}, access)
+      when is_integer(account_id) and access in [:read, :write],
+      do: :ok
+
   def authorize(%Scope{user: %{id: user_id}, account_id: account_id}, access)
       when is_integer(account_id) and access in [:read, :write] do
     query =

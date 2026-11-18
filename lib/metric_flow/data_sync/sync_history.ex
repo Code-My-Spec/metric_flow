@@ -61,6 +61,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
     field :started_at, :utc_datetime_usec
     field :completed_at, :utc_datetime_usec
 
+    field :account_id, :integer
     belongs_to :user, User
     belongs_to :integration, Integration
     belongs_to :sync_job, SyncJob
@@ -80,6 +81,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
   def changeset(sync_history, attrs) do
     sync_history
     |> cast(attrs, [
+      :account_id,
       :user_id,
       :integration_id,
       :sync_job_id,
@@ -93,7 +95,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
       :completed_at
     ])
     |> validate_required([
-      :user_id,
+      :account_id,
       :provider,
       :status,
       :records_synced,
@@ -102,6 +104,7 @@ defmodule MetricFlow.DataSync.SyncHistory do
     ])
     |> validate_number(:records_synced, greater_than_or_equal_to: 0)
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
     |> assoc_constraint(:integration)
     |> assoc_constraint(:sync_job)
   end

@@ -8,7 +8,6 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
   alias MetricFlow.DataSync.SyncJob
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -16,7 +15,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -34,6 +33,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
@@ -47,6 +47,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
     %SyncJob{}
     |> SyncJob.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       provider: provider,
       status: :completed
@@ -58,6 +59,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
     Map.merge(
       %{
         user_id: user_id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
         integration_id: integration_id,
         sync_job_id: sync_job_id,
         provider: :google_analytics,

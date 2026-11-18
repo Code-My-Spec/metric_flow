@@ -429,7 +429,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
     sync_history = DataSync.list_sync_history(scope)
 
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
+      MetricFlow.DataSync.subscribe_sync_events(scope)
     end
 
     date_range_end = Date.add(Date.utc_today(), -1)

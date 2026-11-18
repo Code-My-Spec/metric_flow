@@ -566,8 +566,11 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   def mount(_params, _session, socket) do
     scope = Scope.put_account_id(socket.assigns.current_scope, socket.assigns[:active_account_id])
 
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:correlations")
+    if connected?(socket) and is_integer(scope.account_id) do
+      Phoenix.PubSub.subscribe(
+        MetricFlow.PubSub,
+        MetricFlow.AccountAccess.correlations_topic(scope.account_id)
+      )
     end
 
     {summary, job_running} =

@@ -840,8 +840,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
         )
 
       capture_log(fn ->
-        assert {:ok, metrics} = GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
-        assert is_list(metrics)
+        assert {:error, :unauthorized} =
+                 GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
       end)
     end
 
@@ -855,8 +855,8 @@ defmodule MetricFlow.DataSync.DataProviders.GoogleBusinessTest do
         )
 
       capture_log(fn ->
-        assert {:ok, metrics} = GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
-        assert is_list(metrics)
+        assert {:error, :insufficient_permissions} =
+                 GoogleBusiness.fetch_metrics(valid_integration(), http_plug: plug)
       end)
     end
 

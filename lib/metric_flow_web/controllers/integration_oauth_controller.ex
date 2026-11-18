@@ -26,6 +26,28 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   require Logger
 
+  plug :pin_requested_account when action in [:request]
+
+  # A connect link from an agent names the account it is for
+  # (`Onboarding.connect_path/3`), so the connection lands there rather than
+  # on whichever account happens to be active in this browser.
+  defp pin_requested_account(%{params: %{"account_id" => raw}} = conn, _opts) do
+    scope = conn.assigns.current_scope
+
+    with {id, ""} <- Integer.parse(to_string(raw)),
+         true <- MetricFlow.AccountAccess.member?(scope.user.id, id) do
+      assign(conn, :current_scope, MetricFlow.Users.Scope.put_account_id(scope, id))
+    else
+      _ ->
+        conn
+        |> put_flash(:error, "You don't have access to the account this link is for.")
+        |> redirect(to: ~p"/app/onboarding/connect")
+        |> halt()
+    end
+  end
+
+  defp pin_requested_account(conn, _opts), do: conn
+
   @doc """
   Initiates OAuth flow by redirecting to provider authorization URL.
 
@@ -58,18 +80,44 @@ defmodule MetricFlowWeb.IntegrationOauthController do
     end
   end
 
-  def request(conn, %{"provider" => provider_str}) do
+  # One consent for every Google product (Analytics, Ads, Search Console,
+  # Business Profile). See `Integrations.google_bundle_authorize_url/0`.
+  def request(conn, %{"provider" => "google_bundle"} = params) do
+    case Integrations.google_bundle_authorize_url() do
+      {:ok, %{url: url, session_params: session_params}} ->
+        state = Map.get(session_params, :state) || Map.get(session_params, "state")
+
+        OAuthStateStore.store(
+          state,
+          session_params |> put_return_to(params) |> put_account(conn)
+        )
+
+        redirect(conn, external: url)
+
+      {:error, reason} ->
+        Logger.error("Failed to generate Google bundle OAuth URL: #{inspect(reason)}")
+
+        conn
+        |> put_flash(:error, "Couldn't start the Google connection. Please try again.")
+        |> redirect(to: safe_return_to(params["return_to"]) || ~p"/app/onboarding/connect")
+    end
+  end
+
+  def request(conn, %{"provider" => provider_str} = params) do
     provider = String.to_existing_atom(provider_str)
 
     case Integrations.authorize_url(provider) do
       {:ok, %{url: url, session_params: session_params}} ->
+        session_params = session_params |> put_return_to(params) |> put_account(conn)
         state = Map.get(session_params, :state) || Map.get(session_params, "state")
 
         if state do
           OAuthStateStore.store(state, session_params)
           Logger.debug("OAuth request — stored state=#{state} for provider=#{provider}")
         else
-          Logger.warning("OAuth request — no state in session_params: #{inspect(session_params)}")
+          Logger.warning(
+            "OAuth request — no state in session_params (keys: #{inspect(Map.keys(session_params))})"
+          )
         end
 
         redirect(conn, external: url)
@@ -148,15 +196,59 @@ defmodule MetricFlowWeb.IntegrationOauthController do
   end
 
   def callback(conn, %{"provider" => provider_str} = params) do
-    scope = conn.assigns.current_scope
     session_params = fetch_session_params(params)
 
+    if Map.get(session_params, :google_bundle) || Map.get(session_params, "google_bundle"),
+      do: google_bundle_callback(conn, params, session_params),
+      else: provider_callback(conn, provider_str, params, session_params)
+  end
+
+  defp google_bundle_callback(conn, params, session_params) do
+    return_to = return_to_from(session_params) || ~p"/app/onboarding/connect"
+
+    result =
+      if params["error"],
+        do: {:error, params["error"]},
+        else:
+          Integrations.handle_google_bundle_callback(
+            callback_scope(conn, session_params),
+            session_params,
+            params
+          )
+
+    case result do
+      {:ok, %{connected: []}} ->
+        conn
+        |> put_flash(
+          :error,
+          "Google connected, but no data access was granted. Tick at least one product on Google's screen."
+        )
+        |> redirect(to: return_to)
+
+      {:ok, %{connected: connected}} ->
+        conn
+        |> put_flash(:info, "Google connected — #{length(connected)} product(s) ready to set up.")
+        |> redirect(to: return_to)
+
+      {:error, reason} ->
+        Logger.error("Google bundle OAuth callback failed: #{inspect(reason)}")
+
+        conn
+        |> put_flash(:error, format_oauth_error(params, :google, reason))
+        |> redirect(to: return_to)
+    end
+  end
+
+  defp provider_callback(conn, provider_str, params, session_params) do
+    scope = callback_scope(conn, session_params)
     provider = parse_provider(provider_str)
 
     redirect_to =
-      if provider == :codemyspec,
-        do: ~p"/app/users/settings",
-        else: ~p"/app/integrations/connect/#{provider_str}"
+      cond do
+        provider == :codemyspec -> ~p"/app/users/settings"
+        rt = return_to_from(session_params) -> rt
+        true -> ~p"/app/integrations/connect/#{provider_str}"
+      end
 
     case handle_oauth_callback(scope, provider, params, session_params) do
       {:ok, _integration} ->
@@ -165,7 +257,7 @@ defmodule MetricFlowWeb.IntegrationOauthController do
         |> redirect(to: redirect_to)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        Logger.error("Failed to persist integration: #{inspect(changeset)}")
+        Logger.error("Failed to persist integration: #{inspect(changeset.errors)}")
 
         conn
         |> put_flash(:error, "Failed to save integration")
@@ -191,10 +283,55 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   # Private Helpers
 
-  defp youtube_scope(conn) do
-    scope = conn.assigns.current_scope
-    account = scope |> MetricFlow.Accounts.list_accounts() |> List.first()
-    MetricFlow.Users.Scope.put_account_id(scope, account && account.id)
+  # `return_to` lets the setup wizard (or an agent's connect link) bring the
+  # user back where they started. Only in-app paths are honoured.
+  defp put_return_to(session_params, params) do
+    case safe_return_to(params["return_to"]) do
+      nil -> session_params
+      path -> Map.put(session_params, :return_to, path)
+    end
+  end
+
+  defp return_to_from(session_params),
+    do:
+      safe_return_to(Map.get(session_params, :return_to) || Map.get(session_params, "return_to"))
+
+  defp safe_return_to("/app/" <> rest = path) when is_binary(rest) do
+    if String.contains?(path, ["//", "\\", "\n", "\r"]), do: nil, else: path
+  end
+
+  defp safe_return_to(_), do: nil
+
+  defp youtube_scope(conn), do: active_scope(conn)
+
+  # Connections belong to the active account -- the same one the account
+  # switcher shows (see MetricFlowWeb.Hooks.ActiveAccountHook).
+  defp active_scope(conn) do
+    MetricFlowWeb.Hooks.ActiveAccountHook.put_active_account(conn.assigns.current_scope)
+  end
+
+  # The callback lands on the account that was active when the user clicked
+  # Connect (pinned in the server-side state), so switching accounts in
+  # another tab mid-consent cannot redirect the connection. Membership is
+  # re-checked by every account-scoped query.
+  defp callback_scope(conn, session_params) do
+    case Map.get(session_params, :account_id) || Map.get(session_params, "account_id") do
+      account_id when is_integer(account_id) ->
+        MetricFlow.Users.Scope.put_account_id(conn.assigns.current_scope, account_id)
+
+      _ ->
+        active_scope(conn)
+    end
+  end
+
+  defp put_account(session_params, conn) do
+    case active_scope(conn) do
+      %{account_id: account_id} when is_integer(account_id) ->
+        Map.put(session_params, :account_id, account_id)
+
+      _ ->
+        session_params
+    end
   end
 
   @callback_provider_map %{
@@ -265,6 +402,10 @@ defmodule MetricFlowWeb.IntegrationOauthController do
 
   defp format_oauth_error(_params, _provider, :unsupported_provider) do
     "Could not complete the connection. Please try again."
+  end
+
+  defp format_oauth_error(_params, _provider, :unauthorized) do
+    "Only account owners, admins and account managers can connect data sources."
   end
 
   defp format_oauth_error(_params, _provider, _reason) do

@@ -18,7 +18,9 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
             context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google,
@@ -59,7 +61,9 @@ defmodule MetricFlowSpex.WhenOauthTokenRefreshFailsIntegrationStatusChangesToNee
       when_ "the system reports a sync failure due to expired authorization", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google,

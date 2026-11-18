@@ -1,0 +1,12 @@
+<main class="min-h-screen bg-base-200 px-4 py-16">
+  <Layouts.flash_group flash={@flash} />
+  <div class="mx-auto max-w-md">
+    <div class="alert alert-error" id="oauth-error" role="alert">
+      <.icon name="hero-x-circle" class="size-5" />
+      <div>
+        <div class="font-medium">This connection request can't be completed.</div>
+        <div class="text-sm">{@error[:error_description] || @error[:error]}</div>
+      </div>
+    </div>
+  </div>
+</main>

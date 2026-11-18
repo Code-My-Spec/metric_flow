@@ -13,6 +13,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   alias MetricFlow.Dashboards.DashboardVisualization
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Repo
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -24,9 +25,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   ordered by most recently created.
   """
   @spec list_dashboards(Scope.t()) :: list(Dashboard.t())
-  def list_dashboards(%Scope{user: user}) do
-    from(d in Dashboard,
-      where: d.user_id == ^user.id and d.built_in == false,
+  def list_dashboards(%Scope{} = scope) do
+    from(d in scoped(scope),
+      where: d.built_in == false,
       order_by: [desc: d.favorite, desc: d.updated_at, desc: d.id]
     )
     |> Repo.all()
@@ -81,11 +82,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   dashboard does not exist or belongs to a different user.
   """
   @spec get_dashboard(Scope.t(), integer()) :: {:ok, Dashboard.t()} | {:error, :not_found}
-  def get_dashboard(%Scope{user: user}, id) do
+  def get_dashboard(%Scope{} = scope, id) do
     result =
-      from(d in Dashboard,
-        where: d.user_id == ^user.id and d.id == ^id
-      )
+      from(d in scoped(scope), where: d.id == ^id)
       |> Repo.one()
 
     case result do
@@ -108,7 +107,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   """
   @spec get_dashboard_with_visualizations(Scope.t(), integer()) ::
           {:ok, Dashboard.t()} | {:error, :not_found}
-  def get_dashboard_with_visualizations(%Scope{user: user}, id) do
+  def get_dashboard_with_visualizations(%Scope{} = scope, id) do
     dvs_query =
       from(dv in DashboardVisualization,
         order_by: dv.position,
@@ -116,8 +115,8 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
       )
 
     result =
-      from(d in Dashboard,
-        where: d.user_id == ^user.id and d.id == ^id,
+      from(d in scoped(scope),
+        where: d.id == ^id,
         preload: [dashboard_visualizations: ^dvs_query]
       )
       |> Repo.one()
@@ -139,14 +138,14 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   scope's user_id always takes precedence over any user_id in attrs.
   """
   @spec create_dashboard(Scope.t(), map()) :: {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
-  def create_dashboard(%Scope{user: user}, attrs) do
-    attrs_with_user =
+  def create_dashboard(%Scope{} = scope, attrs) do
+    attrs =
       attrs
       |> Enum.into(%{}, fn {k, v} -> {to_string(k), v} end)
-      |> Map.put("user_id", user.id)
+      |> drop_owner()
 
-    %Dashboard{}
-    |> Dashboard.changeset(attrs_with_user)
+    %Dashboard{user_id: AccountAccess.user_id(scope), account_id: AccountAccess.account_id(scope)}
+    |> Dashboard.changeset(attrs)
     |> paper_trail_save(&PaperTrail.insert/1)
   end
 
@@ -161,7 +160,7 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
           {:ok, Dashboard.t()} | {:error, Ecto.Changeset.t()}
   def update_dashboard(%Dashboard{} = dashboard, attrs) do
     dashboard
-    |> Dashboard.changeset(attrs)
+    |> Dashboard.changeset(drop_owner(attrs))
     |> paper_trail_save(&PaperTrail.update/1)
   end
 
@@ -199,10 +198,12 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   @spec replace_dashboard_visualizations(Scope.t(), Dashboard.t(), list(map())) ::
           :ok | {:error, term()}
   def replace_dashboard_visualizations(
-        %Scope{user: user},
-        %Dashboard{id: dashboard_id},
+        %Scope{} = scope,
+        %Dashboard{id: dashboard_id, account_id: account_id},
         visualizations
       ) do
+    user_id = AccountAccess.user_id(scope)
+
     Repo.transaction(fn ->
       from(dv in DashboardVisualization, where: dv.dashboard_id == ^dashboard_id)
       |> Repo.delete_all()
@@ -216,12 +217,8 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
           Map.get(viz, :vega_spec) || %{"metric_name" => metric_name, "chart_type" => chart_type}
 
         {:ok, visualization} =
-          %Visualization{}
-          |> Visualization.changeset(%{
-            name: metric_name,
-            user_id: user.id,
-            vega_spec: vega_spec
-          })
+          %Visualization{user_id: user_id, account_id: account_id}
+          |> Visualization.changeset(%{name: metric_name, vega_spec: vega_spec})
           |> Repo.insert()
 
         %DashboardVisualization{}
@@ -265,8 +262,8 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
   deleted permanently. Cascades to dashboard_visualizations at the DB level.
   """
   @spec delete_all_dashboards(Scope.t()) :: :ok
-  def delete_all_dashboards(%Scope{user: user}) do
-    from(d in Dashboard, where: d.user_id == ^user.id and d.built_in == false)
+  def delete_all_dashboards(%Scope{} = scope) do
+    from(d in scoped(scope), where: d.built_in == false)
     |> Repo.delete_all()
 
     :ok
@@ -310,4 +307,9 @@ defmodule MetricFlow.Dashboards.DashboardsRepository do
     )
     |> Repo.all()
   end
+
+  defp scoped(%Scope{} = scope), do: AccountAccess.scope_query(Dashboard, scope)
+
+  # Ownership comes from the scope, never from params.
+  defp drop_owner(attrs), do: Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
 end

@@ -53,6 +53,72 @@ defmodule MetricFlowTest.UsersFixtures do
     Scope.for_user(user)
   end
 
+  @doc """
+  The account a user's plain `Scope.for_user/1` acts on (their active /
+  originated account) -- the owner of the data account-scoped fixtures
+  create for that user. See `MetricFlow.AccountAccess.default_account_id/1`.
+
+  `user_fixture/1` users have no account (registration through the UI is
+  what creates one), so when the user has none this creates the account a
+  real sign-up would have: a client account they originated and own.
+  """
+  def default_account_id(%{id: user_id}), do: default_account_id(user_id)
+
+  def default_account_id(user_id) when is_integer(user_id) do
+    MetricFlow.AccountAccess.default_account_id(user_id) || originated_account_fixture(user_id).id
+  end
+
+  @doc """
+  A user with the account a real sign-up creates (a client account they
+  originated and own).
+  """
+  def user_with_account_fixture(attrs \\ %{}) do
+    user = user_fixture(attrs)
+    default_account_id(user)
+    user
+  end
+
+  @doc "Creates a client account originated and owned by the user."
+  def originated_account_fixture(user_id) when is_integer(user_id) do
+    unique = System.unique_integer([:positive])
+
+    account =
+      %MetricFlow.Accounts.Account{}
+      |> MetricFlow.Accounts.Account.creation_changeset(%{
+        name: "Personal Account #{unique}",
+        slug: "personal-account-#{unique}",
+        type: "client",
+        originator_user_id: user_id
+      })
+      |> MetricFlow.Repo.insert!()
+
+    %MetricFlow.Accounts.AccountMember{}
+    |> MetricFlow.Accounts.AccountMember.changeset(%{
+      account_id: account.id,
+      user_id: user_id,
+      role: :owner
+    })
+    |> MetricFlow.Repo.insert!()
+
+    account
+  end
+
+  @doc """
+  A scope for the user acting in their default account (creating it when
+  the user has none), the way the web layer's active-account hook scopes
+  every request.
+  """
+  def account_scope_fixture(user) do
+    Scope.put_account_id(Scope.for_user(user), default_account_id(user))
+  end
+
+  @doc "PubSub topic carrying sync events for the user's default account."
+  def sync_topic_for(user), do: MetricFlow.AccountAccess.sync_topic(default_account_id(user))
+
+  @doc "PubSub topic carrying correlation updates for the user's default account."
+  def correlations_topic_for(user),
+    do: MetricFlow.AccountAccess.correlations_topic(default_account_id(user))
+
   def set_password(user) do
     {:ok, {user, _expired_tokens}} =
       Users.update_user_password(user, %{password: valid_user_password()})

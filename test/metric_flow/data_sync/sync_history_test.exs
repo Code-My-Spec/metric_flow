@@ -24,6 +24,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: :google_analytics,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
@@ -37,6 +38,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
     %SyncJob{}
     |> SyncJob.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       provider: :google_analytics,
       status: :completed
@@ -47,6 +49,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
   defp valid_attrs(user_id, integration_id, sync_job_id) do
     %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       sync_job_id: sync_job_id,
       provider: :google_analytics,
@@ -92,6 +95,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       attrs = %{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         integration_id: integration.id,
         sync_job_id: sync_job.id,
         provider: :google_analytics,
@@ -115,16 +119,16 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
       assert get_change(changeset, :completed_at) == completed_at
     end
 
-    test "validates user_id is required" do
+    test "validates account_id is required (user_id is only who created it)" do
       user = user_fixture()
       integration = insert_integration!(user.id)
       sync_job = insert_sync_job!(user.id, integration.id)
-      attrs = Map.delete(valid_attrs(user.id, integration.id, sync_job.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id, integration.id, sync_job.id), :account_id)
 
       changeset = SyncHistory.changeset(new_sync_history(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "allows integration_id to be optional" do
@@ -317,6 +321,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       attrs = %{
         user_id: -1,
+        account_id: integration.account_id,
         integration_id: integration.id,
         sync_job_id: sync_job.id,
         provider: :google_analytics,
@@ -341,6 +346,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       attrs = %{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         integration_id: -1,
         sync_job_id: sync_job.id,
         provider: :google_analytics,
@@ -364,6 +370,7 @@ defmodule MetricFlow.DataSync.SyncHistoryTest do
 
       attrs = %{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         integration_id: integration.id,
         sync_job_id: -1,
         provider: :google_analytics,

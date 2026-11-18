@@ -6,9 +6,14 @@ defmodule MetricFlowTest.IntegrationsFixtures do
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Repo
 
+  @doc """
+  Inserts an integration connected by `user`, owned by `attrs[:account_id]`
+  or else the user's default account.
+  """
   def integration_fixture(user, attrs \\ %{}) do
     defaults = %{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
       provider: :google_analytics,
       access_token: "test_access_token_#{System.unique_integer([:positive])}",
       refresh_token: "test_refresh_token",

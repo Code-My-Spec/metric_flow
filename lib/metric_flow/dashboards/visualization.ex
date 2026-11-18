@@ -36,6 +36,7 @@ defmodule MetricFlow.Dashboards.Visualization do
     field :is_favorite, :boolean, default: false
     field :last_viewed_date_range, :string
 
+    field :account_id, :integer
     belongs_to :user, User
     has_many :visualization_metrics, MetricFlow.Dashboards.VisualizationMetric
     has_many :dashboard_visualizations, MetricFlow.Dashboards.DashboardVisualization
@@ -55,15 +56,17 @@ defmodule MetricFlow.Dashboards.Visualization do
     visualization
     |> cast(attrs, [
       :name,
+      :account_id,
       :user_id,
       :vega_spec,
       :shareable,
       :is_favorite,
       :last_viewed_date_range
     ])
-    |> validate_required([:name, :user_id, :vega_spec])
+    |> validate_required([:name, :account_id, :vega_spec])
     |> validate_length(:name, min: 1, max: 255)
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
   end
 
   @doc """

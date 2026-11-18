@@ -11,7 +11,6 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   alias MetricFlow.Dashboards
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -20,7 +19,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   defp dashboard_fixture(user, attrs \\ %{}) do
     defaults = %{
       name: "My Test Dashboard #{System.unique_integer([:positive])}",
-      user_id: user.id
+      user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
     }
 
     %Dashboard{}
@@ -266,7 +266,7 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
       account = insert_account!(user)
       insert_member!(account, user, :owner)
       insert_metric!(user, %{metric_name: "impressions"})
-      scope = Scope.for_user(user)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -300,6 +300,27 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
 
         assert reopened_html =~ ~s(value="90" selected)
       end)
+    end
+  end
+
+  describe "the editor highlights the saved platform filter on a fresh mount" do
+    test "a dashboard saved with a platform filter highlights that platform, not 'All' (issue f50d37e9)",
+         %{conn: conn} do
+      user = user_fixture()
+      account = insert_account!(user)
+      insert_member!(account, user, :owner)
+      insert_metric!(user, %{provider: :google_ads, metric_name: "impressions"})
+      insert_metric!(user, %{provider: :facebook_ads, metric_name: "clicks"})
+      dashboard = dashboard_fixture(user, %{platform_filter: "facebook_ads"})
+      conn = log_in_user(conn, user)
+
+      {:ok, lv, _html} = live(conn, ~p"/app/dashboards/#{dashboard.id}/edit")
+
+      # Before the fix, platform_filter was assigned as the raw DB string
+      # while the shared component compares against atoms, so no button
+      # matched -- not even "All".
+      assert has_element?(lv, "button[phx-value-platform='facebook_ads'].btn-primary")
+      refute has_element?(lv, "button[phx-value-platform='all'].btn-primary")
     end
   end
 

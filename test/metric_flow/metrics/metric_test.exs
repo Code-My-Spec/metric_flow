@@ -17,6 +17,7 @@ defmodule MetricFlow.Metrics.MetricTest do
   defp valid_attrs(user_id) do
     %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       metric_type: "traffic",
       metric_name: "sessions",
       value: 1234.5,
@@ -67,14 +68,14 @@ defmodule MetricFlow.Metrics.MetricTest do
       assert get_change(changeset, :dimensions) == %{"source" => "organic", "page" => "/home"}
     end
 
-    test "validates user_id is required" do
+    test "validates account_id is required (user_id is only who created it)" do
       user = user_fixture()
-      attrs = Map.delete(valid_attrs(user.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id), :account_id)
 
       changeset = Metric.changeset(new_metric(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "validates metric_type is required" do
@@ -188,7 +189,7 @@ defmodule MetricFlow.Metrics.MetricTest do
     end
 
     test "validates user association exists (assoc_constraint triggers on insert)" do
-      attrs = valid_attrs(-1)
+      attrs = %{valid_attrs(user_fixture().id) | user_id: -1}
 
       {:error, changeset} =
         new_metric()

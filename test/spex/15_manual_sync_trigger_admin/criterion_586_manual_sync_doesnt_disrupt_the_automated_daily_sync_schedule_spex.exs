@@ -20,7 +20,9 @@ defmodule MetricFlowSpex.ManualSyncDoesntDisruptTheAutomatedDailySyncScheduleSpe
 
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_completed,
            %{provider: :google_analytics, records_synced: 10, completed_at: DateTime.utc_now()}}
         )

@@ -15,6 +15,7 @@ defmodule MetricFlow.DataSync do
     deps: [MetricFlow, MetricFlow.Integrations, MetricFlow.Metrics, MetricFlow.Users],
     exports: [DataProviders.Behaviour]
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.DataSync.Scheduler
   alias MetricFlow.DataSync.SyncHistoryRepository
   alias MetricFlow.DataSync.SyncJobRepository
@@ -75,7 +76,8 @@ defmodule MetricFlow.DataSync do
   Triggers a manual sync for a specific integration.
 
   Creates a SyncJob record with status `:pending` and enqueues a `SyncWorker`
-  Oban job with the integration_id, user_id, and sync_job_id.
+  Oban job with the integration_id, account_id, the triggering user_id and
+  the sync_job_id. Requires a write role in the account.
 
   Connectivity (expired token, no refresh token available) is not checked
   here. SyncWorker's own token-refresh step already fails the job with a
@@ -90,19 +92,45 @@ defmodule MetricFlow.DataSync do
   """
   @spec sync_integration(Scope.t(), atom()) ::
           {:ok, SyncJob.t()} | {:error, :not_found}
-  def sync_integration(%Scope{user: user} = scope, provider, opts \\ []) do
+  def sync_integration(%Scope{} = scope, provider, opts \\ []) do
     with {:ok, integration} <- Integrations.get_integration(scope, provider),
+         :ok <- authorize_sync(scope, provider),
          {:ok, sync_job} <-
            SyncJobRepository.create_sync_job(scope, integration.id, %{provider: provider}),
          {:ok, _oban_job} <-
            Oban.insert(
              SyncWorker.new(
-               %{integration_id: integration.id, user_id: user.id, sync_job_id: sync_job.id}
+               %{
+                 integration_id: integration.id,
+                 account_id: integration.account_id,
+                 user_id: AccountAccess.user_id(scope),
+                 sync_job_id: sync_job.id
+               }
                |> maybe_put_breakdown(opts)
                |> maybe_put_test_http_plug(provider)
              )
            ) do
       {:ok, sync_job}
+    end
+  end
+
+  # Read-only members can see sync status but not start a sync.
+  defp authorize_sync(scope, provider) do
+    Integrations.authorize_write(scope, provider)
+  end
+
+  @doc "PubSub topic carrying an account's sync lifecycle events."
+  @spec sync_topic(integer()) :: String.t()
+  def sync_topic(account_id), do: AccountAccess.sync_topic(account_id)
+
+  @doc """
+  Subscribes the caller to sync events for the scope's account. Returns
+  `:ok`, or `{:error, :no_account}` when the scope has no accessible account.
+  """
+  @spec subscribe_sync_events(Scope.t()) :: :ok | {:error, :no_account}
+  def subscribe_sync_events(%Scope{} = scope) do
+    with {:ok, account_id} <- AccountAccess.fetch_account_id(scope) do
+      Phoenix.PubSub.subscribe(MetricFlow.PubSub, sync_topic(account_id))
     end
   end
 

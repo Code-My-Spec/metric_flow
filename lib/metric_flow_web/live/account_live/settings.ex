@@ -443,13 +443,13 @@ defmodule MetricFlowWeb.AccountLive.Settings do
     account =
       case Map.get(params, "account_id") do
         nil ->
-          ActiveAccountHook.primary_account(accounts)
+          ActiveAccountHook.active_account(accounts, scope.user)
 
         account_id_str ->
           account_id = String.to_integer(account_id_str)
 
           Enum.find(accounts, fn a -> a.id == account_id end) ||
-            ActiveAccountHook.primary_account(accounts)
+            ActiveAccountHook.active_account(accounts, scope.user)
       end
 
     user_role = Accounts.get_user_role(scope, scope.user.id, account.id)

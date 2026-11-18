@@ -842,6 +842,7 @@ defmodule MetricFlowSpex.SharedGivens do
           provider: :google_analytics,
           dimensions: %{},
           user_id: user.id,
+          account_id: MetricFlowTest.UsersFixtures.default_account_id(user),
           inserted_at: now,
           updated_at: now
         }

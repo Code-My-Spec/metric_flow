@@ -20,6 +20,7 @@ defmodule MetricFlow.Metrics.DerivedMetricDefinition do
     field :numerator, :string
     field :denominator, :string
 
+    field :account_id, :integer
     belongs_to :user, User
 
     timestamps(type: :utc_datetime)
@@ -28,8 +29,9 @@ defmodule MetricFlow.Metrics.DerivedMetricDefinition do
   @doc false
   def changeset(derived_metric_definition, attrs) do
     derived_metric_definition
-    |> cast(attrs, [:name, :numerator, :denominator, :user_id])
-    |> validate_required([:name, :numerator, :denominator, :user_id])
-    |> unique_constraint([:user_id, :name])
+    |> cast(attrs, [:name, :numerator, :denominator, :user_id, :account_id])
+    |> validate_required([:name, :numerator, :denominator, :account_id])
+    |> foreign_key_constraint(:account_id)
+    |> unique_constraint([:account_id, :name])
   end
 end

@@ -8,6 +8,12 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
 
   setup :register_and_log_in_user
 
+  # Connections land in the user's active account, which sign-up creates.
+  setup %{user: user} do
+    MetricFlowTest.UsersFixtures.default_account_id(user)
+    :ok
+  end
+
   # ---------------------------------------------------------------------------
   # request/2
   # ---------------------------------------------------------------------------

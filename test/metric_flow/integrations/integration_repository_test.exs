@@ -7,7 +7,6 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Integrations.IntegrationRepository
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -23,13 +22,14 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
   defp valid_integration_attrs(user_id, provider \\ :google) do
     %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -194,14 +194,14 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
       refute changeset.valid?
     end
 
-    test "returns error with duplicate user_id and provider" do
+    test "returns error with duplicate account_id and provider" do
       {user, scope} = user_with_scope()
       insert_integration!(user.id, :google)
 
       attrs = Map.delete(valid_integration_attrs(user.id, :google), :user_id)
 
       assert {:error, changeset} = IntegrationRepository.create_integration(scope, attrs)
-      assert %{user_id: ["has already been taken"]} = errors_on(changeset)
+      assert %{account_id: ["has already been taken"]} = errors_on(changeset)
     end
 
     test "allows same provider for different users" do

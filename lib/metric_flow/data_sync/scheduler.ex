@@ -76,6 +76,7 @@ defmodule MetricFlow.DataSync.Scheduler do
            Oban.insert(
              SyncWorker.new(%{
                integration_id: integration.id,
+               account_id: integration.account_id,
                user_id: integration.user_id,
                sync_job_id: sync_job.id
              })

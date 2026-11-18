@@ -17,7 +17,9 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
       when_ "the async sync failure message is received by the LiveView", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google,
@@ -72,7 +74,9 @@ defmodule MetricFlowSpex.IfSyncFailsErrorDetailsAreDisplayedSpex do
       when_ "the async sync failure message is received by the LiveView", context do
         Phoenix.PubSub.broadcast(
           MetricFlow.PubSub,
-          "user:#{MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email).id}:sync",
+          MetricFlowTest.UsersFixtures.sync_topic_for(
+            MetricFlowTest.UsersFixtures.get_user_by_email(context.owner_email)
+          ),
           {:sync_failed,
            %{
              provider: :google,

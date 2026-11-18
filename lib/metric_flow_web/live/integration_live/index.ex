@@ -1,69 +1,43 @@
 defmodule MetricFlowWeb.IntegrationLive.Index do
   @moduledoc """
-  LiveView for listing a user's connected integrations.
+  The account's data sources, grouped by sign-in: Google (Analytics, Ads,
+  Search Console, Business Profile, YouTube), Meta and QuickBooks.
 
-  Displays all configured platform integrations for the authenticated user
-  with their current connection status, including both marketing and financial
-  platforms. Provides navigation to connect new platforms or manage existing
-  integrations. Supports manual sync triggering with inline sync status
-  feedback.
+  Each product shows its `MetricFlow.Onboarding` status, what it syncs, when
+  it last synced, and one primary action — sync, choose what to sync, or
+  reconnect. Connecting and picking happen in the setup wizard
+  (`/app/onboarding/connect`); this page links into the wizard step that
+  owns each connection. Manual sync, disconnect and live sync status stay
+  here.
   """
 
   use MetricFlowWeb, :live_view
+
+  import MetricFlowWeb.SetupComponents
 
   alias MetricFlow.Accounts
   alias MetricFlow.DataSync
   alias MetricFlow.Integrations
   alias MetricFlow.Integrations.Integration
-  alias MetricFlow.Integrations.IntegrationNotifier
+  alias MetricFlow.Onboarding
 
-  # Data platforms — each has its own OAuth provider and integration record.
+  # Products, keyed by provider; `name` is used in sync flashes. Row copy
+  # comes from `Onboarding.status/1`.
   @data_platforms [
-    %{
-      key: :youtube,
-      name: "YouTube",
-      description: "Channel, video, and revenue analytics",
-      provider: :youtube
-    },
-    %{
-      key: :google_analytics,
-      name: "Google Analytics",
-      description: "Website traffic and user behavior analytics",
-      provider: :google_analytics
-    },
-    %{
-      key: :google_ads,
-      name: "Google Ads",
-      description: "Paid search and display advertising",
-      provider: :google_ads
-    },
+    %{key: :youtube, provider: :youtube, name: "YouTube"},
+    %{key: :google_analytics, provider: :google_analytics, name: "Google Analytics"},
+    %{key: :google_ads, provider: :google_ads, name: "Google Ads"},
     %{
       key: :google_search_console,
-      name: "Google Search Console",
-      description: "Search performance and indexing data",
-      provider: :google_search_console
+      provider: :google_search_console,
+      name: "Google Search Console"
     },
-    %{
-      key: :google_business,
-      name: "Google Business",
-      description: "Business profile locations and reviews",
-      provider: :google_business
-    },
-    %{
-      key: :facebook_ads,
-      name: "Facebook Ads",
-      description: "Social media advertising",
-      provider: :facebook_ads
-    },
-    %{
-      key: :quickbooks,
-      name: "QuickBooks",
-      description: "Accounting and financial data",
-      provider: :quickbooks
-    }
+    %{key: :google_business, provider: :google_business, name: "Google Business"},
+    %{key: :facebook_ads, provider: :facebook_ads, name: "Facebook Ads"},
+    %{key: :quickbooks, provider: :quickbooks, name: "QuickBooks"}
   ]
 
-  # Provider display names for messages.
+  # Provider display names for flashes and the disconnect dialog.
   @provider_names %{
     youtube: "YouTube",
     google_analytics: "Google Analytics",
@@ -80,22 +54,6 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
   @impl true
   def render(assigns) do
-    # Split platforms into connected (parent provider exists) and not connected
-    assigns =
-      assigns
-      |> assign(
-        :connected_platforms,
-        Enum.filter(assigns.platforms, fn p ->
-          provider_connected?(p.provider, assigns.integrations)
-        end)
-      )
-      |> assign(
-        :unconnected_platforms,
-        Enum.reject(assigns.platforms, fn p ->
-          provider_connected?(p.provider, assigns.integrations)
-        end)
-      )
-
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -104,227 +62,115 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto" data-role="integrations-index">
-        <div class="mb-8 flex items-center justify-between">
-          <div>
+      <div class="mx-auto max-w-4xl" data-role="integrations-index">
+        <div class="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+          <div class="min-w-0">
             <h1 class="text-2xl font-bold">Integrations</h1>
             <p class="mt-1 text-base-content/60">
-              Manage your connected marketing platforms
+              <%= if @nothing_connected do %>
+                No platforms connected yet. Connect one to start seeing your metrics.
+              <% else %>
+                Where your metrics come from, and what each platform syncs.
+              <% end %>
             </p>
           </div>
-          <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm">
-            Connect a Platform
-          </.link>
-        </div>
-
-        <%= if @integrations == [] do %>
-          <div class="text-center py-12">
-            <p class="text-base-content/60">No platforms connected yet.</p>
-            <.link navigate={~p"/app/integrations/connect"} class="btn btn-primary btn-sm mt-4">
-              Connect your first platform
+          <div class="flex flex-wrap items-center gap-2">
+            <.link
+              id="setup-data-sources"
+              navigate={~p"/app/onboarding/connect"}
+              class="btn btn-primary btn-sm"
+            >
+              Set up data sources
+            </.link>
+            <.link navigate={~p"/app/integrations/connect"} class="btn btn-ghost btn-sm">
+              Connect a Platform
             </.link>
           </div>
-        <% end %>
+        </div>
 
-        <%= if @connected_platforms != [] do %>
-          <div class="mb-8">
-            <h2 class="text-lg font-semibold mb-4">Connected Platforms</h2>
-            <div data-role="integrations-list" class="space-y-4">
-              <div
-                :for={platform <- @connected_platforms}
-                data-role="integration-card"
-                data-platform={Atom.to_string(platform.key)}
-                data-status={integration_status(platform, @integrations)}
-                class="mf-card p-5"
-              >
-                <div data-role="integration-row" class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 data-role="integration-platform-name" class="font-semibold">
-                      {platform.name}
-                    </h3>
-                    <p class="text-sm text-base-content/60">{platform.description}</p>
-
-                    <div class="mt-1 flex flex-wrap items-center gap-2">
-                      <%= if integration_status(platform, @integrations) == "error" do %>
-                        <span data-status="error" class="badge badge-error">
-                          Connection error — reconnect required
-                        </span>
-                      <% else %>
-                        <span data-status="connected" class="badge badge-success">Connected</span>
-                      <% end %>
-                      <span data-role="integration-sync-status" class="flex items-center gap-1">
-                        <%= if MapSet.member?(@syncing, platform.key) do %>
-                          <span class="badge badge-warning">
-                            Syncing <span class="loading loading-spinner loading-xs ml-1"></span>
-                          </span>
-                        <% else %>
-                          <%= if result = Map.get(@sync_results, platform.key) do %>
-                            <span class="badge badge-success text-xs">
-                              Synced {result.records_synced} records at {Calendar.strftime(
-                                result.completed_at,
-                                "%Y-%m-%d %H:%M"
-                              )} UTC
-                            </span>
-                          <% end %>
-                        <% end %>
-                      </span>
-                    </div>
-
-                    <p data-role="last-sync-at" class="text-xs text-base-content/50 mt-1">
-                      <%= if last_sync = @last_synced_at[platform.provider] do %>
-                        Last synced {format_datetime(last_sync)}
-                      <% else %>
-                        Never synced
-                      <% end %>
-                    </p>
-                    <p
-                      :if={platform.provider != :youtube}
-                      data-role="next-sync-at"
-                      class="text-xs text-base-content/50"
-                    >
-                      Next sync {format_datetime(@next_sync_at)}
-                    </p>
-
-                    <% integration = find_integration(@integrations, platform.provider) %>
-                    <%= if integration do %>
-                      <div
-                        :if={platform.provider == :youtube}
-                        id={"youtube-ownership-#{integration.id}"}
-                        class="mt-3 space-y-1 text-sm"
-                      >
-                        <p>Owned by {@active_account_name}</p>
-                        <% channel_count =
-                          length(Map.get(integration.provider_metadata || %{}, "channel_ids", [])) %>
-                        <p>
-                          {channel_count} {if channel_count == 1, do: "channel", else: "channels"} connected
-                        </p>
-                        <.link
-                          id="manage-youtube-channels"
-                          navigate={~p"/app/integrations/connect/youtube/accounts"}
-                          class="inline-flex py-1 font-medium underline"
-                        >
-                          Manage channels
-                        </.link>
-                      </div>
-                      <p
-                        data-role="integration-connected-date"
-                        class="text-xs text-base-content/50 mt-1"
-                      >
-                        Connected
-                        <span :if={logged_in_account(integration)}>
-                          as <span class="font-medium">{logged_in_account(integration)}</span>
-                        </span>
-                        via {provider_display_name(platform.provider)} on {Calendar.strftime(
-                          integration.inserted_at,
-                          "%Y-%m-%d"
-                        )}
-                      </p>
-                      <div
-                        data-role="integration-selected-accounts"
-                        class="mt-2 text-sm text-base-content/60"
-                      >
-                        <% account_value = selected_account_display(integration) %>
-                        <%= if account_value do %>
-                          <span class="text-xs">{account_value}</span>
-                        <% else %>
-                          <span class="text-xs italic">No accounts selected</span>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-
-                  <div class="flex flex-col items-end gap-2 ml-4">
-                    <% no_accounts = is_nil(selected_account_display(integration)) %>
-                    <button
-                      :if={@can_sync and platform.provider != :youtube}
-                      phx-click="sync"
-                      phx-value-platform={Atom.to_string(platform.key)}
-                      phx-value-provider={Atom.to_string(platform.provider)}
-                      phx-disable-with="Please wait..."
-                      disabled={MapSet.member?(@syncing, platform.key) or no_accounts}
-                      class="btn btn-outline btn-sm"
-                      title={if no_accounts, do: "Select accounts before syncing", else: ""}
-                    >
-                      Sync Now
-                    </button>
-                    <.link
-                      :if={@can_modify}
-                      data-role="edit-integration-accounts"
-                      navigate={
-                        ~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}/accounts"
-                      }
-                      class={
-                        if no_accounts, do: "btn btn-primary btn-sm", else: "btn btn-ghost btn-sm"
-                      }
-                    >
-                      Edit Accounts
-                    </.link>
-                    <.link
-                      data-role="integration-detail-link"
-                      navigate={~p"/app/integrations/connect/#{Atom.to_string(platform.provider)}"}
-                      class="btn btn-ghost btn-xs"
-                    >
-                      Manage
-                    </.link>
-                    <button
-                      :if={@can_modify}
-                      data-role="disconnect-integration"
-                      phx-click="confirm_disconnect"
-                      phx-value-provider={Atom.to_string(platform.provider)}
-                      class="btn btn-ghost btn-xs text-error"
-                    >
-                      Disconnect
-                    </button>
-                  </div>
-                </div>
+        <div class="space-y-6">
+          <section
+            :for={conn <- @groups}
+            id={"connection-group-#{conn.key}"}
+            data-state={conn.state}
+            class="rounded-box border border-base-300 bg-base-100"
+          >
+            <header class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-4 py-3 sm:px-5">
+              <div class="min-w-0">
+                <h2 class="text-lg font-semibold">{conn.name}</h2>
+                <p class="text-sm text-base-content/60">
+                  {group_subtitle(conn)}
+                </p>
               </div>
-            </div>
-          </div>
-        <% end %>
+              <.link
+                :if={conn.state == :not_connected}
+                id={"group-action-#{conn.key}"}
+                data-role="reconnect-integration"
+                navigate={wizard_path(conn.key)}
+                class="btn btn-primary btn-sm shrink-0"
+              >
+                {group_action_label(conn)}
+              </.link>
+            </header>
 
-        <%= if @unconnected_platforms != [] do %>
-          <div>
-            <h2 class="text-lg font-semibold mb-4">Available Platforms</h2>
-            <div data-role="available-platforms-list" class="space-y-4">
-              <div
-                :for={platform <- @unconnected_platforms}
+            <div
+              :if={Enum.any?(conn.products, & &1.integration)}
+              data-role="integrations-list"
+              class="divide-y divide-base-300"
+            >
+              <.product_row
+                :for={product <- conn.products}
+                :if={product.integration}
+                product={product}
+                connection={conn.key}
+                syncing={MapSet.member?(@syncing, product.key)}
+                sync_result={Map.get(@sync_results, product.key)}
+                last_synced_at={@last_synced_at[product.key]}
+                next_sync_at={@next_sync_at}
+                can_sync={@can_sync}
+                can_modify={@can_modify}
+                account_name={@active_account_name}
+              />
+            </div>
+
+            <ul
+              :if={Enum.any?(conn.products, &is_nil(&1.integration))}
+              data-role="available-platforms-list"
+              class={[
+                "px-4 py-3 sm:px-5",
+                Enum.any?(conn.products, & &1.integration) && "border-t border-base-300"
+              ]}
+            >
+              <li
+                :for={product <- conn.products}
+                :if={is_nil(product.integration)}
                 data-role="integration-card"
-                data-platform={Atom.to_string(platform.key)}
+                data-platform={Atom.to_string(product.key)}
                 data-status="available"
-                class="mf-card p-5"
+                class="flex flex-wrap items-center justify-between gap-2 py-1.5"
               >
-                <div data-role="integration-row" class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 data-role="integration-platform-name" class="font-semibold">
-                      {platform.name}
-                    </h3>
-                    <p class="text-sm text-base-content/60">{platform.description}</p>
-
-                    <div class="mt-1 flex flex-wrap items-center gap-2">
-                      <span data-role="integration-sync-status" class="badge badge-ghost">
-                        Not connected
-                      </span>
-                    </div>
-
-                    <p class="text-xs text-base-content/40 mt-1 italic">
-                      Connect {provider_display_name(platform.provider)} first
-                    </p>
-                  </div>
-
-                  <div class="flex flex-col items-end gap-2 ml-4">
-                    <.link
-                      data-role="reconnect-integration"
-                      navigate={~p"/app/integrations/connect"}
-                      class="btn btn-primary btn-sm"
-                    >
-                      Connect {provider_display_name(platform.provider)}
-                    </.link>
-                  </div>
+                <div class="min-w-0">
+                  <span data-role="integration-platform-name" class="font-medium">
+                    {product.name}
+                  </span>
+                  <span class="text-sm text-base-content/60">— {product.gives}</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        <% end %>
+                <div class="flex items-center gap-2">
+                  <.status_badge status={product.status} data-role="integration-sync-status" />
+                  <.link
+                    :if={product.status == :not_granted}
+                    data-role="reconnect-integration"
+                    navigate={wizard_path(conn.key)}
+                    class="btn btn-ghost btn-xs"
+                  >
+                    Grant access
+                  </.link>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </div>
+
         <%= if @disconnecting do %>
           <% disc_provider_name = provider_display_name(@disconnecting) %>
           <dialog
@@ -366,6 +212,150 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     """
   end
 
+  attr :product, :map, required: true
+  attr :connection, :atom, required: true
+  attr :syncing, :boolean, default: false
+  attr :sync_result, :map, default: nil
+  attr :last_synced_at, :any, default: nil
+  attr :next_sync_at, :any, default: nil
+  attr :can_sync, :boolean, default: false
+  attr :can_modify, :boolean, default: false
+  attr :account_name, :string, default: nil
+
+  defp product_row(assigns) do
+    ~H"""
+    <div
+      data-role="integration-card"
+      data-platform={Atom.to_string(@product.key)}
+      data-status={if @product.status == :reconnect, do: "error", else: "connected"}
+      class="px-4 py-4 sm:px-5"
+    >
+      <div data-role="integration-row" class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0 flex-1 basis-60">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 data-role="integration-platform-name" class="font-semibold">{@product.name}</h3>
+            <.status_badge
+              status={@product.status}
+              data-status={if @product.status == :reconnect, do: "error", else: "connected"}
+            />
+          </div>
+
+          <p data-role="integration-selected-accounts" class="mt-1 text-sm">
+            <%= cond do %>
+              <% @product.status == :reconnect -> %>
+                <span class="text-error">
+                  The sign-in expired — reconnect to resume syncing.
+                </span>
+              <% @product.key == :youtube -> %>
+                <span class="text-base-content/60">
+                  Owned by {@account_name} · {channel_count(@product.selected)}
+                </span>
+              <% @product.selected != [] -> %>
+                <span class="text-base-content/60">Selected:</span>
+                <span class="break-all">{Enum.join(@product.selected, ", ")}</span>
+              <% true -> %>
+                <span class="text-base-content/60">
+                  Nothing selected yet — choose the {@product.noun} to sync.
+                </span>
+            <% end %>
+          </p>
+
+          <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-base-content/60">
+            <span data-role="last-sync-at">
+              <%= if @last_synced_at do %>
+                Last synced {format_datetime(@last_synced_at)}
+              <% else %>
+                Never synced
+              <% end %>
+            </span>
+            <span
+              :if={@product.key != :youtube and @product.status != :reconnect}
+              data-role="next-sync-at"
+            >
+              · Next sync {format_datetime(@next_sync_at)}
+            </span>
+            <span data-role="integration-connected-date">
+              · Connected {Calendar.strftime(@product.integration.inserted_at, "%b %d, %Y")}
+            </span>
+          </p>
+
+          <div data-role="integration-sync-status" class="mt-2 flex items-center gap-1 empty:hidden">
+            <span :if={@syncing} class="badge badge-warning badge-sm">
+              Syncing <span class="loading loading-spinner loading-xs ml-1"></span>
+            </span>
+            <span :if={!@syncing && @sync_result} class="badge badge-success badge-sm">
+              Synced {@sync_result.records_synced} records at {Calendar.strftime(
+                @sync_result.completed_at,
+                "%Y-%m-%d %H:%M"
+              )} UTC
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1">
+          <%= case @product.status do %>
+            <% :reconnect -> %>
+              <.link
+                :if={@can_modify}
+                data-role="reconnect-integration"
+                navigate={wizard_path(@connection)}
+                class="btn btn-warning btn-sm"
+              >
+                Reconnect
+              </.link>
+            <% :needs_selection -> %>
+              <.link
+                :if={@can_modify}
+                data-role="edit-integration-accounts"
+                navigate={wizard_path(@connection)}
+                class="btn btn-primary btn-sm"
+              >
+                Choose {@product.noun}
+              </.link>
+            <% _ready -> %>
+              <button
+                :if={@can_sync and @product.key != :youtube}
+                phx-click="sync"
+                phx-value-platform={Atom.to_string(@product.key)}
+                phx-value-provider={Atom.to_string(@product.key)}
+                phx-disable-with="Starting…"
+                disabled={@syncing}
+                class="btn btn-outline btn-sm"
+              >
+                Sync Now
+              </button>
+              <.link
+                :if={@can_modify}
+                data-role="edit-integration-accounts"
+                navigate={wizard_path(@connection)}
+                class="btn btn-ghost btn-sm"
+              >
+                Change
+              </.link>
+          <% end %>
+          <.link
+            data-role="integration-detail-link"
+            navigate={~p"/app/integrations/connect/#{Atom.to_string(@product.key)}"}
+            class="btn btn-ghost btn-sm"
+          >
+            Manage
+          </.link>
+          <button
+            :if={@can_modify}
+            data-role="disconnect-integration"
+            phx-click="confirm_disconnect"
+            phx-value-provider={Atom.to_string(@product.key)}
+            class="btn btn-ghost btn-sm text-error"
+            aria-label={"Disconnect #{@product.name}"}
+          >
+            Disconnect
+          </button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   # ---------------------------------------------------------------------------
   # Mount
   # ---------------------------------------------------------------------------
@@ -379,10 +369,10 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       )
 
     socket = assign(socket, :current_scope, scope)
-    integrations = notify_expired_integrations(scope, Integrations.list_integrations(scope))
+    integrations = load_integrations(scope)
 
     if Phoenix.LiveView.connected?(socket) do
-      Phoenix.PubSub.subscribe(MetricFlow.PubSub, "user:#{scope.user.id}:sync")
+      DataSync.subscribe_sync_events(scope)
     end
 
     current_user_role =
@@ -402,8 +392,7 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
     socket =
       socket
-      |> assign(:integrations, integrations)
-      |> assign(:platforms, @data_platforms)
+      |> assign_integrations(integrations)
       |> assign(:syncing, MapSet.new())
       |> assign(:sync_results, %{})
       |> assign(:disconnecting, nil)
@@ -414,6 +403,69 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
     {:ok, socket}
   end
+
+  # Groups come from `Onboarding.status/1`; a product whose token is still
+  # expired after the refresh attempt in `load_integrations/1` needs a
+  # reconnect even if it has a refresh token (the provider refused it).
+  defp assign_integrations(socket, integrations) do
+    by_provider = Map.new(integrations, &{&1.provider, &1})
+
+    groups =
+      socket.assigns.current_scope
+      |> Onboarding.status()
+      |> Enum.map(fn conn ->
+        products =
+          Enum.map(conn.products, fn product ->
+            integration = Map.get(by_provider, product.key)
+
+            status =
+              if integration && needs_reconnect?(integration),
+                do: :reconnect,
+                else: product.status
+
+            Map.merge(product, %{integration: integration, status: status})
+          end)
+
+        %{conn | products: products, state: group_state(products)}
+      end)
+
+    socket
+    |> assign(:integrations, integrations)
+    |> assign(:groups, groups)
+    |> assign(:nothing_connected, Enum.all?(groups, &(&1.state == :not_connected)))
+  end
+
+  defp group_state(products) do
+    statuses = Enum.map(products, & &1.status)
+
+    cond do
+      Enum.all?(statuses, &(&1 == :not_connected)) -> :not_connected
+      :reconnect in statuses -> :reconnect
+      :needs_selection in statuses -> :needs_selection
+      true -> :done
+    end
+  end
+
+  defp channel_count([_]), do: "1 channel connected"
+  defp channel_count(ids), do: "#{length(ids)} channels connected"
+
+  defp wizard_path(connection), do: ~p"/app/onboarding/connect?step=#{connection}"
+
+  defp group_subtitle(%{state: :not_connected, description: description}), do: description
+
+  defp group_subtitle(%{products: products}) do
+    ready = Enum.count(products, &(&1.status == :ready))
+    connected = Enum.count(products, & &1.integration)
+
+    accounts =
+      products |> Enum.map(& &1.connected_as) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+    as = if accounts == [], do: "", else: " · signed in as #{Enum.join(accounts, ", ")}"
+    "#{ready} of #{connected} ready#{as}"
+  end
+
+  defp group_action_label(%{key: :facebook_ads}), do: "Connect Facebook & Instagram"
+  defp group_action_label(%{name: name}), do: "Connect #{name}"
 
   # ---------------------------------------------------------------------------
   # Event handlers
@@ -461,6 +513,9 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
             {:noreply,
              put_flash(socket, :error, "#{platform_name} token has expired. Please reconnect.")}
 
+          {:error, :unauthorized} ->
+            {:noreply, put_flash(socket, :error, read_only_message())}
+
           {:error, reason} ->
             require Logger
             Logger.error("Sync failed for #{platform_name}: #{inspect(reason)}")
@@ -499,6 +554,9 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
             {:noreply, socket}
 
+          {:error, :unauthorized} ->
+            {:noreply, put_flash(socket, :error, read_only_message())}
+
           {:error, _reason} ->
             {:noreply, put_flash(socket, :error, "Integration not found.")}
         end
@@ -522,13 +580,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     scope = socket.assigns.current_scope
 
     if socket.assigns.can_modify do
-      case Integrations.disconnect(scope, provider) do
+      case disconnect_provider(scope, provider) do
         {:ok, _} ->
-          integrations = Integrations.list_integrations(scope)
-
           socket =
             socket
-            |> assign(:integrations, integrations)
+            |> assign_integrations(Integrations.list_integrations(scope))
             |> assign(:disconnecting, nil)
             |> put_flash(
               :info,
@@ -630,34 +686,27 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     |> Enum.reduce(syncing, fn p, acc -> MapSet.delete(acc, p.key) end)
   end
 
-  defp find_integration(integrations, provider_key) do
-    Enum.find(integrations, fn i -> i.provider == provider_key end)
-  end
-
-  defp provider_connected?(provider_key, integrations) do
-    Enum.any?(integrations, fn i -> i.provider == provider_key end)
-  end
-
-  # Emails the user once when an integration's credentials expire, and clears
+  # Emails the account's owners and admins once when an integration's credentials expire, and clears
   # the flag once it's reconnected (expires_at pushed back out) so a future
   # expiration notifies again rather than staying silent forever.
-  defp notify_expired_integrations(scope, integrations) do
+  defp notify_expired_integrations(integrations) do
     Enum.map(integrations, fn integration ->
       cond do
         not Map.has_key?(@provider_names, integration.provider) ->
           integration
 
-        Integration.expired?(integration) and is_nil(integration.reconnection_notified_at) ->
-          IntegrationNotifier.deliver_reconnection_required(
-            scope.user.email,
+        needs_reconnect?(integration) and is_nil(integration.reconnection_notified_at) ->
+          integration
+          |> Integrations.notify_reconnection_required(
             provider_display_name(integration.provider)
           )
+          |> updated_or(integration)
 
-          update_reconnection_notified_at(scope, integration, DateTime.utc_now())
-
-        not Integration.expired?(integration) and
+        not needs_reconnect?(integration) and
             not is_nil(integration.reconnection_notified_at) ->
-          update_reconnection_notified_at(scope, integration, nil)
+          integration
+          |> Integrations.put_reconnection_notified_at(nil)
+          |> updated_or(integration)
 
         true ->
           integration
@@ -665,21 +714,11 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     end)
   end
 
-  defp update_reconnection_notified_at(scope, integration, value) do
-    case Integrations.update_integration(scope, integration.provider, %{
-           reconnection_notified_at: value
-         }) do
-      {:ok, updated} -> updated
-      {:error, _} -> integration
-    end
-  end
+  defp read_only_message,
+    do: "Only account owners, admins and account managers can sync or change integrations."
 
-  defp integration_status(platform, integrations) do
-    case find_integration(integrations, platform.provider) do
-      nil -> "connected"
-      integration -> if Integration.expired?(integration), do: "error", else: "connected"
-    end
-  end
+  defp updated_or({:ok, updated}, _integration), do: updated
+  defp updated_or(_error, integration), do: integration
 
   defp find_platform_name(platform_key) do
     case Enum.find(@data_platforms, fn p -> p.key == platform_key end) do
@@ -704,48 +743,49 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   end
 
   # Looks up the selected account value from provider_metadata using the correct key per provider.
-  defp selected_account_display(%{provider: provider, provider_metadata: meta})
-       when is_map(meta) do
-    key = metadata_key_for_provider(provider)
-    value = Map.get(meta, key)
 
-    cond do
-      is_list(value) and value != [] ->
-        Enum.join(value, ", ")
+  defp format_datetime(%DateTime{} = dt) do
+    Calendar.strftime(dt, "%b %d, %Y %H:%M UTC")
+  end
 
-      is_binary(value) and value != "" ->
-        value
+  defp format_datetime(_), do: ""
 
-      # Fallback: old integrations may have saved under "property_id"
-      is_binary(Map.get(meta, "property_id")) and Map.get(meta, "property_id") != "" ->
-        Map.get(meta, "property_id")
-
-      is_list(Map.get(meta, "selected_accounts")) ->
-        Enum.join(Map.get(meta, "selected_accounts"), ", ")
-
-      true ->
-        nil
+  # Google products share one OAuth grant; `Onboarding.disconnect/2` avoids
+  # revoking the token while sibling Google products still use it.
+  defp disconnect_provider(scope, provider) do
+    if provider in Onboarding.product_keys() do
+      case Onboarding.disconnect(scope, provider) do
+        :ok -> {:ok, provider}
+        other -> other
+      end
+    else
+      Integrations.disconnect(scope, provider)
     end
   end
 
-  defp selected_account_display(_), do: nil
+  # Access tokens for Google and QuickBooks expire hourly and normally
+  # refresh silently, so an expired access token alone isn't a problem. Try
+  # the refresh first; only a token that is still expired afterwards (no
+  # refresh token, or the provider refused it) needs the user to reconnect.
+  defp load_integrations(scope) do
+    scope
+    |> Integrations.list_integrations()
+    |> Enum.map(&refresh_if_expired(scope, &1))
+    |> notify_expired_integrations()
+  end
 
-  defp logged_in_account(%{provider_metadata: %{"email" => email}})
-       when is_binary(email) and email != "", do: email
+  defp refresh_if_expired(scope, integration) do
+    if Integration.expired?(integration) and Integration.has_refresh_token?(integration) do
+      case Integrations.ensure_fresh_token(scope, integration) do
+        {:ok, refreshed} -> refreshed
+        {:error, _} -> integration
+      end
+    else
+      integration
+    end
+  end
 
-  defp logged_in_account(%{provider_metadata: %{"name" => name}})
-       when is_binary(name) and name != "", do: name
-
-  defp logged_in_account(_), do: nil
-
-  defp metadata_key_for_provider(:youtube), do: "channel_ids"
-  defp metadata_key_for_provider(:google_analytics), do: "property_id"
-  defp metadata_key_for_provider(:google_ads), do: "customer_id"
-  defp metadata_key_for_provider(:google_search_console), do: "site_url"
-  defp metadata_key_for_provider(:google_business), do: "included_locations"
-  defp metadata_key_for_provider(:quickbooks), do: "income_account_id"
-  defp metadata_key_for_provider(:facebook_ads), do: "ad_account_id"
-  defp metadata_key_for_provider(_), do: "property_id"
+  defp needs_reconnect?(integration), do: Integration.expired?(integration)
 
   defp next_scheduled_sync_at do
     now = DateTime.utc_now()
@@ -757,10 +797,4 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       DateTime.add(today_run, 1, :day)
     end
   end
-
-  defp format_datetime(%DateTime{} = dt) do
-    Calendar.strftime(dt, "%b %d, %Y %H:%M UTC")
-  end
-
-  defp format_datetime(_), do: ""
 end

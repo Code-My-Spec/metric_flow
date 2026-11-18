@@ -7,7 +7,6 @@ defmodule MetricFlow.DashboardsTest do
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Metrics.Metric
   alias MetricFlow.Metrics.NormalizedMetric
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -15,7 +14,7 @@ defmodule MetricFlow.DashboardsTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -28,6 +27,7 @@ defmodule MetricFlow.DashboardsTest do
   defp insert_metric!(user_id, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       metric_type: "traffic",
       metric_name: "sessions",
       value: 100.0,
@@ -53,6 +53,7 @@ defmodule MetricFlow.DashboardsTest do
   defp insert_integration!(user_id, provider \\ :google, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",

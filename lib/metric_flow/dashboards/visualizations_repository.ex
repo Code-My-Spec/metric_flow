@@ -12,6 +12,7 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   alias MetricFlow.Dashboards.Visualization
   alias MetricFlow.Dashboards.VisualizationMetric
   alias MetricFlow.Repo
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
@@ -23,11 +24,8 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   modified first.
   """
   @spec list_visualizations(Scope.t()) :: list(Visualization.t())
-  def list_visualizations(%Scope{user: user}) do
-    from(v in Visualization,
-      where: v.user_id == ^user.id,
-      order_by: [desc: v.updated_at, desc: v.id]
-    )
+  def list_visualizations(%Scope{} = scope) do
+    from(v in scoped(scope), order_by: [desc: v.updated_at, desc: v.id])
     |> Repo.all()
   end
 
@@ -43,11 +41,9 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   """
   @spec get_visualization(Scope.t(), integer()) ::
           {:ok, Visualization.t()} | {:error, :not_found}
-  def get_visualization(%Scope{user: user}, id) do
+  def get_visualization(%Scope{} = scope, id) do
     result =
-      from(v in Visualization,
-        where: v.user_id == ^user.id and v.id == ^id
-      )
+      from(v in scoped(scope), where: v.id == ^id)
       |> Repo.one()
 
     case result do
@@ -68,11 +64,12 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   """
   @spec create_visualization(Scope.t(), map()) ::
           {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
-  def create_visualization(%Scope{user: user}, attrs) do
-    attrs_with_user = Map.put(attrs, :user_id, user.id)
-
-    %Visualization{}
-    |> Visualization.changeset(attrs_with_user)
+  def create_visualization(%Scope{} = scope, attrs) do
+    %Visualization{
+      user_id: AccountAccess.user_id(scope),
+      account_id: AccountAccess.account_id(scope)
+    }
+    |> Visualization.changeset(drop_owner(attrs))
     |> Repo.insert()
   end
 
@@ -87,7 +84,7 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
           {:ok, Visualization.t()} | {:error, Ecto.Changeset.t()}
   def update_visualization(%Visualization{} = visualization, attrs) do
     visualization
-    |> Visualization.changeset(attrs)
+    |> Visualization.changeset(drop_owner(attrs))
     |> Repo.update()
   end
 
@@ -120,12 +117,13 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   def duplicate_visualization(%Visualization{} = original) do
     attrs = %{
       name: original.name <> " (Copy)",
-      user_id: original.user_id,
       vega_spec: original.vega_spec,
       shareable: false
     }
 
-    with {:ok, copy} <- %Visualization{} |> Visualization.changeset(attrs) |> Repo.insert() do
+    copy = %Visualization{user_id: original.user_id, account_id: original.account_id}
+
+    with {:ok, copy} <- copy |> Visualization.changeset(attrs) |> Repo.insert() do
       metric_names = get_visualization_metric_names(original)
       set_visualization_metrics(copy, metric_names)
       {:ok, copy}
@@ -190,8 +188,13 @@ defmodule MetricFlow.Dashboards.VisualizationsRepository do
   dashboard_visualizations at the DB level.
   """
   @spec delete_all_visualizations(Scope.t()) :: :ok
-  def delete_all_visualizations(%Scope{user: user}) do
-    from(v in Visualization, where: v.user_id == ^user.id) |> Repo.delete_all()
+  def delete_all_visualizations(%Scope{} = scope) do
+    scope |> scoped() |> Repo.delete_all()
     :ok
   end
+
+  defp scoped(%Scope{} = scope), do: AccountAccess.scope_query(Visualization, scope)
+
+  # Ownership comes from the scope (or the original record), never from params.
+  defp drop_owner(attrs), do: Map.drop(attrs, [:user_id, :account_id, "user_id", "account_id"])
 end

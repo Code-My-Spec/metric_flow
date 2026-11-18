@@ -413,7 +413,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   defp load_dashboard_data(scope, provider, provider_atom, date_range \\ "last_30_days") do
     metrics = load_metrics(scope, provider_atom, date_range)
-    sync_history = load_sync_history(scope)
+    sync_history = load_sync_history(scope, provider_atom)
     reviews = if provider == "google_business", do: load_reviews(scope), else: []
 
     rolling_review_rows =
@@ -469,8 +469,12 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
     end)
   end
 
-  defp load_sync_history(scope) do
-    DataSync.list_sync_history(scope, limit: 5)
+  # This provider's runs only — the account's history mixes every provider.
+  defp load_sync_history(scope, provider) do
+    scope
+    |> DataSync.list_sync_history(limit: 100)
+    |> Enum.filter(&(&1.provider == provider))
+    |> Enum.take(5)
   end
 
   defp load_reviews(scope) do

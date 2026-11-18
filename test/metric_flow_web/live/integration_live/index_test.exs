@@ -60,6 +60,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
   defp insert_integration!(user_id, provider, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -107,7 +108,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
         assert html =~ "Integrations"
-        assert html =~ "Manage your connected marketing platforms"
+        assert has_element?(lv, "#setup-data-sources[href='/app/onboarding/connect']")
         assert has_element?(lv, "a[href='/app/integrations/connect']", "Connect a Platform")
       end)
     end
@@ -123,13 +124,20 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
         assert html =~ "No platforms connected yet."
 
+        # Each sign-in's connect button opens its step of the setup wizard.
         assert has_element?(
                  lv,
-                 "a[href='/app/integrations/connect']",
-                 "Connect your first platform"
+                 "#connection-group-google a[href='/app/onboarding/connect?step=google']",
+                 "Connect Google"
                )
 
-        refute html =~ "Connected Platforms"
+        assert has_element?(
+                 lv,
+                 "#connection-group-quickbooks a[href='/app/onboarding/connect?step=quickbooks']",
+                 "Connect QuickBooks"
+               )
+
+        refute has_element?(lv, "[data-role='integrations-list']")
       end)
     end
   end
@@ -164,9 +172,12 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       capture_log(fn ->
         {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
-        assert html =~ "Connected Platforms"
+        assert has_element?(
+                 lv,
+                 "#connection-group-google [data-role='integrations-list'] [data-platform='google_ads']"
+               )
+
         assert html =~ "Google Ads"
-        assert html =~ "Paid search and display advertising"
         assert has_element?(lv, "[data-platform='google_ads'][data-status='connected']")
         assert html =~ "Connected"
       end)
@@ -178,7 +189,11 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
          %{conn: conn} do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
-      insert_integration!(user.id, :google_ads)
+
+      insert_integration!(user.id, :google_ads, %{
+        provider_metadata: %{"email" => "stub@example.com", "customer_id" => "1234567890"}
+      })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -192,6 +207,29 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     end
   end
 
+  describe "connected product with nothing selected" do
+    test "offers choosing what to sync in the wizard instead of a sync it can't run", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
+      insert_integration!(user.id, :google_ads)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
+
+        assert has_element?(
+                 lv,
+                 "[data-platform='google_ads'] [data-role='edit-integration-accounts'][href='/app/onboarding/connect?step=google']",
+                 "Choose ad account"
+               )
+
+        refute has_element?(lv, "[phx-click='sync'][phx-value-platform='google_ads']")
+      end)
+    end
+  end
+
   describe "displays available platforms section for unconnected providers" do
     test "displays available platforms section for unconnected providers", %{conn: conn} do
       user = user_fixture()
@@ -201,7 +239,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       capture_log(fn ->
         {:ok, lv, html} = live(conn, ~p"/app/integrations")
 
-        assert html =~ "Available Platforms"
+        assert html =~ "Not connected"
         assert has_element?(lv, "[data-platform='google_analytics'][data-status='available']")
         assert has_element?(lv, "[data-role='reconnect-integration']", "Connect Facebook")
       end)
@@ -279,7 +317,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "disconnects provider and shows success flash on confirm", %{conn: conn} do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
-      scope = Scope.for_user(user)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
 
@@ -307,7 +345,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     test "cancels disconnect modal without modifying data", %{conn: conn} do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
-      scope = Scope.for_user(user)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
       insert_integration!(user.id, :google_ads)
       conn = log_in_user(conn, user)
 
@@ -325,6 +363,94 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         refute has_element?(lv, "[data-role='confirm-disconnect']")
         assert {:ok, _integration} = MetricFlow.Integrations.get_integration(scope, :google_ads)
       end)
+    end
+  end
+
+  describe "account-owned integrations" do
+    defp member!(account_id, user, role) do
+      %MetricFlow.Accounts.AccountMember{}
+      |> MetricFlow.Accounts.AccountMember.changeset(%{
+        account_id: account_id,
+        user_id: user.id,
+        role: role
+      })
+      |> Repo.insert!()
+
+      user
+    end
+
+    test "an agency member switched into a client account sees the client's connections", %{
+      conn: conn
+    } do
+      client_owner = user_fixture()
+      client_id = default_account_id(client_owner)
+      insert_integration!(client_owner.id, :google_ads)
+
+      agency = MetricFlowTest.AgenciesFixtures.account_fixture(%{type: "agency"})
+      agency_user = member!(agency.id, user_fixture(), :admin)
+
+      {:ok, _} =
+        MetricFlow.Agencies.grant_client_account_access(
+          Scope.for_user(agency_user),
+          agency.id,
+          client_id,
+          :account_manager,
+          false
+        )
+
+      MetricFlow.Accounts.touch_membership(Scope.for_user(agency_user), client_id)
+      conn = log_in_user(conn, agency_user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
+        assert has_element?(lv, "[data-platform='google_ads'][data-status='connected']")
+      end)
+
+      # Back in their own agency account, the client's connection is not shown.
+      MetricFlow.Accounts.touch_membership(Scope.for_user(agency_user), agency.id)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
+        refute has_element?(lv, "[data-platform='google_ads'][data-status='connected']")
+      end)
+    end
+
+    test "expired credentials email the account's owners and admins, not the viewing member", %{
+      conn: conn
+    } do
+      owner = user_fixture()
+      account_id = default_account_id(owner)
+      admin = member!(account_id, user_fixture(), :admin)
+      viewer = member!(account_id, user_fixture(), :read_only)
+
+      insert_integration!(owner.id, :google_ads, %{
+        expires_at: past_expires_at(),
+        refresh_token: nil
+      })
+
+      MetricFlow.Accounts.touch_membership(Scope.for_user(viewer), account_id)
+      conn = log_in_user(conn, viewer)
+
+      capture_log(fn ->
+        {:ok, _lv, _html} = live(conn, ~p"/app/integrations")
+      end)
+
+      recipients = reconnect_email_recipients()
+      assert owner.email in recipients
+      assert admin.email in recipients
+      refute viewer.email in recipients
+    end
+
+    defp reconnect_email_recipients(acc \\ []) do
+      receive do
+        {:email, %{subject: "Reconnect your Google Ads integration", to: to}} ->
+          reconnect_email_recipients(acc ++ Enum.map(to, &elem(&1, 1)))
+
+        {:email, _other} ->
+          reconnect_email_recipients(acc)
+      after
+        0 -> acc
+      end
     end
   end
 end

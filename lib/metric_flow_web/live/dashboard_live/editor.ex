@@ -331,7 +331,7 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
     dashboard = socket.assigns.dashboard || %Dashboard{}
 
     changeset =
-      Dashboards.dashboard_changeset(dashboard, %{"name" => name, "user_id" => 0})
+      Dashboards.dashboard_changeset(dashboard, %{"name" => name, "account_id" => 0})
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :changeset, changeset)}

@@ -24,6 +24,8 @@ defmodule MetricFlowWeb.Application do
         {Cachex, name: :metric_cache},
         MetricFlow.Integrations.OAuthStateStore,
         MetricFlow.Integrations.PendingYouTubeAuthorizations,
+        # Agent access: the OAuth-protected MCP server at /mcp
+        {MetricFlowWeb.MCP.Server, transport: {:streamable_http, start: true}},
         # Start to serve requests, typically the last entry
         MetricFlowWeb.Endpoint,
         # CodeMySpec preview tunnel. Distinct :id and :name from the legacy

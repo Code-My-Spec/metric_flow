@@ -102,20 +102,25 @@ defmodule MetricFlowTest.SyncStub do
   under the same registered provider plug.
   """
   @spec stub_google_business_success() :: :ok
-  def stub_google_business_success do
+  def stub_google_business_success(provider \\ :google_business, opts \\ []) do
+    fail_location = Keyword.get(opts, :fail_location)
+
     plug = fn conn ->
       conn = Plug.Conn.put_resp_content_type(conn, "application/json")
 
-      case conn.host do
-        "businessprofileperformance.googleapis.com" ->
+      cond do
+        fail_location && String.contains?(conn.request_path, fail_location) ->
+          Plug.Conn.send_resp(conn, 404, ~s({"error":{"code":404,"status":"NOT_FOUND"}}))
+
+        conn.host == "businessprofileperformance.googleapis.com" ->
           Plug.Conn.send_resp(conn, 200, google_business_performance_success_body())
 
-        _ ->
+        true ->
           Plug.Conn.send_resp(conn, 200, google_business_reviews_success_body())
       end
     end
 
-    PlugStore.put_provider_plug(:google_business, plug)
+    PlugStore.put_provider_plug(provider, plug)
   end
 
   @doc """

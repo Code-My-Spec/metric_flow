@@ -163,7 +163,7 @@ defmodule MetricFlowWeb.Layouts do
                 <summary>Integrations</summary>
                 <ul>
                   <li><a href={~p"/app/integrations"}>All Integrations</a></li>
-                  <li><a href={~p"/app/integrations/connect"}>Connect New</a></li>
+                  <li><a href={~p"/app/onboarding/connect"}>Set up data sources</a></li>
                   <li><a href={~p"/app/integrations/sync-history"}>Sync History</a></li>
                 </ul>
               </details>

@@ -7,7 +7,6 @@ defmodule MetricFlow.IntegrationsTest do
 
   alias MetricFlow.Integrations
   alias MetricFlow.Integrations.Integration
-  alias MetricFlow.Users.Scope
 
   @cassette_dir "test/cassettes/oauth"
 
@@ -496,7 +495,7 @@ defmodule MetricFlow.IntegrationsTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -507,6 +506,7 @@ defmodule MetricFlow.IntegrationsTest do
   defp insert_integration!(user_id, provider, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",

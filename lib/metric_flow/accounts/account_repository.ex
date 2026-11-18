@@ -158,11 +158,8 @@ defmodule MetricFlow.Accounts.AccountRepository do
   Deletes an account and all associated membership records atomically.
   Only owners may delete an account. Personal accounts cannot be deleted.
 
-  Also removes every metric, integration, dashboard, and visualization
-  belonging to the owner performing the deletion -- the data this account
-  gives them access to manage has no account_id of its own (it is scoped by
-  user_id), so the owner's own user-scoped data is what "this account's
-  data" resolves to.
+  Also removes every metric, integration, dashboard, and visualization the
+  account owns. Data owned by the deleting user's other accounts is untouched.
 
   Broadcasts {:deleted, account} on success.
   """
@@ -178,13 +175,18 @@ defmodule MetricFlow.Accounts.AccountRepository do
     end
   end
 
-  defp run_delete_account_transaction(%Scope{} = scope, %Account{} = account) do
+  defp run_delete_account_transaction(%Scope{}, %Account{} = account) do
+    # The account's data belongs to the account, not to the deleting user:
+    # remove it through a system scope for that account (account_id foreign
+    # keys also cascade).
+    account_scope = Scope.for_account(account.id)
+
     Repo.transaction(fn ->
+      Metrics.delete_all_metrics(account_scope)
+      Integrations.delete_all_integrations(account_scope)
+      Dashboards.delete_all_dashboards(account_scope)
+      Dashboards.delete_all_visualizations(account_scope)
       Repo.delete_all(from(m in AccountMember, where: m.account_id == ^account.id))
-      Metrics.delete_all_metrics(scope)
-      Integrations.delete_all_integrations(scope)
-      Dashboards.delete_all_dashboards(scope)
-      Dashboards.delete_all_visualizations(scope)
       Repo.delete!(account)
     end)
   end

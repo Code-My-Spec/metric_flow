@@ -6,7 +6,6 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
   alias MetricFlow.Dashboards.Dashboard
   alias MetricFlow.Dashboards.DashboardsRepository
   alias MetricFlow.Repo
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -14,14 +13,23 @@ defmodule MetricFlow.Dashboards.DashboardsRepositoryTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
   defp dashboard_fixture(user, attrs \\ %{}) do
     {:ok, dashboard} =
       %Dashboard{}
-      |> Dashboard.changeset(Map.merge(%{name: "Test Dashboard", user_id: user.id}, attrs))
+      |> Dashboard.changeset(
+        Map.merge(
+          %{
+            name: "Test Dashboard",
+            user_id: user.id,
+            account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id)
+          },
+          attrs
+        )
+      )
       |> Repo.insert()
 
     dashboard

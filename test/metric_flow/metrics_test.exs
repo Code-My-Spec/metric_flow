@@ -5,7 +5,6 @@ defmodule MetricFlow.MetricsTest do
 
   alias MetricFlow.Metrics
   alias MetricFlow.Metrics.Metric
-  alias MetricFlow.Users.Scope
 
   # ---------------------------------------------------------------------------
   # Fixtures
@@ -13,7 +12,7 @@ defmodule MetricFlow.MetricsTest do
 
   defp user_with_scope do
     user = user_fixture()
-    scope = Scope.for_user(user)
+    scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
     {user, scope}
   end
 
@@ -39,7 +38,10 @@ defmodule MetricFlow.MetricsTest do
 
   defp insert_metric!(user_id, overrides \\ %{}) do
     attrs =
-      Map.merge(valid_metric_attrs(overrides), %{user_id: user_id})
+      Map.merge(valid_metric_attrs(overrides), %{
+        user_id: user_id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id)
+      })
 
     %Metric{}
     |> Metric.changeset(attrs)

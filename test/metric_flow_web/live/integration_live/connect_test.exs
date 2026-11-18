@@ -85,6 +85,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
   defp insert_integration!(user_id, provider, overrides \\ %{}) do
     defaults = %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       refresh_token: "refresh-token-#{System.unique_integer([:positive])}",
@@ -300,7 +301,7 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
       capture_log(fn ->
         {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect")
 
-        assert html =~ "Connect a Provider"
+        assert html =~ "Connect a single platform"
         assert html =~ "data-platform"
       end)
     end

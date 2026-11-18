@@ -23,6 +23,7 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: :google_analytics,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second),
@@ -35,6 +36,7 @@ defmodule MetricFlow.DataSync.SyncJobTest do
   defp valid_attrs(user_id, integration_id) do
     %{
       user_id: user_id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       integration_id: integration_id,
       provider: :google_analytics,
       status: :pending
@@ -74,6 +76,7 @@ defmodule MetricFlow.DataSync.SyncJobTest do
 
       attrs = %{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         integration_id: integration.id,
         provider: :google_analytics,
         status: :completed,
@@ -93,15 +96,15 @@ defmodule MetricFlow.DataSync.SyncJobTest do
       assert get_change(changeset, :error_message) == "some error"
     end
 
-    test "validates user_id is required" do
+    test "validates account_id is required (user_id is only who created it)" do
       user = user_fixture()
       integration = insert_integration!(user.id)
-      attrs = Map.delete(valid_attrs(user.id, integration.id), :user_id)
+      attrs = Map.delete(valid_attrs(user.id, integration.id), :account_id)
 
       changeset = SyncJob.changeset(new_sync_job(), attrs)
 
       refute changeset.valid?
-      assert %{user_id: ["can't be blank"]} = errors_on(changeset)
+      assert %{account_id: ["can't be blank"]} = errors_on(changeset)
     end
 
     test "validates integration_id is required" do
@@ -194,9 +197,12 @@ defmodule MetricFlow.DataSync.SyncJobTest do
     end
 
     test "validates user association exists (assoc_constraint triggers on insert)" do
+      integration = insert_integration!(user_fixture().id)
+
       attrs = %{
         user_id: -1,
-        integration_id: -1,
+        account_id: integration.account_id,
+        integration_id: integration.id,
         provider: :google_analytics,
         status: :pending
       }
@@ -214,6 +220,7 @@ defmodule MetricFlow.DataSync.SyncJobTest do
 
       attrs = %{
         user_id: user.id,
+        account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
         integration_id: -1,
         provider: :google_analytics,
         status: :pending

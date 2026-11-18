@@ -11,7 +11,13 @@ defmodule MetricFlow.Ai do
   """
 
   use Boundary,
-    deps: [MetricFlow, MetricFlow.Metrics, MetricFlow.Correlations, MetricFlow.Dashboards],
+    deps: [
+      MetricFlow,
+      MetricFlow.Metrics,
+      MetricFlow.Correlations,
+      MetricFlow.Dashboards,
+      MetricFlow.Onboarding
+    ],
     exports: [
       Insight,
       SuggestionFeedback,
@@ -276,11 +282,24 @@ defmodule MetricFlow.Ai do
     })
   end
 
+  @setup_prompt """
+  You can also set up the user's data sources with your tools. Connections are
+  Google (Analytics, Ads, Search Console and Business Profile under one sign-in),
+  Meta ads and QuickBooks. Start with get_setup_status. To connect, give the user
+  the link from get_connect_link as a markdown link — only they can approve the
+  provider's consent screen. Once connected, use list_sync_options and confirm
+  the choice with the user before save_sync_selection, unless only one option
+  exists. If no data shows up, check get_setup_status before anything else.
+  """
+
   defp stream_assistant_response(scope, session, caller, opts) do
     {:ok, loaded_session} = AiRepository.get_chat_session(scope, session.id)
 
     system_prompt =
-      LlmClient.base_system_prompt() <> "\n\n" <> build_data_context(scope, loaded_session)
+      LlmClient.base_system_prompt() <>
+        "\n\n" <> @setup_prompt <> "\n\n" <> build_data_context(scope, loaded_session)
+
+    opts = Keyword.put_new(opts, :tools, MetricFlow.Onboarding.Tools.alloy_tools(scope))
 
     messages =
       Enum.map(loaded_session.chat_messages, fn msg ->

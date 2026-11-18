@@ -54,8 +54,8 @@ defmodule MetricFlow.Integrations.Integration do
 
   schema "integrations" do
     field :provider, Ecto.Enum, values: @all_providers
-    field :access_token, Binary
-    field :refresh_token, Binary
+    field :access_token, Binary, redact: true
+    field :refresh_token, Binary, redact: true
     field :expires_at, :utc_datetime_usec
     field :granted_scopes, {:array, :string}, default: []
     field :provider_metadata, :map, default: %{}
@@ -78,6 +78,7 @@ defmodule MetricFlow.Integrations.Integration do
   def changeset(integration, attrs) do
     integration
     |> cast(attrs, [
+      :account_id,
       :user_id,
       :provider,
       :access_token,
@@ -87,14 +88,13 @@ defmodule MetricFlow.Integrations.Integration do
       :provider_metadata,
       :reconnection_notified_at
     ])
-    |> validate_required([:user_id, :provider, :access_token, :expires_at])
+    |> validate_required([:account_id, :provider, :access_token, :expires_at])
     |> validate_provider_metadata()
     |> assoc_constraint(:user)
     |> foreign_key_constraint(:account_id)
     |> check_constraint(:account_id, name: :youtube_requires_account)
-    |> unique_constraint([:account_id, :provider], name: :integrations_account_id_provider_index)
-    |> unique_constraint([:user_id, :provider],
-      name: :integrations_user_id_provider_index,
+    |> unique_constraint([:account_id, :provider],
+      name: :integrations_account_id_provider_index,
       message: "has already been taken"
     )
   end
@@ -109,6 +109,15 @@ defmodule MetricFlow.Integrations.Integration do
   def expired?(%__MODULE__{expires_at: expires_at}) do
     now = DateTime.utc_now()
     DateTime.compare(now, expires_at) != :lt
+  end
+
+  @doc """
+  True when the token is expired or will be within `seconds`. Used before a
+  sync so a token that would lapse mid-run is refreshed up front.
+  """
+  @spec expires_within?(t(), non_neg_integer()) :: boolean()
+  def expires_within?(%__MODULE__{expires_at: expires_at}, seconds) do
+    DateTime.compare(DateTime.add(DateTime.utc_now(), seconds, :second), expires_at) != :lt
   end
 
   @doc """

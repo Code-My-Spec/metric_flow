@@ -66,6 +66,7 @@ defmodule MetricFlow.DataSync.SyncJob do
     field :completed_at, :utc_datetime_usec
     field :error_message, :string
 
+    field :account_id, :integer
     belongs_to :user, User
     belongs_to :integration, Integration
 
@@ -83,6 +84,7 @@ defmodule MetricFlow.DataSync.SyncJob do
   def changeset(sync_job, attrs) do
     sync_job
     |> cast(attrs, [
+      :account_id,
       :user_id,
       :integration_id,
       :provider,
@@ -91,8 +93,9 @@ defmodule MetricFlow.DataSync.SyncJob do
       :completed_at,
       :error_message
     ])
-    |> validate_required([:user_id, :integration_id, :provider, :status])
+    |> validate_required([:account_id, :integration_id, :provider, :status])
     |> assoc_constraint(:user)
+    |> foreign_key_constraint(:account_id)
     |> assoc_constraint(:integration)
   end
 

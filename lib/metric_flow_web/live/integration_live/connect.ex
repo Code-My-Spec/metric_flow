@@ -82,6 +82,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
   # etc.) are the actual entries shown in the grid.
   @oauth_parent_keys MapSet.new([:google])
 
+  # Integrations that aren't data sources (the CodeMySpec agent connection)
+  # never appear in the platform grid.
+  @hidden_keys MapSet.new([:codemyspec])
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -96,11 +100,24 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold">Connect a Provider</h1>
-          <p class="mt-1 text-base-content/60">
-            Authenticate with your marketing providers to start syncing data
+      <div class="mx-auto max-w-4xl">
+        <div class="mb-6">
+          <.link
+            navigate={~p"/app/integrations"}
+            class="mb-2 inline-flex items-center gap-1 text-sm text-base-content/60 hover:text-base-content"
+          >
+            <.icon name="hero-arrow-left-mini" class="size-4" /> Integrations
+          </.link>
+          <h1 class="text-2xl font-bold">
+            {if @view_mode == :selection, do: "Connect a single platform", else: "Connect a Provider"}
+          </h1>
+          <p :if={@view_mode == :selection} class="mt-1 text-base-content/60">
+            Connects one product at a time. To connect everything at once — one Google sign-in covers Analytics, Ads, Search Console, Business Profile and YouTube — <.link
+              navigate={~p"/app/onboarding/connect"}
+              class="link link-primary"
+            >
+              use the setup wizard
+            </.link>.
           </p>
         </div>
 
@@ -198,41 +215,46 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       <div
         :for={provider <- @providers}
         data-platform={provider.key}
-        class="mf-card p-5"
+        class="flex flex-col rounded-box border border-base-300 bg-base-100 p-5"
       >
-        <div class="mb-3">
-          <div class="w-10 h-10 rounded bg-base-300/40 flex items-center justify-center mb-3">
-            <span class="text-xs font-bold text-base-content/60 uppercase">
-              {String.slice(provider.name, 0, 2)}
+        <div class="flex-1">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-semibold">{provider.name}</h3>
+            <span
+              :if={tile_state(@integrations, provider.key) == :connected}
+              class="badge badge-success badge-sm shrink-0"
+            >
+              Connected
+            </span>
+            <span
+              :if={tile_state(@integrations, provider.key) == :expired}
+              class="badge badge-error badge-sm shrink-0"
+            >
+              Reconnect needed
+            </span>
+            <span
+              :if={tile_state(@integrations, provider.key) == :none}
+              class="badge badge-ghost badge-sm shrink-0"
+            >
+              Not connected
             </span>
           </div>
-          <h3 class="font-semibold">{provider.name}</h3>
           <p class="text-sm text-base-content/60 mt-1">{provider.description}</p>
         </div>
 
-        <div class="flex flex-col mt-4">
-          <span
-            :if={provider_connected?(@integrations, provider.key)}
-            class="badge badge-success self-start"
-          >
-            Connected
-          </span>
-          <span
-            :if={not provider_connected?(@integrations, provider.key)}
-            class="badge badge-ghost self-start"
-          >
-            Not connected
-          </span>
-
-          <button
-            data-role="connect-button"
-            phx-click="connect"
-            phx-value-provider={provider.key}
-            class="btn btn-primary btn-sm w-full sm:w-auto mt-2"
-          >
-            {if provider_connected?(@integrations, provider.key), do: "Reconnect", else: "Connect"}
-          </button>
-        </div>
+        <button
+          data-role="connect-button"
+          phx-click="connect"
+          phx-value-provider={provider.key}
+          class={[
+            "btn btn-sm mt-4 self-start",
+            tile_state(@integrations, provider.key) == :connected && "btn-ghost",
+            tile_state(@integrations, provider.key) == :expired && "btn-warning",
+            tile_state(@integrations, provider.key) == :none && "btn-primary"
+          ]}
+        >
+          {if provider_connected?(@integrations, provider.key), do: "Reconnect", else: "Connect"}
+        </button>
       </div>
     </div>
     """
@@ -264,7 +286,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           <.link
             navigate={~p"/app/integrations/connect/#{@provider}/accounts"}
             data-role="select-accounts-button"
-            class="btn btn-secondary btn-sm w-full sm:w-auto"
+            class="btn btn-primary btn-sm w-full sm:w-auto"
           >
             Select Accounts
           </.link>
@@ -274,7 +296,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             href={@authorize_url}
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-primary btn-sm w-full sm:w-auto"
+            class="btn btn-ghost btn-sm w-full sm:w-auto"
           >
             Reconnect
           </a>
@@ -291,7 +313,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       </div>
 
       <div data-role="account-selection" class="mb-4">
-        <p class="text-sm text-base-content/60">
+        <p :if={is_nil(@integration)} class="text-sm text-base-content/60">
           Connect your {@platform.name} account to enable data syncing from this provider.
         </p>
       </div>
@@ -1387,6 +1409,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       |> MapSet.union(canonical_keys)
       |> MapSet.union(integration_keys)
       |> MapSet.difference(@oauth_parent_keys)
+      |> MapSet.difference(@hidden_keys)
 
     all_keys
     |> Enum.map(fn key ->
@@ -1488,6 +1511,19 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp provider_connected?(integrations, provider_key) do
     Enum.any?(integrations, fn i -> i.provider == provider_key end)
+  end
+
+  # :expired only when the token can't be refreshed silently.
+  defp tile_state(integrations, provider_key) do
+    case Enum.find(integrations, &(&1.provider == provider_key)) do
+      nil ->
+        :none
+
+      integration ->
+        if Integration.expired?(integration) and not Integration.has_refresh_token?(integration),
+          do: :expired,
+          else: :connected
+    end
   end
 
   defp provider_display_name(provider) when is_binary(provider) do

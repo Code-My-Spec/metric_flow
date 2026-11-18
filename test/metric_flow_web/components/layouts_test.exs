@@ -12,6 +12,7 @@ defmodule MetricFlowWeb.LayoutsTest do
     %Integration{}
     |> Integration.changeset(%{
       user_id: user.id,
+      account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       provider: :google_analytics,
       access_token: "access-token-#{System.unique_integer([:positive])}",
       expires_at: DateTime.add(DateTime.utc_now(), 3_600, :second),

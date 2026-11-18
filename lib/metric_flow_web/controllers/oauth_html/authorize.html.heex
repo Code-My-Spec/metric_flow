@@ -1,0 +1,58 @@
+<main class="min-h-screen bg-base-200 px-4 py-16">
+  <Layouts.flash_group flash={@flash} />
+  <div class="mx-auto max-w-md">
+    <div class="card bg-base-100 shadow-xl" id="oauth-consent">
+      <div class="card-body space-y-4">
+        <.header>
+          <.icon name="hero-shield-check" class="size-8 text-primary mb-2" /> Connect an AI agent
+          <:subtitle>
+            <strong class="text-primary">{@client.name}</strong>
+            wants to set up and check data sources for accounts you can access.
+          </:subtitle>
+        </.header>
+
+        <div class="alert alert-warning text-left text-sm" role="alert">
+          <.icon name="hero-exclamation-triangle" class="size-5" />
+          <span>
+            The name "{@client.name}" is supplied by the app itself and is not verified.
+            Only approve if you started this connection.
+          </span>
+        </div>
+
+        <p class="text-sm text-base-content/70">
+          It acts as you: it can see each account's connection status and, where your role
+          allows, choose what syncs, start a sync or disconnect a data source. You can revoke
+          access at any time.
+        </p>
+
+        <div class="card-actions justify-end gap-2">
+          <.form for={%{}} as={:authorization} action={~p"/oauth/authorize"} method="delete">
+            <input type="hidden" name="client_id" value={@client.uid} />
+            <input
+              :if={@params["redirect_uri"]}
+              type="hidden"
+              name="redirect_uri"
+              value={@params["redirect_uri"]}
+            />
+            <input :if={@params["state"]} type="hidden" name="state" value={@params["state"]} />
+            <button type="submit" id="oauth-deny" class="btn btn-ghost">Deny</button>
+          </.form>
+
+          <.form for={%{}} as={:authorization} action={~p"/oauth/authorize"} method="post">
+            <input
+              :for={key <- MetricFlowWeb.OAuthController.forwarded_params()}
+              :if={key not in ["client_id", "scope", "response_type"] and @params[key]}
+              type="hidden"
+              name={key}
+              value={@params[key]}
+            />
+            <input type="hidden" name="client_id" value={@client.uid} />
+            <input type="hidden" name="scope" value={Enum.join(@scopes, " ")} />
+            <input type="hidden" name="response_type" value="code" />
+            <button type="submit" id="oauth-approve" class="btn btn-primary">Approve</button>
+          </.form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

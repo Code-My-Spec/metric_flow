@@ -32,6 +32,15 @@ defmodule MetricFlow.Users.Scope do
   def for_user(nil), do: nil
 
   @doc """
+  Creates a system scope for background work on an account's data (sync
+  workers, schedulers). It carries no user, so it is never built from
+  request input -- only from an account-owned record.
+  """
+  def for_account(account_id) when is_integer(account_id) do
+    %__MODULE__{user: nil, account_id: account_id}
+  end
+
+  @doc """
   Returns a copy of `scope` with `account_id` set to the given value.
 
   For multi-account users, a scope on its own does not know which account

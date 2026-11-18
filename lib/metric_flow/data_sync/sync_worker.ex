@@ -2,7 +2,9 @@ defmodule MetricFlow.DataSync.SyncWorker do
   @moduledoc """
   Oban worker that executes data sync operations for a single integration.
 
-  Receives integration_id, user_id, and sync_job_id in Oban job args. Updates
+  Receives integration_id, account_id, user_id (who triggered it) and
+  sync_job_id in Oban job args. Runs with a system scope for the
+  integration's account. Updates
   SyncJob status to running, retrieves integration tokens, delegates to the
   appropriate DataProvider based on the integration's provider field, persists
   metrics via MetricFlow.Metrics, creates a SyncHistory record with the sync
@@ -33,8 +35,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
       states: [:available, :scheduled, :executing]
     ]
 
+  @gbp_providers [:google_business, :google_business_reviews]
+
   require Logger
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.DataSync.DataProviders.FacebookAds
   alias MetricFlow.DataSync.DataProviders.GoogleAds
   alias MetricFlow.DataSync.DataProviders.GoogleAnalytics
@@ -47,7 +52,6 @@ defmodule MetricFlow.DataSync.SyncWorker do
   alias MetricFlow.Integrations.Integration
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
-  alias MetricFlow.Users.User
 
   # ---------------------------------------------------------------------------
   # Oban.Worker callback
@@ -70,7 +74,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     http_plug = resolve_plug(Map.get(args, "http_plug"))
     breakdown = resolve_breakdown(Map.get(args, "breakdown"))
 
-    scope = build_scope(user_id)
+    scope = build_scope(args, integration_id)
     started_at = DateTime.utc_now()
 
     Logger.info(
@@ -153,9 +157,30 @@ defmodule MetricFlow.DataSync.SyncWorker do
   # Private helpers — orchestration
   # ---------------------------------------------------------------------------
 
-  defp build_scope(user_id) do
-    Scope.for_user(%User{id: user_id})
+  # Syncs act on the integration's account, not on whoever triggered them:
+  # a system scope for that account (the integration is the source of truth;
+  # the account_id arg covers an integration that has since been deleted).
+  defp build_scope(args, integration_id) do
+    account_id =
+      case fetch_integration(integration_id) do
+        {:ok, %Integration{account_id: account_id}} when is_integer(account_id) -> account_id
+        _ -> Map.get(args, "account_id") || sync_job_account_id(Map.get(args, "sync_job_id"))
+      end
+
+    case account_id do
+      id when is_integer(id) -> Scope.for_account(id)
+      _ -> %Scope{user: nil, account_id: nil}
+    end
   end
+
+  defp sync_job_account_id(sync_job_id) when is_integer(sync_job_id) do
+    case MetricFlow.Repo.get(MetricFlow.DataSync.SyncJob, sync_job_id) do
+      %{account_id: account_id} -> account_id
+      nil -> nil
+    end
+  end
+
+  defp sync_job_account_id(_sync_job_id), do: nil
 
   defp update_job_status(scope, sync_job_id, status) do
     SyncJobRepository.update_sync_job_status(scope, sync_job_id, status)
@@ -179,7 +204,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     case fetch_integration(integration_id) do
       {:ok, integration} ->
         broadcast_sync_event(
-          user_id,
+          scope.account_id,
           {:sync_failed,
            %{
              provider: integration.provider,
@@ -204,18 +229,66 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
       {:ok, integration} ->
         sync_type = determine_sync_type(integration_id)
-        date_range = determine_date_range(scope, integration, sync_type)
 
-        sync_with_fresh_tokens(
-          scope,
-          integration,
-          sync_job_id,
-          sync_type,
-          date_range,
-          http_plug,
-          breakdown,
-          started_at
-        )
+        date_range =
+          scope
+          |> determine_date_range(integration, sync_type)
+          |> refetch_last_day_if_idempotent(integration.provider)
+
+        if already_current?(date_range),
+          do: record_up_to_date(scope, integration, sync_job_id, sync_type, started_at),
+          else:
+            sync_with_fresh_tokens(
+              scope,
+              integration,
+              sync_job_id,
+              sync_type,
+              date_range,
+              http_plug,
+              breakdown,
+              started_at
+            )
+    end
+  end
+
+  # An incremental sync after the data already reaches yesterday has an
+  # empty window (start after end). Providers reject that range (GA4 and
+  # Meta 400, QuickBooks invalid_date_range), so a second "Sync now" on the
+  # same day used to fail. It is simply up to date.
+  # Business Profile writes replace (location, day) rows rather than append
+  # (see delete_stale_performance_metrics/2), so a same-day re-sync can safely
+  # re-fetch the last day and pick up corrected values instead of skipping.
+  defp refetch_last_day_if_idempotent({%Date{} = from, %Date{} = to}, provider)
+       when provider in @gbp_providers do
+    if Date.compare(from, to) == :gt, do: {to, to}, else: {from, to}
+  end
+
+  defp refetch_last_day_if_idempotent(range, _provider), do: range
+
+  defp already_current?({%Date{} = from, %Date{} = to}), do: Date.compare(from, to) == :gt
+  defp already_current?(_), do: false
+
+  defp record_up_to_date(scope, integration, sync_job_id, sync_type, started_at) do
+    record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+      status: :success,
+      records_synced: 0,
+      error_message: nil
+    })
+
+    broadcast_sync_event(
+      scope.account_id,
+      {:sync_completed,
+       %{
+         provider: integration.provider,
+         records_synced: 0,
+         completed_at: DateTime.utc_now(),
+         sync_type: sync_type
+       }}
+    )
+
+    case update_job_status(scope, sync_job_id, :completed) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -241,7 +314,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:error, :youtube_sync_failed}
     else
       broadcast_sync_event(
-        scope.user.id,
+        scope.account_id,
         {:sync_completed,
          %{
            provider: :youtube,
@@ -313,7 +386,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         })
 
         broadcast_sync_event(
-          scope.user.id,
+          scope.account_id,
           {:sync_failed,
            %{
              provider: integration.provider,
@@ -348,7 +421,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         })
 
         broadcast_sync_event(
-          scope.user.id,
+          scope.account_id,
           {:sync_failed,
            %{
              provider: integration.provider,
@@ -412,7 +485,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:error, _first_mod, first_reason} = hd(errors)
 
       broadcast_sync_event(
-        scope.user.id,
+        scope.account_id,
         {:sync_failed,
          %{
            provider: integration.provider,
@@ -467,15 +540,30 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp ensure_fresh_tokens(scope, %Integration{} = integration) do
+    # Refresh anything expiring within 5 minutes, so a token doesn't lapse
+    # partway through a long backfill.
     cond do
-      not Integration.expired?(integration) ->
+      not Integration.expires_within?(integration, 300) ->
         {:ok, integration}
 
       Integration.has_refresh_token?(integration) ->
         case Integrations.refresh_token(scope, integration) do
-          {:ok, refreshed} -> {:ok, refreshed}
-          {:error, _reason} -> {:error, :token_expired}
+          {:ok, refreshed} ->
+            {:ok, refreshed}
+
+          {:error, reason} ->
+            Logger.warning(
+              "SyncWorker token refresh failed integration_id=#{integration.id} " <>
+                "provider=#{integration.provider} reason=#{inspect(reason)}"
+            )
+
+            if Integration.expired?(integration),
+              do: {:error, :token_expired},
+              else: {:ok, integration}
         end
+
+      not Integration.expired?(integration) ->
+        {:ok, integration}
 
       true ->
         {:error, :token_expired}
@@ -573,7 +661,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end)
 
     broadcast_sync_event(
-      scope.user.id,
+      scope.account_id,
       {:sync_completed,
        %{
          provider: integration.provider,
@@ -589,22 +677,22 @@ defmodule MetricFlow.DataSync.SyncWorker do
     end
   end
 
-  # Deletes existing Google Business Profile performance-metric rows for any
-  # (location, day) this batch is about to (re)write, so re-running a sync is
-  # idempotent per the story's upsert rule even though there is no
-  # database-level unique constraint to upsert against. Scoped to
-  # :google_business only -- reviews (:google_business_reviews) are a
-  # separate, page-based fetch with no equivalent re-run duplication risk.
+  # Deletes existing Google Business Profile rows for any (provider,
+  # location, day) this batch is about to (re)write, so re-running a sync is
+  # idempotent even though there is no database-level unique constraint to
+  # upsert against. Reviews need this as much as performance does: every
+  # sync re-fetches the newest review pages in full, so without it each run
+  # inserted the same reviews again.
   defp delete_stale_performance_metrics(scope, metrics) do
     metrics
-    |> Enum.filter(&(Map.get(&1, :provider) == :google_business))
+    |> Enum.filter(&(Map.get(&1, :provider) in @gbp_providers))
     |> Enum.map(fn metric ->
       location_id = get_in(metric, [:dimensions, :location_id])
-      {location_id, DateTime.to_date(metric.recorded_at)}
+      {metric.provider, location_id, DateTime.to_date(metric.recorded_at)}
     end)
     |> Enum.uniq()
-    |> Enum.each(fn {location_id, date} ->
-      Metrics.delete_metrics_by_location_and_date(scope, :google_business, location_id, date)
+    |> Enum.each(fn {provider, location_id, date} ->
+      Metrics.delete_metrics_by_location_and_date(scope, provider, location_id, date)
     end)
   end
 
@@ -677,7 +765,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
     unless provider == default_provider do
       broadcast_sync_event(
-        scope.user.id,
+        scope.account_id,
         {:sync_completed,
          %{
            provider: provider,
@@ -713,7 +801,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         })
 
         broadcast_sync_event(
-          scope.user.id,
+          scope.account_id,
           {:sync_failed,
            %{
              provider: integration.provider,
@@ -743,6 +831,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
   defp record_history(scope, integration, sync_job_id, sync_type, started_at, outcome) do
     attrs = %{
+      user_id: integration.user_id,
       integration_id: integration.id,
       sync_job_id: sync_job_id,
       provider: Map.get(outcome, :provider, integration.provider),
@@ -780,8 +869,10 @@ defmodule MetricFlow.DataSync.SyncWorker do
     ArgumentError -> map
   end
 
-  defp broadcast_sync_event(user_id, message) do
-    Phoenix.PubSub.broadcast(MetricFlow.PubSub, "user:#{user_id}:sync", message)
+  defp broadcast_sync_event(nil, _message), do: :ok
+
+  defp broadcast_sync_event(account_id, message) do
+    Phoenix.PubSub.broadcast(MetricFlow.PubSub, AccountAccess.sync_topic(account_id), message)
   end
 
   defp provider_error_detail({:provider_http_error, _reason, detail}), do: detail
