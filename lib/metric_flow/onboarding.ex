@@ -32,7 +32,8 @@ defmodule MetricFlow.Onboarding do
     %{
       key: :google,
       name: "Google",
-      description: "Analytics, Ads, Search Console, Business Profile and YouTube with one sign-in",
+      description:
+        "Analytics, Ads, Search Console, Business Profile and YouTube with one sign-in",
       products: [
         :google_analytics,
         :google_ads,
