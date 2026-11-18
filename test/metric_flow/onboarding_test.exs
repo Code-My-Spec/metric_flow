@@ -59,8 +59,15 @@ defmodule MetricFlow.OnboardingTest do
 
   describe "status/1" do
     test "nothing connected", %{scope: scope} do
-      [google, meta, qb] = Onboarding.status(scope)
-      assert {google.key, meta.key, qb.key} == {:google, :facebook_ads, :quickbooks}
+      [google, youtube, meta, qb] = Onboarding.status(scope)
+
+      assert {google.key, youtube.key, meta.key, qb.key} ==
+               {:google, :youtube, :facebook_ads, :quickbooks}
+
+      assert Enum.map(google.products, & &1.key) ==
+               [:google_analytics, :google_ads, :google_search_console, :google_business]
+
+      assert Enum.map(youtube.products, & &1.key) == [:youtube]
       assert google.state == :not_connected
       assert Enum.all?(google.products, &(&1.status == :not_connected))
     end
@@ -125,13 +132,63 @@ defmodule MetricFlow.OnboardingTest do
     end
   end
 
-  test "disconnecting one Google product keeps its siblings", %{user: user, scope: scope} do
+  test "every Google product lives on one :google integration", %{user: user, scope: scope} do
+    integration_fixture(user, %{provider: :google_analytics})
+
+    integration_fixture(user, %{
+      provider: :google_ads,
+      provider_metadata: %{"customer_id" => "123"}
+    })
+
+    assert [%{provider: :google} = google] = Integrations.list_integrations(scope)
+    assert google.provider_metadata["property_id"] == "GA4-67890"
+    assert google.provider_metadata["customer_id"] == "123"
+
+    statuses =
+      scope
+      |> Onboarding.connection_status(:google)
+      |> Map.get(:products)
+      |> Map.new(&{&1.key, &1.status})
+
+    assert statuses == %{
+             google_analytics: :ready,
+             google_ads: :ready,
+             google_search_console: :not_granted,
+             google_business: :not_granted
+           }
+  end
+
+  test "disconnecting one Google product clears its selection and keeps its siblings", %{
+    user: user,
+    scope: scope
+  } do
+    integration_fixture(user, %{provider: :google_analytics})
+
+    integration_fixture(user, %{provider: :google_ads, provider_metadata: %{"customer_id" => "1"}})
+
+    assert :ok = Onboarding.disconnect(scope, :google_analytics)
+
+    {:ok, google} = Integrations.get_integration(scope, :google)
+    refute Map.has_key?(google.provider_metadata, "property_id")
+    assert google.provider_metadata["customer_id"] == "1"
+
+    statuses =
+      scope
+      |> Onboarding.connection_status(:google)
+      |> Map.get(:products)
+      |> Map.new(&{&1.key, &1.status})
+
+    assert statuses.google_analytics == :needs_selection
+    assert statuses.google_ads == :ready
+  end
+
+  test "disconnecting Google removes the one Google integration", %{user: user, scope: scope} do
     integration_fixture(user, %{provider: :google_analytics})
     integration_fixture(user, %{provider: :google_ads})
 
-    assert :ok = Onboarding.disconnect(scope, :google_analytics)
-    refute Integrations.connected?(scope, :google_analytics)
-    assert Integrations.connected?(scope, :google_ads)
+    assert :ok = Onboarding.disconnect(scope, :google)
+    assert {:error, :not_found} = Integrations.get_integration(scope, :google)
+    assert Onboarding.connection_status(scope, :google).state == :not_connected
   end
 
   describe "Google bundle callback" do
@@ -156,11 +213,14 @@ defmodule MetricFlow.OnboardingTest do
       for scope <- List.flatten(Map.values(Integrations.google_product_scopes())),
           do: assert(query["scope"] =~ scope)
 
+      # YouTube has its own sign-in.
+      refute query["scope"] =~ "youtube"
+
       assert query["include_granted_scopes"] == "true"
       assert params.google_bundle
     end
 
-    test "connects only granted products and keeps existing selections", %{
+    test "upserts the one :google integration, keeping existing selections", %{
       user: user,
       scope: scope
     } do
@@ -170,32 +230,54 @@ defmodule MetricFlow.OnboardingTest do
       })
 
       assert {:ok,
-              %{connected: [:google_ads, :google_analytics, :youtube], not_granted: not_granted}} =
+              %{
+                connected: [:google_ads, :google_analytics],
+                not_granted: [:google_business, :google_search_console]
+              }} =
                Integrations.handle_google_bundle_callback(
                  scope,
                  %{state: "s1"},
                  %{"code" => "c", "state" => "s1"}
                )
 
-      assert :google_search_console in not_granted
-      {:ok, ads} = Integrations.get_integration(scope, :google_ads)
-      assert ads.provider_metadata["customer_id"] == "123"
-      assert ads.access_token == "bundle-access"
-      assert Integrations.connected?(scope, :youtube)
-      assert Integrations.connected?(scope, :google_analytics)
-      refute Integrations.connected?(scope, :google_search_console)
+      assert [%{provider: :google} = google] = Integrations.list_integrations(scope)
+      assert google.provider_metadata["customer_id"] == "123"
+      assert google.access_token == "bundle-access"
+      assert Integrations.product_granted?(google, :google_analytics)
+      refute Integrations.product_granted?(google, :google_search_console)
+      refute Integrations.connected?(scope, :youtube)
+
+      statuses =
+        scope
+        |> Onboarding.connection_status(:google)
+        |> Map.get(:products)
+        |> Map.new(&{&1.key, &1.status})
+
+      assert statuses.google_ads == :ready
+      assert statuses.google_analytics == :needs_selection
+      assert statuses.google_search_console == :not_granted
+    end
+
+    test "a callback without stored state is rejected", %{scope: scope} do
+      assert {:error, :missing_stored_state} =
+               Integrations.handle_google_bundle_callback(scope, %{}, %{"code" => "c"})
     end
   end
 
   describe "Tools" do
     test "chat mode reports status and returns a connect link", %{scope: scope} do
-      assert {:ok, %{connections: [_, _, _]}} =
+      assert {:ok, %{connections: [_, _, _, _]}} =
                Tools.call(:chat, "get_setup_status", %{}, %{scope: scope})
 
       assert {:ok, %{url: url}} =
                Tools.call(:chat, "get_connect_link", %{"connection" => "google"}, %{scope: scope})
 
       assert url =~ "/app/integrations/oauth/google_bundle"
+
+      assert {:ok, %{url: youtube_url}} =
+               Tools.call(:chat, "get_connect_link", %{"connection" => "youtube"}, %{scope: scope})
+
+      assert youtube_url =~ "/app/integrations/oauth/youtube"
 
       assert {:error, _} =
                Tools.call(:chat, "get_connect_link", %{"connection" => "x"}, %{scope: scope})

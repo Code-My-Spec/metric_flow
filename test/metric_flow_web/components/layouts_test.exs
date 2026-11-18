@@ -9,8 +9,7 @@ defmodule MetricFlowWeb.LayoutsTest do
   alias MetricFlow.Repo
 
   defp insert_integration!(user) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user.id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
       provider: :google_analytics,
@@ -19,7 +18,6 @@ defmodule MetricFlowWeb.LayoutsTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   describe "browser tab title suffix" do

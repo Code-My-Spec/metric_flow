@@ -32,17 +32,15 @@ defmodule MetricFlow.Integrations.Integration do
           updated_at: DateTime.t() | nil
         }
 
+  # Google Analytics, Ads, Search Console and Business Profile all live on
+  # the account's one `:google` integration (see `MetricFlow.Integrations`).
   @providers [
     :youtube,
     :github,
     :gitlab,
     :bitbucket,
     :google,
-    :google_ads,
     :facebook_ads,
-    :google_analytics,
-    :google_search_console,
-    :google_business,
     :google_business_reviews,
     :quickbooks,
     :codemyspec

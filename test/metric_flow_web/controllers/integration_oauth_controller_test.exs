@@ -50,7 +50,7 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
       original = Application.get_env(:metric_flow, :oauth_providers)
 
       Application.put_env(:metric_flow, :oauth_providers, %{
-        google_ads: MetricFlowWeb.IntegrationOauthControllerTest.FailingProvider
+        quickbooks: MetricFlowWeb.IntegrationOauthControllerTest.FailingProvider
       })
 
       on_exit(fn ->
@@ -59,6 +59,35 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
         else
           Application.delete_env(:metric_flow, :oauth_providers)
         end
+      end)
+
+      conn =
+        capture_log(fn ->
+          conn = get(conn, ~p"/app/integrations/oauth/quickbooks")
+          send(self(), {:conn, conn})
+        end)
+        |> then(fn _log ->
+          receive do
+            {:conn, conn} -> conn
+          end
+        end)
+
+      assert redirected_to(conn) == ~p"/app/integrations/connect"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to connect"
+    end
+
+    test "a Google product connects through the one Google sign-in, returning to its page",
+         %{conn: conn} do
+      original = Application.get_env(:metric_flow, :oauth_providers)
+
+      Application.put_env(:metric_flow, :oauth_providers, %{
+        google_analytics: MetricFlowWeb.IntegrationOauthControllerTest.FailingProvider
+      })
+
+      on_exit(fn ->
+        if original,
+          do: Application.put_env(:metric_flow, :oauth_providers, original),
+          else: Application.delete_env(:metric_flow, :oauth_providers)
       end)
 
       conn =
@@ -72,8 +101,8 @@ defmodule MetricFlowWeb.IntegrationOauthControllerTest do
           end
         end)
 
-      assert redirected_to(conn) == ~p"/app/integrations/connect"
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to connect"
+      assert redirected_to(conn) == ~p"/app/integrations/connect/google_ads"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Google connection"
     end
   end
 

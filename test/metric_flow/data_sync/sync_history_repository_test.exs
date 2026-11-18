@@ -30,8 +30,7 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
   # Note: there is a unique constraint on (user_id, provider) for integrations.
   # Each user may only have one integration per provider.
   defp insert_integration!(user_id, provider) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -40,7 +39,6 @@ defmodule MetricFlow.DataSync.SyncHistoryRepositoryTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_sync_job!(user_id, integration_id, provider) do

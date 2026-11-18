@@ -16,8 +16,7 @@ defmodule MetricFlow.DataSync.SchedulerTest do
   # ---------------------------------------------------------------------------
 
   defp insert_active_integration!(user_id, provider \\ :google_analytics) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -27,12 +26,10 @@ defmodule MetricFlow.DataSync.SchedulerTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_expired_integration_with_refresh_token!(user_id, provider \\ :google_analytics) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -42,12 +39,10 @@ defmodule MetricFlow.DataSync.SchedulerTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_expired_integration_without_refresh_token!(user_id, provider \\ :google_analytics) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -56,12 +51,10 @@ defmodule MetricFlow.DataSync.SchedulerTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_active_integration_without_refresh_token!(user_id, provider \\ :google_analytics) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -70,7 +63,6 @@ defmodule MetricFlow.DataSync.SchedulerTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   # ---------------------------------------------------------------------------
@@ -215,8 +207,10 @@ defmodule MetricFlow.DataSync.SchedulerTest do
     test "returns count of scheduled jobs" do
       user = user_fixture()
 
+      # Google products share the account's one Google integration.
       insert_active_integration!(user.id, :google_analytics)
       insert_active_integration!(user.id, :google_ads)
+      insert_active_integration!(user.id, :facebook_ads)
 
       assert {:ok, 2} = Scheduler.schedule_daily_syncs()
     end

@@ -14,8 +14,9 @@ defmodule MetricFlowSpex.DisconnectAnIntegrationSpex do
       end
 
       when_ "the user disconnects it", context do
+        # Google Analytics' integration is the account's one Google sign-in.
         context.view
-        |> element("[data-platform='google_analytics'] [data-role='disconnect-integration']")
+        |> element("#disconnect-google")
         |> render_click()
 
         html =

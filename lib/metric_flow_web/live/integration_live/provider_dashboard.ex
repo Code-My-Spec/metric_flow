@@ -35,6 +35,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       ~w(activeUsers active7DayUsers active28DayUsers newUsers engagedSessions sessions
          userEngagementDuration screenPageViews eventCount keyEvents scrolledUsers),
     "google_ads" => ~w(impressions clicks cost conversions ctr cpc),
+    "google_search_console" => ~w(clicks impressions ctr position),
     "facebook_ads" => ~w(impressions clicks spend conversions ctr cpc),
     "quickbooks" => ~w(revenue expenses net_income gross_profit cash_on_hand)
   }
@@ -273,10 +274,14 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       provider_name = Map.fetch!(@provider_display_names, provider)
       metric_names = Map.fetch!(@provider_metrics, provider)
 
+      # A Google product is connected when the Google sign-in grants it.
       integration =
         case Integrations.get_integration(scope, provider_atom) do
-          {:ok, integration} -> integration
-          {:error, _} -> nil
+          {:ok, integration} ->
+            if Integrations.product_granted?(integration, provider_atom), do: integration
+
+          {:error, _} ->
+            nil
         end
 
       connected = not is_nil(integration)

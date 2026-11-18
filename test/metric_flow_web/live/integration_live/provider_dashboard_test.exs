@@ -24,9 +24,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       provider_metadata: %{"email" => user.email}
     }
 
-    %Integration{}
-    |> Integration.changeset(Map.merge(defaults, opts))
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(Map.merge(defaults, opts))
   end
 
   # ---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ defmodule MetricFlowWeb.OnboardingLive.ConnectTest do
     test "renders the stepper and starts at Google when nothing is connected", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/app/onboarding/connect")
 
-      for step <- ~w(google facebook_ads quickbooks done) do
+      for step <- ~w(google youtube facebook_ads quickbooks done) do
         assert has_element?(view, "#wizard-step-#{step}")
       end
 
@@ -37,6 +37,16 @@ defmodule MetricFlowWeb.OnboardingLive.ConnectTest do
       assert render(view) =~ "Google Analytics 4"
       assert render(view) =~ "Search Console"
       assert has_element?(view, "#wizard-continue", "Skip for now")
+    end
+
+    test "YouTube is its own step with its own sign-in, after Google", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/app/onboarding/connect?step=google")
+      assert has_element?(view, "#wizard-continue[href='/app/onboarding/connect?step=youtube']")
+      refute render(view) =~ "Views, watch time"
+
+      {:ok, view, _html} = live(conn, ~p"/app/onboarding/connect?step=youtube")
+      assert has_element?(view, "#connect-youtube[href^='/app/integrations/oauth/youtube']")
+      assert render(view) =~ "Views, watch time"
     end
 
     test "Meta and QuickBooks steps link to their own OAuth flows", %{conn: conn} do
@@ -106,7 +116,7 @@ defmodule MetricFlowWeb.OnboardingLive.ConnectTest do
         Repo.get_by!(Integration,
           user_id: user.id,
           account_id: MetricFlowTest.UsersFixtures.default_account_id(user.id),
-          provider: :google_search_console
+          provider: :google
         )
 
       assert saved.provider_metadata["site_url"] == "sc-domain:b.example"

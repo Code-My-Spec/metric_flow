@@ -16,7 +16,9 @@ defmodule MetricFlowSpex.Criterion971SyncFetchesAdCampaignDataFromFacebookMarket
           provider_metadata: %{"ad_account_id" => "123456789"}
         )
 
-        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads)
+        MetricFlowSpex.Fixtures.create_integration_for(context.owner_email, :google_ads,
+          provider_metadata: %{"customer_id" => "1234567890"}
+        )
 
         {:ok, context}
       end

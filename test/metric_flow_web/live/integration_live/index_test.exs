@@ -71,9 +71,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
     attrs = Map.merge(defaults, overrides)
 
-    %Integration{}
-    |> Integration.changeset(attrs)
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(attrs)
   end
 
   # ---------------------------------------------------------------------------
@@ -318,7 +316,12 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
       user = user_fixture()
       MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
       scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
-      insert_integration!(user.id, :google_ads)
+      insert_integration!(user.id, :google_ads, %{provider_metadata: %{"customer_id" => "1"}})
+
+      insert_integration!(user.id, :google_analytics, %{
+        provider_metadata: %{"property_id" => "p"}
+      })
+
       conn = log_in_user(conn, user)
 
       capture_log(fn ->
@@ -336,7 +339,29 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
         assert html =~ "Disconnected from"
         assert html =~ "Historical data is retained"
         refute has_element?(lv, "[data-role='confirm-disconnect']")
-        assert {:error, :not_found} = MetricFlow.Integrations.get_integration(scope, :google_ads)
+
+        # One Google product stops syncing; the Google sign-in stays for the rest.
+        {:ok, google} = MetricFlow.Integrations.get_integration(scope, :google)
+        refute Map.has_key?(google.provider_metadata, "customer_id")
+        assert google.provider_metadata["property_id"] == "p"
+      end)
+    end
+
+    test "Disconnect Google removes the one Google integration", %{conn: conn} do
+      user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
+      scope = MetricFlowTest.UsersFixtures.account_scope_fixture(user)
+      insert_integration!(user.id, :google_ads, %{provider_metadata: %{"customer_id" => "1"}})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations")
+
+        lv |> element("#disconnect-google") |> render_click()
+        html = lv |> element("[data-role='confirm-disconnect']") |> render_click()
+
+        assert html =~ "Disconnected from Google"
+        assert {:error, :not_found} = MetricFlow.Integrations.get_integration(scope, :google)
       end)
     end
   end
@@ -443,7 +468,7 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
 
     defp reconnect_email_recipients(acc \\ []) do
       receive do
-        {:email, %{subject: "Reconnect your Google Ads integration", to: to}} ->
+        {:email, %{subject: "Reconnect your Google integration", to: to}} ->
           reconnect_email_recipients(acc ++ Enum.map(to, &elem(&1, 1)))
 
         {:email, _other} ->

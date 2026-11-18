@@ -42,9 +42,7 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
   defp insert_integration!(user_id, provider, overrides \\ %{}) do
     attrs = Map.merge(valid_integration_attrs(user_id, provider), overrides)
 
-    %Integration{}
-    |> Integration.changeset(attrs)
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(attrs)
   end
 
   # ---------------------------------------------------------------------------
@@ -399,8 +397,8 @@ defmodule MetricFlow.Integrations.IntegrationRepositoryTest do
       {user, scope} = user_with_scope()
       insert_integration!(user.id, :google_ads)
 
-      assert {:ok, result} = IntegrationRepository.by_provider(scope, :google_ads)
-      assert result.provider == :google_ads
+      assert {:ok, result} = IntegrationRepository.by_provider(scope, :google)
+      assert result.provider == :google
       assert result.user_id == user.id
     end
   end

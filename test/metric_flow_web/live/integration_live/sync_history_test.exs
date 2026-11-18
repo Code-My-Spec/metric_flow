@@ -15,8 +15,7 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
   # ---------------------------------------------------------------------------
 
   defp insert_integration!(user_id, provider) do
-    %Integration{}
-    |> Integration.changeset(%{
+    MetricFlowTest.IntegrationsFixtures.put_integration!(%{
       user_id: user_id,
       account_id: MetricFlowTest.UsersFixtures.default_account_id(user_id),
       provider: provider,
@@ -25,7 +24,6 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       granted_scopes: [],
       provider_metadata: %{}
     })
-    |> Repo.insert!()
   end
 
   defp insert_sync_job!(user_id, integration_id, provider) do

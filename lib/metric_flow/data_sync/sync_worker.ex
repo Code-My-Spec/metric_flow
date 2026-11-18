@@ -30,7 +30,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
     max_attempts: 3,
     unique: [
       fields: [:args],
-      keys: [:integration_id],
+      keys: [:integration_id, :product],
       period: 3_600,
       states: [:available, :scheduled, :executing]
     ]
@@ -71,8 +71,12 @@ defmodule MetricFlow.DataSync.SyncWorker do
     integration_id = Map.get(args, "integration_id")
     user_id = Map.get(args, "user_id")
     sync_job_id = Map.get(args, "sync_job_id")
-    http_plug = resolve_plug(Map.get(args, "http_plug"))
+
+    http_plug =
+      resolve_plug(Map.get(args, "http_plug")) || resolve_product_plugs(args["http_plugs"])
+
     breakdown = resolve_breakdown(Map.get(args, "breakdown"))
+    product = Map.get(args, "product")
 
     scope = build_scope(args, integration_id)
     started_at = DateTime.utc_now()
@@ -85,7 +89,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:ok, _job} ->
         result =
           try do
-            execute_sync(scope, integration_id, sync_job_id, http_plug, breakdown, started_at)
+            execute_sync(
+              scope,
+              integration_id,
+              sync_job_id,
+              {http_plug, breakdown, product},
+              started_at
+            )
           rescue
             e ->
               error_message = Exception.message(e)
@@ -125,15 +135,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
   @doc """
   Maps an integration provider atom to the corresponding data provider module(s).
 
-  The `:google` provider returns multiple data provider modules because a single
-  Google OAuth connection grants access to multiple services (Analytics, Ads)
-  based on the granted scopes.
+  The `:google` provider returns every Google product's module: the account's
+  one Google integration holds Analytics, Ads, Search Console and Business
+  Profile. A sync runs only the products whose scope is granted and whose
+  selection is saved (or the one product a job names).
 
   Returns {:ok, [module]} for supported sync providers and
   {:error, :unsupported_provider} for unsupported or unknown providers.
   """
   @spec providers_for(atom()) :: {:ok, [module()]} | {:error, :unsupported_provider}
-  def providers_for(:google), do: {:ok, [GoogleAnalytics, GoogleAds]}
+  def providers_for(:google),
+    do: {:ok, [GoogleAnalytics, GoogleAds, GoogleSearchConsole, GoogleBusiness]}
+
   def providers_for(:google_analytics), do: {:ok, [GoogleAnalytics]}
   def providers_for(:google_ads), do: {:ok, [GoogleAds]}
   def providers_for(:facebook_ads), do: {:ok, [FacebookAds]}
@@ -219,7 +232,9 @@ defmodule MetricFlow.DataSync.SyncWorker do
     error
   end
 
-  defp execute_sync(scope, integration_id, sync_job_id, http_plug, breakdown, started_at) do
+  defp execute_sync(scope, integration_id, sync_job_id, run_opts, started_at) do
+    {http_plug, breakdown, product} = run_opts
+
     case fetch_integration(integration_id) do
       {:error, :integration_not_found} ->
         {:error, :integration_not_found}
@@ -229,25 +244,66 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
       {:ok, integration} ->
         sync_type = determine_sync_type(integration_id)
+        plans = plan_modules(scope, integration, product, sync_type)
 
-        date_range =
-          scope
-          |> determine_date_range(integration, sync_type)
-          |> refetch_last_day_if_idempotent(integration.provider)
+        if all_current?(plans) do
+          record_up_to_date(scope, integration, sync_job_id, sync_type, started_at)
+        else
+          sync_with_fresh_tokens(
+            scope,
+            integration,
+            sync_job_id,
+            sync_type,
+            plans,
+            {http_plug, breakdown},
+            started_at
+          )
+        end
+    end
+  end
 
-        if already_current?(date_range),
-          do: record_up_to_date(scope, integration, sync_job_id, sync_type, started_at),
-          else:
-            sync_with_fresh_tokens(
-              scope,
-              integration,
-              sync_job_id,
-              sync_type,
-              date_range,
-              http_plug,
-              breakdown,
-              started_at
-            )
+  # Which data-provider modules this run uses, each with its own date
+  # window: a module's incremental window starts after the last metric it
+  # wrote (tagged with its product, e.g. :google_ads), not after the
+  # integration's — the `:google` integration has no metrics of its own.
+  defp plan_modules(scope, integration, product, sync_type) do
+    with {:ok, mods} <- modules_to_run(integration, product) do
+      {:ok,
+       Enum.map(mods, fn mod ->
+         tag = provider_name(mod, integration)
+
+         range =
+           scope
+           |> determine_date_range(tag, sync_type)
+           |> refetch_last_day_if_idempotent(tag)
+
+         {mod, range}
+       end)}
+    end
+  end
+
+  # A job naming a product syncs just that product. Otherwise the Google
+  # integration syncs every product that is granted and has a selection;
+  # the rest are skipped, not failed.
+  defp modules_to_run(%Integration{provider: :google} = integration, product) do
+    {:ok, mods} = providers_for(:google)
+
+    {:ok,
+     Enum.filter(mods, fn mod ->
+       if product,
+         do: Atom.to_string(mod.provider()) == product,
+         else:
+           Integrations.product_granted?(integration, mod.provider()) and
+             Integrations.product_selected?(integration, mod.provider())
+     end)}
+  end
+
+  defp modules_to_run(integration, _product), do: providers_for(integration.provider)
+
+  defp complete_job(scope, sync_job_id) do
+    case update_job_status(scope, sync_job_id, :completed) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -264,6 +320,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
   end
 
   defp refetch_last_day_if_idempotent(range, _provider), do: range
+
+  defp all_current?({:ok, [_ | _] = plans}),
+    do: Enum.all?(plans, fn {_mod, range} -> already_current?(range) end)
+
+  defp all_current?(_plans), do: false
 
   defp already_current?({%Date{} = from, %Date{} = to}), do: Date.compare(from, to) == :gt
   defp already_current?(_), do: false
@@ -344,10 +405,10 @@ defmodule MetricFlow.DataSync.SyncWorker do
   # stored metric rather than the wall-clock date, so a sync that has never
   # actually persisted data (e.g. every prior run failed) still falls back
   # to a full backfill instead of narrowing to a window with nothing in it.
-  defp determine_date_range(_scope, _integration, :initial), do: nil
+  defp determine_date_range(_scope, _provider, :initial), do: nil
 
-  defp determine_date_range(scope, integration, :incremental) do
-    case Metrics.get_latest_metric_date(scope, integration.provider) do
+  defp determine_date_range(scope, provider, :incremental) do
+    case Metrics.get_latest_metric_date(scope, provider) do
       nil -> nil
       last_date -> {Date.add(last_date, 1), Date.add(Date.utc_today(), -1)}
     end
@@ -358,9 +419,8 @@ defmodule MetricFlow.DataSync.SyncWorker do
          integration,
          sync_job_id,
          sync_type,
-         date_range,
-         http_plug,
-         breakdown,
+         plans,
+         fetch_opts,
          started_at
        ) do
     case ensure_fresh_tokens(scope, integration) do
@@ -370,47 +430,60 @@ defmodule MetricFlow.DataSync.SyncWorker do
           fresh_integration,
           sync_job_id,
           sync_type,
-          date_range,
-          http_plug,
-          breakdown,
+          plans,
+          fetch_opts,
           started_at
         )
 
       {:error, :token_expired} ->
         error_message = "Token expired and could not be refreshed"
 
-        record_history(scope, integration, sync_job_id, sync_type, started_at, %{
-          status: :failed,
-          records_synced: 0,
-          error_message: error_message
-        })
+        for provider <- failed_products(integration, plans) do
+          record_history(scope, integration, sync_job_id, sync_type, started_at, %{
+            provider: provider,
+            status: :failed,
+            records_synced: 0,
+            error_message: error_message
+          })
 
-        broadcast_sync_event(
-          scope.account_id,
-          {:sync_failed,
-           %{
-             provider: integration.provider,
-             reason: error_message,
-             completed_at: DateTime.utc_now(),
-             sync_type: sync_type
-           }}
-        )
+          broadcast_sync_event(
+            scope.account_id,
+            {:sync_failed,
+             %{
+               provider: provider,
+               reason: error_message,
+               completed_at: DateTime.utc_now(),
+               sync_type: sync_type
+             }}
+          )
+        end
 
         {:error, :token_expired}
     end
   end
+
+  # An expired Google sign-in fails each product the run was going to sync,
+  # so every product's history shows why it stopped.
+  defp failed_products(%Integration{provider: :google} = integration, {:ok, [_ | _] = plans}),
+    do: Enum.map(plans, fn {mod, _range} -> provider_name(mod, integration) end)
+
+  defp failed_products(integration, _plans), do: [integration.provider]
 
   defp run_provider_sync(
          scope,
          integration,
          sync_job_id,
          sync_type,
-         date_range,
-         http_plug,
-         breakdown,
+         plans,
+         {http_plug, breakdown},
          started_at
        ) do
-    case providers_for(integration.provider) do
+    case plans do
+      # Nothing set up to sync on this Google sign-in (its token is still
+      # checked above, so a broken sign-in is reported, not skipped).
+      {:ok, []} ->
+        complete_job(scope, sync_job_id)
+
       {:error, :unsupported_provider} ->
         error_message = "#{integration.provider} is not yet supported for automated sync"
 
@@ -433,16 +506,14 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
         {:error, :unsupported_provider}
 
-      {:ok, provider_mods} ->
-        opts = build_fetch_opts(http_plug, date_range, breakdown)
-
+      {:ok, plans} ->
         run_all_providers(
           scope,
           integration,
           sync_job_id,
           sync_type,
-          provider_mods,
-          opts,
+          plans,
+          {http_plug, breakdown},
           started_at
         )
     end
@@ -453,12 +524,25 @@ defmodule MetricFlow.DataSync.SyncWorker do
          integration,
          sync_job_id,
          sync_type,
-         provider_mods,
-         opts,
+         plans,
+         {http_plug, breakdown},
          started_at
        ) do
-    date_range = Keyword.get(opts, :date_range)
-    results = Enum.map(provider_mods, &fetch_provider_metrics(&1, integration, opts))
+    ranges = Map.new(plans, fn {mod, range} -> {mod, range} end)
+
+    # A module whose data already reaches yesterday has nothing to fetch
+    # this run; it records an up-to-date success alongside the others.
+    results =
+      Enum.map(plans, fn {mod, range} ->
+        if already_current?(range),
+          do: {:ok, mod, []},
+          else:
+            fetch_provider_metrics(
+              mod,
+              integration,
+              build_fetch_opts(plug_for(http_plug, mod, integration), range, breakdown)
+            )
+      end)
 
     all_metrics =
       Enum.flat_map(results, fn
@@ -468,10 +552,10 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
     errors = Enum.filter(results, &match?({:error, _, _}, &1))
 
-    if length(errors) == length(provider_mods) do
+    if length(errors) == length(plans) do
       Enum.each(errors, fn {:error, mod, reason} ->
         provider = provider_name(mod, integration)
-        error_msg = format_error(reason, integration, date_range)
+        error_msg = format_error(reason, for_module(integration, mod), ranges[mod])
 
         record_history(scope, integration, sync_job_id, sync_type, started_at, %{
           provider: provider,
@@ -482,18 +566,23 @@ defmodule MetricFlow.DataSync.SyncWorker do
         })
       end)
 
-      {:error, _first_mod, first_reason} = hd(errors)
+      {:error, first_mod, first_reason} = hd(errors)
 
-      broadcast_sync_event(
-        scope.account_id,
-        {:sync_failed,
-         %{
-           provider: integration.provider,
-           reason: format_error(first_reason, integration, date_range),
-           completed_at: DateTime.utc_now(),
-           sync_type: sync_type
-         }}
-      )
+      if integration.provider == :google do
+        broadcast_product_outcomes(scope, integration, sync_type, results, ranges)
+      else
+        broadcast_sync_event(
+          scope.account_id,
+          {:sync_failed,
+           %{
+             provider: integration.provider,
+             reason:
+               format_error(first_reason, for_module(integration, first_mod), ranges[first_mod]),
+             completed_at: DateTime.utc_now(),
+             sync_type: sync_type
+           }}
+        )
+      end
 
       {:error, :all_providers_failed}
     else
@@ -505,7 +594,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         all_metrics,
         results,
         started_at,
-        date_range
+        ranges
       )
     end
   end
@@ -547,20 +636,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
         {:ok, integration}
 
       Integration.has_refresh_token?(integration) ->
-        case Integrations.refresh_token(scope, integration) do
-          {:ok, refreshed} ->
-            {:ok, refreshed}
-
-          {:error, reason} ->
-            Logger.warning(
-              "SyncWorker token refresh failed integration_id=#{integration.id} " <>
-                "provider=#{integration.provider} reason=#{inspect(reason)}"
-            )
-
-            if Integration.expired?(integration),
-              do: {:error, :token_expired},
-              else: {:ok, integration}
-        end
+        scope |> Integrations.refresh_token(integration) |> refresh_result(integration)
 
       not Integration.expired?(integration) ->
         {:ok, integration}
@@ -568,6 +644,18 @@ defmodule MetricFlow.DataSync.SyncWorker do
       true ->
         {:error, :token_expired}
     end
+  end
+
+  defp refresh_result({:ok, refreshed}, _integration), do: {:ok, refreshed}
+
+  # A failed refresh only matters once the current token has actually expired.
+  defp refresh_result({:error, reason}, integration) do
+    Logger.warning(
+      "SyncWorker token refresh failed integration_id=#{integration.id} " <>
+        "provider=#{integration.provider} reason=#{inspect(reason)}"
+    )
+
+    if Integration.expired?(integration), do: {:error, :token_expired}, else: {:ok, integration}
   end
 
   defp build_fetch_opts(http_plug, date_range, breakdown) do
@@ -609,6 +697,17 @@ defmodule MetricFlow.DataSync.SyncWorker do
 
   defp resolve_plug(_), do: nil
 
+  # A Google sync's test plugs arrive per product (product => plug key).
+  defp resolve_product_plugs(plugs) when is_map(plugs),
+    do: Map.new(plugs, fn {product, key} -> {product, resolve_plug(key)} end)
+
+  defp resolve_product_plugs(_), do: nil
+
+  defp plug_for(plugs, mod, integration) when is_map(plugs),
+    do: Map.get(plugs, Atom.to_string(provider_name(mod, integration)))
+
+  defp plug_for(plug, _mod, _integration), do: plug
+
   defp persist_and_record_success(
          scope,
          integration,
@@ -617,7 +716,7 @@ defmodule MetricFlow.DataSync.SyncWorker do
          metrics,
          results,
          started_at,
-         date_range
+         ranges
        ) do
     delete_stale_performance_metrics(scope, metrics)
 
@@ -655,10 +754,13 @@ defmodule MetricFlow.DataSync.SyncWorker do
           provider: provider_name(mod, integration),
           status: :failed,
           records_synced: 0,
-          error_message: format_error(reason, integration, date_range),
+          error_message: format_error(reason, for_module(integration, mod), ranges[mod]),
           provider_error_detail: provider_error_detail(reason)
         })
     end)
+
+    if integration.provider == :google,
+      do: broadcast_product_outcomes(scope, integration, sync_type, results, ranges)
 
     broadcast_sync_event(
       scope.account_id,
@@ -675,6 +777,36 @@ defmodule MetricFlow.DataSync.SyncWorker do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  # The `:google` integration's own events name no product, so each product
+  # in the run gets its own (live status rows and feeds key on the product).
+  defp broadcast_product_outcomes(scope, integration, sync_type, results, ranges) do
+    Enum.each(results, fn
+      {:ok, mod, mod_metrics} ->
+        broadcast_sync_event(
+          scope.account_id,
+          {:sync_completed,
+           %{
+             provider: mod.provider(),
+             records_synced: length(mod_metrics),
+             completed_at: DateTime.utc_now(),
+             sync_type: effective_sync_type(mod.provider(), sync_type)
+           }}
+        )
+
+      {:error, mod, reason} ->
+        broadcast_sync_event(
+          scope.account_id,
+          {:sync_failed,
+           %{
+             provider: mod.provider(),
+             reason: format_error(reason, for_module(integration, mod), ranges[mod]),
+             completed_at: DateTime.utc_now(),
+             sync_type: sync_type
+           }}
+        )
+    end)
   end
 
   # Deletes existing Google Business Profile rows for any (provider,
@@ -828,6 +960,11 @@ defmodule MetricFlow.DataSync.SyncWorker do
   defp provider_name(mod, %Integration{provider: :google}) do
     if function_exported?(mod, :provider, 0), do: mod.provider(), else: :google
   end
+
+  # Error copy is per product: on the `:google` integration, the module's
+  # product (Search Console, Ads, …) is the one that failed.
+  defp for_module(integration, mod),
+    do: %{integration | provider: provider_name(mod, integration)}
 
   defp record_history(scope, integration, sync_job_id, sync_type, started_at, outcome) do
     attrs = %{

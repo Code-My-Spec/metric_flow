@@ -43,9 +43,7 @@ defmodule MetricFlow.DataSyncTest do
 
     attrs = Map.merge(defaults, overrides)
 
-    %Integration{}
-    |> Integration.changeset(attrs)
-    |> Repo.insert!()
+    MetricFlowTest.IntegrationsFixtures.put_integration!(attrs)
   end
 
   # An integration whose token is expired and has no refresh token. Still
