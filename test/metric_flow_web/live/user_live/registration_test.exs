@@ -147,4 +147,106 @@ defmodule MetricFlowWeb.UserLive.RegistrationTest do
       assert login_html =~ "Log in"
     end
   end
+
+  describe "registering through an agency referral link" do
+    alias MetricFlow.Accounts.AccountMember
+    alias MetricFlow.Agencies.AgencyClientAccessGrant
+    alias MetricFlow.Onboarding.Tools
+    alias MetricFlow.Repo
+    alias MetricFlow.Users.User
+
+    defp agency_with_team do
+      joel = user_fixture()
+      teammate = user_fixture()
+      agency = MetricFlowTest.AgenciesFixtures.account_with_member_fixture(joel, :owner)
+
+      %AccountMember{}
+      |> AccountMember.changeset(%{account_id: agency.id, user_id: teammate.id, role: :member})
+      |> Repo.insert!()
+
+      {agency, joel, teammate}
+    end
+
+    defp register_via(conn, token) do
+      email = unique_user_email()
+      {:ok, lv, _html} = live(conn, ~p"/users/register?ref=#{token}")
+
+      html =
+        lv
+        |> form("#registration_form",
+          user: valid_user_attributes(email: email, account_name: "Acme")
+        )
+        |> render_submit()
+
+      jane = Repo.get_by!(User, email: email)
+      [%{id: acme_id, name: "Acme"}] = MetricFlow.AccountAccess.memberships(jane.id)
+      {html, acme_id}
+    end
+
+    test "gives the agency and its whole team account_manager access to the client", %{
+      conn: conn
+    } do
+      {agency, joel, teammate} = agency_with_team()
+      token = MetricFlow.Agencies.generate_referral_token(agency.id)
+
+      {_html, acme_id} = register_via(conn, token)
+
+      assert %AgencyClientAccessGrant{access_level: :account_manager} =
+               Repo.get_by(AgencyClientAccessGrant,
+                 agency_account_id: agency.id,
+                 client_account_id: acme_id
+               )
+
+      for user <- [joel, teammate] do
+        assert %AccountMember{role: :account_manager} =
+                 Repo.get_by(AccountMember, account_id: acme_id, user_id: user.id)
+      end
+
+      assert {:ok, %{accounts: accounts}} = Tools.call(:mcp, "list_accounts", %{}, %{user: joel})
+      assert %{name: "Acme", can_change_setup: true} = Enum.find(accounts, &(&1.id == acme_id))
+
+      result =
+        Tools.call(
+          :mcp,
+          "save_sync_selection",
+          %{"account_id" => acme_id, "product" => "google_analytics", "ids" => ["123"]},
+          %{user: joel}
+        )
+
+      refute match?({:error, "Your role on this account is read-only" <> _}, result)
+      refute match?({:error, "You are not a member of account" <> _}, result)
+    end
+
+    test "a forged or expired ref token grants nothing and registration still succeeds", %{
+      conn: conn
+    } do
+      {agency, joel, teammate} = agency_with_team()
+
+      secret =
+        :metric_flow
+        |> Application.get_env(MetricFlowWeb.Endpoint, [])
+        |> Keyword.fetch!(:secret_key_base)
+
+      expired =
+        Phoenix.Token.sign(secret, "agency_referral", agency.id,
+          signed_at: System.system_time(:second) - 2 * 365 * 24 * 60 * 60
+        )
+
+      forged = MetricFlow.Agencies.generate_referral_token(agency.id) <> "tampered"
+
+      for token <- [expired, forged] do
+        {html, acme_id} = register_via(conn, token)
+        assert html =~ "Acme" or html =~ "@"
+
+        refute Repo.get_by(AgencyClientAccessGrant,
+                 agency_account_id: agency.id,
+                 client_account_id: acme_id
+               )
+
+        for user <- [joel, teammate] do
+          refute Repo.get_by(AccountMember, account_id: acme_id, user_id: user.id)
+        end
+      end
+    end
+  end
 end
