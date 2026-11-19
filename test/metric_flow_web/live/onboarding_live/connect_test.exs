@@ -147,7 +147,7 @@ defmodule MetricFlowWeb.OnboardingLive.ConnectTest do
       {:ok, view, _html} = live(conn, ~p"/app/onboarding/connect?step=google")
       render_async(view)
 
-      assert has_element?(view, "#options-error-google_analytics", "API is disabled")
+      assert has_element?(view, "#options-error-google_analytics", "isn't enabled")
     end
 
     test "a sign-in the provider rejects asks to reconnect, not about roles", %{
