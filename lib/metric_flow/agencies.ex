@@ -106,6 +106,9 @@ defmodule MetricFlow.Agencies do
 
   @referral_salt "agency_referral"
   @referral_max_age_seconds 60 * 60 * 24 * 365
+  # A referring agency manages the client it brought in: the agency grant and
+  # every agency team member's membership on the client account use this level.
+  @referral_access_level :account_manager
 
   @doc """
   Generates a durable, URL-safe referral token for an agency account.
@@ -139,8 +142,9 @@ defmodule MetricFlow.Agencies do
 
   @doc """
   Associates a newly created client account with the agency referenced by a
-  referral token, granting that agency read access and marking it as the
-  account's originator.
+  referral token, granting that agency `:account_manager` access, marking it as
+  the account's originator, and adding every agency team member to the client
+  account as `:account_manager`.
 
   Runs with no active session — the token itself is the authorization, since
   this is called during registration before the new user has a scope.
@@ -157,10 +161,20 @@ defmodule MetricFlow.Agencies do
          ) do
       {:ok, agency_account_id} ->
         {:ok, _grant} =
-          AgenciesRepository.grant_client_access(agency_account_id, client_account_id, :read_only)
+          AgenciesRepository.grant_client_access(
+            agency_account_id,
+            client_account_id,
+            @referral_access_level
+          )
 
         {:ok, _grant} =
           AgenciesRepository.mark_as_originator(agency_account_id, client_account_id)
+
+        propagate_client_access_to_team(
+          agency_account_id,
+          client_account_id,
+          @referral_access_level
+        )
 
         {:ok, agency_account_id}
 
