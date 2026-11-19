@@ -147,7 +147,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAnalyticsTest do
 
         assert String.ends_with?(
                  redirect_uri,
-                 "/app/integrations/oauth/callback/google_analytics"
+                 "/integrations/oauth/callback/google_analytics"
                )
       end)
     end

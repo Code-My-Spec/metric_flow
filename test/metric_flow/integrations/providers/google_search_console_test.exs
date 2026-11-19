@@ -129,7 +129,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleSearchConsoleTest do
 
         assert String.ends_with?(
                  redirect_uri,
-                 "/app/integrations/oauth/callback/google_search_console"
+                 "/integrations/oauth/callback/google_search_console"
                )
       end)
     end

@@ -10,7 +10,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAds do
 
   alias MetricFlow.Integrations.Providers.Google
 
-  @callback_path "/app/integrations/oauth/callback/google_ads"
+  @callback_path "/integrations/oauth/callback/google_ads"
 
   @impl true
   def config do

@@ -207,9 +207,21 @@ defmodule MetricFlowWeb.Router do
 
     # OAuth provider integration routes (controller — handles session_params)
     get "/integrations/oauth/:provider", IntegrationOauthController, :request
+    # shortcut: old redirect URI, kept so returns from consents started on the
+    # previous build (and URIs still registered at providers) land. Remove once
+    # every provider only has the /integrations/... URI registered.
     get "/integrations/oauth/callback/:provider", IntegrationOauthController, :callback
 
     post "/users/update-password", UserSessionController, :update_password
+  end
+
+  # OAuth redirect URIs live outside /app: they're addresses registered with
+  # Google, Meta, Intuit etc., not app pages. They still need the signed-in
+  # browser session (session_params, current scope).
+  scope "/integrations/oauth", MetricFlowWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/callback/:provider", IntegrationOauthController, :callback
   end
 
   scope "/", MetricFlowWeb do

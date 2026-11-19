@@ -75,7 +75,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleOauthTest do
 
       assert String.ends_with?(
                Keyword.get(config, :redirect_uri),
-               "/app/integrations/oauth/callback/google_oauth"
+               "/integrations/oauth/callback/google_oauth"
              )
     end
 

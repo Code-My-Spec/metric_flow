@@ -76,7 +76,7 @@ defmodule MetricFlow.Integrations.Providers.AnthropicTest do
 
       assert String.ends_with?(
                Keyword.get(config, :redirect_uri),
-               "/app/integrations/oauth/callback/anthropic"
+               "/integrations/oauth/callback/anthropic"
              )
     end
 

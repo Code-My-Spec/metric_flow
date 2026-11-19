@@ -16,7 +16,7 @@ defmodule MetricFlow.Integrations.Providers.YouTube do
     [
       client_id: Application.fetch_env!(:metric_flow, :google_client_id),
       client_secret: Application.fetch_env!(:metric_flow, :google_client_secret),
-      redirect_uri: MetricFlowWeb.Endpoint.url() <> "/app/integrations/oauth/callback/youtube",
+      redirect_uri: MetricFlowWeb.Endpoint.url() <> "/integrations/oauth/callback/youtube",
       authorization_params: [
         scope: Enum.join(["email", "profile"] ++ @required_scopes ++ [@revenue_scope], " "),
         access_type: "offline",

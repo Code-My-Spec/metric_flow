@@ -10,7 +10,7 @@ defmodule MetricFlowTest.YouTubeOAuthProvider do
     [
       client_id: "synthetic-youtube-client",
       client_secret: "synthetic-youtube-secret",
-      redirect_uri: MetricFlowWeb.Endpoint.url() <> "/app/integrations/oauth/callback/youtube",
+      redirect_uri: MetricFlowWeb.Endpoint.url() <> "/integrations/oauth/callback/youtube",
       base_url: "https://accounts.google.com",
       authorize_url: "https://accounts.google.com/o/oauth2/v2/auth",
       token_url: "https://oauth2.googleapis.com/token",

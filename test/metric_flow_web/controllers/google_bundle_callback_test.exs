@@ -67,30 +67,40 @@ defmodule MetricFlowWeb.GoogleBundleCallbackTest do
     %{conn: log_in_user(conn, user), scope: account_scope_fixture(user)}
   end
 
-  test "a full-scope bundle callback connects every Google product on one integration", %{
-    conn: conn,
-    scope: scope
-  } do
-    OAuthStateStore.store("st-1", %{
-      state: "st-1",
-      google_bundle: true,
-      account_id: scope.account_id,
-      return_to: "/app/onboarding/connect?step=google"
-    })
-
-    conn =
-      get(conn, "/app/integrations/oauth/callback/google_analytics", %{
-        "state" => "st-1",
-        "code" => "c"
+  # The redirect URI moved out of /app; the old one keeps accepting returns.
+  for path <- [
+        "/integrations/oauth/callback/google_analytics",
+        "/app/integrations/oauth/callback/google_analytics"
+      ] do
+    @path path
+    test "a full-scope bundle callback at #{path} connects every Google product on one integration",
+         %{conn: conn, scope: scope} do
+      OAuthStateStore.store("st-1", %{
+        state: "st-1",
+        google_bundle: true,
+        account_id: scope.account_id,
+        return_to: "/app/onboarding/connect?step=google"
       })
 
-    assert redirected_to(conn) == "/app/onboarding/connect?step=google"
+      conn =
+        get(conn, @path, %{
+          "state" => "st-1",
+          "code" => "c"
+        })
 
-    for p <- [:google_analytics, :google_ads, :google_search_console, :google_business],
-        do: assert(Integrations.connected?(scope, p), "#{p} not connected")
+      assert redirected_to(conn) == "/app/onboarding/connect?step=google"
 
-    # One row holds every Google product; YouTube connects on its own.
-    assert [%{provider: :google}] = Integrations.list_integrations(scope)
-    refute Integrations.connected?(scope, :youtube)
+      for p <- [:google_analytics, :google_ads, :google_search_console, :google_business],
+          do: assert(Integrations.connected?(scope, p), "#{p} not connected")
+
+      # One row holds every Google product; YouTube connects on its own.
+      assert [%{provider: :google}] = Integrations.list_integrations(scope)
+      refute Integrations.connected?(scope, :youtube)
+    end
+  end
+
+  test "the new callback path still requires a signed-in user" do
+    conn = get(build_conn(), "/integrations/oauth/callback/quickbooks", %{"state" => "x"})
+    assert redirected_to(conn) =~ "/users/log-in"
   end
 end

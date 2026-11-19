@@ -11,7 +11,7 @@ defmodule MetricFlow.Integrations.Providers.Anthropic do
 
   @behaviour MetricFlow.Integrations.Providers.Behaviour
 
-  @callback_path "/app/integrations/oauth/callback/anthropic"
+  @callback_path "/integrations/oauth/callback/anthropic"
 
   @impl true
   def config do

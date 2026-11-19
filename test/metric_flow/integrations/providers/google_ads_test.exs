@@ -126,7 +126,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
       end)
     end
 
-    test "includes redirect_uri with \"/app/integrations/oauth/callback/google_ads\" path" do
+    test "includes redirect_uri with \"/integrations/oauth/callback/google_ads\" path" do
       if not has_google_credentials?(),
         do: flunk("Google OAuth credentials not configured in .env.test")
 
@@ -136,7 +136,7 @@ defmodule MetricFlow.Integrations.Providers.GoogleAdsTest do
 
         redirect_uri = Keyword.fetch!(config, :redirect_uri)
         assert String.starts_with?(redirect_uri, endpoint_url)
-        assert String.ends_with?(redirect_uri, "/app/integrations/oauth/callback/google_ads")
+        assert String.ends_with?(redirect_uri, "/integrations/oauth/callback/google_ads")
       end)
     end
 
