@@ -25,4 +25,14 @@ defmodule MetricFlow.InviteClientToolTest do
     # exactly one email: the one asserted above has been consumed
     refute_email_sent()
   end
+
+  test "invite-client-tool-2: criterion 2 - invite_client without an email returns the url and sends no email" do
+    joel = user_fixture()
+    account_with_member_fixture(joel, :owner)
+
+    assert {:ok, %{url: url}} = Tools.call(:mcp, "invite_client", %{}, %{user: joel})
+    assert url =~ "/users/register?ref="
+
+    refute_email_sent()
+  end
 end
