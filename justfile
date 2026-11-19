@@ -155,10 +155,12 @@ test-env:
     @[ -f .env.test ] || sops -d --input-type dotenv --output-type dotenv envs/test.enc.env > .env.test
 
 run dir: test-env
+    mix deps.get
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex
 
 certify dir: test-env
+    mix deps.get
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/format.sarif" -- mix format --check-formatted
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/compiler.sarif" -- mix compile --warnings-as-errors
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
