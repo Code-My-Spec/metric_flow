@@ -217,6 +217,8 @@ defmodule MetricFlow.OnboardingTest do
       refute query["scope"] =~ "youtube"
 
       assert query["include_granted_scopes"] == "true"
+      assert String.ends_with?(query["redirect_uri"], "/integrations/oauth/callback/google")
+      assert params.redirect_uri == query["redirect_uri"]
       assert params.google_bundle
     end
 

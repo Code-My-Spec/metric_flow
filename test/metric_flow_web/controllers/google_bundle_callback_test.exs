@@ -69,6 +69,7 @@ defmodule MetricFlowWeb.GoogleBundleCallbackTest do
 
   # The redirect URI moved out of /app; the old one keeps accepting returns.
   for path <- [
+        "/integrations/oauth/callback/google",
         "/integrations/oauth/callback/google_analytics",
         "/app/integrations/oauth/callback/google_analytics"
       ] do

@@ -347,10 +347,14 @@ defmodule MetricFlow.Integrations do
           |> Keyword.put(:scope, scope)
           |> Keyword.put(:include_granted_scopes, "true")
         end)
+        |> Keyword.put(:redirect_uri, google_bundle_redirect_uri())
         |> with_static_discovery(mod.strategy())
 
       with {:ok, %{session_params: params} = result} <- mod.strategy().authorize_url(config) do
-        {:ok, %{result | session_params: Map.put(params, :google_bundle, true)}}
+        params =
+          Map.merge(params, %{google_bundle: true, redirect_uri: google_bundle_redirect_uri()})
+
+        {:ok, %{result | session_params: params}}
       end
     end
   end
@@ -367,7 +371,10 @@ defmodule MetricFlow.Integrations do
   def handle_google_bundle_callback(%Scope{} = scope, session_params, callback_params) do
     with :ok <- require_state(session_params),
          {:ok, mod} <- fetch_provider(:google_analytics),
-         config = build_callback_config(mod, session_params),
+         config =
+           mod
+           |> build_callback_config(session_params)
+           |> Keyword.put(:redirect_uri, bundle_callback_redirect_uri(session_params)),
          {:ok, result} <- exchange_and_normalize(mod.strategy(), config, callback_params, mod),
          attrs = build_integration_attrs(result.token, result.normalized),
          {:ok, integration} <- IntegrationRepository.upsert_integration(scope, :google, attrs) do
@@ -376,6 +383,17 @@ defmodule MetricFlow.Integrations do
 
       {:ok, %{connected: Enum.sort(connected), not_granted: Enum.sort(not_granted)}}
     end
+  end
+
+  # Google is one integration, so its sign-in returns to .../callback/google.
+  defp google_bundle_redirect_uri,
+    do: MetricFlowWeb.Endpoint.url() <> "/integrations/oauth/callback/google"
+
+  # The code exchange must repeat the redirect_uri the consent was started
+  # with. Consents started before it was recorded used the old GA4 path.
+  defp bundle_callback_redirect_uri(session_params) do
+    Map.get(session_params, :redirect_uri) || Map.get(session_params, "redirect_uri") ||
+      MetricFlowWeb.Endpoint.url() <> "/app/integrations/oauth/callback/google_analytics"
   end
 
   # ---------------------------------------------------------------------------
