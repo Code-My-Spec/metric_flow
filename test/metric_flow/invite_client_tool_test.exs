@@ -57,4 +57,20 @@ defmodule MetricFlow.InviteClientToolTest do
 
     refute_email_sent()
   end
+
+  test "invite-client-tool-2: criterion 5 - a user on two agency accounts without agency_account_id is asked which one" do
+    joel = user_fixture()
+    first = account_with_member_fixture(joel, :owner)
+    second = account_with_member_fixture(joel, :owner)
+
+    assert {:error, message} =
+             Tools.call(:mcp, "invite_client", %{"email" => "jane@acme.com"}, %{user: joel})
+
+    assert message =~ "agency_account_id"
+    assert message =~ first.name
+    assert message =~ second.name
+    refute message =~ "/users/register?ref="
+
+    refute_email_sent()
+  end
 end
