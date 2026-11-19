@@ -204,6 +204,12 @@ defmodule MetricFlowWeb.IntegrationOauthController do
             :no_youtube_channels ->
               "No YouTube channels were found for this Google account."
 
+            :youtube_session_mismatch ->
+              "That YouTube sign-in had expired. Start again from Connect YouTube."
+
+            :youtube_scopes_not_granted ->
+              "YouTube needs channel and analytics access. Tick both boxes on Google's screen."
+
             :api_disabled ->
               "Google refused: the YouTube Data API isn't enabled for this app's Google Cloud project."
 

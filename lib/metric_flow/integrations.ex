@@ -452,15 +452,13 @@ defmodule MetricFlow.Integrations do
   @doc "Exchanges YouTube consent for a short-lived channel-selection authorization."
   def prepare_youtube_connection(%Scope{} = scope, session_params, callback_params) do
     with :ok <- IntegrationRepository.authorize_write(scope, :youtube),
-         true <-
-           session_params[:youtube_user_id] == scope.user.id and
-             session_params[:youtube_account_id] == scope.account_id,
+         :ok <- youtube_session_matches(scope, session_params),
          {:ok, provider_mod} <- fetch_provider(:youtube),
          config = build_callback_config(provider_mod, session_params),
          {:ok, result} <-
            exchange_and_normalize(provider_mod.strategy(), config, callback_params, provider_mod),
          attrs = build_integration_attrs(result.token, result.normalized),
-         true <- youtube_scopes_granted?(attrs.granted_scopes),
+         :ok <- require_youtube_scopes(attrs.granted_scopes),
          {:ok, channels} <-
            MetricFlow.Integrations.YouTubeChannels.list_channels(attrs.access_token) do
       case channels do
@@ -477,10 +475,20 @@ defmodule MetricFlow.Integrations do
 
           {:ok, token}
       end
-    else
-      false -> {:error, :invalid_youtube_authorization}
-      {:error, _} = error -> error
     end
+  end
+
+  # A callback whose state was already used (reload, back button, an old
+  # Google tab) has no session params bound to this user and account.
+  defp youtube_session_matches(scope, session_params) do
+    if session_params[:youtube_user_id] == scope.user.id and
+         session_params[:youtube_account_id] == scope.account_id,
+       do: :ok,
+       else: {:error, :youtube_session_mismatch}
+  end
+
+  defp require_youtube_scopes(granted) do
+    if youtube_scopes_granted?(granted), do: :ok, else: {:error, :youtube_scopes_not_granted}
   end
 
   def youtube_selection(%Scope{} = scope, pending_token) do
