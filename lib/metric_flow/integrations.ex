@@ -651,8 +651,15 @@ defmodule MetricFlow.Integrations do
 
       Integration.has_refresh_token?(integration) ->
         case refresh_token(scope, integration) do
-          {:ok, refreshed} -> {:ok, refreshed}
-          {:error, _reason} -> {:error, :token_expired}
+          {:ok, refreshed} ->
+            {:ok, refreshed}
+
+          {:error, reason} ->
+            Logger.warning(
+              "Token refresh failed integration_id=#{integration.id} provider=#{integration.provider} reason=#{inspect(reason)}"
+            )
+
+            {:error, :token_expired}
         end
 
       true ->
@@ -770,7 +777,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_accounts(Scope.t(), atom(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_accounts(%Scope{} = scope, provider \\ :google_analytics, opts \\ []) do
-    with {:ok, integration} <- get_integration(scope, provider) do
+    with {:ok, integration} <- fresh_integration(scope, provider) do
       GoogleAccounts.list_ga4_properties(integration, opts)
     end
   end
@@ -781,7 +788,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_ads_customers(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_ads_customers(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- get_integration(scope, :google_ads) do
+    with {:ok, integration} <- fresh_integration(scope, :google_ads) do
       GoogleAdsAccounts.list_customers(integration, opts)
     end
   end
@@ -792,7 +799,7 @@ defmodule MetricFlow.Integrations do
   @spec list_search_console_sites(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_search_console_sites(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- get_integration(scope, :google_search_console) do
+    with {:ok, integration} <- fresh_integration(scope, :google_search_console) do
       GoogleSearchConsoleSites.list_sites(integration, opts)
     end
   end
@@ -803,7 +810,7 @@ defmodule MetricFlow.Integrations do
   @spec list_facebook_ads_accounts(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_facebook_ads_accounts(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :facebook_ads) do
+    with {:ok, integration} <- fresh_integration(scope, :facebook_ads) do
       FacebookAdsAccounts.list_accounts(integration, opts)
     end
   end
@@ -814,7 +821,7 @@ defmodule MetricFlow.Integrations do
   @spec list_quickbooks_accounts(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_quickbooks_accounts(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- IntegrationRepository.get_integration(scope, :quickbooks) do
+    with {:ok, integration} <- fresh_integration(scope, :quickbooks) do
       QuickBooksAccounts.list_income_accounts(integration, opts)
     end
   end
@@ -828,8 +835,7 @@ defmodule MetricFlow.Integrations do
   @spec list_google_business_locations(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_business_locations(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- get_integration(scope, :google_business),
-         {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
+    with {:ok, fresh} <- fresh_integration(scope, :google_business) do
       GoogleBusinessLocations.list_locations(fresh, opts)
     end
   end
@@ -842,18 +848,16 @@ defmodule MetricFlow.Integrations do
   @spec list_google_business_accounts(Scope.t(), keyword()) ::
           {:ok, list(map())} | {:error, term()}
   def list_google_business_accounts(%Scope{} = scope, opts \\ []) do
-    with {:ok, integration} <- get_integration(scope, :google_business),
-         {:ok, fresh} <- ensure_fresh_integration(scope, integration) do
+    with {:ok, fresh} <- fresh_integration(scope, :google_business) do
       GoogleBusinessLocations.list_accounts(fresh, opts)
     end
   end
 
-  # Refreshes the token if expired, returns the integration as-is if still valid.
-  defp ensure_fresh_integration(scope, %Integration{} = integration) do
-    if Integration.expired?(integration) and is_binary(integration.refresh_token) do
-      refresh_token(scope, integration)
-    else
-      {:ok, integration}
+  # Every live call to a provider goes through here: access tokens last an
+  # hour, so a stored one is routinely stale and must be refreshed first.
+  defp fresh_integration(scope, provider) do
+    with {:ok, integration} <- get_integration(scope, provider) do
+      ensure_fresh_token(scope, integration)
     end
   end
 

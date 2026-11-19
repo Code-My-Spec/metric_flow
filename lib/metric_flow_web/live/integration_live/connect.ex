@@ -1117,19 +1117,27 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
              )
              |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
 
-          Integration.expired?(integration) ->
-            {:noreply,
-             socket
-             |> put_flash(
-               :error,
-               "Your #{provider_str} connection has expired. Please reconnect to modify account selection."
-             )
-             |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
-
           true ->
-            fun.(provider_atom, integration)
+            socket.assigns.current_scope
+            |> Integrations.ensure_fresh_token(integration)
+            |> with_fresh_token(provider_atom, provider_str, socket, fun)
         end
     end
+  end
+
+  # An expired access token is normal (they last an hour); only a failed
+  # refresh means the user has to reconnect.
+  defp with_fresh_token({:ok, fresh}, provider_atom, _provider_str, _socket, fun),
+    do: fun.(provider_atom, fresh)
+
+  defp with_fresh_token({:error, :token_expired}, _provider_atom, provider_str, socket, _fun) do
+    {:noreply,
+     socket
+     |> put_flash(
+       :error,
+       "Your #{provider_str} connection has expired. Please reconnect to modify account selection."
+     )
+     |> push_navigate(to: ~p"/app/integrations/connect/#{provider_str}")}
   end
 
   defp assign_accounts_state(socket, provider_atom, provider_str, integration) do
