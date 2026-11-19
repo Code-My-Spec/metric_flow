@@ -41,4 +41,33 @@ defmodule MetricFlow.AiAgencyChatToolsTest do
     assert system_prompt =~ "agency"
     assert system_prompt =~ "invite_client"
   end
+
+  test "agency-chat-tools: criterion 2 - get_connect_link for a client returns a link pinned to that client's account_id" do
+    user = user_fixture()
+    scope = Scope.for_user(user)
+
+    {:ok, agency} =
+      Accounts.create_team_account(
+        scope,
+        %{name: "Joel Agency", slug: "joel-agency-#{System.unique_integer([:positive])}"},
+        :agency
+      )
+
+    {:ok, acme} =
+      Accounts.create_team_account(
+        scope,
+        %{name: "Acme", slug: "acme-#{System.unique_integer([:positive])}"},
+        :client
+      )
+
+    scope = Scope.put_account_id(scope, agency.id)
+
+    tool = Enum.find(MetricFlow.Onboarding.Tools.alloy_tools(scope), &(&1.name == "get_connect_link"))
+    assert tool
+
+    assert {:ok, json} = tool.execute.(%{"connection" => "google", "account_id" => acme.id}, %{})
+    url = Jason.decode!(json)["url"]
+
+    assert URI.decode_query(URI.parse(url).query)["account_id"] == to_string(acme.id)
+  end
 end
