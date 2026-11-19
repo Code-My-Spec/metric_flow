@@ -35,4 +35,13 @@ defmodule MetricFlow.InviteClientToolTest do
 
     refute_email_sent()
   end
+
+  test "invite-client-tool-2: criterion 3 - a user who only belongs to client accounts is told they are not on an agency account" do
+    dana = user_with_account_fixture()
+
+    assert {:error, "You are not on an agency account."} =
+             Tools.call(:mcp, "invite_client", %{"email" => "jane@acme.com"}, %{user: dana})
+
+    refute_email_sent()
+  end
 end
