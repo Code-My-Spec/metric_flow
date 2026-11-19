@@ -62,7 +62,9 @@ defmodule MetricFlow.AiAgencyChatToolsTest do
 
     scope = Scope.put_account_id(scope, agency.id)
 
-    tool = Enum.find(MetricFlow.Onboarding.Tools.alloy_tools(scope), &(&1.name == "get_connect_link"))
+    tool =
+      Enum.find(MetricFlow.Onboarding.Tools.alloy_tools(scope), &(&1.name == "get_connect_link"))
+
     assert tool
 
     assert {:ok, json} = tool.execute.(%{"connection" => "google", "account_id" => acme.id}, %{})
