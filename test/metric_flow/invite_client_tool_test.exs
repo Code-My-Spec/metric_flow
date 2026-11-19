@@ -44,4 +44,17 @@ defmodule MetricFlow.InviteClientToolTest do
 
     refute_email_sent()
   end
+
+  test "invite-client-tool-2: criterion 4 - a read_only agency member gets a not-authorized error, no link and no email" do
+    sam = user_fixture()
+    account_with_member_fixture(sam, :read_only)
+
+    assert {:error, message} =
+             Tools.call(:mcp, "invite_client", %{"email" => "jane@acme.com"}, %{user: sam})
+
+    assert message =~ "Not authorized"
+    refute message =~ "/users/register?ref="
+
+    refute_email_sent()
+  end
 end
