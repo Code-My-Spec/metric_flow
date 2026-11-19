@@ -290,8 +290,10 @@ defmodule MetricFlow.OnboardingTest do
       refute Enum.any?(chat, &(&1.name == "list_accounts"))
       refute Enum.any?(chat, &Map.has_key?(&1.input_schema.properties, :account_id))
 
-      [list | rest] = Tools.specs(:mcp)
+      [list, invite | rest] = Tools.specs(:mcp)
       assert list.name == "list_accounts"
+      assert invite.name == "invite_client"
+      refute Map.has_key?(invite.input_schema.properties, :account_id)
       assert Enum.all?(rest, &Map.has_key?(&1.input_schema.properties, :account_id))
     end
 
@@ -327,6 +329,25 @@ defmodule MetricFlow.OnboardingTest do
                Tools.call(:mcp, "disconnect_product", args, %{user: viewer})
 
       assert {:ok, _} = Tools.call(:mcp, "get_setup_status", args, %{user: viewer})
+    end
+
+    test "invite_client emails the agency signup link; non-agency users are refused", %{
+      user: user
+    } do
+      assert {:error, "You are not on an agency account."} =
+               Tools.call(:mcp, "invite_client", %{}, %{user: user})
+
+      agency = MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
+
+      assert {:ok, %{url: url, emailed: true}} =
+               Tools.call(:mcp, "invite_client", %{"email" => "jane@acme.com"}, %{user: user})
+
+      assert url =~ "/users/register?ref="
+
+      # Setup sends the fixture user an email first, so match the invite itself.
+      assert_received {:email, %{to: [{_, "jane@acme.com"}]} = email}
+      assert email.text_body =~ url
+      assert email.text_body =~ agency.name
     end
   end
 end
