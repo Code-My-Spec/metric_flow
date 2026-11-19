@@ -384,7 +384,21 @@ defmodule MetricFlow.Onboarding do
   def explain_error(:nothing_selected), do: "Pick at least one to sync."
   def explain_error(:select_exactly_one), do: "Pick exactly one."
   def explain_error(:unknown_product), do: "Unknown data source."
-  def explain_error(:api_disabled), do: "The provider's API is disabled for this account."
+
+  def explain_error(:api_disabled),
+    do:
+      "Google refused because this API isn't enabled in the app's Google Cloud project. Enable it there, then retry."
+
+  def explain_error({:google_ads_developer_token, code}),
+    do:
+      "Google Ads rejected the app's developer token (#{code}). It needs Basic access approved in the Google Ads API Center."
+
+  def explain_error({:google_api_error, status, message}) when is_binary(message),
+    do: "Google returned an error (#{status}): #{message}"
+
+  def explain_error({:google_api_error, status, _message}),
+    do: "Google returned an error (#{status}). Try again, or reconnect Google."
+
   def explain_error(:token_expired), do: "The connection expired — reconnect to continue."
 
   def explain_error(:unauthorized),

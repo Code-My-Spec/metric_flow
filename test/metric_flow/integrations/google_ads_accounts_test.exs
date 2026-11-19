@@ -294,11 +294,11 @@ defmodule MetricFlow.Integrations.GoogleAdsAccountsTest do
       end)
     end
 
-    test "returns {:error, :bad_request} on an unexpected HTTP status from listAccessibleCustomers" do
+    test "names Google's reason on an unexpected HTTP status from listAccessibleCustomers" do
       plug = build_stub_plug(400, Jason.encode!(%{"error" => "bad request"}))
 
       capture_log(fn ->
-        assert {:error, :bad_request} =
+        assert {:error, {:google_api_error, 400, _}} =
                  GoogleAdsAccounts.list_customers(valid_integration(), http_plug: plug)
       end)
     end

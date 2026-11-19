@@ -11,6 +11,7 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
 
   require Logger
 
+  alias MetricFlow.Integrations.GoogleApiError
   alias MetricFlow.Integrations.Integration
 
   @list_url "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers"
@@ -59,13 +60,12 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
         %Req.Response{status: 401} ->
           {:error, :unauthorized}
 
-        %Req.Response{status: 403} ->
-          Logger.warning("Google Ads API returned 403 — insufficient permissions")
-          {:error, :api_disabled}
+        %Req.Response{status: status, body: body} ->
+          Logger.warning(
+            "Google Ads listAccessibleCustomers returned status #{status}: #{inspect(body)}"
+          )
 
-        %Req.Response{status: status} ->
-          Logger.warning("Google Ads listAccessibleCustomers returned status #{status}")
-          {:error, :bad_request}
+          {:error, list_error(status, GoogleApiError.reason(status, body))}
       end
     rescue
       # A body that arrives with `content-type: application/json` and is not JSON
@@ -81,6 +81,10 @@ defmodule MetricFlow.Integrations.GoogleAdsAccounts do
         {:error, {:network_error, Exception.message(e)}}
     end
   end
+
+  # A 403 Google doesn't explain is still most likely the Ads API being off.
+  defp list_error(403, {:google_api_error, _status, _message}), do: :api_disabled
+  defp list_error(_status, reason), do: reason
 
   # Step 2: For each customer ID, query their descriptive name and manager status.
   # Manager (MCC) accounts are filtered out — the Google Ads API does not return
