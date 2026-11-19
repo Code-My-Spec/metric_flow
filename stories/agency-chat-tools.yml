@@ -1,0 +1,14 @@
+title: In-app chat acts on an agency's clients
+workflow: Agency client onboarding
+story: |-
+  As an agency user, I want the in-app chat to act on my clients, so that I can do the whole onboarding from my phone in MetricFlow itself, not only through an outside AI.
+
+  Where: in MetricFlow.Onboarding.Tools.alloy_tools/1, when the chat's active account is an agency account, serve the :mcp-mode tools, run as the scope's user. Those tools are list_accounts, invite_client, and every setup tool with account_id. Client accounts keep today's :chat tools unchanged. In MetricFlow.AI, give @setup_prompt an agency variant for agency accounts. It says you are helping an agency onboard its clients, starts with list_accounts, uses invite_client to add a client, and gives connect links per client with get_connect_link and account_id, for the agency to send to the client. Depends on invite-client-tool.
+rules:
+  - rule: When the active account is an agency account, the chat serves the :mcp-mode tools as the scope's user, with the agency system prompt
+    scenarios:
+      - happy: Joel's active account is his agency. The chat's tools include list_accounts and invite_client, get_setup_status takes account_id, and the system prompt is the agency variant.
+      - happy: Joel asks the chat "send me Acme's Google link". get_connect_link is called with Acme's account_id and returns a link whose account_id is Acme's.
+  - rule: Client accounts keep today's chat tools and prompt unchanged
+    scenarios:
+      - happy: Jane's active account is Acme, a client. The chat's tools are exactly today's :chat tools, with no list_accounts and no invite_client, and the system prompt is today's setup prompt.
