@@ -58,17 +58,36 @@ defmodule MetricFlow.Onboarding.Tools do
     end
   end
 
-  @doc "The chat-mode tools as Alloy inline tools, acting on the scope's account."
+  @doc """
+  The chat tools as Alloy inline tools: on an agency account, the `:mcp` tools
+  run as the scope's user (so the agency can act on its clients); otherwise the
+  `:chat` tools acting on the scope's account.
+  """
   @spec alloy_tools(Scope.t()) :: [Alloy.Tool.Inline.t()]
   def alloy_tools(%Scope{} = scope) do
-    Enum.map(specs(:chat), fn spec ->
+    if agency?(scope),
+      do: inline_tools(:mcp, %{user: scope.user}),
+      else: inline_tools(:chat, %{scope: scope})
+  end
+
+  @doc "True when the scope's active account is an agency account the user belongs to."
+  @spec agency?(Scope.t()) :: boolean()
+  def agency?(%Scope{user: %User{id: user_id}} = scope) do
+    account_id = AccountAccess.account_id(scope)
+    Enum.any?(AccountAccess.memberships(user_id), &(&1.id == account_id and &1.type == :agency))
+  end
+
+  def agency?(_scope), do: false
+
+  defp inline_tools(mode, ctx) do
+    Enum.map(specs(mode), fn spec ->
       Alloy.Tool.inline(
         name: spec.name,
         description: spec.description,
         input_schema: spec.input_schema,
         concurrent?: false,
         execute: fn input, _alloy_ctx ->
-          case call(:chat, spec.name, input, %{scope: scope}) do
+          case call(mode, spec.name, input, ctx) do
             {:ok, data} -> {:ok, Jason.encode!(data)}
             {:error, message} -> {:error, message}
           end
