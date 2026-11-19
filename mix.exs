@@ -120,7 +120,8 @@ defmodule MetricFlow.MixProject do
       # CodeMySpec dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:client_utils, "~> 0.4.0"},
+      # shortcut: git main for `mix client_utils.sarif`; back to Hex once 0.6.0 ships.
+      {:client_utils, github: "Code-My-Spec/client_utils", branch: "main"},
       {:code_my_spec_generators, "~> 0.2", only: :dev},
       {:sexy_spex,
        git: "https://github.com/Code-My-Spec/spex.git",

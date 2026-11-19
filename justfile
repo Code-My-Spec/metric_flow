@@ -146,3 +146,16 @@ deploy:
 
 deploy-uat:
     bin/deploy uat
+
+# === WORKFLOW LOOP ===========================================================
+
+# The workflow loop calls these with a folder to write SARIF results into.
+run dir:
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex
+
+certify dir:
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/format.sarif" -- mix format --check-formatted
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/compiler.sarif" -- mix compile --warnings-as-errors
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
+    env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex

@@ -292,12 +292,29 @@ defmodule MetricFlow.Ai do
   exists. If no data shows up, check get_setup_status before anything else.
   """
 
+  @agency_setup_prompt """
+  You are helping an agency onboard its clients, and your tools act on any
+  account the user belongs to. Start with list_accounts to see the agency's
+  clients and their setup. To add a new client, use invite_client; the client
+  appears in list_accounts once they sign up. To connect a client's data, call
+  get_connect_link with that client's account_id and give the agency the link
+  as a markdown link to send to the client — only the client can approve the
+  provider's consent screen. Pass account_id to every setup tool
+  (get_setup_status, list_sync_options, save_sync_selection, sync_now,
+  disconnect_product).
+  """
+
   defp stream_assistant_response(scope, session, caller, opts) do
     {:ok, loaded_session} = AiRepository.get_chat_session(scope, session.id)
 
+    setup_prompt =
+      if MetricFlow.Onboarding.Tools.agency?(scope),
+        do: @agency_setup_prompt,
+        else: @setup_prompt
+
     system_prompt =
       LlmClient.base_system_prompt() <>
-        "\n\n" <> @setup_prompt <> "\n\n" <> build_data_context(scope, loaded_session)
+        "\n\n" <> setup_prompt <> "\n\n" <> build_data_context(scope, loaded_session)
 
     opts = Keyword.put_new(opts, :tools, MetricFlow.Onboarding.Tools.alloy_tools(scope))
 
