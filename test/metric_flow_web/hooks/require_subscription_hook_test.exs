@@ -82,6 +82,38 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       assert html =~ "Correlation"
     end
 
+    test "agency owners skip the paywall on an unsubscribed client account", %{conn: conn} do
+      user = user_fixture()
+      agency = insert_account!(user) |> Ecto.Changeset.change(type: :agency) |> Repo.update!()
+
+      # Older membership, so the client account below is the active one.
+      insert_member!(agency, user, :owner)
+      |> Ecto.Changeset.change(updated_at: ~U[2020-01-01 00:00:00Z])
+      |> Repo.update!()
+
+      _client = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      refute has_element?(view, "[data-role='paywall']")
+    end
+
+    test "agency read_only members still see the paywall on a client account", %{conn: conn} do
+      owner = user_fixture()
+      user = user_fixture()
+      agency = insert_account!(owner) |> Ecto.Changeset.change(type: :agency) |> Repo.update!()
+
+      insert_member!(agency, user, :read_only)
+      |> Ecto.Changeset.change(updated_at: ~U[2020-01-01 00:00:00Z])
+      |> Repo.update!()
+
+      _client = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, view, _html} = live(conn, "/app/correlations")
+      assert has_element?(view, "[data-role='paywall']")
+    end
+
     test "shows an inline paywall for accounts with no subscription", %{conn: conn} do
       user = user_fixture()
       _account = account_fixture(user)

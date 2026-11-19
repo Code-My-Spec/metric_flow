@@ -28,6 +28,18 @@ defmodule MetricFlowWeb.UserAuthTest do
       assert Users.get_user_by_session_token(token)
     end
 
+    test "sends agency users to their agency's clients", %{conn: conn, user: user} do
+      {:ok, _agency} =
+        MetricFlow.Accounts.AccountRepository.create_team_account(
+          Scope.for_user(user),
+          %{name: "Agency", slug: "agency-#{System.unique_integer([:positive])}"},
+          :agency
+        )
+
+      conn = UserAuth.log_in_user(conn, user)
+      assert redirected_to(conn) == ~p"/app/agency/clients"
+    end
+
     test "clears everything previously stored in the session", %{conn: conn, user: user} do
       conn = conn |> put_session(:to_be_removed, "value") |> UserAuth.log_in_user(user)
       refute get_session(conn, :to_be_removed)

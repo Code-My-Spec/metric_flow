@@ -43,7 +43,20 @@ defmodule MetricFlowWeb.UserAuth do
 
     conn
     |> create_or_extend_session(user, params)
-    |> redirect(to: user_return_to || signed_in_path(conn))
+    |> redirect(to: user_return_to || landing_path(conn, user))
+  end
+
+  # Agency users land on their agency's clients; everyone else on chat.
+  defp landing_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Users.User{}}}} = conn, _),
+    do: signed_in_path(conn)
+
+  defp landing_path(_conn, %Users.User{id: user_id}) do
+    account_id = MetricFlow.AccountAccess.default_account_id(user_id)
+
+    case Enum.find(MetricFlow.AccountAccess.memberships(user_id), &(&1.id == account_id)) do
+      %{type: :agency} -> ~p"/app/agency/clients"
+      _ -> signed_in_path(nil)
+    end
   end
 
   @doc """

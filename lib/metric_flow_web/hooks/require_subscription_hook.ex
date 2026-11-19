@@ -19,6 +19,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   import Phoenix.Component, only: [assign: 3]
   import Phoenix.LiveView, only: [attach_hook: 4, push_navigate: 2]
 
+  alias MetricFlow.AccountAccess
   alias MetricFlow.Ai
   alias MetricFlow.Billing.BillingRepository
 
@@ -39,6 +40,9 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
         {:cont, socket}
 
       account_type == :agency ->
+        {:cont, socket}
+
+      agency_owner?(scope) ->
         {:cont, socket}
 
       has_active_subscription?(account_id) ->
@@ -62,6 +66,13 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   end
 
   defp handle_paywall_event(_event, _params, socket), do: {:cont, socket}
+
+  # Agency owners never hit the paywall, even while a client account is active.
+  defp agency_owner?(%{user: %{id: user_id}}) do
+    Enum.any?(AccountAccess.memberships(user_id), &(&1.type == :agency and &1.role == :owner))
+  end
+
+  defp agency_owner?(_scope), do: false
 
   defp paywall_enabled?, do: Application.get_env(:metric_flow, :paywall_enabled, true)
 
