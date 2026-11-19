@@ -204,6 +204,9 @@ defmodule MetricFlowWeb.IntegrationOauthController do
             :no_youtube_channels ->
               "No YouTube channels were found for this Google account."
 
+            :api_disabled ->
+              "Google refused: the YouTube Data API isn't enabled for this app's Google Cloud project."
+
             _ ->
               "YouTube could not be connected. Please try again and grant channel and analytics access."
           end

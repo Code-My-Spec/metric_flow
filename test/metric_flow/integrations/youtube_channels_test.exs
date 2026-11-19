@@ -27,6 +27,23 @@ defmodule MetricFlow.Integrations.YouTubeChannelsTest do
              YouTubeChannels.list_channels("test-token", http_plug: plug)
   end
 
+  test "a 403 for a disabled API is told apart from a plain permission 403" do
+    # Google's real shape when YouTube Data API v3 is off in the Cloud project.
+    disabled = %{
+      "error" => %{
+        "code" => 403,
+        "status" => "PERMISSION_DENIED",
+        "errors" => [%{"reason" => "accessNotConfigured"}],
+        "details" => [%{"reason" => "SERVICE_DISABLED"}]
+      }
+    }
+
+    assert {:error, :api_disabled} =
+             YouTubeChannels.list_channels("token",
+               http_plug: fn conn -> json(conn, 403, disabled) end
+             )
+  end
+
   test "empty results remain distinct from failed or malformed responses" do
     assert {:ok, []} =
              YouTubeChannels.list_channels("token",

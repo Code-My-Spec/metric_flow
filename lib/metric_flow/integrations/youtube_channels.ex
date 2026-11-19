@@ -1,6 +1,8 @@
 defmodule MetricFlow.Integrations.YouTubeChannels do
   @moduledoc "Retrieves channels available to an authorized YouTube identity."
 
+  require Logger
+
   @url "https://www.googleapis.com/youtube/v3/channels"
 
   def list_channels(access_token, opts \\ []) when is_binary(access_token) do
@@ -37,8 +39,9 @@ defmodule MetricFlow.Integrations.YouTubeChannels do
       {:ok, %Req.Response{status: 401}} ->
         {:error, :unauthorized}
 
-      {:ok, %Req.Response{status: 403}} ->
-        {:error, :forbidden}
+      {:ok, %Req.Response{status: 403, body: body}} ->
+        Logger.warning("YouTube channels.list 403: #{inspect(body)}")
+        {:error, forbidden_reason(body)}
 
       {:ok, %Req.Response{status: status}} ->
         {:error, {:http_error, status}}
@@ -49,6 +52,29 @@ defmodule MetricFlow.Integrations.YouTubeChannels do
   rescue
     Jason.DecodeError -> {:error, :malformed_response}
   end
+
+  # Google says why: an API switched off in the Cloud project is a setup
+  # problem the user can fix, not a permission they withheld.
+  defp forbidden_reason(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> forbidden_reason(decoded)
+      {:error, _} -> :forbidden
+    end
+  end
+
+  defp forbidden_reason(%{"error" => %{} = error}) do
+    reasons = Enum.map(error["errors"] || [], & &1["reason"])
+
+    if error["status"] == "PERMISSION_DENIED" and
+         ("accessNotConfigured" in reasons or error_detail_reason(error) == "SERVICE_DISABLED"),
+       do: :api_disabled,
+       else: :forbidden
+  end
+
+  defp forbidden_reason(_body), do: :forbidden
+
+  defp error_detail_reason(error),
+    do: Enum.find_value(error["details"] || [], &(is_map(&1) && &1["reason"]))
 
   defp continue_pages(_access_token, _opts, next, _seen, pages) when next in [nil, ""] do
     {:ok, pages |> Enum.reverse() |> List.flatten() |> Enum.uniq_by(& &1.id)}
