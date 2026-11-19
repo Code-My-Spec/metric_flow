@@ -38,6 +38,13 @@ defmodule MetricFlowTest.UsersFixtures do
         Users.deliver_login_instructions(user, url)
       end)
 
+    # consume the setup login email so tests only see emails they cause
+    receive do
+      {:email, %{to: [{_, email}]}} when email == user.email -> :ok
+    after
+      0 -> :ok
+    end
+
     {:ok, {user, _expired_tokens}} =
       Users.login_user_by_magic_link(token)
 

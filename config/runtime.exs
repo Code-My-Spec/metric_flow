@@ -110,7 +110,7 @@ config :metric_flow,
   codemyspec_project_id: env!("CODEMYSPEC_PROJECT_ID", :string, nil),
   stripe_secret_key: env!("STRIPE_SECRET_KEY", :string, nil),
   stripe_publishable_key: env!("STRIPE_PUBLISHABLE_KEY", :string, nil),
-  stripe_webhook_secret: env!("STRIPE_WEBHOOK_SECRET", :string, nil),
+  stripe_webhook_secret: env!("STRIPE_WEBHOOK_SECRET", :string, test_placeholder.("whsec_test")),
   # Connect events (from agencies' connected accounts) arrive through a
   # separate Stripe Connect endpoint with its own shared secret — Stripe
   # does not support a secret per connected account.
@@ -131,8 +131,8 @@ if config_env() == :test do
     quickbooks_realm_id: env!("QUICKBOOKS_TEST_REALM_ID", :string, "9130355098863166"),
     quickbooks_income_account_id: env!("QUICKBOOKS_TEST_INCOME_ACCOUNT_ID", :string, nil),
     quickbooks_access_token: env!("QUICKBOOKS_TEST_ACCESS_TOKEN", :string, nil),
-    google_access_token: env!("GOOGLE_TEST_ACCESS_TOKEN", :string, nil),
-    google_refresh_token: env!("GOOGLE_TEST_REFRESH_TOKEN", :string, nil),
+    google_access_token: env!("GOOGLE_TEST_ACCESS_TOKEN", :string, "cassette-token"),
+    google_refresh_token: env!("GOOGLE_TEST_REFRESH_TOKEN", :string, "cassette-refresh"),
     google_ads_login_customer_id: env!("GOOGLE_ADS_LOGIN_CUSTOMER_ID", :string, nil),
     facebook_access_token: env!("FACEBOOK_TEST_ACCESS_TOKEN", :string, nil),
     # Google Business Profile needs both: accounts are what the credential can
