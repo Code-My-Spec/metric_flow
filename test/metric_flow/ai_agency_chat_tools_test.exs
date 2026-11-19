@@ -70,4 +70,37 @@ defmodule MetricFlow.AiAgencyChatToolsTest do
 
     assert URI.decode_query(URI.parse(url).query)["account_id"] == to_string(acme.id)
   end
+
+  test "agency-chat-tools: criterion 3 - a client account's chat keeps the :chat tools and the setup prompt" do
+    user = user_fixture()
+    scope = Scope.for_user(user)
+
+    {:ok, acme} =
+      Accounts.create_team_account(
+        scope,
+        %{name: "Acme", slug: "acme-#{System.unique_integer([:positive])}"},
+        :client
+      )
+
+    scope = Scope.put_account_id(scope, acme.id)
+    {:ok, session} = Ai.create_chat_session(scope, %{context_type: :general})
+
+    test_pid = self()
+
+    stream_fn = fn system_prompt, _messages, _on_chunk, opts ->
+      send(test_pid, {:llm_call, system_prompt, opts[:tools]})
+      {:ok, "ok"}
+    end
+
+    {:ok, _pid} = Ai.send_chat_message(scope, session.id, "hi", stream_chat_fn: stream_fn)
+    assert_receive {:llm_call, system_prompt, tools}, 5000
+
+    assert Enum.map(tools, & &1.name) ==
+             ~w(get_setup_status get_connect_link list_sync_options save_sync_selection sync_now disconnect_product)
+
+    refute Enum.any?(tools, &Map.has_key?(&1.input_schema.properties, :account_id))
+    assert system_prompt =~ "set up the user's data sources"
+    refute system_prompt =~ "list_accounts"
+    refute system_prompt =~ "invite_client"
+  end
 end
