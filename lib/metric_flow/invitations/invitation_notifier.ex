@@ -43,6 +43,28 @@ defmodule MetricFlow.Invitations.InvitationNotifier do
     """)
   end
 
+  @doc "Emails a prospective client an agency's signup link, naming the agency."
+  @spec deliver_client_invite(String.t(), String.t(), String.t()) ::
+          {:ok, Swoosh.Email.t()} | {:error, term()}
+  def deliver_client_invite(email, agency_name, signup_url) do
+    deliver_email(email, "#{agency_name} invited you to Anderson BI", """
+
+    ==============================
+
+    Hi #{email},
+
+    #{agency_name} has invited you to set up your account on Anderson BI.
+
+    Sign up with the link below:
+
+    #{signup_url}
+
+    If you did not expect this invitation, please ignore this email.
+
+    ==============================
+    """)
+  end
+
   # Mirrors InvitationLive.Accept's role_label/1 so the email and acceptance
   # page describe the same role the same way.
   defp role_label(:owner), do: "Owner"

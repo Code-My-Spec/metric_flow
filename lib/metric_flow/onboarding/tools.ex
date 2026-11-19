@@ -22,6 +22,8 @@ defmodule MetricFlow.Onboarding.Tools do
   """
 
   alias MetricFlow.AccountAccess
+  alias MetricFlow.Agencies
+  alias MetricFlow.Invitations.InvitationNotifier
   alias MetricFlow.Onboarding
   alias MetricFlow.Users.Scope
   alias MetricFlow.Users.User
@@ -40,7 +42,9 @@ defmodule MetricFlow.Onboarding.Tools do
   @doc "Tool specs for a mode: `:chat` (active account) or `:mcp` (account per call)."
   @spec specs(:chat | :mcp) :: [map()]
   def specs(:chat), do: base_specs()
-  def specs(:mcp), do: [list_accounts_spec() | Enum.map(base_specs(), &with_account/1)]
+
+  def specs(:mcp),
+    do: [list_accounts_spec(), invite_client_spec() | Enum.map(base_specs(), &with_account/1)]
 
   @doc """
   Runs a tool by name. In `:chat` mode `ctx` carries `:scope`; in `:mcp` mode
@@ -235,6 +239,84 @@ defmodule MetricFlow.Onboarding.Tools do
     }
   end
 
+  defp invite_client_spec do
+    %{
+      name: "invite_client",
+      description:
+        "Get your agency's signup link for a new client and, given their email, email it to them. " <>
+          "The client appears in list_accounts once they sign up with an account name; then use " <>
+          "get_connect_link with that account_id. agency_account_id is optional when you are on " <>
+          "one agency account.",
+      input_schema:
+        object(%{
+          email: %{type: "string", description: "Client's email (optional)."},
+          agency_account_id: %{type: "integer", description: "Agency account to invite to."}
+        }),
+      run: fn args, %{user: user} ->
+        with {:ok, agency} <- pick_agency(user, args["agency_account_id"]),
+             {:ok, token} <- referral_token(user, agency.id) do
+          url = MetricFlowWeb.Endpoint.url() <> "/users/register?ref=" <> token
+          email_client(args["email"], agency.name, url)
+        end
+      end
+    }
+  end
+
+  defp pick_agency(user, id) do
+    agencies = Enum.filter(AccountAccess.memberships(user.id), &(&1.type == :agency))
+
+    case {agencies, id} do
+      {[], _} ->
+        {:error, "You are not on an agency account."}
+
+      {[agency], nil} ->
+        {:ok, agency}
+
+      {_, nil} ->
+        {:error,
+         "You are on several agency accounts — pass agency_account_id, one of: " <>
+           Enum.map_join(agencies, ", ", &"#{&1.id} (#{&1.name})") <> "."}
+
+      {_, id} ->
+        case Enum.find(agencies, &(to_string(&1.id) == to_string(id))) do
+          nil -> {:error, "You are not on agency account #{id}."}
+          agency -> {:ok, agency}
+        end
+    end
+  end
+
+  defp referral_token(user, agency_id) do
+    case Agencies.generate_referral_link(
+           Scope.put_account_id(Scope.for_user(user), agency_id),
+           agency_id
+         ) do
+      {:ok, token} ->
+        {:ok, token}
+
+      {:error, _} ->
+        {:error, "Not authorized: inviting clients needs an owner or admin role on the agency."}
+    end
+  end
+
+  defp email_client(email, _agency_name, url) when email in [nil, ""],
+    do: {:ok, %{url: url, emailed: false}}
+
+  defp email_client(email, agency_name, url) when is_binary(email) do
+    with true <- String.contains?(email, "@"),
+         {:ok, _} <- InvitationNotifier.deliver_client_invite(email, agency_name, url) do
+      {:ok, %{url: url, emailed: true}}
+    else
+      false ->
+        {:error, "#{inspect(email)} is not an email address."}
+
+      {:error, _} ->
+        {:error, "Could not send the email. Here is the link to share instead: #{url}"}
+    end
+  end
+
+  defp email_client(email, _agency_name, _url),
+    do: {:error, "#{inspect(email)} is not an email address."}
+
   defp with_account(spec) do
     %{
       spec
@@ -271,8 +353,9 @@ defmodule MetricFlow.Onboarding.Tools do
     end
   end
 
-  defp resolve_scope(_mode, %{name: "list_accounts"}, _args, %{user: %User{}} = ctx),
-    do: {:ok, ctx}
+  defp resolve_scope(_mode, %{name: name}, _args, %{user: %User{}} = ctx)
+       when name in ["list_accounts", "invite_client"],
+       do: {:ok, ctx}
 
   defp resolve_scope(:chat, _spec, _args, %{scope: %Scope{user: %User{}}} = ctx), do: {:ok, ctx}
 
