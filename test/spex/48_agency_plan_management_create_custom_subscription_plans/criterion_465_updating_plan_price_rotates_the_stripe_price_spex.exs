@@ -22,7 +22,7 @@ defmodule MetricFlowSpex.Story48.Criterion4141Spex do
       given_ "the plan's current row is recorded, before any update", context do
         original_row_html =
           context.view
-          |> element("tr[data-role='plan-row']", context.agency_plan.name)
+          |> element("[data-role='plan-row']", context.agency_plan.name)
           |> render()
 
         {:ok, Map.put(context, :original_row_html, original_row_html)}
@@ -49,7 +49,7 @@ defmodule MetricFlowSpex.Story48.Criterion4141Spex do
       then_ "the previous Stripe Price is marked inactive", context do
         new_row_html =
           context.view
-          |> element("tr[data-role='plan-row']", context.agency_plan.name)
+          |> element("[data-role='plan-row']", context.agency_plan.name)
           |> render()
 
         refute new_row_html == context.original_row_html

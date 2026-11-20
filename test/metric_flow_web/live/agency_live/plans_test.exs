@@ -109,14 +109,14 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
   end
 
   describe "mount/3" do
-    test "mounts and displays Subscription Plans heading", %{conn: conn} do
+    test "mounts and displays the plans heading", %{conn: conn} do
       user = user_fixture()
       _account = agency_fixture(user)
       conn = log_in_user(conn, user)
 
       {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
-      assert html =~ "Subscription Plans"
+      assert html =~ "Price the subscriptions your clients can buy"
     end
 
     test "shows Stripe Connect warning when agency has no connected Stripe account", %{conn: conn} do
@@ -325,6 +325,101 @@ defmodule MetricFlowWeb.AgencyLive.PlansTest do
       {:ok, _lv, html} = live(conn, "/app/agency/plans")
 
       assert html =~ "Inactive"
+    end
+  end
+
+  describe "/app/agency/plans Anderson BI layout" do
+    test "wraps the page in an Anderson BI column that cannot scroll sideways at 390px", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
+
+      doc = Floki.parse_document!(html)
+
+      assert [root] = Floki.find(doc, "[data-role='agency-plans-root']")
+      class = root |> Floki.attribute("class") |> List.first() || ""
+
+      assert class =~ "overflow-x-hidden",
+             "root column must carry overflow-x-hidden so nothing scrolls sideways at 390px; got: #{class}"
+
+      assert class =~ ~r/\bmax-w-/,
+             "root column must be width-capped (max-w-*) so desktop doesn't stretch; got: #{class}"
+    end
+
+    test "leads with a single h1 inside the agency-plans-root", %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
+
+      doc = Floki.parse_document!(html)
+
+      h1s =
+        doc
+        |> Floki.find("[data-role='agency-plans-root'] h1")
+        |> Enum.map(&Floki.text/1)
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+
+      assert length(h1s) == 1,
+             "expected exactly one h1 inside the agency-plans-root, got: #{inspect(h1s)}"
+    end
+
+    test "renders each plan as its own Anderson BI card showing its price", %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      plan_fixture(account, %{name: "Starter Plan", price_cents: 4900})
+      plan_fixture(account, %{name: "Pro Plan", price_cents: 9900})
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
+
+      doc = Floki.parse_document!(html)
+
+      cards = Floki.find(doc, "[data-role='agency-plans-root'] [data-role='plan-row']")
+
+      assert length(cards) == 2,
+             "expected one plan-row card per plan, got: #{length(cards)}"
+
+      for card <- cards do
+        class = card |> Floki.attribute("class") |> List.first() || ""
+
+        for token <- ["rounded-box", "border", "bg-base-200"] do
+          assert class =~ token,
+                 "plan card is missing Anderson BI card token #{inspect(token)}; got: #{class}"
+        end
+      end
+
+      assert html =~ "$49.00"
+      assert html =~ "$99.00"
+    end
+
+    test "makes creating a new plan the primary brand-gradient action", %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/plans")
+
+      doc = Floki.parse_document!(html)
+
+      submit_buttons = Floki.find(doc, "form#plan-form button[type='submit']")
+      assert submit_buttons != [], "expected a submit button inside form#plan-form"
+
+      assert Enum.any?(submit_buttons, fn btn ->
+               class = btn |> Floki.attribute("class") |> List.first() || ""
+               class =~ "btn-brand-gradient"
+             end),
+             "Create Plan submit must use the Anderson BI brand-gradient primary button"
     end
   end
 end
