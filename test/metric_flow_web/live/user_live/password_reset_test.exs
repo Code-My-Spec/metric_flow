@@ -8,6 +8,41 @@ defmodule MetricFlowWeb.UserLive.PasswordResetTest do
   alias MetricFlow.Users
   alias MetricFlow.Users.UserToken
 
+  describe "renders in Layouts.content as an Anderson BI centred card with the logo" do
+    test "logged-out forgot-password renders the Anderson BI card and gradient submit, not the old daisyUI shell",
+         %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/users/forgot-password")
+
+      # Public Layouts.content is used (not Layouts.app): its Privacy/Terms
+      # footer is only emitted by the content layout.
+      assert html =~ "Privacy Policy"
+
+      # The forgot-password card uses the DESIGN.md Card tokens (bg-base-200
+      # on a neutral border with the theme radius), matching the login card.
+      assert html =~ "rounded-box border border-neutral bg-base-200"
+
+      # The Anderson BI logo is rendered inline above the card (not just in
+      # the layout header), matching the login page.
+      assert Regex.match?(
+               ~r/<img[^>]*\/images\/anderson-bi-logo\.png[^>]*data-role="default-logo"/,
+               html
+             ) or
+               Regex.match?(
+                 ~r/<img[^>]*data-role="default-logo"[^>]*\/images\/anderson-bi-logo\.png/,
+                 html
+               )
+
+      # The submit button is the DESIGN.md Primary (brand gradient) button,
+      # not the previous daisyUI `btn btn-primary`.
+      assert html =~ "btn-brand-gradient"
+
+      refute Regex.match?(
+               ~r/class="[^"]*\bbtn btn-primary\b[^"]*"[^>]*>\s*Send reset link/,
+               html
+             )
+    end
+  end
+
   test "known and unknown emails receive the same response", %{conn: conn} do
     user = user_fixture() |> set_password()
 
