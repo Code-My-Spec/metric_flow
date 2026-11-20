@@ -13,12 +13,17 @@ defmodule MetricFlowWeb.DashboardLive.Index do
   alias MetricFlow.Accounts.Authorization
   alias MetricFlow.Dashboards
 
+  # DESIGN.md Card tokens for every panel on this page.
+  @card_class "bg-base-200 border border-neutral rounded-box"
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
 
   @impl true
   def render(assigns) do
+    assigns = assign(assigns, :card_class, @card_class)
+
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -27,16 +32,19 @@ defmodule MetricFlowWeb.DashboardLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
-        <%!-- Page header --%>
-        <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
-          <div>
-            <h1 class="text-2xl font-bold">Dashboards</h1>
-            <p class="mt-1 text-base-content/60">Your saved views and system dashboards</p>
+      <div class="overflow-x-hidden">
+        <%!-- Page header. Create is the primary action; flex-wrap drops the
+             button under the heading at 390 so nothing scrolls sideways. --%>
+        <div class="flex flex-wrap items-start justify-between gap-3 mb-8">
+          <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-base-content">Dashboards</h1>
+            <p class="mt-1 text-base-content/70 break-words">
+              One card per dashboard. Start a new one any time.
+            </p>
           </div>
           <.link
             navigate={~p"/app/dashboards/new"}
-            class="btn btn-primary btn-sm"
+            class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto text-center"
             data-role="new-dashboard-btn"
           >
             New Dashboard
@@ -51,24 +59,24 @@ defmodule MetricFlowWeb.DashboardLive.Index do
           data-role="canned-dashboards"
           class="mb-8"
         >
-          <h2 class="text-xl font-semibold mb-1">System Dashboards</h2>
-          <p class="text-base-content/60 text-sm mb-4">Pre-built views ready to use</p>
+          <h2 class="text-xl font-semibold mb-1 text-base-content">System Dashboards</h2>
+          <p class="text-base-content/70 text-sm mb-4">Pre-built views ready to use</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div
               :for={dashboard <- @canned_dashboards}
               data-role="dashboard-card"
               data-dashboard-id={dashboard.id}
               data-built-in="true"
-              class="mf-card p-5"
+              class={[@card_class, "p-5 min-w-0"]}
             >
-              <div class="flex items-start justify-between gap-2 mb-2">
-                <p class="font-semibold">{dashboard.name}</p>
+              <div class="flex items-start justify-between gap-2 mb-2 min-w-0">
+                <p class="font-semibold text-base-content break-words min-w-0">{dashboard.name}</p>
                 <span class="badge badge-ghost badge-sm shrink-0">Built-in</span>
               </div>
-              <p :if={dashboard.description} class="text-sm text-base-content/60 mb-3">
+              <p :if={dashboard.description} class="text-sm text-base-content/70 mb-3 break-words">
                 {dashboard.description}
               </p>
-              <div class="flex gap-2 mt-3">
+              <div class="flex flex-wrap gap-2 mt-3">
                 <.link
                   navigate={~p"/app/dashboards/#{dashboard.id}"}
                   class="btn btn-ghost btn-sm"
@@ -83,8 +91,8 @@ defmodule MetricFlowWeb.DashboardLive.Index do
 
         <%!-- User dashboards section --%>
         <div data-role="user-dashboards">
-          <h2 class="text-xl font-semibold mb-1">My Dashboards</h2>
-          <p class="text-base-content/60 text-sm mb-4">Dashboards you've created</p>
+          <h2 class="text-xl font-semibold mb-1 text-base-content">My Dashboards</h2>
+          <p class="text-base-content/70 text-sm mb-4">Dashboards you've created</p>
 
           <%!-- Search --%>
           <div :if={@user_dashboards != []} data-role="dashboard-search" class="mb-4">
@@ -94,7 +102,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                 name="query"
                 value={@search_query}
                 placeholder="Search dashboards by name"
-                class="input input-bordered input-sm w-full max-w-xs"
+                class="input input-bordered input-sm w-full max-w-xs bg-base-100 border-neutral rounded-box"
               />
             </form>
           </div>
@@ -103,10 +111,16 @@ defmodule MetricFlowWeb.DashboardLive.Index do
           <div
             :if={@user_dashboards == []}
             data-role="empty-user-dashboards"
-            class="mf-card p-8 text-center"
+            class={[@card_class, "p-6 text-center"]}
           >
-            <p class="text-base-content/60 mb-4">No dashboards yet</p>
-            <.link navigate={~p"/app/dashboards/new"} class="btn btn-primary btn-sm">
+            <p class="text-base-content font-semibold">No dashboards yet</p>
+            <p class="text-base-content/70 text-sm mt-1 mb-4">
+              Make one and it shows up here as a card.
+            </p>
+            <.link
+              navigate={~p"/app/dashboards/new"}
+              class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto inline-block text-center"
+            >
               Create your first dashboard
             </.link>
           </div>
@@ -115,9 +129,9 @@ defmodule MetricFlowWeb.DashboardLive.Index do
           <div
             :if={@user_dashboards != [] && @filtered_dashboards == []}
             data-role="empty-search-results"
-            class="mf-card p-8 text-center"
+            class={[@card_class, "p-6 text-center"]}
           >
-            <p class="text-base-content/60">No dashboards match your search</p>
+            <p class="text-base-content/70">No dashboards match your search</p>
           </div>
 
           <%!-- Dashboard grid --%>
@@ -127,7 +141,7 @@ defmodule MetricFlowWeb.DashboardLive.Index do
               data-role="dashboard-card"
               data-dashboard-id={dashboard.id}
               data-built-in="false"
-              class="mf-card p-5"
+              class={[@card_class, "p-5 min-w-0"]}
             >
               <div :if={@renaming_id == dashboard.id} data-role={"rename-form-#{dashboard.id}"}>
                 <form phx-submit="rename">
@@ -137,9 +151,9 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                     name="name"
                     value={dashboard.name}
                     data-role={"rename-input-#{dashboard.id}"}
-                    class="input input-bordered input-sm w-full mb-1"
+                    class="input input-bordered input-sm w-full mb-1 bg-base-100 border-neutral rounded-box"
                   />
-                  <div class="flex gap-2">
+                  <div class="flex flex-wrap gap-2">
                     <button
                       type="submit"
                       data-role={"confirm-rename-#{dashboard.id}"}
@@ -158,11 +172,15 @@ defmodule MetricFlowWeb.DashboardLive.Index do
                   </div>
                 </form>
               </div>
-              <p :if={@renaming_id != dashboard.id} class="font-semibold mb-1">{dashboard.name}</p>
-              <p :if={dashboard.description} class="text-sm text-base-content/60 mb-3">
+              <p
+                :if={@renaming_id != dashboard.id}
+                class="font-semibold text-base-content mb-1 break-words min-w-0"
+                phx-no-format
+              >{dashboard.name}</p>
+              <p :if={dashboard.description} class="text-sm text-base-content/70 mb-3 break-words">
                 {dashboard.description}
               </p>
-              <div class="flex items-center gap-2 mt-3">
+              <div class="flex flex-wrap items-center gap-2 mt-3">
                 <.link
                   navigate={~p"/app/dashboards/#{dashboard.id}"}
                   class="btn btn-ghost btn-sm"
@@ -215,9 +233,9 @@ defmodule MetricFlowWeb.DashboardLive.Index do
               <div
                 :if={@confirming_delete == dashboard.id}
                 data-role={"delete-confirm-#{dashboard.id}"}
-                class="mt-3 flex items-center gap-2"
+                class="mt-3 flex flex-wrap items-center gap-2"
               >
-                <span class="text-sm text-base-content/60">Are you sure?</span>
+                <span class="text-sm text-base-content/70">Are you sure?</span>
                 <button
                   phx-click="confirm_delete"
                   phx-value-id={dashboard.id}
