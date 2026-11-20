@@ -140,7 +140,7 @@ defmodule MetricFlowWeb.Layouts do
           <.sidebar_link href={~p"/app/integrations"} icon="hero-squares-2x2">
             Integrations
           </.sidebar_link>
-          <.sidebar_link href={~p"/app/dashboards"} icon="hero-document-text">Reports</.sidebar_link>
+          <.sidebar_link href={~p"/app/reports"} icon="hero-document-text">Reports</.sidebar_link>
         </nav>
 
         <div class="my-5 border-t border-neutral"></div>
