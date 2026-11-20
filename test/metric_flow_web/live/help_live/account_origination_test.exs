@@ -60,7 +60,7 @@ defmodule MetricFlowWeb.HelpLive.AccountOriginationTest do
           ~s|main[data-role="help-account-origination-root"] a[href="/app/agency/clients"]|
         )
 
-      assert length(clients_links) >= 1,
+      assert clients_links != [],
              "Expected a visible link to /app/agency/clients inside the help page root"
     end
   end
