@@ -391,6 +391,51 @@ defmodule MetricFlowWeb.IntegrationLive.IndexTest do
     end
   end
 
+  describe "orders providers by need: problems first" do
+    test "a connected provider renders after providers that need attention", %{conn: conn} do
+      user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
+
+      # Google is fully set up (one product :ready, the others :not_granted on
+      # the single Google integration), so the Google provider card is in the
+      # :done state. YouTube, Meta and QuickBooks stay :not_connected.
+      insert_integration!(user.id, :google_ads, %{
+        provider_metadata: %{
+          "provider_user_id" => "stub-user-id",
+          "email" => "stub@example.com",
+          "customer_id" => "1234567890"
+        }
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations")
+
+        google_idx = index_of!(html, "connection-group-google")
+        youtube_idx = index_of!(html, "connection-group-youtube")
+        meta_idx = index_of!(html, "connection-group-facebook_ads")
+        qb_idx = index_of!(html, "connection-group-quickbooks")
+
+        assert youtube_idx < google_idx,
+               "expected YouTube (needs attention) to come before Google (connected)"
+
+        assert meta_idx < google_idx,
+               "expected Meta (needs attention) to come before Google (connected)"
+
+        assert qb_idx < google_idx,
+               "expected QuickBooks (needs attention) to come before Google (connected)"
+      end)
+    end
+
+    defp index_of!(html, needle) do
+      case :binary.match(html, needle) do
+        {idx, _} -> idx
+        :nomatch -> flunk("Needle not found in rendered HTML: #{needle}")
+      end
+    end
+  end
+
   describe "account-owned integrations" do
     defp member!(account_id, user, role) do
       %MetricFlow.Accounts.AccountMember{}
