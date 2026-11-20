@@ -163,4 +163,90 @@ defmodule MetricFlowWeb.AgencyLive.SubscriptionsTest do
 
     assert html =~ "badge-success"
   end
+
+  describe "Anderson BI layout" do
+    test "wraps content in an Anderson BI root column with overflow-x-hidden",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = agency_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
+
+      assert html =~ ~s(data-role="agency-subscriptions-root"),
+             "Expected the page to be wrapped in an agency-subscriptions-root element."
+
+      assert html =~ "overflow-x-hidden",
+             "Expected the root column to carry overflow-x-hidden to stop sideways scroll at 390px."
+
+      assert html =~ "max-w-3xl",
+             "Expected the root column to cap its width with a max-w-* token."
+
+      assert Regex.scan(~r(<h1\b)i, html) |> length() == 1,
+             "Expected exactly one h1 on the page."
+    end
+
+    test "lists each client subscription as its own row with its status",
+         %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      plan = plan_fixture(account)
+
+      client = user_fixture()
+      client_account = insert_account!(client, %{name: "Row Client"})
+      insert_member!(client_account, client, :owner)
+
+      subscription_fixture(client_account, plan, %{
+        stripe_customer_id: "cus_row_active",
+        status: :active
+      })
+
+      conn = log_in_user(conn, user)
+      {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
+
+      rows = Regex.scan(~r/data-role="subscription-row"/, html)
+
+      assert length(rows) == 1,
+             "Expected exactly one subscription-row per client subscription. Got #{length(rows)}."
+
+      assert html =~ ~s(data-status="active"),
+             "Expected the row to carry its subscription status as a data attribute."
+    end
+
+    test "problem-status subscriptions are listed before healthy ones",
+         %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      plan = plan_fixture(account)
+
+      healthy_client = user_fixture()
+      healthy_account = insert_account!(healthy_client, %{name: "Healthy Client"})
+      insert_member!(healthy_account, healthy_client, :owner)
+
+      problem_client = user_fixture()
+      problem_account = insert_account!(problem_client, %{name: "Problem Client"})
+      insert_member!(problem_account, problem_client, :owner)
+
+      # The healthy subscription is inserted AFTER the problem one, so the
+      # pre-pass ordering (inserted_at desc) would place the healthy row first.
+      subscription_fixture(problem_account, plan, %{
+        stripe_customer_id: "cus_problem",
+        status: :past_due
+      })
+
+      subscription_fixture(healthy_account, plan, %{
+        stripe_customer_id: "cus_healthy",
+        status: :active
+      })
+
+      conn = log_in_user(conn, user)
+      {:ok, _lv, html} = live(conn, "/app/agency/subscriptions")
+
+      problem_pos = :binary.match(html, "cus_problem") |> elem(0)
+      healthy_pos = :binary.match(html, "cus_healthy") |> elem(0)
+
+      assert problem_pos < healthy_pos,
+             "Expected the past_due subscription to appear before the active one on the page."
+    end
+  end
 end
