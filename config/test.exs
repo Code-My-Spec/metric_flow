@@ -14,11 +14,16 @@ e2e? = System.get_env("CMS_E2E") in ~w(1 true)
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
+#
+# Each checkout gets its own test database: the workflow loop runs several
+# work copies side by side, and suites sharing one database block on each
+# other's uncommitted rows (seeds_test timed out that way).
 config :metric_flow, MetricFlow.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "metric_flow_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database:
+    "metric_flow_test_#{:erlang.phash2(Path.expand("..", __DIR__))}#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
