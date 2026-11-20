@@ -42,34 +42,40 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto max-w-3xl px-4 py-8" data-role="setup-wizard">
+      <div
+        class="mx-auto max-w-3xl overflow-x-hidden px-4 py-8"
+        data-role="setup-wizard"
+      >
         <div class="mb-8">
-          <h1 class="text-2xl font-bold">Set up your data sources</h1>
-          <p class="mt-1 text-base-content/60">
+          <h1 class="text-2xl font-bold text-base-content">Set up your data sources</h1>
+          <p class="mt-1 text-base-content/70">
             Connect each platform once, pick what to sync, and you're done. You can skip anything and come back later.
           </p>
         </div>
 
-        <ol id="wizard-stepper" class="mb-8 flex items-center gap-2 text-sm">
+        <ol
+          id="wizard-stepper"
+          class="mb-8 flex flex-wrap items-center gap-2 text-sm"
+        >
           <li
             :for={{step, idx} <- Enum.with_index(@steps)}
             id={"wizard-step-#{step}"}
             data-current={to_string(step == @step)}
             data-done={to_string(step_done?(step, @status))}
-            class="flex flex-1 items-center gap-2"
+            class="flex min-w-0 items-center gap-2"
           >
             <.link
               patch={~p"/app/onboarding/connect?step=#{step}"}
               class={[
-                "flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors",
-                step == @step && "bg-primary text-primary-content font-semibold",
-                step != @step && "hover:bg-base-200"
+                "flex items-center gap-2 rounded-box px-3 py-1.5 transition-colors",
+                step == @step && "bg-primary font-semibold text-primary-content",
+                step != @step && "hover:bg-base-300"
               ]}
             >
               <span class={[
-                "flex size-6 items-center justify-center rounded-full text-xs",
+                "flex size-6 shrink-0 items-center justify-center rounded-full text-xs",
                 step_done?(step, @status) && "bg-success text-success-content",
-                !step_done?(step, @status) && step != @step && "bg-base-200",
+                !step_done?(step, @status) && step != @step && "bg-base-300",
                 !step_done?(step, @status) && step == @step && "bg-primary-content/20"
               ]}>
                 <%= if step_done?(step, @status) do %>
@@ -80,7 +86,11 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
               </span>
               <span class={[step != @step && "hidden sm:inline"]}>{step_label(step)}</span>
             </.link>
-            <span :if={step != :done} class="h-px flex-1 bg-base-content/15"></span>
+            <span
+              :if={step != :done}
+              class="hidden h-px w-6 bg-neutral sm:inline-block sm:flex-1"
+            >
+            </span>
           </li>
         </ol>
 
@@ -96,32 +106,35 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
 
   defp render_connection(assigns) do
     ~H"""
-    <section id={"connection-#{@current.key}"} class="mf-card p-6">
+    <section
+      id={"connection-#{@current.key}"}
+      class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+    >
       <div class="mb-6">
-        <h2 class="text-xl font-semibold">{connection_title(@current)}</h2>
-        <p class="mt-1 text-sm text-base-content/60">{@current.description}</p>
+        <h2 class="text-xl font-semibold text-base-content">{connection_title(@current)}</h2>
+        <p class="mt-1 text-sm text-base-content/70">{@current.description}</p>
       </div>
 
       <%= if @current.state == :not_connected do %>
         <div id={"not-connected-#{@current.key}"}>
-          <p class="mb-3 text-sm font-medium">What you'll get</p>
+          <p class="mb-3 text-sm font-semibold text-base-content">What you'll get</p>
           <ul class="mb-6 space-y-3">
             <li :for={product <- @current.products} class="flex gap-3">
               <.icon name="hero-chart-bar" class="mt-0.5 size-5 shrink-0 text-primary" />
-              <div>
-                <p class="font-medium">{product.name}</p>
-                <p class="text-sm text-base-content/60">{product.gives}</p>
+              <div class="min-w-0">
+                <p class="font-medium text-base-content break-words">{product.name}</p>
+                <p class="text-sm text-base-content/70 break-words">{product.gives}</p>
               </div>
             </li>
           </ul>
 
-          <p :if={@current.key == :google} class="mb-4 text-sm text-base-content/60">
+          <p :if={@current.key == :google} class="mb-4 text-sm text-base-content/70">
             Google will ask you to tick each product — leave them all ticked to set everything up at once.
           </p>
-          <p :if={@current.key == :youtube} class="mb-4 text-sm text-base-content/60">
+          <p :if={@current.key == :youtube} class="mb-4 text-sm text-base-content/70">
             You'll pick which channels to sync right after signing in with Google.
           </p>
-          <p :if={@current.key == :quickbooks} class="mb-4 text-sm text-base-content/60">
+          <p :if={@current.key == :quickbooks} class="mb-4 text-sm text-base-content/70">
             You'll pick your company on Intuit's screen. You need to be a QuickBooks admin.
           </p>
 
@@ -129,7 +142,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
             :if={@can_modify}
             id={"connect-#{@current.key}"}
             href={Onboarding.connect_path(@current.key, return_path(@current.key))}
-            class="btn btn-primary btn-lg w-full sm:w-auto"
+            class="btn-brand-gradient inline-flex w-full items-center justify-center rounded-box px-4 py-2 text-center sm:w-auto"
           >
             Connect {@current.name}
           </a>
@@ -149,7 +162,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
         </div>
       <% end %>
 
-      <div class="mt-8 flex items-center justify-between border-t border-base-content/10 pt-6">
+      <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-neutral pt-6">
         <.link
           :if={prev_step(@step)}
           patch={~p"/app/onboarding/connect?step=#{prev_step(@step)}"}
@@ -161,11 +174,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
         <.link
           id="wizard-continue"
           patch={~p"/app/onboarding/connect?step=#{next_step(@step)}"}
-          class={[
-            "btn",
-            any_product_ready?(@current) && "btn-primary",
-            !any_product_ready?(@current) && "btn-ghost"
-          ]}
+          class="btn btn-ghost btn-sm"
         >
           {if any_product_ready?(@current), do: "Continue", else: "Skip for now"}
         </.link>
@@ -184,13 +193,13 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
     <div
       id={"product-#{@product.key}"}
       data-status={@product.status}
-      class="rounded-lg border border-base-content/10 p-4"
+      class="rounded-box border border-neutral p-4"
     >
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="font-medium">{@product.name}</p>
-          <p class="text-sm text-base-content/60">{@product.gives}</p>
-          <p :if={@product.connected_as} class="mt-1 text-xs text-base-content/50">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <p class="font-medium text-base-content break-words">{@product.name}</p>
+          <p class="text-sm text-base-content/70 break-words">{@product.gives}</p>
+          <p :if={@product.connected_as} class="mt-1 text-xs text-base-content/60 break-all">
             Connected as {@product.connected_as}
           </p>
         </div>
@@ -199,8 +208,8 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
 
       <%= case @product.status do %>
         <% :not_granted -> %>
-          <div class="mt-3 flex items-center justify-between gap-4 text-sm">
-            <span class="text-base-content/60">
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+            <span class="min-w-0 flex-1 text-base-content/70">
               Access not granted — this box was unticked on Google's screen.
             </span>
             <a
@@ -213,8 +222,8 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
             </a>
           </div>
         <% :reconnect -> %>
-          <div class="mt-3 flex items-center justify-between gap-4 text-sm">
-            <span class="text-warning">The connection expired.</span>
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+            <span class="min-w-0 flex-1 text-warning">The connection expired.</span>
             <a
               :if={@can_modify}
               id={"reconnect-#{@product.key}"}
@@ -255,12 +264,17 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
       <%= case @picker.state do %>
         <% :loading -> %>
           <div id={"options-loading-#{@product.key}"} class="space-y-2" aria-busy="true">
-            <div class="h-9 animate-pulse rounded bg-base-200"></div>
-            <div class="h-9 animate-pulse rounded bg-base-200"></div>
+            <div class="h-9 animate-pulse rounded-box bg-base-300"></div>
+            <div class="h-9 animate-pulse rounded-box bg-base-300"></div>
           </div>
         <% :error -> %>
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <p id={"options-error-#{@product.key}"} class="text-sm text-error">{@picker.error}</p>
+            <p
+              id={"options-error-#{@product.key}"}
+              class="min-w-0 flex-1 text-sm text-error break-words"
+            >
+              {@picker.error}
+            </p>
             <a
               :if={@picker.reconnect? and @can_modify}
               id={"reconnect-#{@product.key}"}
@@ -274,14 +288,14 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
           <p
             :if={@product.key == :youtube}
             id={"options-empty-#{@product.key}"}
-            class="text-sm text-base-content/60"
+            class="text-sm text-base-content/70"
           >
             No channel on this Google account.
           </p>
           <p
             :if={@product.key != :youtube}
             id={"options-empty-#{@product.key}"}
-            class="text-sm text-base-content/60"
+            class="text-sm text-base-content/70 break-words"
           >
             No {plural(@product.noun)} found{if @product.connected_as,
               do: " for #{@product.connected_as}"}.
@@ -319,7 +333,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
               <label
                 :for={option <- @picker.options}
                 class={[
-                  "flex cursor-pointer items-center gap-3 rounded px-2 py-1.5 hover:bg-base-200",
+                  "flex cursor-pointer items-center gap-3 rounded-box px-2 py-1.5 hover:bg-base-300",
                   !matches?(option, @picker.query) && "hidden"
                 ]}
               >
@@ -330,12 +344,20 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
                   checked={MapSet.member?(@picker.selected, to_string(option.id))}
                   class={if @multi?, do: "checkbox checkbox-sm", else: "radio radio-sm"}
                 />
-                <span class="text-sm">{option.name}</span>
-                <span class="ml-auto truncate text-xs text-base-content/40">{option.id}</span>
+                <span class="min-w-0 flex-1 text-sm text-base-content break-words">
+                  {option.name}
+                </span>
+                <span class="ml-auto shrink-0 truncate text-xs text-base-content/60">
+                  {option.id}
+                </span>
               </label>
             </div>
-            <p :if={@picker.error} class="mt-2 text-sm text-error">{@picker.error}</p>
-            <p :if={@picker.note} id={"synced-note-#{@product.key}"} class="mt-2 text-sm text-success">
+            <p :if={@picker.error} class="mt-2 text-sm text-error break-words">{@picker.error}</p>
+            <p
+              :if={@picker.note}
+              id={"synced-note-#{@product.key}"}
+              class="mt-2 text-sm text-success break-words"
+            >
               {@picker.note}
             </p>
             <div class="mt-3 flex justify-end">
@@ -343,7 +365,7 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
                 id={"save-selection-#{@product.key}"}
                 type="submit"
                 disabled={!@can_modify or MapSet.size(@picker.selected) == 0}
-                class="btn btn-primary btn-sm"
+                class="btn btn-primary btn-sm rounded-box"
               >
                 {if @product.status == :ready, do: "Update", else: "Save & sync"}
               </button>
@@ -377,13 +399,16 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
 
   defp render_done(assigns) do
     ~H"""
-    <section id="wizard-done" class="mf-card p-6">
-      <h2 class="text-xl font-semibold">
+    <section
+      id="wizard-done"
+      class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+    >
+      <h2 class="text-xl font-semibold text-base-content">
         {if Enum.any?(@status, &any_product_ready?/1),
           do: "You're all set",
           else: "Nothing connected yet"}
       </h2>
-      <p class="mt-1 text-sm text-base-content/60">
+      <p class="mt-1 text-sm text-base-content/70">
         {if Enum.any?(@status, &any_product_ready?/1),
           do: "Your data is syncing. Dashboards fill in as it arrives.",
           else: "Connect at least one data source to see your metrics."}
@@ -393,11 +418,11 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
         <li
           :for={conn <- @status}
           id={"done-summary-#{conn.key}"}
-          class="flex items-start justify-between gap-4 rounded-lg border border-base-content/10 p-4"
+          class="flex flex-wrap items-start justify-between gap-3 rounded-box border border-neutral p-4"
         >
-          <div>
-            <p class="font-medium">{conn.name}</p>
-            <p class="text-sm text-base-content/60">
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-base-content break-words">{conn.name}</p>
+            <p class="text-sm text-base-content/70 break-words">
               <%= case ready_products(conn) do %>
                 <% [] -> %>
                   Not set up
@@ -409,23 +434,31 @@ defmodule MetricFlowWeb.OnboardingLive.Connect do
           <.link
             :if={ready_products(conn) == []}
             patch={~p"/app/onboarding/connect?step=#{conn.key}"}
-            class="btn btn-ghost btn-xs"
+            class="btn btn-ghost btn-xs shrink-0"
           >
             Set up
           </.link>
           <.icon
             :if={ready_products(conn) != []}
             name="hero-check-circle"
-            class="size-6 text-success"
+            class="size-6 shrink-0 text-success"
           />
         </li>
       </ul>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <.link id="open-dashboard" navigate={~p"/app/dashboard"} class="btn btn-primary">
+        <.link
+          id="open-dashboard"
+          navigate={~p"/app/dashboard"}
+          class="btn-brand-gradient inline-flex w-full items-center justify-center rounded-box px-4 py-2 text-center sm:w-auto"
+        >
           Open your dashboard
         </.link>
-        <.link id="manage-connections" navigate={~p"/app/integrations"} class="btn btn-ghost">
+        <.link
+          id="manage-connections"
+          navigate={~p"/app/integrations"}
+          class="btn btn-ghost w-full sm:w-auto"
+        >
           Manage connections
         </.link>
       </div>

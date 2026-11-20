@@ -150,6 +150,18 @@ defmodule MetricFlowWeb.OnboardingLive.ConnectTest do
       assert has_element?(view, "#options-error-google_analytics", "isn't enabled")
     end
 
+    test "a step with a ready product keeps Continue as secondary navigation",
+         %{conn: conn, user: user} do
+      integration_fixture(user, provider: :google_analytics)
+      stub_options(fn _scope, _product -> {:ok, [%{id: "GA4-67890", name: "Main site"}]} end)
+
+      {:ok, view, _html} = live(conn, ~p"/app/onboarding/connect?step=google")
+
+      # DESIGN.md: each step has exactly one primary action. Continue is
+      # step-level navigation; the picker's save button is the primary.
+      refute has_element?(view, "#wizard-continue.btn-primary")
+    end
+
     test "a sign-in the provider rejects asks to reconnect, not about roles", %{
       conn: conn,
       user: user
