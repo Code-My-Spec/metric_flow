@@ -1,15 +1,27 @@
 defmodule MetricFlowWeb.UserLive.Login do
   use MetricFlowWeb, :live_view
 
+  alias MetricFlow.Users
+
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto flex min-h-[70vh] max-w-md items-center px-4 py-10">
-        <div class="w-full rounded-2xl border border-base-300 bg-base-100 p-6 shadow-xl sm:p-9">
-          <div class="mb-8 text-center">
-            <h1 class="text-3xl font-semibold tracking-tight">Log in</h1>
-            <p class="mt-2 text-sm text-base-content/65">
+    <Layouts.content
+      flash={@flash}
+      current_scope={@current_scope}
+      active_account_name={assigns[:active_account_name]}
+    >
+      <div class="mx-auto flex w-full max-w-md flex-col items-center gap-6 px-1 py-4 sm:py-8">
+        <div class="flex flex-col items-center gap-3">
+          <img
+            src="/images/anderson-bi-logo.png"
+            alt="Anderson BI"
+            data-role="default-logo"
+            class="h-10 w-auto"
+          />
+          <div class="text-center">
+            <h1 class="text-2xl font-semibold text-base-content">Log in</h1>
+            <p class="mt-2 text-sm text-base-content/70">
               <%= if @current_scope do %>
                 You need to reauthenticate to perform sensitive actions on your account.
               <% else %>
@@ -17,22 +29,26 @@ defmodule MetricFlowWeb.UserLive.Login do
               <% end %>
             </p>
           </div>
+        </div>
+
+        <div class="w-full rounded-box border border-neutral bg-base-200 p-5 sm:p-6">
           <div
             :if={local_mail_adapter?()}
-            class="mb-6 rounded-lg border border-info/30 bg-info/10 p-3 text-sm"
+            class="mb-5 rounded-box border border-neutral bg-base-100 p-3 text-sm text-base-content/80"
           >
             You are running the local mail adapter. <.link
               href="/dev/mailbox"
-              class="font-medium underline"
+              class="font-medium text-primary underline"
             >View sent emails</.link>.
           </div>
+
           <.link
             href={~p"/auth/google/login"}
             id="google-login"
             data-login-method="google"
-            class="btn btn-outline w-full gap-3 mb-5"
+            class="flex w-full items-center justify-center gap-3 rounded-box border border-neutral bg-base-100 px-4 py-2 text-sm text-base-content hover:bg-base-300"
           >
-            <svg class="size-5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="size-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -50,18 +66,32 @@ defmodule MetricFlowWeb.UserLive.Login do
                 fill="#EA4335"
               />
             </svg>
-            <span>Continue with Google</span>
+            <span class="min-w-0 break-words">Continue with Google</span>
           </.link>
-          <div class="divider text-xs text-base-content/50">or</div>
+
+          <div class="my-6 flex items-center gap-3" aria-hidden="true">
+            <span class="h-px flex-1 bg-neutral"></span>
+            <span class="text-xs uppercase tracking-wider text-base-content/60">
+              or sign in with your email
+            </span>
+            <span class="h-px flex-1 bg-neutral"></span>
+          </div>
+
           <.form
             for={@form}
             id="login_form_password"
             action={~p"/users/log-in"}
+            phx-change="validate_login"
             phx-submit="submit_password"
             phx-trigger-action={@trigger_submit}
-            class="space-y-5"
+            class="space-y-4"
           >
-            <input :if={!@current_scope} type="hidden" name={@form[:remember_me].name} value="true" />
+            <input
+              :if={!@current_scope}
+              type="hidden"
+              name={@form[:remember_me].name}
+              value="true"
+            />
             <.input
               id="password_email"
               readonly={!!@current_scope}
@@ -77,25 +107,40 @@ defmodule MetricFlowWeb.UserLive.Login do
               type="password"
               label="Password"
               autocomplete="current-password"
-              required
             />
-            <div class="text-right">
+            <div class="flex justify-end">
               <.link
                 navigate={~p"/users/forgot-password"}
                 id="forgot-password-link"
-                class="text-sm font-medium text-primary transition hover:underline"
+                class="text-sm font-medium text-primary hover:underline"
               >
                 Forgot password?
               </.link>
             </div>
             <.button
-              class="btn btn-primary w-full transition hover:-translate-y-0.5"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
               phx-disable-with="Logging in..."
             >
-              Log in
+              Log in with password
             </.button>
+            <div class="pt-1">
+              <p class="mb-2 text-center text-xs text-base-content/70">
+                No password? We'll email you a one-time sign-in link.
+              </p>
+              <button
+                id="email-sign-in-link"
+                type="button"
+                phx-click="submit_magic"
+                phx-disable-with="Sending link..."
+                data-login-method="magic-link"
+                class="w-full rounded-box border border-neutral bg-base-100 px-4 py-2 text-sm font-semibold text-base-content hover:bg-base-300"
+              >
+                Email me a sign-in link
+              </button>
+            </div>
           </.form>
-          <p :if={!@current_scope} class="mt-8 text-center text-sm text-base-content/70">
+
+          <p :if={!@current_scope} class="mt-6 text-center text-sm text-base-content/70">
             New to Anderson BI?
             <.link
               navigate={~p"/users/register"}
@@ -107,7 +152,7 @@ defmodule MetricFlowWeb.UserLive.Login do
           </p>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.content>
     """
   end
 
@@ -117,12 +162,36 @@ defmodule MetricFlowWeb.UserLive.Login do
       Phoenix.Flash.get(socket.assigns.flash, :email) ||
         get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
 
-    {:ok, assign(socket, form: to_form(%{"email" => email}, as: "user"), trigger_submit: false)}
+    {:ok,
+     socket
+     |> assign(:form, to_form(%{"email" => email}, as: "user"))
+     |> assign(:current_email, email)
+     |> assign(:trigger_submit, false)}
   end
 
   @impl true
+  def handle_event("validate_login", %{"user" => %{"email" => email} = params}, socket) do
+    {:noreply,
+     socket
+     |> assign(:form, to_form(params, as: "user"))
+     |> assign(:current_email, email)}
+  end
+
   def handle_event("submit_password", _params, socket) do
     {:noreply, assign(socket, :trigger_submit, true)}
+  end
+
+  def handle_event("submit_magic", _params, socket) do
+    email = socket.assigns[:current_email] || ""
+
+    if user = email != "" && Users.get_user_by_email(email) do
+      Users.deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}"))
+    end
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "If that email has an account, a sign-in link is on its way.")
+     |> push_navigate(to: ~p"/users/log-in")}
   end
 
   defp local_mail_adapter? do
