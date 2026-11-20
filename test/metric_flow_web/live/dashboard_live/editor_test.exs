@@ -16,6 +16,17 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
   # Fixtures
   # ---------------------------------------------------------------------------
 
+  defp render_until(lv, text, tries \\ 40) do
+    html = render(lv)
+
+    if html =~ text or tries == 0 do
+      html
+    else
+      Process.sleep(50)
+      render_until(lv, text, tries - 1)
+    end
+  end
+
   defp dashboard_fixture(user, attrs \\ %{}) do
     defaults = %{
       name: "My Test Dashboard #{System.unique_integer([:positive])}",
@@ -247,8 +258,8 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
           "message" => "Show me impressions over time as a line chart"
         })
 
-        Process.sleep(100)
-        html = render(lv)
+        # The agent replies from a task; wait for it rather than a fixed sleep.
+        html = render_until(lv, "I&#39;ll create a line chart showing impressions over time.")
 
         Application.delete_env(:metric_flow, :command_runner)
 
