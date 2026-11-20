@@ -239,4 +239,39 @@ defmodule MetricFlowWeb.AccountLive.IndexTest do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} = live(conn, ~p"/app/accounts")
     end
   end
+
+  describe "renders each account as an Anderson BI card" do
+    test "account cards use rounded-box + border + bg-base-200 tokens and switch is the brand-gradient primary",
+         %{conn: conn} do
+      user = user_fixture()
+      _first = team_account_fixture(user, %{name: "Alpha Team"})
+      _second = team_account_fixture(user, %{name: "Beta Team"})
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts")
+
+      cards = Regex.scan(~r/<[^>]+data-role="account-card"[^>]*>/, html) |> List.flatten()
+
+      assert cards != [], "expected at least one data-role=account-card element"
+
+      for card <- cards do
+        assert card =~ "rounded-box",
+               "expected account card to use the Anderson BI rounded-box token, got: #{card}"
+
+        assert card =~ "bg-base-200",
+               "expected account card to use the Anderson BI bg-base-200 token, got: #{card}"
+
+        assert card =~ ~r/border(\s|-)/,
+               "expected account card to carry a theme border, got: #{card}"
+      end
+
+      switches =
+        Regex.scan(~r/<button[^>]+data-role="switch-account"[^>]*>/, html) |> List.flatten()
+
+      refute switches == [], "expected at least one switch-account button"
+
+      assert Enum.any?(switches, &(&1 =~ "btn-brand-gradient")),
+             "expected at least one inactive switch-account button to use btn-brand-gradient, got: #{inspect(switches)}"
+    end
+  end
 end

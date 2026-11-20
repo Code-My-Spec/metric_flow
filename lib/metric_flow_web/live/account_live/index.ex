@@ -30,99 +30,131 @@ defmodule MetricFlowWeb.AccountLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>Your Accounts</.header>
+      <div class="mx-auto max-w-3xl space-y-6 overflow-x-hidden">
+        <header class="space-y-1">
+          <h1 class="text-2xl font-semibold text-base-content break-words">Your Accounts</h1>
+          <p class="text-sm text-base-content/70 break-words">
+            Pick an account to work in. The active one drives every other page.
+          </p>
+        </header>
 
-        <div class="mt-8 space-y-4">
-          <div :if={@accounts == []} class="text-base-content/60 text-sm">
-            No accounts found.
-          </div>
+        <section id="accounts" class="space-y-4">
           <div
+            :if={@accounts == []}
+            class="rounded-box border border-neutral bg-base-200 p-6 text-center space-y-2"
+          >
+            <h2 class="text-lg font-semibold text-base-content">No accounts found.</h2>
+            <p class="text-sm text-base-content/70">
+              You aren't a member of any account yet. Create a team below to get started.
+            </p>
+          </div>
+
+          <article
             :for={account <- @accounts}
             data-role="account-card"
             data-account-id={account.id}
             data-active={to_string(account.id == @active_account_id)}
-            class="card bg-base-200 p-6"
+            class={[
+              "rounded-box border bg-base-200 p-4 sm:p-6 space-y-4",
+              if(account.id == @active_account_id,
+                do: "border-primary",
+                else: "border-neutral"
+              )
+            ]}
           >
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold">{account.name}</h3>
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <span class={account_type_badge_class(account)}>
+            <div class="min-w-0 space-y-2">
+              <h2 class="text-lg font-semibold text-base-content break-words">
+                {account.name}
+              </h2>
+              <dl class="flex flex-wrap gap-2 text-xs">
+                <div class="flex items-center gap-1">
+                  <dt class="sr-only">Type</dt>
+                  <dd class={account_type_badge_class(account)}>
                     {account_type_label(account)}
-                  </span>
-                  <span class="badge badge-ghost">
-                    {to_string(Map.get(@account_roles, account.id, :member))}
-                  </span>
-                  <%= if grant = Map.get(@agency_grants, account.id) do %>
-                    <span class="badge badge-accent">
-                      {access_level_label(grant.access_level)}
-                    </span>
-                    <span class="badge badge-info">
-                      {origination_status_label(grant.origination_status)}
-                    </span>
-                  <% end %>
+                  </dd>
                 </div>
-              </div>
-              <div class="ml-4 flex-shrink-0">
-                <button
-                  data-role="switch-account"
-                  phx-click="switch_account"
-                  phx-value-account_id={account.id}
-                  disabled={account.id == @active_account_id}
-                  class={
-                    if account.id == @active_account_id,
-                      do: "btn btn-sm btn-ghost",
-                      else: "btn btn-sm btn-primary"
-                  }
-                >
-                  {if account.id == @active_account_id,
-                    do: "#{account.name} (Active)",
-                    else: "Switch to #{account.name}"}
-                </button>
-              </div>
+                <div class="flex items-center gap-1">
+                  <dt class="text-base-content/60">Role</dt>
+                  <dd class="rounded-box border border-neutral bg-base-100 px-2 py-0.5 font-semibold text-base-content/80">
+                    {to_string(Map.get(@account_roles, account.id, :member))}
+                  </dd>
+                </div>
+                <%= if grant = Map.get(@agency_grants, account.id) do %>
+                  <div class="flex items-center gap-1">
+                    <dt class="text-base-content/60">Access</dt>
+                    <dd class="rounded-box border border-accent bg-base-100 px-2 py-0.5 font-semibold text-accent">
+                      {access_level_label(grant.access_level)}
+                    </dd>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <dt class="sr-only">Origination</dt>
+                    <dd class="rounded-box border border-neutral bg-base-100 px-2 py-0.5 text-base-content/70">
+                      {origination_status_label(grant.origination_status)}
+                    </dd>
+                  </div>
+                <% end %>
+              </dl>
             </div>
-          </div>
-        </div>
 
-        <div class="mt-8">
-          <h2 class="text-base font-semibold mb-4">Create Team Account</h2>
+            <button
+              data-role="switch-account"
+              phx-click="switch_account"
+              phx-value-account_id={account.id}
+              disabled={account.id == @active_account_id}
+              class={
+                if account.id == @active_account_id,
+                  do:
+                    "w-full rounded-box border border-primary bg-base-100 px-4 py-2 text-sm font-semibold text-primary cursor-default sm:w-auto",
+                  else:
+                    "btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+              }
+            >
+              {if account.id == @active_account_id,
+                do: "#{account.name} Active",
+                else: "Switch to #{account.name}"}
+            </button>
+          </article>
+        </section>
+
+        <section
+          aria-labelledby="create-team-heading"
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2 id="create-team-heading" class="text-lg font-semibold text-base-content">
+              Create Team Account
+            </h2>
+            <p class="text-sm text-base-content/70">
+              Spin up a new team workspace. You'll be its owner.
+            </p>
+          </header>
           <.form
             for={@team_form}
+            id="team_form"
             phx-submit="create_team"
             phx-change="validate_team"
-            class="space-y-4"
+            class="mt-4 space-y-4"
           >
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Name</span>
-              </label>
-              <.input
-                field={@team_form[:name]}
-                class="input input-bordered w-full"
-                placeholder="My Team"
-              />
-            </div>
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Slug</span>
-              </label>
+            <.input field={@team_form[:name]} label="Name" placeholder="My Team" />
+            <div class="space-y-1">
               <.input
                 field={@team_form[:slug]}
-                class="input input-bordered w-full font-mono"
+                label="Slug"
+                class="input input-bordered w-full font-mono bg-base-100 border-neutral rounded-box"
                 placeholder="my-team"
               />
-              <label class="label">
-                <span class="label-text-alt text-base-content/60">
-                  Lowercase letters, numbers, and hyphens
-                </span>
-              </label>
+              <p class="text-xs text-base-content/60 break-words">
+                Lowercase letters, numbers, and hyphens.
+              </p>
             </div>
-            <div class="flex justify-end">
-              <button type="submit" class="btn btn-primary">Create Team</button>
-            </div>
+            <button
+              type="submit"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+            >
+              Create Team
+            </button>
           </.form>
-        </div>
+        </section>
       </div>
     </Layouts.app>
     """
@@ -294,8 +326,11 @@ defmodule MetricFlowWeb.AccountLive.Index do
     end
   end
 
-  defp account_type_badge_class(%Account{type: :agency}), do: "badge badge-secondary"
-  defp account_type_badge_class(%Account{}), do: "badge badge-primary"
+  defp account_type_badge_class(%Account{type: :agency}),
+    do: "rounded-box border border-secondary bg-base-100 px-2 py-0.5 font-semibold text-secondary"
+
+  defp account_type_badge_class(%Account{}),
+    do: "rounded-box border border-primary bg-base-100 px-2 py-0.5 font-semibold text-primary"
 
   defp account_type_label(%Account{type: :client}), do: "Client"
   defp account_type_label(%Account{type: :agency}), do: "Agency"
