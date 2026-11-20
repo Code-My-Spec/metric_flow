@@ -148,4 +148,41 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboardTest do
       end)
     end
   end
+
+  describe "design pass: key metrics first in Anderson BI tokens" do
+    test "the first metric card appears before the sync-now control and the sync history",
+         %{conn: conn} do
+      user = user_fixture()
+      create_integration(user, :google_analytics)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
+
+        {metric_pos, _} = :binary.match(html, "data-role=\"metric-card\"")
+        {sync_now_pos, _} = :binary.match(html, "data-role=\"sync-now\"")
+        {sync_history_pos, _} = :binary.match(html, "data-role=\"sync-history-section\"")
+
+        assert metric_pos < sync_now_pos,
+               "key metric cards must render before the sync-now control"
+
+        assert metric_pos < sync_history_pos,
+               "key metric cards must render before the sync-history section"
+      end)
+    end
+
+    test "sync-now is a brand gradient button and the pre-pass mf-card class is gone",
+         %{conn: conn} do
+      user = user_fixture()
+      create_integration(user, :google_analytics)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/google_analytics/dashboard")
+
+        assert has_element?(lv, "[data-role='sync-now'].btn-brand-gradient")
+        refute html =~ "mf-card"
+      end)
+    end
+  end
 end

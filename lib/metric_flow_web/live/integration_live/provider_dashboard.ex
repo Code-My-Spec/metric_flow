@@ -54,7 +54,7 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
+      <div class="overflow-x-hidden">
         <%= if @connected do %>
           {render_dashboard(assigns)}
         <% else %>
@@ -67,83 +67,106 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   defp render_dashboard(assigns) do
     ~H"""
-    <div>
-      <div class="mb-6">
-        <div class="flex flex-wrap items-center gap-3 mb-1">
-          <h1 class="text-2xl font-bold">{@provider_name} Dashboard</h1>
+    <div class="space-y-6">
+      <section data-role="key-metrics" aria-labelledby="provider-dashboard-heading" class="space-y-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1
+            id="provider-dashboard-heading"
+            class="min-w-0 break-words text-2xl font-bold text-base-content"
+          >
+            {@provider_name}
+          </h1>
           <span class="badge badge-success">Connected</span>
         </div>
-        <div :if={@connected_email} class="text-base-content/60 text-sm">{@connected_email}</div>
-        <div class="text-base-content/60 text-sm mt-1">
-          <%= if @last_synced_at do %>
-            Last synced: {format_relative_time(@last_synced_at)}
-          <% else %>
-            Never synced
-          <% end %>
-        </div>
-      </div>
 
-      <div class="flex flex-wrap items-center gap-2 mb-6">
-        <form phx-change="change_date_range" class="flex items-center gap-2">
-          <select name="date_range" class="select select-bordered select-sm">
-            <option value="last_7_days" selected={@date_range == "last_7_days"}>Last 7 days</option>
-            <option value="last_30_days" selected={@date_range == "last_30_days"}>
-              Last 30 days
-            </option>
-            <option value="last_90_days" selected={@date_range == "last_90_days"}>
-              Last 90 days
-            </option>
-            <option value="last_12_months" selected={@date_range == "last_12_months"}>
-              Last 12 months
-            </option>
-          </select>
-        </form>
-        <button
-          data-role="sync-now"
-          phx-click="sync_now"
-          class={"btn btn-primary btn-sm #{if @syncing, do: "loading"}"}
-          disabled={@syncing}
-        >
-          <%= if @syncing do %>
-            Syncing...
-          <% else %>
-            Sync Now
-          <% end %>
-        </button>
-        <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          Refresh
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div
-          :for={metric_name <- @metric_names}
-          data-role="metric-card"
-          class="mf-card p-5"
-        >
-          <h3 class="font-semibold mb-2">{humanize_metric(metric_name)}</h3>
-          <div class="text-3xl font-bold mb-3">
-            {format_metric_value(metric_name, current_value(@metrics, metric_name))}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            :for={metric_name <- @metric_names}
+            data-role="metric-card"
+            class="rounded-box border border-neutral bg-base-200 p-5"
+          >
+            <h3 class="mb-2 break-words font-semibold text-base-content">
+              {humanize_metric(metric_name)}
+            </h3>
+            <div class="mb-3 break-words text-3xl font-bold text-base-content">
+              {format_metric_value(metric_name, current_value(@metrics, metric_name))}
+            </div>
+            <div data-role="metric-chart" data-metric={metric_name} class="h-20 w-full">
+              <canvas
+                id={"chart-#{metric_name}"}
+                phx-hook="VegaChart"
+                data-spec={Jason.encode!(build_chart_spec(metric_name, @metrics))}
+                class="w-full h-full"
+              >
+              </canvas>
+            </div>
           </div>
-          <div data-role="metric-chart" data-metric={metric_name} class="h-20 w-full">
-            <canvas
-              id={"chart-#{metric_name}"}
-              phx-hook="VegaChart"
-              data-spec={Jason.encode!(build_chart_spec(metric_name, @metrics))}
-              class="w-full h-full"
+        </div>
+      </section>
+
+      <section class="rounded-box border border-neutral bg-base-200 p-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <form phx-change="change_date_range" class="flex min-w-0 items-center gap-2">
+            <label for="provider-dashboard-date-range" class="sr-only">Date range</label>
+            <select
+              id="provider-dashboard-date-range"
+              name="date_range"
+              class="select select-bordered select-sm rounded-box border-neutral bg-base-100"
             >
-            </canvas>
+              <option value="last_7_days" selected={@date_range == "last_7_days"}>
+                Last 7 days
+              </option>
+              <option value="last_30_days" selected={@date_range == "last_30_days"}>
+                Last 30 days
+              </option>
+              <option value="last_90_days" selected={@date_range == "last_90_days"}>
+                Last 90 days
+              </option>
+              <option value="last_12_months" selected={@date_range == "last_12_months"}>
+                Last 12 months
+              </option>
+            </select>
+          </form>
+          <button
+            data-role="sync-now"
+            phx-click="sync_now"
+            class={[
+              "btn-brand-gradient rounded-box px-4 py-2 text-sm font-semibold",
+              @syncing && "opacity-70"
+            ]}
+            disabled={@syncing}
+          >
+            <%= if @syncing do %>
+              Syncing...
+            <% else %>
+              Sync Now
+            <% end %>
+          </button>
+          <button
+            phx-click="refresh"
+            class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-sm text-base-content hover:bg-base-300"
+          >
+            Refresh
+          </button>
+          <div class="min-w-0 flex-1 text-xs text-base-content/70 sm:text-right">
+            <span :if={@connected_email} class="break-all">{@connected_email}</span>
+            <span :if={@connected_email} aria-hidden="true">·</span>
+            <%= if @last_synced_at do %>
+              last synced {format_relative_time(@last_synced_at)}
+            <% else %>
+              never synced
+            <% end %>
           </div>
         </div>
-      </div>
+      </section>
 
       <%= if @provider == "google_business" do %>
-        <div class="mf-card p-5 mb-6">
-          <h2 class="text-lg font-semibold mb-4">Daily Metrics by Location</h2>
+        <div class="rounded-box border border-neutral bg-base-200 p-5">
+          <h2 class="mb-4 text-lg font-semibold text-base-content">Daily Metrics by Location</h2>
           <div id="daily-location-metrics" phx-update="stream" class="space-y-2">
             <p
               id="daily-location-metrics-empty"
-              class="hidden only:block text-base-content/60 text-sm"
+              class="hidden only:block text-sm text-base-content/70"
             >
               No daily location data for this period yet.
             </p>
@@ -154,91 +177,102 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
               data-location-id={row.location_id}
               data-metric={row.metric_name}
               data-date={row.date}
-              class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-base-200 px-3 py-2 text-sm"
+              class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-neutral bg-base-100 px-3 py-2 text-sm"
             >
-              <span class="text-base-content/70">
+              <span class="min-w-0 break-words text-base-content/80">
                 {row.location_id} | {humanize_metric(row.metric_name)} | {row.date}
               </span>
-              <strong>{row.value}</strong>
+              <strong class="text-base-content">{row.value}</strong>
             </div>
           </div>
         </div>
 
-        <div data-role="reviews-section" class="mf-card p-5 mb-6">
-          <h2 class="text-lg font-semibold mb-4">Recent Reviews</h2>
-          <div :if={@reviews == []} class="text-base-content/60 text-sm">
+        <div data-role="reviews-section" class="rounded-box border border-neutral bg-base-200 p-5">
+          <h2 class="mb-4 text-lg font-semibold text-base-content">Recent Reviews</h2>
+          <div :if={@reviews == []} class="text-sm text-base-content/70">
             No reviews available.
           </div>
           <div
             :for={review <- @reviews}
             data-role="review-item"
-            class="border-b border-base-200 py-3 last:border-0"
+            class="border-b border-neutral py-3 last:border-0"
           >
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-medium">{Map.get(review, :reviewer_name, "Anonymous")}</span>
+            <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+              <span class="min-w-0 break-words font-medium text-base-content">
+                {Map.get(review, :reviewer_name, "Anonymous")}
+              </span>
               <span class="badge badge-ghost text-xs">{Map.get(review, :rating, 0)} ★</span>
             </div>
-            <div class="text-base-content/50 text-xs mb-1">
+            <div class="mb-1 text-xs text-base-content/60">
               {format_date(Map.get(review, :recorded_at))}
             </div>
-            <div class="text-sm line-clamp-2">{Map.get(review, :comment, "")}</div>
+            <div class="line-clamp-2 break-words text-sm text-base-content/80">
+              {Map.get(review, :comment, "")}
+            </div>
           </div>
         </div>
 
-        <div data-role="rolling-review-metrics-section" class="mf-card p-5 mb-6">
-          <h2 class="text-lg font-semibold mb-4">Review Metrics</h2>
+        <div
+          data-role="rolling-review-metrics-section"
+          class="rounded-box border border-neutral bg-base-200 p-5"
+        >
+          <h2 class="mb-4 text-lg font-semibold text-base-content">Review Metrics</h2>
           <div
             :if={@rolling_review_rows == []}
             data-role="no-review-data"
-            class="text-base-content/60 text-sm"
+            class="text-sm text-base-content/70"
           >
             No review data for this period yet.
           </div>
-          <table :if={@rolling_review_rows != []} class="table table-sm w-full">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Reviews</th>
-                <th>Total</th>
-                <th>Avg Rating</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                :for={row <- @rolling_review_rows}
-                data-role="rolling-review-metric-row"
-                data-date={row.date}
-              >
-                <td>{row.date}</td>
-                <td data-role="daily-review-count">{row.daily_count}</td>
-                <td data-role="running-review-total">{row.running_total}</td>
-                <td data-role="rolling-review-average-rating">
-                  {format_rolling_rating(row.average_rating)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div :if={@rolling_review_rows != []} class="overflow-x-auto">
+            <table class="table table-sm w-full">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Reviews</th>
+                  <th>Total</th>
+                  <th>Avg Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  :for={row <- @rolling_review_rows}
+                  data-role="rolling-review-metric-row"
+                  data-date={row.date}
+                >
+                  <td>{row.date}</td>
+                  <td data-role="daily-review-count">{row.daily_count}</td>
+                  <td data-role="running-review-total">{row.running_total}</td>
+                  <td data-role="rolling-review-average-rating">
+                    {format_rolling_rating(row.average_rating)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       <% end %>
 
-      <div data-role="sync-history-section" class="mf-card p-5">
-        <h2 class="text-lg font-semibold mb-4">Recent Syncs</h2>
-        <div :if={@sync_history == []} class="text-base-content/60 text-sm">
+      <div data-role="sync-history-section" class="rounded-box border border-neutral bg-base-200 p-5">
+        <h2 class="mb-4 text-lg font-semibold text-base-content">Recent Syncs</h2>
+        <div :if={@sync_history == []} class="text-sm text-base-content/70">
           No sync history yet.
         </div>
         <div
           :for={entry <- @sync_history}
           data-role="sync-history-row"
-          class="flex items-center gap-3 py-2 border-b border-base-200 last:border-0"
+          class="flex flex-wrap items-center gap-3 border-b border-neutral py-2 last:border-0"
         >
-          <div class="flex-1">
-            <div class="text-sm">{format_datetime(entry.completed_at)}</div>
+          <div class="min-w-0 flex-1">
+            <div class="break-words text-sm text-base-content">
+              {format_datetime(entry.completed_at)}
+            </div>
           </div>
           <span class={"badge #{status_badge_class(entry.status)}"}>
             {humanize_status(entry.status)}
           </span>
-          <div class="text-sm text-base-content/60">{entry.records_synced} records</div>
-          <div class="text-sm text-base-content/60">{format_duration(entry)} s</div>
+          <div class="text-sm text-base-content/70">{entry.records_synced} records</div>
+          <div class="text-sm text-base-content/70">{format_duration(entry)} s</div>
         </div>
       </div>
     </div>
@@ -247,14 +281,19 @@ defmodule MetricFlowWeb.IntegrationLive.ProviderDashboard do
 
   defp render_empty_state(assigns) do
     ~H"""
-    <div data-role="empty-state" class="flex flex-col items-center justify-center py-20 text-center">
-      <h2 class="text-xl font-semibold mb-2">Not connected</h2>
-      <p class="text-base-content/60 mb-6">
+    <div
+      data-role="empty-state"
+      class="rounded-box border border-neutral bg-base-200 p-6 text-center"
+    >
+      <h1 class="mb-2 break-words text-xl font-semibold text-base-content">
+        {@provider_name}
+      </h1>
+      <p class="mb-6 break-words text-sm text-base-content/70">
         Connect your {@provider_name} account to start seeing data here.
       </p>
       <.link
         navigate={"/app/integrations/connect/#{@provider}"}
-        class="btn btn-primary"
+        class="btn-brand-gradient inline-block w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
       >
         Connect {@provider_name}
       </.link>
