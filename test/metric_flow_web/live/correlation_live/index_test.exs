@@ -125,6 +125,23 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
     end
   end
 
+  describe "labels results as correlation, not causation" do
+    test "shows a correlation-not-causation notice", %{conn: conn} do
+      {user, _account} = user_with_personal_account()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/correlations")
+
+        assert has_element?(lv, "[data-role='correlation-notice']"),
+               "Expected a [data-role='correlation-notice'] element"
+
+        assert html =~ "correlations, not causation",
+               ~s(Expected the page to label results as "correlations, not causation")
+      end)
+    end
+  end
+
   describe "displays raw mode results table with metric, coefficient, lag, and platform columns" do
     test "displays raw mode results table with metric, coefficient, lag, and platform columns", %{
       conn: conn
