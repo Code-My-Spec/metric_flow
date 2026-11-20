@@ -1,0 +1,25 @@
+id: "confirmation-design-pass"
+kind: "issue"
+title: The confirmation page doesn't follow the Anderson BI design
+text: |-
+  Fault: the account confirmation page (lib/metric_flow_web/live/user_live/confirmation.ex) doesn't follow the Anderson BI design that design-system-2 set up.
+
+  Do a design pass on that page file. Follow the "Design pass" section of DESIGN.md: every step, before and after screenshots at 390px and 1440px on the seeded data (priv/repo/seeds.exs) in the evidence folder, and the trailer Design-Pass: lib/metric_flow_web/live/user_live/confirmation.ex. Take the screenshots logged out, using a valid confirmation token.
+
+  Who it is for: the referred client of an agency. Read .code_my_spec/personas/agency-client-referred-customer/summary.md first.
+
+  What the page must do:
+  - Render in Layouts.content, the public layout, in the same centred card style as the login, registration, forgot-password and reset-password pages (dark theme, with the logo).
+
+  Rules: keep every id and data-* attribute. Grep test/ (including test/spex/) for any you touch, and run those files. Change only this page, plus a shared component if a pattern repeats. Nothing scrolls sideways at 390px. Use only theme tokens: no hard-coded colours or radii.
+
+  Evidence: Before your last commit, run ls on the evidence folder and confirm the four PNGs exist (before-390, before-1440, after-390, after-1440), git add them, and list them in the evidence README. The review fails without them.
+
+  How it will be checked:
+  - The full suite and mix spex pass.
+  - The confirmation page renders in Layouts.content as a centred card on the dark theme with the logo, matching the login card style.
+  - Confirming an account with a valid token still works.
+  - Nothing scrolls sideways at 390px.
+  - The evidence folder holds the four committed PNGs (before-390, before-1440, after-390, after-1440), listed in its README.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/user_live/confirmation.ex.
+criteria: []
