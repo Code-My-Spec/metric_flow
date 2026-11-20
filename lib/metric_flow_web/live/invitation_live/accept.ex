@@ -24,40 +24,49 @@ defmodule MetricFlowWeb.InvitationLive.Accept do
       current_scope={@current_scope}
       active_account_name={assigns[:active_account_name]}
     >
-      <div class="mf-content flex items-center justify-center min-h-[80vh]">
-        <div class="mf-card p-8 w-full max-w-md">
-          <div class="flex flex-col items-center">
-            <div class="avatar placeholder mb-4">
-              <div class="bg-primary text-primary-content rounded-full w-14 h-14">
-                <span class="text-xl font-bold">
+      <div class="mx-auto w-full max-w-md overflow-x-hidden">
+        <section
+          aria-labelledby="invitation-heading"
+          class="rounded-box border border-neutral bg-base-200 p-6 sm:p-8"
+        >
+          <div class="flex items-start gap-4">
+            <div class="avatar placeholder shrink-0">
+              <div class="h-12 w-12 rounded-full bg-primary text-primary-content">
+                <span class="text-lg font-semibold">
                   {String.upcase(String.first(@invitation.account.name))}
                 </span>
               </div>
             </div>
-
-            <h2 class="text-xl font-semibold text-center">You've been invited</h2>
-
-            <p class="text-sm text-base-content/70 text-center mt-2">
-              <strong>{@invitation.invited_by.email}</strong>
-              {" has invited you to join "}
-              <strong>{@invitation.account.name}</strong>
-              {" as a "}
-              <strong>{role_label(@invitation.role)}</strong>.
-            </p>
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                You've been invited
+              </p>
+              <h1
+                id="invitation-heading"
+                class="text-xl font-semibold text-base-content break-words"
+              >
+                Join {@invitation.account.name}
+              </h1>
+            </div>
           </div>
 
-          <div class="divider"></div>
+          <p class="mt-4 text-sm text-base-content/80 break-words">
+            <strong class="break-all text-base-content">{@invitation.invited_by.email}</strong>
+            invited you as <strong class="text-base-content">{role_label(@invitation.role)}</strong>.
+          </p>
 
-          <div :if={@current_user}>
+          <div :if={@current_user} class="mt-6 space-y-3">
             <button
-              class="btn btn-primary w-full"
+              type="button"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
               phx-click="accept"
               data-role="accept-btn"
             >
               Accept Invitation
             </button>
             <button
-              class="btn btn-ghost btn-sm w-full mt-2"
+              type="button"
+              class="w-full rounded-box px-4 py-2 text-sm text-base-content/60 hover:text-base-content"
               phx-click="decline"
               data-role="decline-btn"
             >
@@ -65,26 +74,28 @@ defmodule MetricFlowWeb.InvitationLive.Accept do
             </button>
           </div>
 
-          <div :if={is_nil(@current_user)}>
-            <p class="text-sm text-base-content/60 text-center mb-4">
+          <div :if={is_nil(@current_user)} class="mt-6 space-y-3">
+            <p class="text-sm text-base-content/70">
               Sign in or create an account to accept this invitation.
             </p>
             <button
-              class="btn btn-primary w-full"
+              type="button"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
               phx-click="log_in_to_accept"
               data-role="log-in-btn"
             >
               Log In to Accept
             </button>
             <button
-              class="btn btn-ghost btn-sm w-full mt-2"
+              type="button"
+              class="w-full rounded-box border border-neutral bg-base-200 px-4 py-2 text-sm font-semibold text-base-content hover:bg-base-300"
               phx-click="register_to_accept"
               data-role="register-btn"
             >
               Create an Account
             </button>
           </div>
-        </div>
+        </section>
       </div>
     </Layouts.content>
     """

@@ -205,6 +205,23 @@ defmodule MetricFlowWeb.InvitationLive.AcceptTest do
     end
   end
 
+  describe "accept button follows Anderson BI design" do
+    test "accept button carries the Anderson BI btn-brand-gradient class", %{conn: conn} do
+      owner = user_fixture()
+      account = account_fixture(owner)
+      invitee = user_fixture()
+      invitation = invitation_fixture(account, owner, invitee.email)
+      conn = log_in_user(conn, invitee)
+
+      {:ok, lv, _html} = live(conn, ~p"/invitations/#{invitation.token}")
+
+      accept_html = lv |> element("[data-role='accept-btn']") |> render()
+
+      assert accept_html =~ "btn-brand-gradient",
+             "the accept button must use the Anderson BI brand-gradient primary style"
+    end
+  end
+
   describe "shows already a member flash when accepting a duplicate invitation" do
     test "shows already a member flash when accepting a duplicate invitation", %{conn: conn} do
       owner = user_fixture()
