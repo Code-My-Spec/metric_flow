@@ -38,190 +38,231 @@ defmodule MetricFlowWeb.DashboardLive.Editor do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
+      <div class="max-w-5xl mx-auto overflow-x-hidden">
         <%!-- Header row --%>
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-2xl font-bold">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h1 class="text-2xl font-bold break-words min-w-0">
             {page_title_for(@live_action)}
           </h1>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               phx-click="save_dashboard"
               data-role="save-dashboard-btn"
-              class="btn btn-primary"
+              class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto"
             >
               Save Dashboard
             </button>
-            <.link navigate="/app/dashboards" class="btn btn-ghost">Cancel</.link>
+            <.link
+              navigate="/app/dashboards"
+              class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-base-content hover:bg-base-300 text-center w-full sm:w-auto"
+            >
+              Cancel
+            </.link>
           </div>
         </div>
 
-        <%!-- Dashboard name field --%>
-        <form phx-change="validate_name" phx-submit="save_dashboard" class="form-control mb-6">
-          <label class="label">
-            <span class="label-text">Dashboard Name</span>
-          </label>
-          <input
-            type="text"
-            name="dashboard[name]"
-            value={@changeset.params["name"] || (@dashboard && @dashboard.name) || ""}
-            data-role="dashboard-name-input"
-            class={["input w-full", has_name_error?(@changeset) && "input-error"]}
-            placeholder="My Dashboard"
-          />
-          <p :if={has_name_error?(@changeset)} class="text-sm text-error mt-1">
-            {name_error(@changeset)}
-          </p>
-        </form>
+        <%!-- Controls section: everything the marketer edits. Clearly
+             separated from the preview below so a 390px reader sees
+             "what I'm changing" distinct from "what the dashboard looks
+             like". --%>
+        <section data-role="editor-controls" class="space-y-4 mb-8">
+          <h2 class="text-xs uppercase tracking-wide font-semibold text-base-content/70">
+            Controls
+          </h2>
 
-        <%!-- Build with AI chat --%>
-        <div data-role="dashboard-chat-panel" class="mf-card p-4 mb-6">
-          <h2 class="text-base font-semibold mb-1">Build with AI</h2>
-          <p class="text-sm text-base-content/60 mb-3">
-            Describe the dashboard you want and the agent will add it to the canvas below.
-          </p>
-
-          <div
-            :if={@dashboard_chat_messages != []}
-            data-role="dashboard-chat-messages"
-            class="space-y-2 mb-3 max-h-48 overflow-y-auto"
+          <%!-- Dashboard name field --%>
+          <form
+            phx-change="validate_name"
+            phx-submit="save_dashboard"
+            class="bg-base-200 border border-neutral rounded-box p-4"
           >
-            <div
-              :for={msg <- @dashboard_chat_messages}
-              data-role="dashboard-chat-message"
+            <label class="block mb-2">
+              <span class="font-semibold text-base-content">Dashboard Name</span>
+            </label>
+            <input
+              type="text"
+              name="dashboard[name]"
+              value={@changeset.params["name"] || (@dashboard && @dashboard.name) || ""}
+              data-role="dashboard-name-input"
               class={[
-                "p-2 rounded text-sm",
-                msg.role == :user && "bg-primary/10",
-                msg.role == :assistant && "bg-base-200"
+                "input w-full bg-base-100 border-neutral rounded-box",
+                has_name_error?(@changeset) && "input-error"
               ]}
-            >
-              <p class="font-semibold text-xs mb-1 text-base-content/60">
-                {if msg.role == :user, do: "You", else: "Agent"}
-              </p>
-              <p class="whitespace-pre-wrap">{msg.content}</p>
-              <.link
-                :if={Map.get(msg, :link)}
-                navigate={msg.link.href}
-                class="text-primary underline text-xs"
-              >
-                {msg.link.text}
-              </.link>
-            </div>
-          </div>
-
-          <form phx-submit="send_dashboard_chat" data-role="dashboard-chat-form">
-            <div class="flex gap-2">
-              <textarea
-                name="message"
-                data-role="dashboard-chat-input"
-                rows="2"
-                placeholder="e.g. a headline stat, a spend-over-time line chart and a table of campaigns"
-                disabled={@dashboard_chat_generating}
-                class="textarea textarea-bordered textarea-sm flex-1 resize-none"
-              ></textarea>
-              <button
-                type="submit"
-                data-role="dashboard-chat-send-btn"
-                disabled={@dashboard_chat_generating}
-                class={[
-                  "btn btn-primary btn-sm self-end",
-                  @dashboard_chat_generating && "btn-disabled"
-                ]}
-              >
-                <span :if={@dashboard_chat_generating} class="loading loading-spinner loading-xs" />
-                <span :if={!@dashboard_chat_generating}>Send</span>
-              </button>
-            </div>
-            <p
-              :if={@dashboard_chat_error}
-              class="text-error text-xs mt-1"
-              data-role="dashboard-chat-error"
-            >
-              {@dashboard_chat_error}
+              placeholder="My Dashboard"
+            />
+            <p :if={has_name_error?(@changeset)} class="text-sm text-error mt-1">
+              {name_error(@changeset)}
             </p>
           </form>
-        </div>
 
-        <%!-- Versions (Story 74, rule 7: every agent change is a restorable version) --%>
-        <div
-          :if={@dashboard_versions != []}
-          data-role="dashboard-version-list"
-          class="mf-card p-4 mb-6"
-        >
-          <h2 class="text-base font-semibold mb-2">Versions</h2>
-          <ul class="space-y-1">
-            <li
-              :for={{version, idx} <- Enum.with_index(@dashboard_versions)}
-              data-role="dashboard-version"
-              class="flex items-center justify-between gap-2 text-sm text-base-content/70"
+          <%!-- Build with AI chat --%>
+          <div
+            data-role="dashboard-chat-panel"
+            class="bg-base-200 border border-neutral rounded-box p-4"
+          >
+            <h3 class="text-base font-semibold mb-1">Build with AI</h3>
+            <p class="text-sm text-base-content/70 mb-3">
+              Describe the dashboard you want and the agent will add it to the preview below.
+            </p>
+
+            <div
+              :if={@dashboard_chat_messages != []}
+              data-role="dashboard-chat-messages"
+              class="space-y-2 mb-3 max-h-48 overflow-y-auto"
             >
-              <span>
-                Version {length(@dashboard_versions) - idx} -- {Calendar.strftime(
-                  version.inserted_at,
-                  "%b %d, %Y %H:%M"
-                )}
-              </span>
-              <button
-                phx-click="restore_version"
-                phx-value-id={version.id}
-                data-role="restore-version"
-                class="btn btn-ghost btn-xs"
+              <div
+                :for={msg <- @dashboard_chat_messages}
+                data-role="dashboard-chat-message"
+                class={[
+                  "p-2 rounded-box text-sm break-words",
+                  msg.role == :user && "bg-primary/10",
+                  msg.role == :assistant && "bg-base-300"
+                ]}
               >
-                Restore
-              </button>
-            </li>
-          </ul>
-        </div>
+                <p class="font-semibold text-xs mb-1 text-base-content/70">
+                  {if msg.role == :user, do: "You", else: "Agent"}
+                </p>
+                <p class="whitespace-pre-wrap">{msg.content}</p>
+                <.link
+                  :if={Map.get(msg, :link)}
+                  navigate={msg.link.href}
+                  class="text-primary underline text-xs"
+                >
+                  {msg.link.text}
+                </.link>
+              </div>
+            </div>
 
-        <%!-- Visualization count error --%>
-        <p :if={@viz_error} class="text-sm text-error mb-4">
-          {@viz_error}
-        </p>
-
-        <%!-- Story 74, rule 5: an interactive control that only re-runs
-           metric queries and changes what is shown -- it never writes
-           anywhere or calls any tool. --%>
-        <div data-role="filter-control" class="mf-card p-3 mb-6 flex items-center gap-2">
-          <label class="text-sm text-base-content/70" for="dashboard-date-range">Date range</label>
-          <form phx-change="filter_date_range">
-            <select
-              id="dashboard-date-range"
-              name="range"
-              class="select select-sm select-bordered"
-            >
-              <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
-              <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
-              <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
-            </select>
-          </form>
-        </div>
-
-        <%!-- Story 74, rule 5: an interactive control, bound to the
-             dashboard's data model like the date range -- only re-runs
-             what's shown, never writes anywhere else. --%>
-        <.platform_filter
-          available_platforms={@available_platforms}
-          selected_platform={@dashboard_platform_filter}
-        />
-
-        <%!-- Visualization canvas --%>
-        <div
-          id="visualization-canvas"
-          data-role="visualization-canvas"
-          class="space-y-4 mb-6"
-        >
-          <div :if={@visualizations == []} data-role="empty-canvas" class="mf-card p-8 text-center">
-            <p class="text-base-content/60">Add a visualization to get started</p>
+            <form phx-submit="send_dashboard_chat" data-role="dashboard-chat-form">
+              <div class="flex flex-wrap gap-2">
+                <textarea
+                  name="message"
+                  data-role="dashboard-chat-input"
+                  rows="2"
+                  placeholder="e.g. a headline stat, a spend-over-time line chart and a table of campaigns"
+                  disabled={@dashboard_chat_generating}
+                  class="textarea bg-base-100 border-neutral rounded-box flex-1 min-w-0 resize-none"
+                ></textarea>
+                <button
+                  type="submit"
+                  data-role="dashboard-chat-send-btn"
+                  disabled={@dashboard_chat_generating}
+                  class={[
+                    "btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto",
+                    @dashboard_chat_generating && "opacity-60 cursor-not-allowed"
+                  ]}
+                >
+                  <span :if={@dashboard_chat_generating} class="loading loading-spinner loading-xs" />
+                  <span :if={!@dashboard_chat_generating}>Send</span>
+                </button>
+              </div>
+              <p
+                :if={@dashboard_chat_error}
+                class="text-error text-xs mt-1"
+                data-role="dashboard-chat-error"
+              >
+                {@dashboard_chat_error}
+              </p>
+            </form>
           </div>
 
-          <.widget_card
-            :for={{viz, idx} <- Enum.with_index(@visualizations)}
-            chart_id={"dashboard-chart-#{idx}"}
-            title={viz.metric_name}
-            chart_type={viz.chart_type}
-            render={Enum.at(@chart_render, idx)}
+          <%!-- Versions (Story 74, rule 7: every agent change is a restorable version) --%>
+          <div
+            :if={@dashboard_versions != []}
+            data-role="dashboard-version-list"
+            class="bg-base-200 border border-neutral rounded-box p-4"
+          >
+            <h3 class="text-base font-semibold mb-2">Versions</h3>
+            <ul class="space-y-1">
+              <li
+                :for={{version, idx} <- Enum.with_index(@dashboard_versions)}
+                data-role="dashboard-version"
+                class="flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/70"
+              >
+                <span class="break-words min-w-0">
+                  Version {length(@dashboard_versions) - idx} -- {Calendar.strftime(
+                    version.inserted_at,
+                    "%b %d, %Y %H:%M"
+                  )}
+                </span>
+                <button
+                  phx-click="restore_version"
+                  phx-value-id={version.id}
+                  data-role="restore-version"
+                  class="rounded-box border border-neutral bg-base-200 px-3 py-1 text-xs text-base-content hover:bg-base-300"
+                >
+                  Restore
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <%!-- Story 74, rule 5: an interactive control that only re-runs
+             metric queries and changes what is shown -- it never writes
+             anywhere or calls any tool. --%>
+          <div
+            data-role="filter-control"
+            class="bg-base-200 border border-neutral rounded-box p-3 flex flex-wrap items-center gap-2"
+          >
+            <label class="text-sm text-base-content/70" for="dashboard-date-range">Date range</label>
+            <form phx-change="filter_date_range">
+              <select
+                id="dashboard-date-range"
+                name="range"
+                class="select select-sm bg-base-100 border-neutral rounded-box"
+              >
+                <option value="7" selected={@dashboard_date_range == "7"}>Last 7 days</option>
+                <option value="30" selected={@dashboard_date_range == "30"}>Last 30 days</option>
+                <option value="90" selected={@dashboard_date_range == "90"}>Last 90 days</option>
+              </select>
+            </form>
+          </div>
+
+          <%!-- Story 74, rule 5: an interactive control, bound to the
+               dashboard's data model like the date range -- only re-runs
+               what's shown, never writes anywhere else. --%>
+          <.platform_filter
+            available_platforms={@available_platforms}
+            selected_platform={@dashboard_platform_filter}
           />
-        </div>
+        </section>
+
+        <%!-- Preview section: the live canvas the controls above drive.
+             A visible divider and heading set it apart so the marketer
+             knows which half is editable and which half is the result. --%>
+        <section data-role="editor-preview" class="border-t border-neutral pt-6 space-y-4">
+          <h2 class="text-xs uppercase tracking-wide font-semibold text-base-content/70">
+            Preview
+          </h2>
+
+          <%!-- Visualization count error --%>
+          <p :if={@viz_error} class="text-sm text-error" data-role="viz-error">
+            {@viz_error}
+          </p>
+
+          <%!-- Visualization canvas --%>
+          <div
+            id="visualization-canvas"
+            data-role="visualization-canvas"
+            class="space-y-4"
+          >
+            <div
+              :if={@visualizations == []}
+              data-role="empty-canvas"
+              class="bg-base-200 border border-neutral rounded-box p-8 text-center"
+            >
+              <p class="text-base-content/70">Add a visualization to get started</p>
+            </div>
+
+            <.widget_card
+              :for={{viz, idx} <- Enum.with_index(@visualizations)}
+              chart_id={"dashboard-chart-#{idx}"}
+              title={viz.metric_name}
+              chart_type={viz.chart_type}
+              render={Enum.at(@chart_render, idx)}
+            />
+          </div>
+        </section>
       </div>
     </Layouts.app>
     """
