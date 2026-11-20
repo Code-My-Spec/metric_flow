@@ -6,12 +6,16 @@ defmodule MetricFlowWeb.Layouts do
     authenticated `/app/*` routes including editors and dashboards.
   - `content` — Padded content area with navbar and footer. Used for public
     pages (home, login, register) and onboarding flows.
+
+  See DESIGN.md for the Anderson BI tokens and the components these layouts
+  depend on.
   """
   use MetricFlowWeb, :html
 
   embed_templates "layouts/*"
 
   @brand "Anderson BI"
+  @default_logo_src "/images/anderson-bi-logo.png"
 
   # Blank when there's no page title (live_title's own `default` already
   # shows the brand alone) or when the page title already is the brand,
@@ -26,6 +30,12 @@ defmodule MetricFlowWeb.Layouts do
     end
   end
 
+  defp agency_logo_url(nil), do: nil
+
+  defp agency_logo_url(config) do
+    Map.get(config, :logo_url) || Map.get(config, "logo_url")
+  end
+
   # ---------------------------------------------------------------------------
   # App layout — sidebar + full viewport
   # ---------------------------------------------------------------------------
@@ -33,23 +43,23 @@ defmodule MetricFlowWeb.Layouts do
   @doc """
   Renders the main app layout with sidebar navigation and full-viewport content.
 
-  All authenticated `/app/*` pages use this layout. The sidebar provides
-  navigation to every section. Content fills the remaining viewport.
-
-  ## Examples
-
-      <Layouts.app flash={@flash} current_scope={@current_scope}>
-        <div>Full-height content</div>
-      </Layouts.app>
+  All authenticated `/app/*` pages use this layout. The sidebar follows the
+  Anderson BI mockup at .code_my_spec/design/anderson-bi-mockup.png.
   """
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
   attr :white_label_config, :map, default: nil
   attr :active_account_name, :string, default: nil
   attr :active_account_type, :atom, default: nil
+  attr :recent_chat_sessions, :list, default: []
   slot :inner_block, required: true
 
   def app(assigns) do
+    assigns =
+      assigns
+      |> assign(:agency_logo, agency_logo_url(assigns.white_label_config))
+      |> assign(:default_logo_src, @default_logo_src)
+
     ~H"""
     <%= if @white_label_config do %>
       <style>
@@ -60,187 +70,198 @@ defmodule MetricFlowWeb.Layouts do
       </style>
     <% end %>
     <div
-      class="drawer lg:drawer-open min-h-screen"
+      class="flex min-h-screen bg-base-100 text-base-content"
       data-white-label={if @white_label_config, do: "true"}
     >
-      <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
-
-      <div class="drawer-content flex flex-col bg-base-100">
-        <%!-- Top bar — mobile hamburger + account info --%>
-        <div class="navbar bg-base-200 border-b border-base-300 lg:hidden">
-          <div class="flex-none">
-            <label for="drawer-toggle" class="btn btn-square btn-ghost">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                class="inline-block w-5 h-5 stroke-current"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </label>
-          </div>
-          <div class="flex-1">
-            <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
-              <a href="/app/dashboard" class="btn btn-ghost">
-                <img
-                  src={
-                    Map.get(@white_label_config, :logo_url) ||
-                      Map.get(@white_label_config, "logo_url")
-                  }
-                  alt="Logo"
-                  data-role="agency-logo"
-                  class="h-6 w-auto"
-                />
-              </a>
-            <% else %>
-              <a
-                href="/app/dashboard"
-                class="btn btn-ghost text-lg font-bold tracking-tight"
-                data-role="default-logo"
-              >
-                <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
-              </a>
-            <% end %>
-          </div>
-          <div class="flex-none">
-            <%= if @active_account_name do %>
-              <span class="text-sm text-base-content/70 mr-2">{@active_account_name}</span>
-            <% end %>
-          </div>
-        </div>
-
-        <%!-- Main content — full viewport --%>
-        <main class="flex-1 overflow-auto px-4 py-6 sm:px-6 lg:px-8">
-          {render_slot(@inner_block)}
-        </main>
-      </div>
+      <%!-- Mobile drawer scrim --%>
+      <input id="sidebar-toggle" type="checkbox" class="peer sr-only" />
+      <label
+        for="sidebar-toggle"
+        class="fixed inset-0 z-20 hidden bg-black/60 peer-checked:block lg:peer-checked:hidden"
+        aria-hidden="true"
+      >
+      </label>
 
       <%!-- Sidebar --%>
-      <div class="drawer-side z-20">
-        <label for="drawer-toggle" class="drawer-overlay"></label>
-        <aside class="w-64 min-h-full bg-base-200 flex flex-col">
-          <%!-- Logo --%>
-          <div class="p-4 border-b border-base-300">
-            <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
-              <a href="/app/dashboard" class="flex items-center gap-2">
-                <img
-                  src={
-                    Map.get(@white_label_config, :logo_url) ||
-                      Map.get(@white_label_config, "logo_url")
-                  }
-                  alt="Logo"
-                  data-role="agency-logo"
-                  class="h-7 w-auto"
-                />
-              </a>
-            <% else %>
-              <a
-                href="/app/dashboard"
-                class="flex items-center gap-2 text-lg font-bold tracking-tight"
+      <aside
+        id="sidebar"
+        aria-label="Main navigation"
+        class={[
+          "fixed inset-y-0 left-0 z-30 flex w-72 max-w-[85vw] flex-col",
+          "border-r border-neutral bg-base-200 px-4 py-5",
+          "-translate-x-full peer-checked:translate-x-0 transition-transform duration-200",
+          "lg:static lg:translate-x-0 lg:max-w-none"
+        ]}
+      >
+        <div class="mb-6 flex items-center justify-between gap-2">
+          <%= if @agency_logo do %>
+            <a href={~p"/app/chat"} class="flex items-center" aria-label="Home">
+              <img src={@agency_logo} alt="Logo" data-role="agency-logo" class="h-9 w-auto" />
+            </a>
+          <% else %>
+            <a
+              href={~p"/app/chat"}
+              class="flex items-center"
+              data-role="default-logo"
+              aria-label="Anderson BI home"
+            >
+              <img
+                src={@default_logo_src}
+                alt="Anderson BI"
+                class="h-9 w-auto"
+              />
+            </a>
+          <% end %>
+          <label
+            for="sidebar-toggle"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-box text-base-content lg:hidden"
+            aria-label="Close navigation"
+          >
+            <.icon name="hero-x-mark" class="size-5" />
+          </label>
+        </div>
+
+        <a
+          href={~p"/app/chat?new=1"}
+          class="btn-brand-gradient flex h-12 w-full items-center justify-center gap-2 rounded-box px-4 text-sm"
+          data-role="new-chat-button"
+        >
+          <span aria-hidden="true" class="text-xl leading-none">+</span> New Chat
+        </a>
+
+        <nav class="mt-6 flex flex-col gap-1" aria-label="Primary">
+          <.sidebar_link href={~p"/app/chat"} icon="hero-chat-bubble-left-right">
+            AI Chat
+          </.sidebar_link>
+          <.sidebar_link href={~p"/app/dashboard"} icon="hero-table-cells">All Data</.sidebar_link>
+          <.sidebar_link href={~p"/app/correlations"} icon="hero-arrows-right-left">
+            Correlations
+          </.sidebar_link>
+          <.sidebar_link href={~p"/app/integrations"} icon="hero-squares-2x2">
+            Integrations
+          </.sidebar_link>
+          <.sidebar_link href={~p"/app/dashboards"} icon="hero-document-text">Reports</.sidebar_link>
+        </nav>
+
+        <div class="my-5 border-t border-neutral"></div>
+
+        <nav class="flex flex-col gap-0.5 text-sm text-base-content/70" aria-label="Secondary">
+          <.sidebar_secondary href={~p"/app/dashboards"}>Dashboards</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/insights"}>Insights</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/correlations/goals"}>Goals</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/accounts"}>Accounts</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/accounts/members"}>Members</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/accounts/settings"}>Account settings</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/accounts/invitations"}>Invitations</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/integrations/sync-history"}>
+            Sync history
+          </.sidebar_secondary>
+          <%= if @active_account_type == :agency do %>
+            <div class="mt-2 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+              Agency
+            </div>
+            <.sidebar_secondary href={~p"/app/agency/clients"}>Clients</.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/plans"}>Plans</.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/subscriptions"}>
+              Subscriptions
+            </.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/settings"}>Agency settings</.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/stripe-connect"}>
+              Stripe Connect
+            </.sidebar_secondary>
+          <% end %>
+        </nav>
+
+        <section
+          class="mt-5"
+          aria-label="Recent conversations"
+          data-role="recent-chat-sessions"
+        >
+          <h2 class="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+            Recent conversations
+          </h2>
+          <ul class="flex flex-col gap-0.5">
+            <li :for={session <- @recent_chat_sessions}>
+              <.link
+                navigate={~p"/app/chat/#{session.id}"}
+                class="block truncate rounded-box px-3 py-1.5 text-sm text-base-content/80 hover:bg-base-300"
               >
-                <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
-              </a>
-            <% end %>
-            <%= if @active_account_name do %>
-              <p data-role="current-account-name" class="text-xs text-base-content/50 mt-1 truncate">
-                {@active_account_name}
-              </p>
-            <% end %>
-          </div>
-
-          <%!-- Navigation --%>
-          <ul class="menu p-3 w-full flex-1 text-sm">
-            <li><a href={~p"/app/dashboard"}>Dashboard</a></li>
-
-            <li>
-              <details>
-                <summary>Integrations</summary>
-                <ul>
-                  <li><a href={~p"/app/integrations"}>All Integrations</a></li>
-                  <li><a href={~p"/app/onboarding/connect"}>Set up data sources</a></li>
-                  <li><a href={~p"/app/integrations/sync-history"}>Sync History</a></li>
-                </ul>
-              </details>
+                {session.title || "Untitled chat"}
+              </.link>
             </li>
-
-            <li>
-              <details>
-                <summary>Dashboards</summary>
-                <ul>
-                  <li><a href={~p"/app/dashboards"}>All Dashboards</a></li>
-                  <li><a href={~p"/app/dashboards/new"}>New Dashboard</a></li>
-                </ul>
-              </details>
-            </li>
-
-            <li>
-              <details>
-                <summary>Intelligence</summary>
-                <ul>
-                  <li><a href={~p"/app/insights"}>Insights</a></li>
-                  <li><a href={~p"/app/chat"}>Chat</a></li>
-                  <li><a href={~p"/app/correlations"}>Correlations</a></li>
-                  <li><a href={~p"/app/correlations/goals"}>Goals</a></li>
-                </ul>
-              </details>
-            </li>
-
-            <li>
-              <details>
-                <summary>Account</summary>
-                <ul>
-                  <li><a href={~p"/app/accounts"}>Accounts</a></li>
-                  <li><a href={~p"/app/accounts/members"}>Members</a></li>
-                  <li><a href={~p"/app/accounts/settings"}>Settings</a></li>
-                  <li><a href={~p"/app/accounts/invitations"}>Invitations</a></li>
-                </ul>
-              </details>
-            </li>
-
-            <li :if={@active_account_type == :agency}>
-              <details>
-                <summary>Agency</summary>
-                <ul>
-                  <li><a href={~p"/app/agency/clients"}>Clients</a></li>
-                  <li><a href={~p"/app/agency/plans"}>Plans</a></li>
-                  <li><a href={~p"/app/agency/subscriptions"}>Subscriptions</a></li>
-                  <li><a href={~p"/app/agency/settings"}>Settings</a></li>
-                  <li><a href={~p"/app/agency/stripe-connect"}>Stripe Connect</a></li>
-                </ul>
-              </details>
+            <li :if={@recent_chat_sessions == []} class="px-3 py-1 text-xs text-base-content/50">
+              No recent conversations yet.
             </li>
           </ul>
+        </section>
 
-          <%!-- Bottom: user + settings --%>
-          <div class="border-t border-base-300 p-3">
-            <%= if @current_scope do %>
-              <div class="flex items-center gap-2 px-2 py-1">
-                <div class="avatar placeholder">
-                  <div class="bg-primary text-primary-content w-7 rounded-full">
-                    <span class="text-xs">
-                      {String.first(@current_scope.user.email) |> String.upcase()}
-                    </span>
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs truncate">{@current_scope.user.email}</p>
+        <div class="mt-auto pt-4">
+          <a
+            href={~p"/app/accounts"}
+            class="flex h-12 w-full items-center gap-3 rounded-box border border-neutral bg-base-100 px-3 text-sm hover:bg-base-300"
+            data-role="account-picker"
+          >
+            <.icon name="hero-building-office-2" class="size-4 shrink-0" />
+            <span data-role="current-account-name" class="min-w-0 flex-1 truncate">
+              {@active_account_name || "No account"}
+            </span>
+            <.icon name="hero-chevron-up-down" class="size-4 shrink-0 opacity-60" />
+          </a>
+        </div>
+      </aside>
+
+      <div class="flex min-w-0 flex-1 flex-col">
+        <%!-- Top bar --%>
+        <header class="flex h-16 items-center gap-3 border-b border-neutral bg-base-100 px-4 sm:px-6">
+          <label
+            for="sidebar-toggle"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-box text-base-content lg:hidden"
+            aria-label="Open navigation"
+            data-role="open-sidebar"
+          >
+            <.icon name="hero-bars-3" class="size-5" />
+          </label>
+          <div class="flex-1"></div>
+          <a
+            href="mailto:support@metric-flow.app"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral text-base-content/80 hover:text-base-content"
+            aria-label="Help"
+            data-role="help-link"
+          >
+            <.icon name="hero-question-mark-circle" class="size-5" />
+          </a>
+          <%= if @current_scope do %>
+            <div class="dropdown dropdown-end">
+              <div
+                tabindex="0"
+                role="button"
+                class="avatar placeholder cursor-pointer"
+                aria-label="Account menu"
+                data-role="avatar-menu"
+              >
+                <div class="w-9 rounded-full bg-primary text-primary-content">
+                  <span class="text-sm">
+                    {String.first(@current_scope.user.email) |> String.upcase()}
+                  </span>
                 </div>
               </div>
-              <ul class="menu menu-sm p-0 mt-1">
-                <li><a href={~p"/app/users/settings"}>User Settings</a></li>
+              <ul
+                tabindex="-1"
+                class="menu dropdown-content z-10 mt-3 w-56 rounded-box border border-neutral bg-base-200 p-2 shadow"
+              >
+                <li class="menu-title text-xs">{@current_scope.user.email}</li>
+                <li><a href={~p"/app/users/settings"}>User settings</a></li>
                 <li>
                   <.link href={~p"/users/log-out"} method="delete">Log out</.link>
                 </li>
               </ul>
-            <% end %>
-          </div>
-        </aside>
+            </div>
+          <% end %>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+          {render_slot(@inner_block)}
+        </main>
       </div>
 
       <.flash_group flash={@flash} />
@@ -254,6 +275,35 @@ defmodule MetricFlowWeb.Layouts do
     """
   end
 
+  attr :href, :string, required: true
+  attr :icon, :string, required: true
+  slot :inner_block, required: true
+
+  defp sidebar_link(assigns) do
+    ~H"""
+    <.link
+      href={@href}
+      class="flex items-center gap-3 rounded-box border border-transparent px-3 py-2 text-sm text-base-content hover:border-neutral hover:bg-base-300"
+    >
+      <.icon name={@icon} class="size-5 shrink-0 opacity-80" /> {render_slot(@inner_block)}
+    </.link>
+    """
+  end
+
+  attr :href, :string, required: true
+  slot :inner_block, required: true
+
+  defp sidebar_secondary(assigns) do
+    ~H"""
+    <.link
+      href={@href}
+      class="rounded-box px-3 py-1.5 text-sm text-base-content/70 hover:bg-base-300 hover:text-base-content"
+    >
+      {render_slot(@inner_block)}
+    </.link>
+    """
+  end
+
   # ---------------------------------------------------------------------------
   # Content layout — padded content with navbar and footer
   # ---------------------------------------------------------------------------
@@ -263,12 +313,6 @@ defmodule MetricFlowWeb.Layouts do
 
   Used for public pages (home, login, register) and onboarding flows that
   don't need the sidebar navigation.
-
-  ## Examples
-
-      <Layouts.content flash={@flash}>
-        <h1>Welcome</h1>
-      </Layouts.content>
   """
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
@@ -277,6 +321,11 @@ defmodule MetricFlowWeb.Layouts do
   slot :inner_block, required: true
 
   def content(assigns) do
+    assigns =
+      assigns
+      |> assign(:agency_logo, agency_logo_url(assigns.white_label_config))
+      |> assign(:default_logo_src, @default_logo_src)
+
     ~H"""
     <%= if @white_label_config do %>
       <style>
@@ -287,70 +336,86 @@ defmodule MetricFlowWeb.Layouts do
       </style>
     <% end %>
     <div
-      class="navbar mf-topnav px-4 sm:px-6 lg:px-8"
+      class="flex min-h-screen flex-col bg-base-100 text-base-content"
       data-white-label={if @white_label_config, do: "true"}
     >
-      <div class="navbar-start">
-        <%= if @white_label_config && (Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")) do %>
-          <a href="/" class="btn btn-ghost">
+      <header class="flex items-center justify-between gap-3 border-b border-neutral px-4 py-3 sm:px-6 lg:px-8">
+        <%= if @agency_logo do %>
+          <a href="/" class="flex items-center">
             <img
-              src={
-                Map.get(@white_label_config, :logo_url) || Map.get(@white_label_config, "logo_url")
-              }
-              alt="Agency Logo"
+              src={@agency_logo}
+              alt="Agency logo"
               data-role="agency-logo"
-              class="h-8 w-auto"
+              class="h-9 w-auto"
             />
           </a>
         <% else %>
-          <a href="/" class="btn btn-ghost text-lg font-bold tracking-tight" data-role="default-logo">
-            <span class="text-primary">Anderson</span> <span class="text-accent">BI</span>
+          <a href="/" class="flex items-center" data-role="default-logo">
+            <img
+              src={@default_logo_src}
+              alt="Anderson BI"
+              class="h-9 w-auto"
+            />
           </a>
         <% end %>
-      </div>
-      <div class="navbar-end gap-2">
-        <%= if @current_scope do %>
-          <a href={~p"/app/dashboard"} class="btn btn-primary btn-sm">Open App</a>
-          <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
-              <div class="bg-primary text-primary-content w-8 rounded-full">
-                <span class="text-xs">
-                  {String.first(@current_scope.user.email) |> String.upcase()}
-                </span>
+        <div class="flex items-center gap-2">
+          <%= if @current_scope do %>
+            <a href={~p"/app/chat"} class="btn-brand-gradient rounded-box px-4 py-2 text-sm">
+              Open App
+            </a>
+            <div class="dropdown dropdown-end">
+              <div
+                tabindex="0"
+                role="button"
+                class="avatar placeholder cursor-pointer"
+                aria-label="Account menu"
+              >
+                <div class="w-9 rounded-full bg-primary text-primary-content">
+                  <span class="text-sm">
+                    {String.first(@current_scope.user.email) |> String.upcase()}
+                  </span>
+                </div>
               </div>
+              <ul
+                tabindex="-1"
+                class="menu dropdown-content z-10 mt-3 w-56 rounded-box border border-neutral bg-base-200 p-2 shadow"
+              >
+                <li class="menu-title text-xs">{@current_scope.user.email}</li>
+                <li><a href={~p"/app/users/settings"}>Settings</a></li>
+                <li>
+                  <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+                </li>
+              </ul>
             </div>
-            <ul
-              tabindex="-1"
-              class="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-3 w-52 p-2 shadow"
+          <% else %>
+            <a
+              href={~p"/users/log-in"}
+              class="rounded-box px-4 py-2 text-sm text-base-content/80 hover:text-base-content"
             >
-              <li class="menu-title text-xs">{@current_scope.user.email}</li>
-              <li><a href={~p"/app/users/settings"}>Settings</a></li>
-              <li>
-                <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-              </li>
-            </ul>
-          </div>
-        <% else %>
-          <a href={~p"/users/log-in"} class="btn btn-ghost btn-sm">Log in</a>
-          <a href={~p"/users/register"} class="btn btn-primary btn-sm">Register</a>
-        <% end %>
-      </div>
+              Log in
+            </a>
+            <a href={~p"/users/register"} class="btn-brand-gradient rounded-box px-4 py-2 text-sm">
+              Register
+            </a>
+          <% end %>
+        </div>
+      </header>
+
+      <main class="mf-content flex-1 overflow-x-hidden px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1400px] space-y-4">
+          {render_slot(@inner_block)}
+        </div>
+      </main>
+
+      <footer class="border-t border-neutral px-4 py-6 text-center text-sm text-base-content/60 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="/privacy" class="hover:text-base-content">Privacy Policy</a>
+          <a href="/terms" class="hover:text-base-content">Terms of Service</a>
+          <a href="mailto:support@metric-flow.app" class="hover:text-base-content">Contact</a>
+        </div>
+        <p class="mt-2">&copy; {Date.utc_today().year} Anderson BI. All rights reserved.</p>
+      </footer>
     </div>
-
-    <main class="mf-content px-4 py-10 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-[1400px] space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
-
-    <footer class="footer footer-center p-6 bg-base-200 text-base-content/60 text-sm">
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="/privacy" class="link link-hover">Privacy Policy</a>
-        <a href="/terms" class="link link-hover">Terms of Service</a>
-        <a href="mailto:support@metric-flow.app" class="link link-hover">Contact</a>
-      </div>
-      <p>&copy; {Date.utc_today().year} Anderson BI. All rights reserved.</p>
-    </footer>
 
     <.flash_group flash={@flash} />
 
@@ -401,41 +466,6 @@ defmodule MetricFlowWeb.Layouts do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
-    </div>
-    """
-  end
-
-  @doc """
-  Provides dark vs light theme toggle.
-  """
-  def theme_toggle(assigns) do
-    ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="light"
-      >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="dark"
-      >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
     </div>
     """
   end
