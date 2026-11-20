@@ -1,0 +1,24 @@
+id: "integrations-index-design-pass"
+kind: "issue"
+title: The integrations page doesn't follow the Anderson BI design
+text: |-
+  Fault: the integrations page (lib/metric_flow_web/live/integration_live/index.ex) doesn't follow the Anderson BI design that design-system-2 set up.
+
+  Do a design pass on that page file. Follow the "Design pass" section of DESIGN.md: every step, before and after screenshots at 390px and 1440px on the seeded data (priv/repo/seeds.exs) in the evidence folder, and the trailer Design-Pass: lib/metric_flow_web/live/integration_live/index.ex. Screenshot as the seeded retail client (Anderson Retail Co.).
+
+  Who it is for: the referred client of an agency. Read .code_my_spec/personas/agency-client-referred-customer/summary.md first.
+
+  What the page must do:
+  - Show one card per provider, with its status (connected or needs attention) and its single next action.
+  - Put problems first: providers that need attention come before connected ones.
+
+  Rules: keep every id and data-* attribute. Grep test/ (including test/spex/) for any you touch, and run those files. Change only this page, plus a shared component if a pattern repeats. Nothing scrolls sideways at 390px. Use only theme tokens: no hard-coded colours or radii.
+
+  How it will be checked:
+  - The full suite and mix spex pass.
+  - Each provider appears as one card showing connected or needs-attention status and exactly one next action.
+  - Providers that need attention are listed before connected ones.
+  - Nothing scrolls sideways at 390px.
+  - The evidence folder holds before and after shots at 390 and 1440.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/integration_live/index.ex.
+criteria: []
