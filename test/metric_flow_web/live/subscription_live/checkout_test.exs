@@ -130,4 +130,66 @@ defmodule MetricFlowWeb.SubscriptionLive.CheckoutTest do
     assert html =~ "Agency Custom Plan"
     assert html =~ "$29.99"
   end
+
+  describe "Anderson BI layout" do
+    test "wraps content in a checkout root that caps width and blocks sideways scroll",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = account_fixture(user)
+      plan_fixture(nil, %{name: "MetricFlow Pro", price_cents: 4999})
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
+
+      [{_tag, attrs, _children}] =
+        Floki.parse_document!(html) |> Floki.find(~s|main[data-role="checkout-root"]|)
+
+      class = attrs |> Enum.into(%{}) |> Map.fetch!("class")
+
+      assert class =~ "overflow-x-hidden",
+             ~s|Expected checkout root to carry overflow-x-hidden; got class="#{class}"|
+
+      assert class =~ ~r/\bmax-w-/,
+             ~s|Expected checkout root to cap its width with a max-w-* class; got class="#{class}"|
+    end
+
+    test "renders exactly one h1 inside the checkout root", %{conn: conn} do
+      user = user_fixture()
+      _account = account_fixture(user)
+      plan_fixture(nil, %{name: "MetricFlow Pro", price_cents: 4999})
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
+
+      headings =
+        html
+        |> Floki.parse_document!()
+        |> Floki.find(~s|main[data-role="checkout-root"] h1|)
+
+      assert length(headings) == 1,
+             "Expected one h1 inside the checkout root, got #{length(headings)}"
+    end
+
+    test "each plan renders as a plan-card article with the subscribe button",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = account_fixture(user)
+      plan_fixture(nil, %{name: "MetricFlow Pro", price_cents: 4999})
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/subscriptions/checkout")
+
+      cards =
+        html
+        |> Floki.parse_document!()
+        |> Floki.find(~s|[data-role="plan-card"]|)
+
+      assert length(cards) == 1
+
+      assert html =~ "btn-brand-gradient",
+             "Expected the subscribe button to use the brand-gradient component class"
+
+      assert html =~ ~s|data-role="subscribe-button"|
+    end
+  end
 end
