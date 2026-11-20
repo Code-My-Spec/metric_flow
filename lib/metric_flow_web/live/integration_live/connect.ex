@@ -100,7 +100,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto max-w-4xl">
+      <div class="mx-auto max-w-4xl overflow-x-hidden">
         <div class="mb-6">
           <.link
             navigate={~p"/app/integrations"}
@@ -108,7 +108,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           >
             <.icon name="hero-arrow-left-mini" class="size-4" /> Integrations
           </.link>
-          <h1 class="text-2xl font-bold">
+          <h1 class="text-2xl font-bold break-words">
             {if @view_mode == :selection, do: "Connect a single platform", else: "Connect a Provider"}
           </h1>
           <p :if={@view_mode == :selection} class="mt-1 text-base-content/60">
@@ -120,6 +120,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             </.link>.
           </p>
         </div>
+
+        {render_connect_stepper(assign(assigns, :steps, connect_steps(@view_mode, @provider)))}
 
         <%= case @view_mode do %>
           <% :selection -> %>
@@ -140,32 +142,117 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
     """
   end
 
+  # Jordan opens a reconnect link from the agency and needs to see, at a glance,
+  # that this is step N of an ordered Provider → Accounts → Locations path, and
+  # which step they are on. Hidden on :selection and :result where there is no
+  # single provider in flight.
+  defp render_connect_stepper(%{steps: []} = assigns) do
+    ~H"""
+    """
+  end
+
+  defp render_connect_stepper(assigns) do
+    ~H"""
+    <ol
+      data-role="connect-stepper"
+      aria-label="Connection progress"
+      class="mb-6 flex flex-wrap items-center gap-2 text-sm"
+    >
+      <li
+        :for={step <- @steps}
+        data-step={step.key}
+        data-current={if step.current, do: "true", else: "false"}
+        data-done={if step.done, do: "true", else: "false"}
+        aria-current={if step.current, do: "step"}
+        class={[
+          "flex min-w-0 items-center gap-2 rounded-box border px-3 py-1.5",
+          step.current && "border-primary bg-base-200 text-base-content",
+          !step.current && step.done && "border-neutral bg-base-200 text-base-content/80",
+          !step.current && !step.done && "border-neutral text-base-content/60"
+        ]}
+      >
+        <span class={[
+          "inline-flex size-6 shrink-0 items-center justify-center rounded-full border font-semibold",
+          step.current && "border-primary text-primary",
+          !step.current && step.done && "border-neutral text-base-content/80",
+          !step.current && !step.done && "border-neutral text-base-content/50"
+        ]}>
+          {step.index}
+        </span>
+        <span class="min-w-0 break-words">{step.label}</span>
+      </li>
+    </ol>
+    """
+  end
+
+  defp connect_steps(:selection, _provider), do: []
+  defp connect_steps(:result, _provider), do: []
+
+  defp connect_steps(:detail, _provider) do
+    [
+      %{key: "provider", index: 1, label: "Choose provider", current: true, done: false},
+      %{key: "accounts", index: 2, label: "Choose accounts", current: false, done: false}
+    ]
+  end
+
+  defp connect_steps(:youtube_channels, _provider) do
+    [
+      %{key: "provider", index: 1, label: "Choose provider", current: false, done: true},
+      %{key: "accounts", index: 2, label: "Choose channels", current: true, done: false}
+    ]
+  end
+
+  defp connect_steps(:gbp_accounts, _provider) do
+    [
+      %{key: "provider", index: 1, label: "Choose provider", current: false, done: true},
+      %{key: "accounts", index: 2, label: "Choose accounts", current: true, done: false},
+      %{key: "locations", index: 3, label: "Choose locations", current: false, done: false}
+    ]
+  end
+
+  defp connect_steps(:accounts, "google_business") do
+    [
+      %{key: "provider", index: 1, label: "Choose provider", current: false, done: true},
+      %{key: "accounts", index: 2, label: "Choose accounts", current: false, done: true},
+      %{key: "locations", index: 3, label: "Choose locations", current: true, done: false}
+    ]
+  end
+
+  defp connect_steps(:accounts, _provider) do
+    [
+      %{key: "provider", index: 1, label: "Choose provider", current: false, done: true},
+      %{key: "accounts", index: 2, label: "Choose accounts", current: true, done: false}
+    ]
+  end
+
   defp render_youtube_selection(assigns) do
     ~H"""
     <section
       id="youtube-channel-selection"
-      class="mx-auto max-w-2xl rounded-xl border border-base-content/15 p-6 sm:p-8"
+      class="mx-auto max-w-2xl rounded-box border border-neutral bg-base-200 p-6 sm:p-8"
     >
-      <h2 class="text-xl font-semibold">Choose your YouTube channels</h2>
+      <h2 class="text-xl font-semibold break-words">Choose your YouTube channels</h2>
       <p class="mt-2 text-sm text-base-content/70">
         Select the channels to include in reporting for {@active_account_name}.
       </p>
-      <p
+      <div
         :if={!@youtube_revenue_granted}
         id="youtube-revenue-warning"
         role="alert"
-        class="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+        class="alert alert-warning mt-4 rounded-box text-sm"
       >
-        Revenue will not sync until you grant revenue permission. You can still connect your channels.
-      </p>
-      <p
+        <span>
+          Revenue will not sync until you grant revenue permission. You can still connect your channels.
+        </span>
+      </div>
+      <div
         :if={@youtube_error}
         id="youtube-selection-error"
         role="alert"
-        class="mt-4 text-sm text-red-600"
+        class="alert alert-error mt-4 rounded-box text-sm"
       >
-        {@youtube_error}
-      </p>
+        <span>{@youtube_error}</span>
+      </div>
       <.form
         for={@youtube_form}
         id="youtube-channels-form"
@@ -178,7 +265,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             :for={{dom_id, channel} <- @streams.youtube_channels}
             id={dom_id}
             data-role="account-option"
-            class="rounded-lg border border-base-content/15 p-4 transition-colors hover:bg-base-200/50"
+            class="rounded-box border border-neutral p-4 transition-colors hover:bg-base-300"
           >
             <.input
               field={@youtube_form[:channel_ids]}
@@ -197,11 +284,14 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           type="submit"
           data-role="save-selection"
           phx-disable-with="Saving…"
-          class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-content transition-opacity hover:opacity-90 focus-visible:outline-2"
+          class="btn-brand-gradient w-full rounded-box px-4 py-3 font-semibold"
         >
           Save channels
         </button>
-        <.link navigate={~p"/app/integrations"} class="block text-center text-sm underline">
+        <.link
+          navigate={~p"/app/integrations"}
+          class="block rounded-box border border-neutral bg-base-200 px-4 py-2 text-center text-sm text-base-content hover:bg-base-300"
+        >
           Back to integrations
         </.link>
       </.form>
@@ -215,11 +305,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       <div
         :for={provider <- @providers}
         data-platform={provider.key}
-        class="flex flex-col rounded-box border border-base-300 bg-base-100 p-5"
+        class="flex flex-col rounded-box border border-neutral bg-base-200 p-5"
       >
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <div class="flex items-start justify-between gap-2">
-            <h3 class="font-semibold">{provider.name}</h3>
+            <h3 class="font-semibold break-words min-w-0">{provider.name}</h3>
             <span
               :if={tile_state(@integrations, provider.key) == :connected}
               class="badge badge-success badge-sm shrink-0"
@@ -239,7 +329,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
               Not connected
             </span>
           </div>
-          <p class="text-sm text-base-content/60 mt-1">{provider.description}</p>
+          <p class="text-sm text-base-content/70 mt-1 break-words">{provider.description}</p>
         </div>
 
         <button
@@ -247,10 +337,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           phx-click="connect"
           phx-value-provider={provider.key}
           class={[
-            "btn btn-sm mt-4 self-start",
-            tile_state(@integrations, provider.key) == :connected && "btn-ghost",
-            tile_state(@integrations, provider.key) == :expired && "btn-warning",
-            tile_state(@integrations, provider.key) == :none && "btn-primary"
+            "mt-4 w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto sm:self-start",
+            tile_state(@integrations, provider.key) == :connected &&
+              "border border-neutral bg-base-200 text-base-content hover:bg-base-300",
+            tile_state(@integrations, provider.key) == :expired && "btn btn-warning",
+            tile_state(@integrations, provider.key) == :none && "btn-brand-gradient"
           ]}
         >
           {if provider_connected?(@integrations, provider.key), do: "Reconnect", else: "Connect"}
@@ -262,31 +353,33 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_platform_detail(assigns) do
     ~H"""
-    <div class="mf-card max-w-sm p-6">
-      <h2 class="text-xl font-semibold mb-2">{@platform.name}</h2>
+    <div class="max-w-md rounded-box border border-neutral bg-base-200 p-6">
+      <h2 class="text-xl font-semibold mb-2 break-words">{@platform.name}</h2>
 
       <div :if={not is_nil(@integration)} class="mb-4">
         <span class="badge badge-success">Connected</span>
-        <p class="text-sm mt-2 text-base-content/60">
+        <p class="text-sm mt-2 text-base-content/70 break-all">
           Connected as {@integration.provider_metadata["email"] || "unknown"}
         </p>
 
         <% meta_key = metadata_key_for_provider(String.to_existing_atom(@provider)) %>
         <div
           :if={@integration.provider_metadata[meta_key]}
-          class="mt-2 p-2 bg-base-200 rounded text-sm"
+          class="mt-2 rounded-box border border-neutral bg-base-100 p-2 text-sm"
         >
           <span class="font-medium">
             {account_labels(String.to_existing_atom(@provider)).id_label}:
           </span>
-          <span class="text-base-content/70">{@integration.provider_metadata[meta_key]}</span>
+          <span class="text-base-content/70 break-all">
+            {@integration.provider_metadata[meta_key]}
+          </span>
         </div>
 
         <div class="flex flex-col gap-2 mt-3">
           <.link
             navigate={~p"/app/integrations/connect/#{@provider}/accounts"}
             data-role="select-accounts-button"
-            class="btn btn-primary btn-sm w-full sm:w-auto"
+            class="btn-brand-gradient w-full rounded-box px-4 py-2 text-center text-sm font-semibold sm:w-auto"
           >
             Select Accounts
           </.link>
@@ -296,24 +389,24 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             href={@authorize_url}
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-ghost btn-sm w-full sm:w-auto"
+            class="w-full rounded-box border border-neutral bg-base-200 px-4 py-2 text-center text-sm text-base-content hover:bg-base-300 sm:w-auto"
           >
             Reconnect
           </a>
-          <p :if={is_nil(@authorize_url)} class="text-sm text-base-content/60">
+          <p :if={is_nil(@authorize_url)} class="text-sm text-base-content/70">
             Reconnect is not available — this provider is not currently configured for OAuth.
           </p>
         </div>
       </div>
       <div :if={is_nil(@integration)} class="mb-4">
         <span class="badge badge-ghost">Not connected</span>
-        <p class="text-sm mt-2 text-base-content/60">
+        <p class="text-sm mt-2 text-base-content/70 break-words">
           {@platform.description}
         </p>
       </div>
 
       <div data-role="account-selection" class="mb-4">
-        <p :if={is_nil(@integration)} class="text-sm text-base-content/60">
+        <p :if={is_nil(@integration)} class="text-sm text-base-content/70">
           Connect your {@platform.name} account to enable data syncing from this provider.
         </p>
       </div>
@@ -325,11 +418,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           href={@authorize_url}
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn-primary w-full"
+          class="btn-brand-gradient block w-full rounded-box px-4 py-2 text-center font-semibold"
         >
           Connect {@platform.name}
         </a>
-        <div :if={is_nil(@authorize_url)} class="alert alert-warning text-sm">
+        <div :if={is_nil(@authorize_url)} class="alert alert-warning rounded-box text-sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="stroke-current shrink-0 h-5 w-5"
@@ -348,7 +441,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       </div>
 
       <div class="mt-4">
-        <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
+        <.link
+          navigate={~p"/app/integrations"}
+          class="inline-flex items-center rounded-box border border-neutral bg-base-200 px-3 py-1.5 text-sm text-base-content hover:bg-base-300"
+        >
           Back to integrations
         </.link>
       </div>
@@ -358,20 +454,26 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_result(assigns) do
     ~H"""
-    <div class="mf-card max-w-sm p-6">
+    <div class="max-w-md rounded-box border border-neutral bg-base-200 p-6">
       <%= if @result_status == :connected do %>
         <div class="text-center">
           <div class="text-success text-4xl mb-3">&#10003;</div>
-          <h2 class="text-xl font-semibold mb-2">Integration Active</h2>
-          <p class="text-sm text-base-content/60 mb-4">
+          <h2 class="text-xl font-semibold mb-2 break-words">Integration Active</h2>
+          <p class="text-sm text-base-content/70 mb-4 break-words">
             Your {@platform.name} account is connected and ready to sync data.
           </p>
           <span class="badge badge-success mb-4">Active</span>
           <div class="flex flex-col gap-2 mt-4">
-            <.link navigate={~p"/app/integrations"} class="btn btn-primary w-full">
+            <.link
+              navigate={~p"/app/integrations"}
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-center font-semibold"
+            >
               View Integrations
             </.link>
-            <.link navigate={~p"/app/integrations/connect"} class="btn btn-ghost btn-sm">
+            <.link
+              navigate={~p"/app/integrations/connect"}
+              class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-center text-sm text-base-content hover:bg-base-300"
+            >
               Connect another platform
             </.link>
           </div>
@@ -379,18 +481,21 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       <% else %>
         <div class="text-center">
           <div class="text-error text-4xl mb-3">&#10007;</div>
-          <h2 class="text-xl font-semibold text-error mb-2">Connection Failed</h2>
-          <p class="text-sm text-base-content/60 mb-4">
+          <h2 class="text-xl font-semibold text-error mb-2 break-words">Connection Failed</h2>
+          <p class="text-sm text-base-content/70 mb-4 break-words">
             {@error_message}
           </p>
           <div class="flex flex-col gap-2 mt-4">
             <.link
               navigate={~p"/app/integrations/connect/#{@provider}"}
-              class="btn btn-primary w-full"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-center font-semibold"
             >
               Try again
             </.link>
-            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
+            <.link
+              navigate={~p"/app/integrations"}
+              class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-center text-sm text-base-content hover:bg-base-300"
+            >
               Back to integrations
             </.link>
           </div>
@@ -402,9 +507,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
 
   defp render_gbp_account_selection(assigns) do
     ~H"""
-    <div class="mf-card max-w-lg p-6">
-      <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
-      <p class="text-sm text-base-content/60 mb-4">
+    <div class="max-w-lg rounded-box border border-neutral bg-base-200 p-6">
+      <h2 class="text-xl font-semibold mb-2 break-words">
+        {@platform.name} — Select Accounts
+      </h2>
+      <p class="text-sm text-base-content/70 mb-4">
         Choose which Google Business Profile accounts to grant Anderson BI access to.
         You'll select specific locations to sync in the next step.
       </p>
@@ -415,7 +522,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <p class="text-sm font-medium mb-2">Available accounts:</p>
             <div
               :for={account <- @display_accounts}
-              class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+              class="flex items-center gap-3 rounded-box border border-neutral bg-base-100 p-3 transition-colors hover:bg-base-300"
               data-role="account-option"
             >
               <input
@@ -426,9 +533,14 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 class="checkbox checkbox-sm checkbox-primary"
                 checked={account.id in @selected_location_ids}
               />
-              <div>
-                <span data-role="account-name" class="text-sm font-medium">{account.name}</span>
-                <span data-role="account-id" class="text-xs text-base-content/60 block">
+              <div class="min-w-0">
+                <span data-role="account-name" class="text-sm font-medium break-words">
+                  {account.name}
+                </span>
+                <span
+                  data-role="account-id"
+                  class="text-xs text-base-content/70 block break-all"
+                >
                   {account.id}
                 </span>
               </div>
@@ -440,7 +552,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
               id="gbp-account-classified-error"
               role="alert"
               data-reason={@accounts_error}
-              class="rounded-lg border border-amber-300 p-4 text-sm space-y-3"
+              class="alert alert-warning flex flex-col items-start gap-2 rounded-box p-4 text-sm"
             >
               <%= if @accounts_error == :service_disabled do %>
                 <p class="font-semibold">
@@ -457,7 +569,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 <.link
                   id="gbp-scope-reconnect"
                   navigate={~p"/app/integrations/connect/google_business"}
-                  class="inline-flex rounded-md px-3 py-2 font-medium underline transition-colors hover:bg-amber-100 focus-visible:outline-2"
+                  class="btn-brand-gradient inline-flex w-full items-center justify-center rounded-box px-3 py-2 text-sm font-semibold sm:w-auto"
                 >
                   Reconnect Google Business Profile
                 </.link>
@@ -468,7 +580,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <div
               id="gbp-account-access-error"
               role="alert"
-              class="rounded-lg border border-amber-300 p-4 text-sm space-y-3"
+              class="alert alert-warning flex flex-col items-start gap-2 rounded-box p-4 text-sm"
             >
               <p class="font-semibold">Google denied access to your Business Profile accounts.</p>
               <p>
@@ -483,13 +595,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
               <.link
                 id="gbp-account-reconnect"
                 navigate={~p"/app/integrations/connect/google_business"}
-                class="inline-flex rounded-md px-3 py-2 font-medium underline transition-colors hover:bg-amber-100 focus-visible:outline-2"
+                class="btn-brand-gradient inline-flex w-full items-center justify-center rounded-box px-3 py-2 text-sm font-semibold sm:w-auto"
               >
                 Reconnect Google Business Profile
               </.link>
             </div>
           <% else %>
-            <p :if={is_nil(@accounts_error)} class="text-sm text-base-content/60">
+            <p :if={is_nil(@accounts_error)} class="text-sm text-base-content/70">
               No Google Business Profile accounts found.
             </p>
           <% end %>
@@ -498,14 +610,17 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <button
           type="submit"
           data-role="save-accounts-btn"
-          class="btn btn-primary btn-sm"
+          class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold disabled:opacity-60 sm:w-auto"
           disabled={@display_accounts == []}
         >
           Save and continue
         </button>
       </form>
 
-      <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="text-sm link">
+      <.link
+        navigate={~p"/app/integrations/connect/#{@provider}"}
+        class="inline-flex items-center rounded-box border border-neutral bg-base-200 px-3 py-1.5 text-sm text-base-content hover:bg-base-300"
+      >
         ← Back to {@platform.name}
       </.link>
     </div>
@@ -535,9 +650,11 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
       )
 
     ~H"""
-    <div class="mf-card max-w-lg p-6">
-      <h2 class="text-xl font-semibold mb-2">{@platform.name} — Select Accounts</h2>
-      <p class="text-sm text-base-content/60 mb-4">
+    <div class="max-w-lg rounded-box border border-neutral bg-base-200 p-6">
+      <h2 class="text-xl font-semibold mb-2 break-words">
+        {@platform.name} — Select Accounts
+      </h2>
+      <p class="text-sm text-base-content/70 mb-4">
         {@account_labels.chooser_text}
       </p>
 
@@ -548,7 +665,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <%= if @is_multi_select do %>
               <div
                 :for={property <- @display_accounts}
-                class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+                class="flex items-center gap-3 rounded-box border border-neutral bg-base-100 p-3 transition-colors hover:bg-base-300"
                 data-role="account-option"
               >
                 <input
@@ -559,22 +676,27 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                   class="checkbox checkbox-sm checkbox-primary"
                   checked={property.id in @selected_location_ids}
                 />
-                <div>
-                  <span data-role="location-title" class="text-sm font-medium">{property.name}</span>
-                  <span data-role="location-account-name" class="text-xs text-base-content/60 block">
+                <div class="min-w-0">
+                  <span data-role="location-title" class="text-sm font-medium break-words">
+                    {property.name}
+                  </span>
+                  <span
+                    data-role="location-account-name"
+                    class="text-xs text-base-content/70 block break-words"
+                  >
                     {property.account}
                   </span>
                   <span
                     :if={property[:address]}
                     data-role="location-address"
-                    class="text-xs text-base-content/50 block"
+                    class="text-xs text-base-content/60 block break-words"
                   >
                     {property.address}
                   </span>
                   <span
                     :if={property[:store_code]}
                     data-role="location-store-code"
-                    class="text-xs text-base-content/40 block"
+                    class="text-xs text-base-content/60 block break-words"
                   >
                     Store: {property.store_code}
                   </span>
@@ -583,7 +705,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <% else %>
               <div
                 :for={property <- @accounts}
-                class="flex items-center gap-3 p-3 bg-base-200 rounded hover:bg-base-300 transition-colors"
+                class="flex items-center gap-3 rounded-box border border-neutral bg-base-100 p-3 transition-colors hover:bg-base-300"
                 data-role="account-option"
               >
                 <input
@@ -596,9 +718,9 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                   phx-click="select_property"
                   phx-value-property_id={property.id}
                 />
-                <div>
-                  <span class="text-sm font-medium">{property.name}</span>
-                  <span class="text-xs text-base-content/60 block">
+                <div class="min-w-0">
+                  <span class="text-sm font-medium break-words">{property.name}</span>
+                  <span class="text-xs text-base-content/70 block break-all">
                     {property.account} &mdash; {property.id}
                   </span>
                 </div>
@@ -608,7 +730,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <% end %>
 
         <%= if @missing_locations != [] do %>
-          <div data-role="missing-location" class="alert alert-warning text-sm">
+          <div data-role="missing-location" class="alert alert-warning rounded-box text-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="stroke-current shrink-0 h-5 w-5"
@@ -622,13 +744,13 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            <div>
+            <div class="min-w-0">
               <p class="font-medium">Previously configured location(s) are no longer available:</p>
               <ul class="mt-1 list-disc list-inside">
                 <li
                   :for={loc_id <- @missing_locations}
                   data-role="location-unavailable"
-                  class="text-xs"
+                  class="text-xs break-all"
                 >
                   {loc_id}
                 </li>
@@ -643,7 +765,7 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
         <%= if @accounts_error == :api_disabled or @accounts == [] do %>
           <div data-role="manual-entry" class="space-y-2">
             <%= if @accounts_error == :api_disabled do %>
-              <div class="alert alert-warning text-sm mb-3">
+              <div class="alert alert-warning rounded-box text-sm mb-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="stroke-current shrink-0 h-5 w-5"
@@ -664,8 +786,8 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
             <% end %>
 
             <%= if @accounts != [] do %>
-              <div class="divider text-xs text-base-content/40">or enter manually</div>
-              <div class="flex items-center gap-3 p-3 bg-base-200 rounded">
+              <div class="divider text-xs text-base-content/60">or enter manually</div>
+              <div class="flex items-center gap-3 rounded-box border border-neutral bg-base-100 p-3">
                 <input
                   type="radio"
                   name="property_id"
@@ -690,10 +812,10 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
                 value={@manual_property_id}
                 placeholder={account_labels(String.to_existing_atom(@provider)).id_label}
                 data-role="manual-property-input"
-                class="input input-bordered input-sm w-full"
+                class="input input-bordered input-sm w-full rounded-box border-neutral bg-base-100"
               />
               <div class="label">
-                <span class="label-text-alt text-xs text-base-content/50">
+                <span class="label-text-alt text-xs text-base-content/60">
                   {@account_labels.help_text}
                 </span>
               </div>
@@ -705,12 +827,15 @@ defmodule MetricFlowWeb.IntegrationLive.Connect do
           <button
             type="submit"
             data-role="save-selection"
-            class="btn btn-primary w-full"
+            class="btn-brand-gradient w-full rounded-box px-4 py-2 font-semibold"
           >
             Save Selection
           </button>
 
-          <.link navigate={~p"/app/integrations/connect/#{@provider}"} class="btn btn-ghost btn-sm">
+          <.link
+            navigate={~p"/app/integrations/connect/#{@provider}"}
+            class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-center text-sm text-base-content hover:bg-base-300"
+          >
             Back
           </.link>
         </div>
