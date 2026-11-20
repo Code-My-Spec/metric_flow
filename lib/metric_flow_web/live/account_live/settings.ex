@@ -37,379 +37,431 @@ defmodule MetricFlowWeb.AccountLive.Settings do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>
-          Account Settings
-          <:subtitle><span class="text-base-content/60">{@account.name}</span></:subtitle>
-        </.header>
+      <div class="mx-auto max-w-3xl space-y-6 overflow-x-hidden">
+        <header class="space-y-1">
+          <h1 class="text-2xl font-semibold text-base-content break-words">Account Settings</h1>
+          <p class="text-sm text-base-content/70 break-words">{@account.name}</p>
+        </header>
 
-        <div class="mt-8 space-y-8">
-          <%!-- Section 1: General Settings (owners and admins) --%>
-          <div :if={@can_edit} class="card bg-base-100 shadow mf-card">
-            <div class="card-body">
-              <h2 class="card-title text-base">General Settings</h2>
-              <form
-                id="account-settings-form"
-                phx-change="validate"
-                phx-submit="save"
-                class="space-y-4"
-              >
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Account Name</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="account[name]"
-                    value={@form.params["name"] || @account.name}
-                    class={["input w-full", has_error?(@form, :name) && "input-error"]}
-                    phx-debounce="300"
-                  />
-                  <p :if={has_error?(@form, :name)} class="text-sm text-error mt-1">
-                    {first_error(@form, :name)}
-                  </p>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Slug</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="account[slug]"
-                    value={@form.params["slug"] || @account.slug}
-                    class={["input w-full font-mono", has_error?(@form, :slug) && "input-error"]}
-                    phx-debounce="300"
-                  />
-                  <p :if={has_error?(@form, :slug)} class="text-sm text-error mt-1">
-                    {first_error(@form, :slug)}
-                  </p>
-                  <p class="text-xs text-base-content/50 mt-1">
-                    Used in URLs. Lowercase letters, numbers, and hyphens only.
-                  </p>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text text-sm text-base-content/60">Account Type</span>
-                  </label>
-                  <p class="text-sm">{account_type_label(@account.type)}</p>
-                </div>
-
-                <div :if={@can_save} class="card-actions justify-end">
-                  <button type="submit" class="btn btn-primary w-full sm:w-auto">
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <%!-- Section 1 (read-only view for non-editor roles) --%>
-          <div :if={not @can_edit} class="card bg-base-100 shadow mf-card">
-            <div class="card-body">
-              <h2 class="card-title text-base">General Settings</h2>
-              <div class="space-y-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Account Name</span>
-                  </label>
-                  <input type="text" value={@account.name} class="input w-full" readonly />
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Slug</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={@account.slug}
-                    class="input w-full font-mono"
-                    readonly
-                  />
-                  <p class="text-xs text-base-content/50 mt-1">
-                    Used in URLs. Lowercase letters, numbers, and hyphens only.
-                  </p>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text text-sm text-base-content/60">Account Type</span>
-                  </label>
-                  <p class="text-sm">{account_type_label(@account.type)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <%!-- Section: Leave Account (non-owners of team accounts) --%>
-          <div
-            :if={not @is_owner and @account.type in [:client, :agency] and not @left_account}
-            class="card bg-base-100 shadow mf-card border border-warning/40"
+        <%!-- Account — name, slug, type. Owners and admins can edit. --%>
+        <section :if={@can_edit} class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6">
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-base-content">Account</h2>
+            <p class="text-sm text-base-content/70">
+              The name and slug shown to teammates and anywhere this account is referenced.
+            </p>
+          </header>
+          <form
+            id="account-settings-form"
+            phx-change="validate"
+            phx-submit="save"
+            class="mt-4 space-y-4"
           >
-            <div class="card-body">
-              <h2 class="card-title text-base">Leave Account</h2>
-              <p class="text-sm text-base-content/60">
-                Remove yourself from this account. You will lose access to all account data.
-                This action cannot be undone.
+            <div class="space-y-1">
+              <label for="account-name-input" class="block text-sm font-semibold text-base-content">
+                Account Name
+              </label>
+              <input
+                id="account-name-input"
+                type="text"
+                name="account[name]"
+                value={@form.params["name"] || @account.name}
+                class={[
+                  "input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content",
+                  has_error?(@form, :name) && "input-error"
+                ]}
+                phx-debounce="300"
+              />
+              <p :if={has_error?(@form, :name)} class="text-sm text-error">
+                {first_error(@form, :name)}
               </p>
-              <div class="card-actions justify-end mt-4">
+            </div>
+
+            <div class="space-y-1">
+              <label for="account-slug-input" class="block text-sm font-semibold text-base-content">
+                Slug
+              </label>
+              <input
+                id="account-slug-input"
+                type="text"
+                name="account[slug]"
+                value={@form.params["slug"] || @account.slug}
+                class={[
+                  "input input-bordered w-full font-mono bg-base-100 border-neutral rounded-box text-base-content",
+                  has_error?(@form, :slug) && "input-error"
+                ]}
+                phx-debounce="300"
+              />
+              <p :if={has_error?(@form, :slug)} class="text-sm text-error">
+                {first_error(@form, :slug)}
+              </p>
+              <p class="text-xs text-base-content/60">
+                Used in URLs. Lowercase letters, numbers, and hyphens only.
+              </p>
+            </div>
+
+            <div class="space-y-1">
+              <span class="block text-sm font-semibold text-base-content">Account Type</span>
+              <p class="text-sm text-base-content/70">{account_type_label(@account.type)}</p>
+            </div>
+
+            <div :if={@can_save}>
+              <button
+                type="submit"
+                class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <%!-- Account (read-only view for non-editor roles) --%>
+        <section
+          :if={not @can_edit}
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-base-content">Account</h2>
+            <p class="text-sm text-base-content/70">
+              These details are read-only at your access level.
+            </p>
+          </header>
+          <div class="mt-4 space-y-4">
+            <div class="space-y-1">
+              <span class="block text-sm font-semibold text-base-content">Account Name</span>
+              <input
+                type="text"
+                value={@account.name}
+                class="input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+                readonly
+              />
+            </div>
+            <div class="space-y-1">
+              <span class="block text-sm font-semibold text-base-content">Slug</span>
+              <input
+                type="text"
+                value={@account.slug}
+                class="input input-bordered w-full font-mono bg-base-100 border-neutral rounded-box text-base-content"
+                readonly
+              />
+              <p class="text-xs text-base-content/60">
+                Used in URLs. Lowercase letters, numbers, and hyphens only.
+              </p>
+            </div>
+            <div class="space-y-1">
+              <span class="block text-sm font-semibold text-base-content">Account Type</span>
+              <p class="text-sm text-base-content/70">{account_type_label(@account.type)}</p>
+            </div>
+          </div>
+        </section>
+
+        <%!-- Agency Access section (team accounts, all roles can view) --%>
+        <AgencyLive.Settings.grant_agency_access_section
+          :if={@account.type in [:client, :agency]}
+          agency_grants={@agency_grants}
+          grant_agency_form={@grant_agency_form}
+          can_manage_agencies={@current_user_role in [:owner, :admin]}
+        />
+
+        <%!-- Agency configuration: auto-enrollment and white-label branding
+           (agency-type team accounts, owners/admins only) --%>
+        <AgencyLive.Settings.auto_enrollment_section
+          :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
+          auto_enrollment_rule={@auto_enrollment_rule}
+          auto_enrollment_form={@auto_enrollment_form}
+        />
+
+        <AgencyLive.Settings.white_label_section
+          :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
+          white_label_config={@agency_white_label_config}
+          white_label_form={@white_label_form}
+          logo_upload={@uploads.logo}
+          pending_logo={@pending_logo}
+        />
+
+        <%!-- Transfer Ownership (owners of team accounts) --%>
+        <section
+          :if={@is_owner and @account.type in [:client, :agency]}
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-base-content">Transfer Ownership</h2>
+            <p class="text-sm text-base-content/70">
+              The new owner must confirm by email before ownership actually changes.
+            </p>
+          </header>
+
+          <div
+            :if={@pending_transfer}
+            data-role="transfer-pending-banner"
+            class="mt-4 rounded-box border border-warning bg-base-200 p-3 text-sm text-warning break-words"
+          >
+            A transfer to <strong>{@pending_transfer.target_email}</strong> is pending confirmation.
+          </div>
+
+          <form
+            id="transfer-ownership-form"
+            data-role="transfer-ownership"
+            phx-submit="transfer_ownership"
+            class="mt-4 space-y-4"
+          >
+            <div class="space-y-2">
+              <label class="flex cursor-pointer items-start gap-2">
+                <input
+                  type="radio"
+                  name="transfer_target"
+                  value="existing"
+                  data-role="transfer-target-existing-radio"
+                  class="radio radio-sm mt-1"
+                  checked
+                />
+                <span class="text-sm text-base-content">
+                  Transfer to an existing member with access
+                </span>
+              </label>
+              <select
+                name="user_id"
+                class="select select-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+              >
+                <option :for={member <- non_owner_members(@members)} value={member.user_id}>
+                  {member.user.email}
+                </option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="flex cursor-pointer items-start gap-2">
+                <input
+                  type="radio"
+                  name="transfer_target"
+                  value="invite"
+                  data-role="transfer-target-invite-radio"
+                  class="radio radio-sm mt-1"
+                />
+                <span class="text-sm text-base-content">
+                  Send a transfer invitation to a new email
+                </span>
+              </label>
+              <input
+                type="email"
+                name="invite_email"
+                data-role="transfer-invite-email-input"
+                placeholder="newowner@example.com"
+                class="input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+              />
+            </div>
+
+            <label class="flex cursor-pointer items-start gap-2">
+              <input type="hidden" name="make_copy" value="false" />
+              <input
+                type="checkbox"
+                name="make_copy"
+                value="true"
+                data-role="transfer-make-copy-checkbox"
+                class="checkbox checkbox-sm mt-1"
+              />
+              <span class="text-sm text-base-content">
+                Make a copy of this account's data in my own account
+              </span>
+            </label>
+
+            <label class="flex cursor-pointer items-start gap-2">
+              <input type="hidden" name="remain_admin" value="false" />
+              <input
+                type="checkbox"
+                name="remain_admin"
+                value="true"
+                data-role="transfer-remain-admin-checkbox"
+                class="checkbox checkbox-sm mt-1"
+              />
+              <span class="text-sm text-base-content">Remain as admin after the transfer</span>
+            </label>
+
+            <label
+              :if={@account_has_originator_grants}
+              class="flex cursor-pointer items-start gap-2"
+            >
+              <input type="hidden" name="transfer_originator" value="false" />
+              <input
+                type="checkbox"
+                name="transfer_originator"
+                value="true"
+                data-role="transfer-originator-checkbox"
+                class="checkbox checkbox-sm mt-1"
+              />
+              <span class="text-sm text-base-content">
+                Also transfer white-label originator status
+              </span>
+            </label>
+
+            <div>
+              <button
+                type="submit"
+                class="rounded-box border border-warning bg-base-200 px-4 py-2 text-sm font-semibold text-warning hover:bg-base-300 w-full sm:w-auto"
+              >
+                Transfer Ownership
+              </button>
+            </div>
+          </form>
+
+          <div
+            :if={@ownership_transfer_log}
+            data-role="ownership-transfer-log-entry"
+            class="mt-4 text-xs text-base-content/60 break-words"
+          >
+            Ownership transferred from {@ownership_transfer_log.initiated_by_email} to {@ownership_transfer_log.target_email}, confirmed {@ownership_transfer_log.confirmed_at}.
+          </div>
+        </section>
+
+        <%!-- Leave Account (non-owners of team accounts).
+             A destructive self-action: kept in its own warning-toned card so it is
+             clearly separated from everyday read/edit controls. --%>
+        <section
+          :if={not @is_owner and @account.type in [:client, :agency] and not @left_account}
+          class="rounded-box border border-warning bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-warning">Leave Account</h2>
+            <p class="text-sm text-base-content/70">
+              Remove yourself from this account. You will lose access to all account data.
+              This action cannot be undone.
+            </p>
+          </header>
+          <div class="mt-4">
+            <button
+              data-role="revoke-own-access"
+              phx-click="show_leave_confirm"
+              class="rounded-box border border-warning bg-base-200 px-4 py-2 text-sm font-semibold text-warning hover:bg-base-300 w-full sm:w-auto"
+            >
+              Leave Account
+            </button>
+          </div>
+
+          <dialog :if={@show_leave_confirm} id="leave-account-modal" class="modal modal-open">
+            <div class="modal-box rounded-box border border-neutral bg-base-200">
+              <h3 class="text-lg font-semibold text-base-content">Leave Account</h3>
+              <p class="py-4 text-sm text-base-content/70">
+                Are you sure you want to leave this account? You will lose all access.
+              </p>
+              <div class="modal-action flex-wrap gap-2">
                 <button
-                  data-role="revoke-own-access"
-                  phx-click="show_leave_confirm"
-                  class="btn btn-warning"
+                  phx-click="cancel_leave"
+                  id="leave-cancel-btn"
+                  class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-sm text-base-content hover:bg-base-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  data-role="confirm-leave"
+                  phx-click="leave_account"
+                  class="rounded-box border border-warning bg-base-200 px-4 py-2 text-sm font-semibold text-warning hover:bg-base-300"
                 >
                   Leave Account
                 </button>
               </div>
             </div>
+            <div class="modal-backdrop" phx-click="cancel_leave"></div>
+          </dialog>
+        </section>
 
-            <%!-- Leave Account confirmation modal --%>
-            <dialog :if={@show_leave_confirm} id="leave-account-modal" class="modal modal-open">
-              <div class="modal-box">
-                <h3 class="text-lg font-bold">Leave Account</h3>
-                <p class="py-4">
-                  Are you sure you want to leave this account? You will lose all access.
-                </p>
-                <div class="modal-action">
-                  <button phx-click="cancel_leave" id="leave-cancel-btn" class="btn">Cancel</button>
-                  <button data-role="confirm-leave" phx-click="leave_account" class="btn btn-warning">
-                    Leave Account
-                  </button>
-                </div>
-              </div>
-              <div class="modal-backdrop" phx-click="cancel_leave"></div>
-            </dialog>
+        <section
+          :if={@left_account}
+          class="rounded-box border border-success bg-base-200 p-4 sm:p-6"
+        >
+          <p class="text-sm text-success">
+            Your access has been revoked. You have left the account.
+          </p>
+        </section>
+
+        <%!-- Danger zone — visibly separated from everyday settings.
+             Deletion is irreversible, so it sits below an error-toned divider
+             and inside an error-bordered card of its own. --%>
+        <div :if={@is_owner and @account.type in [:client, :agency]} class="pt-6 space-y-3">
+          <div class="flex items-center gap-3">
+            <span aria-hidden="true" class="h-px flex-1 bg-error/40"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-error">
+              Danger zone
+            </span>
+            <span aria-hidden="true" class="h-px flex-1 bg-error/40"></span>
           </div>
 
-          <%!-- Leave Account success state --%>
-          <div :if={@left_account} class="card bg-base-100 shadow mf-card border border-success/40">
-            <div class="card-body">
-              <p class="text-success">Your access has been revoked. You have left the account.</p>
-            </div>
-          </div>
-
-          <%!-- Agency Access section (team accounts, all roles can view) --%>
-          <AgencyLive.Settings.grant_agency_access_section
-            :if={@account.type in [:client, :agency]}
-            agency_grants={@agency_grants}
-            grant_agency_form={@grant_agency_form}
-            can_manage_agencies={@current_user_role in [:owner, :admin]}
-          />
-
-          <%!-- Agency configuration: auto-enrollment and white-label branding
-             (agency-type team accounts, owners/admins only) --%>
-          <AgencyLive.Settings.auto_enrollment_section
-            :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
-            auto_enrollment_rule={@auto_enrollment_rule}
-            auto_enrollment_form={@auto_enrollment_form}
-          />
-
-          <AgencyLive.Settings.white_label_section
-            :if={@account.type == :agency and @current_user_role in [:owner, :admin]}
-            white_label_config={@agency_white_label_config}
-            white_label_form={@white_label_form}
-            logo_upload={@uploads.logo}
-            pending_logo={@pending_logo}
-          />
-
-          <%!-- Section 2: Transfer Ownership --%>
-          <div
-            :if={@is_owner and @account.type in [:client, :agency]}
-            class="card bg-base-100 shadow mf-card"
-          >
-            <div class="card-body">
-              <h2 class="card-title text-base">Transfer Ownership</h2>
-              <p class="text-sm text-base-content/60">
-                The new owner must confirm by email before ownership actually changes.
+          <section class="rounded-box border border-error bg-base-200 p-4 sm:p-6">
+            <header class="space-y-1">
+              <h2 class="text-lg font-semibold text-error">Delete Account</h2>
+              <p class="text-sm text-base-content/70">
+                This action is permanent and cannot be undone. This deletion is irreversible — all account data, members, and integrations will be deleted.
               </p>
-
-              <div
-                :if={@pending_transfer}
-                data-role="transfer-pending-banner"
-                class="alert alert-warning mt-4"
-              >
-                <p class="text-sm">
-                  A transfer to <strong>{@pending_transfer.target_email}</strong>
-                  is pending confirmation.
-                </p>
-              </div>
-
-              <form
-                id="transfer-ownership-form"
-                data-role="transfer-ownership"
-                phx-submit="transfer_ownership"
-                class="space-y-4 mt-4"
-              >
-                <div class="form-control">
-                  <label class="label cursor-pointer gap-2 justify-start">
-                    <input
-                      type="radio"
-                      name="transfer_target"
-                      value="existing"
-                      data-role="transfer-target-existing-radio"
-                      class="radio"
-                      checked
-                    />
-                    <span class="label-text">Transfer to an existing member with access</span>
-                  </label>
-                  <select name="user_id" class="select w-full mt-2">
-                    <option :for={member <- non_owner_members(@members)} value={member.user_id}>
-                      {member.user.email}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label cursor-pointer gap-2 justify-start">
-                    <input
-                      type="radio"
-                      name="transfer_target"
-                      value="invite"
-                      data-role="transfer-target-invite-radio"
-                      class="radio"
-                    />
-                    <span class="label-text">Send a transfer invitation to a new email</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="invite_email"
-                    data-role="transfer-invite-email-input"
-                    placeholder="newowner@example.com"
-                    class="input w-full mt-2"
-                  />
-                </div>
-
-                <div class="form-control">
-                  <label class="label cursor-pointer gap-2 justify-start">
-                    <input type="hidden" name="make_copy" value="false" />
-                    <input
-                      type="checkbox"
-                      name="make_copy"
-                      value="true"
-                      data-role="transfer-make-copy-checkbox"
-                      class="checkbox"
-                    />
-                    <span class="label-text">
-                      Make a copy of this account's data in my own account
-                    </span>
-                  </label>
-                </div>
-
-                <div class="form-control">
-                  <label class="label cursor-pointer gap-2 justify-start">
-                    <input type="hidden" name="remain_admin" value="false" />
-                    <input
-                      type="checkbox"
-                      name="remain_admin"
-                      value="true"
-                      data-role="transfer-remain-admin-checkbox"
-                      class="checkbox"
-                    />
-                    <span class="label-text">Remain as admin after the transfer</span>
-                  </label>
-                </div>
-
-                <div :if={@account_has_originator_grants} class="form-control">
-                  <label class="label cursor-pointer gap-2 justify-start">
-                    <input type="hidden" name="transfer_originator" value="false" />
-                    <input
-                      type="checkbox"
-                      name="transfer_originator"
-                      value="true"
-                      data-role="transfer-originator-checkbox"
-                      class="checkbox"
-                    />
-                    <span class="label-text">Also transfer white-label originator status</span>
-                  </label>
-                </div>
-
-                <div class="card-actions justify-end">
-                  <button type="submit" class="btn btn-warning">
-                    Transfer Ownership
-                  </button>
-                </div>
-              </form>
-
-              <div
-                :if={@ownership_transfer_log}
-                data-role="ownership-transfer-log-entry"
-                class="mt-4 text-xs text-base-content/60"
-              >
-                Ownership transferred from {@ownership_transfer_log.initiated_by_email} to {@ownership_transfer_log.target_email}, confirmed {@ownership_transfer_log.confirmed_at}.
-              </div>
-            </div>
-          </div>
-
-          <%!-- Section 3: Danger Zone (owners of team accounts only) --%>
-          <div
-            :if={@is_owner and @account.type in [:client, :agency]}
-            class="card bg-base-100 shadow mf-card border border-error/40"
-          >
-            <div class="card-body">
-              <h2 class="card-title text-base text-error">Delete Account</h2>
-              <%!--
+            </header>
+            <%!--
               Dual-named inputs: flat names (account_name_confirmation/password) for unit
               test compatibility and nested names (delete_confirmation[...]) for BDD spex.
-              The sr-only inputs are visually hidden but present in the DOM.
-              The handler reads from whichever set has a non-empty value.
+              The sr-only inputs are visually hidden but present in the DOM. The handler
+              reads from whichever set has a non-empty value.
             --%>
-              <form
-                id="delete-account-form"
-                data-role="delete-account"
-                phx-submit="delete_account"
-                class="space-y-4"
-              >
-                <%!-- sr-only nested inputs for BDD spex compatibility --%>
+            <form
+              id="delete-account-form"
+              data-role="delete-account"
+              phx-submit="delete_account"
+              class="mt-4 space-y-4"
+            >
+              <input
+                type="text"
+                name="delete_confirmation[account_name]"
+                class="sr-only"
+                aria-hidden="true"
+              />
+              <input
+                type="password"
+                name="delete_confirmation[password]"
+                class="sr-only"
+                aria-hidden="true"
+              />
+
+              <p class="text-sm text-base-content/70">
+                This action is permanent and cannot be undone. This deletion is irreversible — all account data, members, and integrations will be deleted.
+              </p>
+
+              <div class="space-y-1">
+                <label
+                  for="delete-account-name"
+                  class="block text-sm font-semibold text-base-content"
+                >
+                  Type the account name to confirm
+                </label>
                 <input
+                  id="delete-account-name"
                   type="text"
-                  name="delete_confirmation[account_name]"
-                  class="sr-only"
-                  aria-hidden="true"
+                  name="account_name_confirmation"
+                  class="input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+                  phx-debounce="blur"
+                  placeholder={@account.name}
                 />
+              </div>
+
+              <div class="space-y-1">
+                <label
+                  for="delete-account-password"
+                  class="block text-sm font-semibold text-base-content"
+                >
+                  Your password
+                </label>
                 <input
+                  id="delete-account-password"
                   type="password"
-                  name="delete_confirmation[password]"
-                  class="sr-only"
-                  aria-hidden="true"
+                  name="password"
+                  class="input input-bordered input-password w-full bg-base-100 border-neutral rounded-box text-base-content"
                 />
+              </div>
 
-                <p class="text-sm text-base-content/60">
-                  This action is permanent and cannot be undone. This deletion is irreversible — all account data, members, and integrations will be deleted.
-                </p>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Type the account name to confirm</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="account_name_confirmation"
-                    class="input w-full"
-                    phx-debounce="blur"
-                    placeholder={@account.name}
-                  />
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Your password</span>
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    class="input input-password w-full"
-                  />
-                </div>
-
-                <div class="card-actions justify-end">
-                  <button type="submit" class="btn btn-error">
-                    Delete Account
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+              <button
+                type="submit"
+                class="rounded-box border border-error bg-base-200 px-4 py-2 text-sm font-semibold text-error hover:bg-base-300 w-full sm:w-auto"
+              >
+                Delete Account
+              </button>
+            </form>
+          </section>
         </div>
       </div>
     </Layouts.app>
