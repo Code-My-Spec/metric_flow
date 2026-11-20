@@ -215,4 +215,48 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEditTest do
       assert_receive :done
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # design pass: a plain form in Anderson BI tokens
+  # ---------------------------------------------------------------------------
+
+  describe "design pass: a plain form in Anderson BI tokens" do
+    test "account-selection is a <form>, the save action uses the brand gradient, and no mf-card class leaks",
+         %{conn: conn} do
+      user = user_fixture()
+      MetricFlowTest.AgenciesFixtures.account_with_member_fixture(user, :owner)
+
+      integration_fixture(user, %{
+        provider: :google_analytics,
+        provider_metadata: %{
+          "selected_accounts" => ["UA-12345 (Main Site)"]
+        }
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/integrations/google_analytics/accounts/edit")
+
+        # Jordan expects a plain form, not a div dressed up as one.
+        assert has_element?(lv, "form[data-role='account-selection']")
+
+        # DESIGN.md reserves btn-brand-gradient for the shell's primary action.
+        assert has_element?(
+                 lv,
+                 "button[data-role='save-account-selection'].btn-brand-gradient"
+               )
+
+        # The undefined mf-card class must not be rendered.
+        refute html =~ "mf-card"
+
+        # Account rows use the DESIGN.md radius token, not `rounded`.
+        refute html =~ ~s|class="flex items-center gap-3 p-3 bg-base-200 rounded"|
+
+        send(self(), :done)
+      end)
+
+      assert_receive :done
+    end
+  end
 end
