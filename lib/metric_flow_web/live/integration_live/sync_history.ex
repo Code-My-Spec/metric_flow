@@ -45,16 +45,19 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <div class="mb-8">
-          <h1 class="text-2xl font-bold">Sync History</h1>
+      <div class="mx-auto overflow-x-hidden">
+        <div class="mb-6">
+          <h1 class="min-w-0 break-words text-2xl font-bold text-base-content">Sync History</h1>
           <p class="mt-1 text-base-content/60">
             View automated sync results and status
           </p>
         </div>
 
         <%!-- Schedule section --%>
-        <div data-role="sync-schedule" class="mf-card p-5 mb-6">
+        <div
+          data-role="sync-schedule"
+          class="rounded-box border border-neutral bg-base-200 p-5 mb-6"
+        >
           <h2 class="text-lg font-semibold">Automated Sync Schedule</h2>
           <p class="mt-1 text-sm text-base-content/60">
             Daily at 2:00 AM UTC — retrieves metrics and financial data per provider, per day.
@@ -144,36 +147,53 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
           </button>
         </div>
 
-        <%!-- Sync history list --%>
+        <%!-- Sync history list. Failed syncs are listed before successful ones so a reseller spots what broke first. --%>
         <div data-role="sync-history" class="space-y-3">
-          <div :if={@sync_history == [] and @sync_events == []} class="mf-card p-8 text-center">
-            <p class="text-base-content/60">No sync history yet.</p>
-            <p class="mt-2 text-sm text-base-content/50">
-              Initial Sync entries will appear here once the first automated or manual sync runs.
-              Each provider sync entry shows the provider name, status, records synced, and date.
-              The system backfills all available historical data from each platform on first sync.
+          <div
+            :if={@sync_history == [] and @sync_events == []}
+            class="rounded-box border border-neutral bg-base-200 p-6 text-center"
+          >
+            <p class="text-base-content">No sync history yet.</p>
+            <p class="mt-2 text-sm text-base-content/60">
+              One row per sync will appear here — provider, when it finished, and whether it succeeded — once the first automated or manual sync runs. Failed runs come first.
             </p>
             <div class="mt-3 flex justify-center gap-2 flex-wrap">
               <span data-sync-type="initial" class="badge badge-ghost">Initial Sync</span>
             </div>
           </div>
 
-          <%!-- Live sync events (prepended first) --%>
+          <%!-- Failed rows first (live events, then persisted). --%>
           <div
-            :for={entry <- filter_events(@sync_events, @status_filter)}
+            :for={entry <- failed_first_events(@sync_events, @status_filter)}
             data-role="sync-history-entry"
             data-status={entry.status}
-            class="mf-card p-4"
+            class="rounded-box border border-neutral bg-base-200 p-4"
           >
             <.sync_entry entry={entry} />
           </div>
-
-          <%!-- Persisted history entries --%>
           <div
-            :for={entry <- filter_history(@sync_history, @status_filter)}
+            :for={entry <- failed_first_history(@sync_history, @status_filter)}
             data-role="sync-history-entry"
             data-status={to_string(entry.status)}
-            class="mf-card p-4"
+            class="rounded-box border border-neutral bg-base-200 p-4"
+          >
+            <.persisted_entry entry={entry} />
+          </div>
+
+          <%!-- Then everything else (successes and partials), newest first. --%>
+          <div
+            :for={entry <- remaining_events(@sync_events, @status_filter)}
+            data-role="sync-history-entry"
+            data-status={entry.status}
+            class="rounded-box border border-neutral bg-base-200 p-4"
+          >
+            <.sync_entry entry={entry} />
+          </div>
+          <div
+            :for={entry <- remaining_history(@sync_history, @status_filter)}
+            data-role="sync-history-entry"
+            data-status={to_string(entry.status)}
+            class="rounded-box border border-neutral bg-base-200 p-4"
           >
             <.persisted_entry entry={entry} />
           </div>
@@ -191,10 +211,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp sync_entry(%{entry: %{status: "success"}} = assigns) do
     ~H"""
-    <div class="flex items-center justify-between">
-      <div>
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-semibold" data-role="sync-provider">
+          <span class="font-semibold break-words text-base-content" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-success">Success</span>
@@ -206,21 +226,21 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
-        <p class="text-sm text-base-content/60 mt-1">
-          {@entry.records_synced} records synced
-        </p>
-        <p :if={@entry[:completed_at]} class="text-xs text-base-content/50 mt-0.5">
+        <p :if={@entry[:completed_at]} class="text-xs text-base-content/60 mt-1 break-words">
           Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p class="text-sm text-base-content/70 mt-1 break-words">
+          {@entry.records_synced} records synced
         </p>
         <p
           :if={@entry[:sync_type] == :initial}
           data-role="backfill-limit-notice"
-          class="text-xs text-base-content/50 mt-0.5"
+          class="text-xs text-base-content/50 mt-0.5 break-words"
         >
           Backfilled the maximum history available from this platform's API.
         </p>
       </div>
-      <div class="text-right">
+      <div class="shrink-0 text-right">
         <p :if={@entry[:data_date]} class="text-xs text-base-content/50">
           Date: {Date.to_iso8601(@entry.data_date)}
         </p>
@@ -231,10 +251,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp sync_entry(%{entry: %{status: "failed"}} = assigns) do
     ~H"""
-    <div class="flex items-center justify-between">
-      <div>
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-semibold" data-role="sync-provider">
+          <span class="font-semibold break-words text-base-content" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-error">Failed</span>
@@ -246,10 +266,13 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
-        <p :if={@entry[:records_synced]} class="text-sm text-base-content/60 mt-1">
+        <p :if={@entry[:completed_at]} class="text-xs text-base-content/60 mt-1 break-words">
+          Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p :if={@entry[:records_synced]} class="text-sm text-base-content/70 mt-1 break-words">
           {@entry.records_synced} records synced
         </p>
-        <p :if={@entry[:reason]} data-role="sync-error" class="text-sm text-error mt-1">
+        <p :if={@entry[:reason]} data-role="sync-error" class="text-sm text-error mt-1 break-words">
           {strip_legacy_module_prefix(@entry.reason)}
         </p>
         <p
@@ -261,12 +284,12 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         <p
           :if={@entry[:sync_type] == :initial}
           data-role="backfill-limit-notice"
-          class="text-xs text-base-content/50 mt-0.5"
+          class="text-xs text-base-content/50 mt-0.5 break-words"
         >
           Backfilled the maximum history available from this platform's API.
         </p>
       </div>
-      <div class="text-right">
+      <div class="shrink-0 text-right">
         <p :if={@entry[:data_date]} class="text-xs text-base-content/50">
           Date: {Date.to_iso8601(@entry.data_date)}
         </p>
@@ -283,17 +306,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp persisted_entry(%{entry: %{status: :success}} = assigns) do
     ~H"""
-    <div class="flex items-center justify-between">
-      <div>
-        <p
-          :if={@entry.provider == :youtube and @entry.error_message}
-          data-role="sync-error"
-          class="mt-1 text-sm text-amber-700"
-        >
-          {strip_legacy_module_prefix(@entry.error_message)}
-        </p>
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-semibold" data-role="sync-provider">
+          <span class="font-semibold break-words text-base-content" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-success">Success</span>
@@ -301,21 +317,28 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
-        <p class="text-sm text-base-content/60 mt-1">
+        <p :if={@entry.completed_at} class="text-xs text-base-content/60 mt-1 break-words">
+          Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p class="text-sm text-base-content/70 mt-1 break-words">
           {@entry.records_synced} records synced
         </p>
-        <p :if={@entry.completed_at} class="text-xs text-base-content/50 mt-0.5">
-          Completed at {format_datetime(@entry.completed_at)}
+        <p
+          :if={@entry.provider == :youtube and @entry.error_message}
+          data-role="sync-error"
+          class="mt-1 text-sm text-warning break-words"
+        >
+          {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <p
           :if={@entry.sync_type == :initial}
           data-role="backfill-limit-notice"
-          class="text-xs text-base-content/50 mt-0.5"
+          class="text-xs text-base-content/50 mt-0.5 break-words"
         >
           Backfilled the maximum history available from this platform's API.
         </p>
       </div>
-      <div class="text-right">
+      <div class="shrink-0 text-right">
         <p :if={@entry.completed_at} class="text-xs text-base-content/50">
           Date: {Date.to_iso8601(DateTime.to_date(@entry.completed_at))}
         </p>
@@ -326,10 +349,10 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp persisted_entry(%{entry: %{status: :failed}} = assigns) do
     ~H"""
-    <div class="flex items-center justify-between">
-      <div>
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-semibold" data-role="sync-provider">
+          <span class="font-semibold break-words text-base-content" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-error">Failed</span>
@@ -337,19 +360,26 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
             Initial Sync
           </span>
         </div>
-        <p class="text-sm text-base-content/60 mt-1">
+        <p :if={@entry.completed_at} class="text-xs text-base-content/60 mt-1 break-words">
+          Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p class="text-sm text-base-content/70 mt-1 break-words">
           {@entry.records_synced} records synced
         </p>
-        <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
+        <p
+          :if={@entry.error_message}
+          data-role="sync-error"
+          class="text-sm text-error mt-1 break-words"
+        >
           {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <details
           :if={@entry.provider_error_detail}
           id={"provider-error-detail-#{@entry.id}"}
-          class="mt-3 rounded-lg border border-base-content/15 p-3 text-sm"
+          class="mt-3 rounded-box border border-neutral p-3 text-sm"
         >
           <summary class="cursor-pointer font-medium">Provider error details</summary>
-          <p class="mt-2">HTTP status: {@entry.provider_error_detail["status"]}</p>
+          <p class="mt-2 break-words">HTTP status: {@entry.provider_error_detail["status"]}</p>
           <pre class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs">{@entry.provider_error_detail["body"]}</pre>
           <p :if={@entry.provider_error_detail["truncated"]} class="mt-2 text-xs">
             The provider response was truncated.
@@ -358,12 +388,12 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
         <p
           :if={@entry.sync_type == :initial}
           data-role="backfill-limit-notice"
-          class="text-xs text-base-content/50 mt-0.5"
+          class="text-xs text-base-content/50 mt-0.5 break-words"
         >
           Backfilled the maximum history available from this platform's API.
         </p>
       </div>
-      <div class="text-right">
+      <div class="shrink-0 text-right">
         <p :if={@entry.completed_at} class="text-xs text-base-content/50">
           Date: {Date.to_iso8601(DateTime.to_date(@entry.completed_at))}
         </p>
@@ -374,37 +404,41 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp persisted_entry(%{entry: %{status: :partial_success}} = assigns) do
     ~H"""
-    <div class="flex items-center justify-between">
-      <div>
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="font-semibold" data-role="sync-provider">
+          <span class="font-semibold break-words text-base-content" data-role="sync-provider">
             {provider_display_name(@entry.provider)}
           </span>
           <span class="badge badge-warning">Partial</span>
         </div>
-        <p class="text-sm text-base-content/60 mt-1">
+        <p :if={@entry.completed_at} class="text-xs text-base-content/60 mt-1 break-words">
+          Completed at {format_datetime(@entry.completed_at)}
+        </p>
+        <p class="text-sm text-base-content/70 mt-1 break-words">
           {@entry.records_synced} records synced
         </p>
-        <p :if={@entry.error_message} data-role="sync-error" class="text-sm text-error mt-1">
+        <p
+          :if={@entry.error_message}
+          data-role="sync-error"
+          class="text-sm text-error mt-1 break-words"
+        >
           {strip_legacy_module_prefix(@entry.error_message)}
         </p>
         <details
           :if={@entry.provider_error_detail}
           id={"provider-error-detail-#{@entry.id}"}
-          class="mt-3 rounded-lg border border-base-content/15 p-3 text-sm"
+          class="mt-3 rounded-box border border-neutral p-3 text-sm"
         >
           <summary class="cursor-pointer font-medium">Provider error details</summary>
-          <p class="mt-2">HTTP status: {@entry.provider_error_detail["status"]}</p>
+          <p class="mt-2 break-words">HTTP status: {@entry.provider_error_detail["status"]}</p>
           <pre class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs">{@entry.provider_error_detail["body"]}</pre>
           <p :if={@entry.provider_error_detail["truncated"]} class="mt-2 text-xs">
             The provider response was truncated.
           </p>
         </details>
-        <p :if={@entry.completed_at} class="text-xs text-base-content/50 mt-0.5">
-          Completed at {format_datetime(@entry.completed_at)}
-        </p>
       </div>
-      <div class="text-right">
+      <div class="shrink-0 text-right">
         <p :if={@entry.completed_at} class="text-xs text-base-content/50">
           Date: {Date.to_iso8601(DateTime.to_date(@entry.completed_at))}
         </p>
@@ -561,13 +595,30 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistory do
 
   defp strip_legacy_module_prefix(message), do: message
 
-  defp filter_events(events, "all"), do: events
-  defp filter_events(events, status), do: Enum.filter(events, &(&1.status == status))
+  # The design pass requires failed rows to appear before every other row.
+  # These helpers split the live sync_events stream and the persisted history
+  # list into a failed-first bucket and a remaining bucket so the template can
+  # render failures ahead of successes while honouring the status filter.
 
-  defp filter_history(history, "all"), do: history
+  defp failed_first_events(_events, "success"), do: []
+  defp failed_first_events(events, _filter), do: Enum.filter(events, &failed_live?/1)
 
-  defp filter_history(history, status) do
-    status_atom = String.to_existing_atom(status)
-    Enum.filter(history, &(&1.status == status_atom))
-  end
+  defp remaining_events(_events, "failed"), do: []
+  defp remaining_events(events, _filter), do: Enum.reject(events, &failed_live?/1)
+
+  defp failed_first_history(_history, "success"), do: []
+  defp failed_first_history(history, _filter), do: Enum.filter(history, &failed_persisted?/1)
+
+  defp remaining_history(_history, "failed"), do: []
+
+  defp remaining_history(history, "success"),
+    do: Enum.filter(history, &(&1.status == :success))
+
+  defp remaining_history(history, _filter), do: Enum.reject(history, &failed_persisted?/1)
+
+  defp failed_live?(%{status: "failed"}), do: true
+  defp failed_live?(_), do: false
+
+  defp failed_persisted?(%{status: :failed}), do: true
+  defp failed_persisted?(_), do: false
 end
