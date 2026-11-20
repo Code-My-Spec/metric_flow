@@ -10,6 +10,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
   use MetricFlowWeb, :live_view
 
   alias MetricFlow.Ai
+  alias MetricFlow.Ai.Insight
   alias MetricFlow.Correlations
 
   @type_labels %{
@@ -37,22 +38,44 @@ defmodule MetricFlowWeb.AiLive.Insights do
     {:general, "General"}
   ]
 
+  # DESIGN.md Card tokens for every panel on this page.
+  @card_class "bg-base-200 border border-neutral rounded-box"
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
 
   @impl true
   def render(%{paywall: paywall} = assigns) when not is_nil(paywall) do
-    MetricFlowWeb.CoreComponents.paywall_modal(assigns)
+    ~H"""
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      white_label_config={assigns[:white_label_config]}
+      active_account_name={assigns[:active_account_name]}
+      active_account_type={assigns[:active_account_type]}
+    >
+      <div class="overflow-x-hidden">
+        <header class="mb-6">
+          <h1 class="text-2xl font-bold">AI Insights</h1>
+          <p class="text-base-content/70 mt-1">
+            Verified and hypothesis recommendations from your correlation analysis.
+          </p>
+        </header>
+        <MetricFlowWeb.CoreComponents.paywall_modal paywall={@paywall} />
+      </div>
+    </Layouts.app>
+    """
   end
 
   def render(assigns) do
     assigns =
-      assign(
-        assigns,
+      assigns
+      |> assign(
         :filtered_insights,
         filter_insights(assigns.insights, assigns.active_type_filter)
       )
+      |> assign(:card_class, @card_class)
 
     ~H"""
     <Layouts.app
@@ -62,16 +85,18 @@ defmodule MetricFlowWeb.AiLive.Insights do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
-        <%!-- Page header --%>
-        <div class="flex items-center justify-between mb-2">
-          <div>
-            <h1 class="text-2xl font-bold">AI Insights</h1>
-            <p class="text-base-content/60 mt-1">
-              Actionable recommendations generated from your correlation analysis
+      <div class="overflow-x-hidden">
+        <%!-- Page header. flex-wrap so the actions drop under the heading at 390px. --%>
+        <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+          <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-base-content">AI Insights</h1>
+            <p class="text-base-content/70 mt-1 break-words">
+              Newest first. Each one is marked <strong>Verified</strong>
+              or <strong>Hypothesis</strong>
+              so you can see which to act on and which to watch.
             </p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <button
               :if={@insights != []}
               phx-click="clear_all_insights"
@@ -110,26 +135,26 @@ defmodule MetricFlowWeb.AiLive.Insights do
         <div
           :if={@insights == [] and @filtered_insights == []}
           data-role="no-insights-state"
-          class="mf-card p-8 text-center"
+          class={[@card_class, "p-8 text-center"]}
         >
           <h2 class="text-xl font-semibold">No Insights Yet</h2>
           <%= if @has_correlations do %>
-            <p class="text-base-content/60 mt-2 max-w-prose">
+            <p class="text-base-content/70 mt-2 max-w-prose mx-auto">
               You have correlation data available. Click "Generate Insights" to create AI-powered recommendations.
             </p>
             <button
               phx-click="generate_insights"
               disabled={@generating}
-              class="btn btn-primary mt-6"
+              class="btn btn-primary mt-6 w-full sm:w-auto"
             >
               <span :if={@generating} class="loading loading-spinner loading-xs"></span>
               {if @generating, do: "Generating...", else: "Generate Insights"}
             </button>
           <% else %>
-            <p class="text-base-content/60 mt-2 max-w-prose">
+            <p class="text-base-content/70 mt-2 max-w-prose mx-auto">
               Run a correlation analysis first, then generate insights from the results.
             </p>
-            <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6">
+            <.link navigate={~p"/app/correlations"} class="btn btn-primary mt-6 w-full sm:w-auto">
               Run Correlations
             </.link>
           <% end %>
@@ -139,9 +164,9 @@ defmodule MetricFlowWeb.AiLive.Insights do
         <div
           :if={@insights != [] and @filtered_insights == []}
           data-role="no-filter-results-state"
-          class="mf-card p-6 text-center"
+          class={[@card_class, "p-6 text-center"]}
         >
-          <p class="text-base-content/60">No insights match the selected filter.</p>
+          <p class="text-base-content/70">No insights match the selected filter.</p>
           <button
             phx-click="filter_type"
             phx-value-type="all"
@@ -152,39 +177,53 @@ defmodule MetricFlowWeb.AiLive.Insights do
           </button>
         </div>
 
-        <%!-- Insights list --%>
+        <%!-- Insights list. Repository returns newest first. --%>
         <div :if={@filtered_insights != []} data-role="insights-list" class="space-y-4">
           <div
             :for={insight <- @filtered_insights}
             data-role="insight-card"
             data-insight-id={insight.id}
-            class="mf-card p-5"
+            data-insight-status={insight_status(insight)}
+            class={[@card_class, "p-5"]}
           >
-            <div class="flex flex-col gap-3">
-              <%!-- Top row: summary + badges --%>
-              <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
-                <p data-role="insight-summary" class="font-medium text-base-content">
-                  {insight.summary}
-                </p>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span
-                    data-role="insight-type-badge"
-                    class={["badge badge-sm", type_badge_class(insight.suggestion_type)]}
-                  >
-                    {type_label(insight.suggestion_type)}
-                  </span>
-                  <span
-                    data-role="insight-confidence-badge"
-                    data-confidence={insight.confidence}
-                    class={["badge badge-sm", confidence_badge_class(insight.confidence)]}
-                  >
-                    {format_confidence(insight.confidence)} confidence
-                  </span>
-                </div>
+            <div class="flex flex-col gap-3 min-w-0">
+              <%!-- Status row: verified / hypothesis is the first thing a reader sees. --%>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span
+                  data-role="insight-status-badge"
+                  data-insight-status={insight_status(insight)}
+                  class={["badge badge-sm", insight_status_badge_class(insight)]}
+                >
+                  {insight_status_label(insight)}
+                </span>
+                <span
+                  data-role="insight-type-badge"
+                  class={["badge badge-sm", type_badge_class(insight.suggestion_type)]}
+                >
+                  {type_label(insight.suggestion_type)}
+                </span>
+                <span
+                  data-role="insight-confidence-badge"
+                  data-confidence={insight.confidence}
+                  class={["badge badge-sm", confidence_badge_class(insight.confidence)]}
+                >
+                  {format_confidence(insight.confidence)} confidence
+                </span>
               </div>
 
+              <%!-- Summary: lead with the headline. --%>
+              <p
+                data-role="insight-summary"
+                class="font-semibold text-base-content break-words"
+              >
+                {insight.summary}
+              </p>
+
               <%!-- Full content --%>
-              <div data-role="insight-content" class="text-sm text-base-content/80 leading-relaxed">
+              <div
+                data-role="insight-content"
+                class="text-sm text-base-content/80 leading-relaxed break-words"
+              >
                 {insight.content}
               </div>
 
@@ -192,14 +231,14 @@ defmodule MetricFlowWeb.AiLive.Insights do
               <div
                 :if={insight.correlation_result_id}
                 data-role="insight-correlation-ref"
-                class="text-xs text-base-content/50"
+                class="text-xs text-base-content/60 break-words"
               >
                 Based on correlation result #{insight.correlation_result_id}
               </div>
 
               <%!-- Generated at + delete --%>
-              <div class="flex items-center justify-between">
-                <div data-role="insight-generated-at" class="text-xs text-base-content/40">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div data-role="insight-generated-at" class="text-xs text-base-content/60">
                   Generated {format_generated_at(insight.generated_at)}
                 </div>
                 <button
@@ -213,10 +252,7 @@ defmodule MetricFlowWeb.AiLive.Insights do
               </div>
 
               <%!-- Feedback section --%>
-              <div
-                data-role="ai-feedback-section"
-                class="pt-3 border-t border-base-content/10"
-              >
+              <div data-role="ai-feedback-section" class="pt-3 border-t border-neutral">
                 <div data-role="insight-feedback">
                   {render_feedback(assigns, insight)}
                 </div>
@@ -229,9 +265,9 @@ defmodule MetricFlowWeb.AiLive.Insights do
         <div
           :if={@insights != []}
           data-role="ai-personalization-note"
-          class="mt-8 pt-6 border-t border-base-content/10"
+          class="mt-8 pt-6 border-t border-neutral"
         >
-          <p class="text-xs text-base-content/40 text-center">
+          <p class="text-xs text-base-content/60 text-center">
             AI suggestions learn from your feedback and improve over time.
           </p>
         </div>
@@ -482,6 +518,21 @@ defmodule MetricFlowWeb.AiLive.Insights do
 
   defp confidence_badge_class(confidence) when confidence >= 0.7, do: "badge-success"
   defp confidence_badge_class(_confidence), do: "badge-ghost"
+
+  # Verified when the generator is confident enough to recommend action
+  # (>= 0.7); anything below is a hypothesis the reader should treat as
+  # a lead to watch, not a conclusion.
+  defp insight_status(%Insight{} = insight) do
+    if Insight.high_confidence?(insight), do: "verified", else: "hypothesis"
+  end
+
+  defp insight_status_label(%Insight{} = insight) do
+    if Insight.high_confidence?(insight), do: "Verified", else: "Hypothesis"
+  end
+
+  defp insight_status_badge_class(%Insight{} = insight) do
+    if Insight.high_confidence?(insight), do: "badge-success", else: "badge-warning"
+  end
 
   defp format_confidence(confidence) do
     "#{round(confidence * 100)}%"
