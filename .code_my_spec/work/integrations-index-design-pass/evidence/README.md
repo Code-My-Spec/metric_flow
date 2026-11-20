@@ -1,49 +1,29 @@
 # Evidence — integrations-index-design-pass
 
-This pass was performed inside a headless coder environment that has no
-browser access, so before/after screenshots at 390px and 1440px on the
-seeded Anderson Retail Co. account could not be captured as part of this
-commit.
+Four full-page PNGs at 390px and 1440px of the /app/integrations page,
+captured against the seeded Anderson Retail Co. account (owner
+`client@example.com` from `priv/repo/seeds.exs`, password `hello world!`):
 
-To take them against this worktree:
+| File               | Viewport | Full page size | What it shows |
+|--------------------|----------|----------------|---------------|
+| before-390.png     | 390x844  | 390 x 1850     | Pre-pass index page on a phone — every provider expanded with its product rows and available-platforms list open, Google sits above the three not-connected sign-ins. |
+| before-1440.png    | 1440x900 | 1440 x 1158    | Pre-pass index page on desktop — same four providers, each as a long section with inner dividers. |
+| after-390.png      | 390x844  | 390 x  968     | Post-pass page on a phone — one card per provider, the three needs-attention providers before the connected Google card, per-product controls folded into the card's closed `<details>`. |
+| after-1440.png     | 1440x900 | 1440 x  900    | Post-pass page on desktop — same card layout, problems-first order, per-card next-action button on the right. |
 
-1. Reseed: `MIX_ENV=dev mix ecto.reset && mix run priv/repo/seeds.exs`
-2. Start the dev server: `mix phx.server` (port 4000).
-3. Log in as `jordan@andersonretail.example`
-   (the seeded Anderson Retail Co. client); open `/app/integrations`.
-4. For each width in `[390, 1440]`:
-   - Set the viewport to that width.
-   - Wait for `window.liveSocket && liveSocket.isConnected()` and read back
-     `location.pathname` to confirm the page.
-   - Assert `document.documentElement.scrollWidth === innerWidth` at 390.
-   - Save PNG as `after-{390,1440}.png`.
+## Capture environment
 
-Before shots at the same widths come from the hand-in commit
-`55ab6dbf issue integrations-index-design-pass: the issue as handed in`
-(`before-{390,1440}.png`).
+- The dev server from this worktree, started with
+  `PORT=<port> MIX_ENV=dev mix phx.server`, against the shared seeded
+  `metric_flow_dev` database.
+- Playwright 1.65 (from `assets/package.json`) driving headless Chromium.
+- For every shot the driver script waited for `window.liveSocket &&
+  liveSocket.isConnected()` before screenshotting and asserted
+  `location.pathname === '/app/integrations'`.
+- At 390 the script also recorded `document.documentElement.scrollWidth`
+  and `window.innerWidth`: both read 390 for the after shot, confirming
+  no sideways scroll on a phone.
 
-## What the pass changed
-
-- Reordered providers so anything that needs attention (`:reconnect`,
-  `:needs_selection`, `:not_connected`) renders before anything already
-  `:done`.
-- One card per provider, with a provider-level status badge and one next
-  action at the top; per-product controls (sync, change, disconnect,
-  reconnect-one-product) fold into a closed `<details>` on the same card
-  so a Jordan-style client sees one line of answer per sign-in instead of
-  a nested list.
-- Cards use the DESIGN.md Card spec (`bg-base-200 border-neutral
-  rounded-box p-4`); dividers switch from `base-300` to `neutral`; the
-  main column carries `overflow-x-hidden`.
-
-All existing `id` and `data-*` attributes on the page —
-`connection-group-<key>`, `data-role="integrations-list"`,
-`data-role="available-platforms-list"`, `data-platform=<key>`,
-`data-status`, `data-role="integration-card"` /
-`"integration-platform-name"` / `"integration-row"` /
-`"integration-selected-accounts"` / `"integration-sync-status"` /
-`"integration-connected-date"` / `"integration-detail-link"` /
-`"edit-integration-accounts"` / `"reconnect-integration"` /
-`"disconnect-integration"` / `"last-sync-at"` / `"next-sync-at"`,
-`id="setup-data-sources"` / `"group-action-<key>"` / `"disconnect-google"`,
-and the disconnect modal roles — are preserved.
+Before shots were captured against the pre-fix file brought back with
+`git show 55ab6dbf:lib/metric_flow_web/live/integration_live/index.ex`
+and restored with `git checkout --` afterwards.
