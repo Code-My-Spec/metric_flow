@@ -17,8 +17,11 @@ text: |-
 
   Keep every id and data attribute that tests use. Change only the chat page, plus a shared component if a pattern repeats.
 
+  Known regression from the first attempt: two spex fail at line 52 with MatchError nil: test/spex/28_ai_chat_for_data_exploration/criterion_217_user_can_share_chat_insights_with_team_members_spex.exs and criterion_885_user_shares_a_chat_insight_with_a_team_member_spex.exs. They read the current session id from the rendered chat page with Regex.run(~r/data-session-id="(\d+)"/, html). The pass removed every data-session-id attribute when it merged the page session list into the layout. Fix: on the chat page itself, render data-session-id={@current_session.id} (or the equivalent) on an element of the active conversation, for example the conversation container or the share button. Keep the share-insight control. Run both spex files, then the full mix spex.
+
   How it will be checked:
-  - The full suite passes.
+  - The full suite passes, including criterion_217 and criterion_885.
+  - The rendered chat page for an active conversation carries data-session-id with that session's id, and the share-insight control is present.
   - The empty state matches the mockup at 1440px and works at 390px with no sideways scrolling.
   - Clicking a suggestion card produces a user message and an assistant reply.
   - The evidence folder holds before and after screenshots at both widths.
