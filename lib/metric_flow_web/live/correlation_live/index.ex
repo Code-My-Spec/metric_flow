@@ -154,6 +154,24 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           — two numbers moving together doesn't prove one caused the other. Use them as leads to test, not conclusions.
         </div>
 
+        <%!-- Always-visible calculation meta: daily schedule + last calculated.
+             Rendered outside the results wrapper so it shows in the empty,
+             job-running, and populated states alike. --%>
+        <div
+          data-role="calculation-meta"
+          class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-xs text-base-content/60"
+        >
+          <span data-role="calculation-schedule" class="break-words">
+            Calculated daily after each data sync completes.
+          </span>
+          <span data-role="last-calculated" class="break-words">
+            Last calculated:
+            <span class="text-base-content">
+              {format_last_calculated(@summary.last_calculated_at)}
+            </span>
+          </span>
+        </div>
+
         <%!-- Job running banner --%>
         <div
           :if={@job_running}
@@ -176,9 +194,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           >
             <h2 class="text-xl font-semibold text-base-content">No Correlations Yet</h2>
             <p class="text-base-content/70 mt-2 mx-auto max-w-prose break-words">
-              You need at least 30 days of synced data before correlations can run.
-              Connect your marketing and financial platforms to start collecting it —
-              correlations are then calculated daily against your goal metric.
+              You need at least 30 days of synced data points before correlations can run.
+              Connect your marketing and financial platforms to start collecting them.
+              Once ready, we'll rank the strongest correlations first and show
+              the coefficient and optimal lag for each metric.
             </p>
             <.link
               navigate={~p"/app/integrations"}
@@ -207,9 +226,6 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             >
               <span data-role="goal-metric">
                 Goal: <span class="font-medium text-base-content">{@summary.goal_metric_name}</span>
-              </span>
-              <span :if={@summary.last_calculated_at} data-role="last-calculated">
-                Last calculated {format_datetime(@summary.last_calculated_at)}
               </span>
               <span :if={@summary.data_window != {nil, nil}} data-role="data-window">
                 Data window: {format_data_window(@summary.data_window)}
@@ -354,7 +370,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                       </span>
                     </td>
                     <td>
-                      <span class={["font-mono text-sm", coefficient_color_class(result.coefficient)]}>
+                      <span
+                        data-role="correlation-coefficient"
+                        class={["font-mono text-sm", coefficient_color_class(result.coefficient)]}
+                      >
                         {format_coefficient(result.coefficient)}
                       </span>
                       <span
@@ -364,7 +383,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                         {CorrelationResult.strength_label(result)}
                       </span>
                     </td>
-                    <td>
+                    <td data-role="optimal-lag">
                       <span
                         :if={result.optimal_lag == 0}
                         class="text-base-content/60 font-mono text-sm"
@@ -923,6 +942,9 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   end
 
   defp format_datetime(_), do: ""
+
+  defp format_last_calculated(nil), do: "never"
+  defp format_last_calculated(dt), do: format_datetime(dt)
 
   defp format_data_window({start_date, end_date})
        when not is_nil(start_date) and not is_nil(end_date) do

@@ -125,6 +125,24 @@ defmodule MetricFlowWeb.CorrelationLive.IndexTest do
     end
   end
 
+  describe "renders calculation schedule and last-calculated info even without data" do
+    test "schedule, last-calculated and coefficient copy are visible in the no-data state",
+         %{conn: conn} do
+      {user, _account} = user_with_personal_account()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/correlations")
+
+        assert has_element?(lv, "[data-role='no-data-state']")
+        assert has_element?(lv, "[data-role='calculation-schedule']")
+        assert has_element?(lv, "[data-role='last-calculated']")
+        assert html =~ "Last calculated"
+        assert html =~ "coefficient"
+      end)
+    end
+  end
+
   describe "labels results as correlation, not causation" do
     test "shows a correlation-not-causation notice", %{conn: conn} do
       {user, _account} = user_with_personal_account()
