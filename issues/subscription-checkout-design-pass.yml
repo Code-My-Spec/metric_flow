@@ -1,0 +1,24 @@
+id: "subscription-checkout-design-pass"
+kind: "issue"
+title: The subscription checkout page doesn't follow the Anderson BI design
+text: |-
+  Fault: the subscription checkout page (lib/metric_flow_web/live/subscription_live/checkout.ex) doesn't follow the Anderson BI design that design-system-2 set up.
+
+  Do a design pass on that page file. Follow the "Design pass" section of DESIGN.md: every step, before and after screenshots at 390px and 1440px on the seeded data (priv/repo/seeds.exs) in the evidence folder, and the trailer Design-Pass: lib/metric_flow_web/live/subscription_live/checkout.ex. Take the screenshots as the seeded direct marketer, on their direct client account.
+
+  Who it is for: a direct, independent marketer. Read .code_my_spec/personas/direct-independent-marketer/summary.md first.
+
+  What the page must do:
+  - Show the plan, its price and the pay button clearly.
+
+  Rules: keep every id and data-* attribute. Grep test/ (including test/spex/) for any you touch, and run those files. Change only this page, plus a shared component if a pattern repeats. Nothing scrolls sideways at 390px. Use only theme tokens: no hard-coded colours or radii.
+
+  Evidence: Before your last commit, run ls on the evidence folder and confirm the four PNGs exist (before-390, before-1440, after-390, after-1440), git add them, and list them in the evidence README. The review fails without them.
+
+  How it will be checked:
+  - The full suite and mix spex pass.
+  - The page clearly shows the plan, its price and the pay button, and starting checkout still works.
+  - Nothing scrolls sideways at 390px.
+  - The evidence folder holds the four committed PNGs (before-390, before-1440, after-390, after-1440), listed in its README.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/subscription_live/checkout.ex.
+criteria: []
