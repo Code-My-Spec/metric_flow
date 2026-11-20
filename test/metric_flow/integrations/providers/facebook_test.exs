@@ -1,5 +1,8 @@
 defmodule MetricFlow.Integrations.Providers.FacebookTest do
-  use ExUnit.Case, async: true
+  # Two tests below mutate the shared :facebook_app_id / :facebook_app_secret
+  # application env, which races every other async test that reads those keys
+  # (notably FacebookAdsTest). Run sync.
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureLog
 
