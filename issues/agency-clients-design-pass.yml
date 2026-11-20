@@ -1,0 +1,26 @@
+id: "agency-clients-design-pass"
+kind: "issue"
+title: The agency clients page doesn't follow the Anderson BI design
+text: |-
+  Fault: the agency clients page (lib/metric_flow_web/live/agency_live/clients.ex) doesn't follow the Anderson BI design that design-system-2 set up. Agency users land on this page.
+
+  Do a design pass on that page file. Follow the "Design pass" section of DESIGN.md: every step, before and after screenshots at 390px and 1440px on the seeded data (priv/repo/seeds.exs) in the evidence folder, and the trailer Design-Pass: lib/metric_flow_web/live/agency_live/clients.ex. Screenshot as the seeded agency owner (joel@example.com, agency "Anderson the Fish").
+
+  Who it is for: an agency owner who reports to and resells to clients. Read .code_my_spec/personas/agency-owner-reporting-reseller/summary.md first.
+
+  What the page must do:
+  - Show one row or card per client, with its name, data health and last activity, linking to that client.
+  - Make inviting a client the obvious primary action.
+  - When the agency has no clients, show an empty state that says how to add the first client.
+
+  Rules: keep every id and data-* attribute. Grep test/ (including test/spex/) for any you touch, and run those files. Change only this page, plus a shared component if a pattern repeats. Nothing scrolls sideways at 390px. Use only theme tokens: no hard-coded colours or radii.
+
+  How it will be checked:
+  - The full suite and mix spex pass.
+  - Each client appears as one row or card with name, data health and last activity, and links to that client.
+  - Inviting a client is the primary action on the page.
+  - With no clients, the empty state says how to add the first client.
+  - Nothing scrolls sideways at 390px.
+  - The evidence folder holds before and after shots at 390 and 1440.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/agency_live/clients.ex.
+criteria: []
