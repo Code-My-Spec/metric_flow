@@ -350,6 +350,53 @@ defmodule MetricFlowWeb.DashboardLive.ShowTest do
     end
   end
 
+  describe "leads with top movers when data shows a clear change" do
+    test "renders a top-movers section above the metrics-dashboard filters", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user)
+
+      today = Date.utc_today()
+
+      for days_ago <- 1..30 do
+        value = if days_ago <= 15, do: 50.0, else: 500.0
+
+        recorded_at =
+          DateTime.new!(Date.add(today, -days_ago), ~T[00:00:00], "Etc/UTC")
+
+        insert_metric!(user, %{
+          metric_name: "sessions",
+          value: value,
+          recorded_at: recorded_at
+        })
+      end
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/dashboard")
+
+        assert has_element?(lv, "[data-role='top-movers']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='top-movers'] [data-role='top-mover-card'][data-metric-name='sessions']"
+               )
+
+        assert has_element?(lv, "[data-role='top-movers'] [data-role='top-mover-reason']")
+
+        {movers_index, _} = :binary.match(html, ~s(data-role="top-movers"))
+        {filter_index, _} = :binary.match(html, ~s(data-role="platform-filter"))
+        {chart_index, _} = :binary.match(html, ~s(data-role="multi-series-chart"))
+
+        assert movers_index < filter_index,
+               "top movers must lead the dashboard, not sit below the filter row"
+
+        assert movers_index < chart_index,
+               "top movers must lead the dashboard, not sit below the chart"
+      end)
+    end
+  end
+
   describe "shows the built-in canned dashboard's own name as the visible heading" do
     test "shows the built-in canned dashboard's own name as the visible heading", %{conn: conn} do
       user = user_fixture()
