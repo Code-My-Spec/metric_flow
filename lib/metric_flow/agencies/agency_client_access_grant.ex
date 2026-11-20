@@ -20,6 +20,7 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrant do
           client_account_id: integer() | nil,
           access_level: :read_only | :account_manager | :admin | nil,
           origination_status: :invited | :originator | nil,
+          comped: boolean(),
           agency_account: Account.t() | Ecto.Association.NotLoaded.t(),
           client_account: Account.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
@@ -32,6 +33,8 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrant do
   schema "agency_client_access_grants" do
     field :access_level, Ecto.Enum, values: @access_levels
     field :origination_status, Ecto.Enum, values: @origination_statuses, default: :invited
+    # A comped client skips the paywall: the agency covers it.
+    field :comped, :boolean, default: false
 
     belongs_to :agency_account, Account, foreign_key: :agency_account_id
     belongs_to :client_account, Account, foreign_key: :client_account_id
@@ -66,5 +69,15 @@ defmodule MetricFlow.Agencies.AgencyClientAccessGrant do
     grant
     |> cast(attrs, [:origination_status])
     |> validate_required([:origination_status])
+  end
+
+  @doc """
+  Builds a changeset for comping (or un-comping) the client.
+  """
+  @spec comp_changeset(t(), map()) :: Ecto.Changeset.t()
+  def comp_changeset(grant, attrs) do
+    grant
+    |> cast(attrs, [:comped])
+    |> validate_required([:comped])
   end
 end

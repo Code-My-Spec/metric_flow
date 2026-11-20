@@ -288,6 +288,25 @@ defmodule MetricFlow.Agencies do
   # ---------------------------------------------------------------------------
 
   @doc """
+  Comps or un-comps a client account: a comped client skips the paywall.
+  Only agency owners and admins may do this.
+  """
+  @spec set_client_comped(Scope.t(), integer(), integer(), boolean()) ::
+          {:ok, AgencyClientAccessGrant.t()}
+          | {:error, :unauthorized | :not_found | Ecto.Changeset.t()}
+  def set_client_comped(%Scope{} = scope, agency_id, client_account_id, comped) do
+    with :ok <- authorize(scope, :admin, agency_id) do
+      AgenciesRepository.set_client_comped(agency_id, client_account_id, comped)
+    end
+  end
+
+  @doc """
+  True when any agency has comped the client account.
+  """
+  @spec client_comped?(integer()) :: boolean()
+  defdelegate client_comped?(client_account_id), to: AgenciesRepository
+
+  @doc """
   Lists all client accounts accessible to an agency.
 
   Requires read access to the agency account. Returns access grant records

@@ -98,6 +98,24 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHookTest do
       refute has_element?(view, "[data-role='paywall']")
     end
 
+    test "a client comped by an agency skips the paywall", %{conn: conn} do
+      user = user_fixture()
+      client = account_fixture(user)
+
+      agency =
+        insert_account!(user_fixture()) |> Ecto.Changeset.change(type: :agency) |> Repo.update!()
+
+      MetricFlowTest.AgenciesFixtures.agency_client_access_grant_fixture(agency.id, client.id, %{
+        access_level: :admin
+      })
+
+      {:ok, _} =
+        MetricFlow.Agencies.AgenciesRepository.set_client_comped(agency.id, client.id, true)
+
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/app/correlations")
+      refute has_element?(view, "[data-role='paywall']")
+    end
+
     test "agency read_only members still see the paywall on a client account", %{conn: conn} do
       owner = user_fixture()
       user = user_fixture()

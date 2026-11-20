@@ -74,6 +74,23 @@ defmodule MetricFlowWeb.AgencyLive.ClientsTest do
     end
   end
 
+  describe "comping a client" do
+    test "an agency owner comps and un-comps a client from its card", %{conn: conn} do
+      {conn, _user, agency} = agency_owner_with_login(conn)
+      client_owner = user_fixture()
+      client = insert_account!(client_owner, %{name: "Desert First Cleaning", type: "client"})
+      agency_client_access_grant_fixture(agency.id, client.id, %{access_level: :admin})
+
+      {:ok, lv, _html} = live(conn, ~p"/app/agency/clients")
+
+      assert lv |> element("[data-role='toggle-comp']") |> render_click() =~ "Comped"
+      assert MetricFlow.Agencies.client_comped?(client.id)
+
+      assert lv |> element("[data-role='toggle-comp']") |> render_click() =~ "Billed normally"
+      refute MetricFlow.Agencies.client_comped?(client.id)
+    end
+  end
+
   describe "with clients" do
     test "renders one card per client with name, data health, last activity, and a link",
          %{conn: conn} do
@@ -115,7 +132,7 @@ defmodule MetricFlowWeb.AgencyLive.ClientsTest do
       # Clicking the card takes the owner into that client's workspace.
       assert {:error, {:live_redirect, %{to: "/app/dashboard"}}} =
                lv
-               |> element("[data-role='client-card'] button")
+               |> element("[data-role='client-card'] button[phx-click='open_client']")
                |> render_click()
     end
   end

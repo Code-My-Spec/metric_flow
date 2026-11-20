@@ -20,6 +20,7 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
   import Phoenix.LiveView, only: [attach_hook: 4, push_navigate: 2]
 
   alias MetricFlow.AccountAccess
+  alias MetricFlow.Agencies
   alias MetricFlow.Ai
   alias MetricFlow.Billing.BillingRepository
 
@@ -46,6 +47,9 @@ defmodule MetricFlowWeb.Hooks.RequireSubscriptionHook do
         {:cont, socket}
 
       has_active_subscription?(account_id) ->
+        {:cont, socket}
+
+      Agencies.client_comped?(account_id) ->
         {:cont, socket}
 
       viewing_shared_chat_session?(scope, params) ->

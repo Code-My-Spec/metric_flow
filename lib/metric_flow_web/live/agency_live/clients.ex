@@ -136,6 +136,20 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
                 </div>
               </dl>
             </button>
+            <div class="flex items-center justify-between gap-2 border-t border-neutral px-4 py-2">
+              <span class="text-xs text-base-content/60">
+                {if grant.comped, do: "Comped — no subscription needed", else: "Billed normally"}
+              </span>
+              <button
+                type="button"
+                phx-click="toggle_comp"
+                phx-value-account_id={grant.client_account_id}
+                data-role="toggle-comp"
+                class={["btn btn-xs", if(grant.comped, do: "btn-ghost", else: "btn-outline")]}
+              >
+                {if grant.comped, do: "Remove comp", else: "Comp"}
+              </button>
+            </div>
           </li>
         </ul>
       </div>
@@ -182,6 +196,30 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
 
       _ ->
         {:noreply, put_flash(socket, :error, "Unable to generate a referral link")}
+    end
+  end
+
+  def handle_event("toggle_comp", %{"account_id" => id_str}, socket) do
+    scope = socket.assigns.current_scope
+    agency_id = socket.assigns[:active_account_id]
+    client_account_id = String.to_integer(id_str)
+    grant = Enum.find(socket.assigns.grants, &(&1.client_account_id == client_account_id))
+
+    case grant && Agencies.set_client_comped(scope, agency_id, client_account_id, !grant.comped) do
+      {:ok, updated} ->
+        grants =
+          Enum.map(socket.assigns.grants, fn
+            %{id: id} = g when id == updated.id -> %{g | comped: updated.comped}
+            g -> g
+          end)
+
+        {:noreply, assign(socket, :grants, grants)}
+
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, "Only agency owners and admins can comp clients")}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, "Unable to update comp status")}
     end
   end
 

@@ -189,6 +189,31 @@ defmodule MetricFlow.Agencies.AgenciesRepository do
   end
 
   @doc """
+  Comps (or un-comps) a client account for an agency. Returns
+  `{:error, :not_found}` when the agency has no grant on the client.
+  """
+  @spec set_client_comped(integer(), integer(), boolean()) ::
+          {:ok, AgencyClientAccessGrant.t()} | {:error, :not_found | Ecto.Changeset.t()}
+  def set_client_comped(agency_account_id, client_account_id, comped) do
+    case get_client_access(agency_account_id, client_account_id) do
+      nil -> {:error, :not_found}
+      grant -> grant |> AgencyClientAccessGrant.comp_changeset(%{comped: comped}) |> Repo.update()
+    end
+  end
+
+  @doc """
+  True when any agency has comped this client account.
+  """
+  @spec client_comped?(integer()) :: boolean()
+  def client_comped?(client_account_id) do
+    Repo.exists?(
+      from(g in AgencyClientAccessGrant,
+        where: g.client_account_id == ^client_account_id and g.comped
+      )
+    )
+  end
+
+  @doc """
   Retrieves an agency's access grant for a specific client account.
 
   Returns the grant struct or nil when no grant exists.
