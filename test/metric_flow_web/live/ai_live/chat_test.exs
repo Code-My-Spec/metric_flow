@@ -179,6 +179,21 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
     end
   end
 
+  describe "active conversation exposes its session id for the share-insight spex" do
+    test "the message list carries data-session-id matching the active session", %{conn: conn} do
+      {user, account_id, _scope} = user_with_account()
+      session = insert_chat_session!(user.id, account_id)
+      insert_chat_message!(session.id, %{role: :assistant, content: "ok"})
+
+      capture_log(fn ->
+        {:ok, _lv, html} = mount_chat_session(conn, user, session.id)
+
+        assert [_, matched_id] = Regex.run(~r/data-session-id="(\d+)"/, html)
+        assert matched_id == to_string(session.id)
+      end)
+    end
+  end
+
   describe "streams assistant response tokens into the conversation" do
     test "streams assistant response tokens into the conversation", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()

@@ -165,10 +165,14 @@ defmodule MetricFlowWeb.AiLive.Chat do
           </div>
         </div>
 
-        <%!-- Message list: active session --%>
+        <%!-- Message list: active session. The data-session-id on this
+             container is the active conversation's own id and is read by
+             the share-insight spex (criteria 217 and 885), which pull it
+             out of the rendered HTML to open /app/chat/:id as the invitee. --%>
         <div
           :if={@active_session}
           data-role="message-list"
+          data-session-id={@active_session.id}
           class="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
         >
           <div
