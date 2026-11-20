@@ -144,4 +144,81 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnectTest do
 
     refute html =~ "data-role=\"connect-stripe\""
   end
+
+  describe "Anderson BI layout" do
+    test "wraps content in a stripe-connect root that caps width and blocks sideways scroll",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = agency_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
+
+      [{_tag, attrs, _children}] =
+        Floki.parse_document!(html)
+        |> Floki.find(~s|main[data-role="agency-stripe-connect-root"]|)
+
+      class = attrs |> Enum.into(%{}) |> Map.fetch!("class")
+
+      assert class =~ "overflow-x-hidden",
+             ~s|Expected stripe-connect root to carry overflow-x-hidden; got class="#{class}"|
+
+      assert class =~ ~r/\bmax-w-/,
+             ~s|Expected stripe-connect root to cap its width with a max-w-* class; got class="#{class}"|
+    end
+
+    test "renders exactly one h1 inside the stripe-connect root", %{conn: conn} do
+      user = user_fixture()
+      _account = agency_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
+
+      headings =
+        html
+        |> Floki.parse_document!()
+        |> Floki.find(~s|main[data-role="agency-stripe-connect-root"] h1|)
+
+      assert length(headings) == 1,
+             "Expected one h1 inside the stripe-connect root, got #{length(headings)}"
+    end
+
+    test "not-connected state exposes exactly one next-action with the brand-gradient button",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = agency_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
+
+      actions =
+        html
+        |> Floki.parse_document!()
+        |> Floki.find(~s|[data-role="stripe-next-action"]|)
+
+      assert length(actions) == 1,
+             "Expected one stripe-next-action, got #{length(actions)}"
+
+      assert html =~ "btn-brand-gradient",
+             "Expected the connect button to use the brand-gradient component class"
+    end
+
+    test "connected state exposes exactly one next-action and no brand-gradient button",
+         %{conn: conn} do
+      user = user_fixture()
+      account = agency_fixture(user)
+      stripe_account_fixture(account)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, "/app/agency/stripe-connect")
+
+      actions =
+        html
+        |> Floki.parse_document!()
+        |> Floki.find(~s|[data-role="stripe-next-action"]|)
+
+      assert length(actions) == 1,
+             "Expected one stripe-next-action, got #{length(actions)}"
+    end
+  end
 end
