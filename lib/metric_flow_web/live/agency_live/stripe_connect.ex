@@ -22,99 +22,141 @@ defmodule MetricFlowWeb.AgencyLive.StripeConnect do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>
-          Stripe Connect
-          <:subtitle>Connect your Stripe account to receive payments</:subtitle>
-        </.header>
+      <main
+        data-role="agency-stripe-connect-root"
+        class="mx-auto w-full max-w-3xl space-y-6 overflow-x-hidden"
+      >
+        <header class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            Payments
+          </p>
+          <h1 class="text-2xl font-semibold text-base-content break-words">
+            Stripe Connect
+          </h1>
+          <p class="text-sm text-base-content/70 break-words">
+            {headline_description(@status)}
+          </p>
+        </header>
 
-        <div class="mt-8 space-y-6">
-          <div class="card bg-base-100 shadow">
-            <div class="card-body">
-              <div class="flex items-center justify-between">
-                <h2 class="card-title text-base">Connection Status</h2>
-                <span :if={@status == :complete} class="badge badge-success">Connected</span>
-                <span :if={@status == :restricted} class="badge badge-warning">Restricted</span>
-                <span :if={@status == :not_connected} class="badge badge-ghost">Not connected</span>
-              </div>
+        <section
+          data-role="stripe-connection-status"
+          data-status={@status}
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6 space-y-4"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <h2 class="text-lg font-semibold text-base-content">Connection Status</h2>
+              <p class="text-sm text-base-content/70 break-words">
+                {status_detail(@status)}
+              </p>
+            </div>
+            <span :if={@status == :complete} class="badge badge-success">Connected</span>
+            <span :if={@status == :restricted} class="badge badge-warning">Restricted</span>
+            <span :if={@status == :not_connected} class="badge badge-ghost">Not connected</span>
+          </div>
 
-              <%!-- Not connected state --%>
-              <div :if={@status == :not_connected} class="mt-4">
-                <p class="text-base-content/60 mb-4">
-                  Connect your Stripe account to receive subscription payments from your customers.
-                </p>
-                <button
-                  :if={@is_admin}
-                  phx-click="connect_stripe"
-                  data-role="connect-stripe"
-                  class="btn btn-primary"
+          <div :if={@status in [:complete, :restricted]} class="space-y-2">
+            <div class="flex flex-wrap items-baseline gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Account ID
+              </span>
+              <span class="font-mono text-sm text-base-content break-all">
+                {@stripe_account_id}
+              </span>
+            </div>
+            <div :if={@capabilities != %{}} class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Capabilities
+              </p>
+              <div class="flex flex-wrap gap-1">
+                <span
+                  :for={{cap, cap_status} <- @capabilities}
+                  class="badge badge-sm badge-outline break-all"
                 >
-                  Connect Stripe Account
-                </button>
-              </div>
-
-              <%!-- Connected state --%>
-              <div :if={@status == :complete} class="mt-4 space-y-4">
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-base-content/60">Account ID:</span>
-                    <span class="font-mono text-sm">{@stripe_account_id}</span>
-                  </div>
-                  <div :if={@capabilities != %{}} class="flex items-center gap-2">
-                    <span class="text-base-content/60">Capabilities:</span>
-                    <div class="flex gap-1">
-                      <span :for={{cap, status} <- @capabilities} class="badge badge-sm badge-outline">
-                        {cap}: {status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <div>
-                  <p class="text-sm text-warning mb-2">
-                    Disconnecting will prevent new customer subscriptions through your agency.
-                    Existing subscriptions will be flagged for review.
-                  </p>
-                  <button
-                    :if={@is_admin}
-                    phx-click="disconnect_stripe"
-                    data-role="disconnect-stripe"
-                    class="btn btn-error btn-outline btn-sm"
-                  >
-                    Disconnect Stripe Account
-                  </button>
-                </div>
-              </div>
-
-              <%!-- Restricted state --%>
-              <div :if={@status == :restricted} class="mt-4 space-y-4">
-                <div class="alert alert-warning">
-                  <span>
-                    Your Stripe account setup is incomplete. Please complete onboarding to start receiving payments.
-                  </span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-base-content/60">Account ID:</span>
-                  <span class="font-mono text-sm">{@stripe_account_id}</span>
-                </div>
-                <button
-                  :if={@is_admin}
-                  phx-click="connect_stripe"
-                  data-role="connect-stripe"
-                  class="btn btn-primary btn-sm"
-                >
-                  Resume Onboarding
-                </button>
+                  {cap}: {cap_status}
+                </span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+
+          <div
+            :if={@status == :not_connected and @is_admin}
+            data-role="stripe-next-action"
+            class="pt-2"
+          >
+            <button
+              phx-click="connect_stripe"
+              data-role="connect-stripe"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+            >
+              Connect Stripe Account
+            </button>
+          </div>
+
+          <div
+            :if={@status == :restricted and @is_admin}
+            data-role="stripe-next-action"
+            class="pt-2"
+          >
+            <button
+              phx-click="connect_stripe"
+              data-role="connect-stripe"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+            >
+              Resume Onboarding
+            </button>
+          </div>
+
+          <div
+            :if={@status == :complete and @is_admin}
+            data-role="stripe-next-action"
+            class="space-y-2 border-t border-neutral pt-4"
+          >
+            <p class="text-sm text-warning break-words">
+              Disconnecting will prevent new customer subscriptions through your agency. Existing subscriptions will be flagged for review.
+            </p>
+            <button
+              phx-click="disconnect_stripe"
+              data-role="disconnect-stripe"
+              class="w-full rounded-box border border-error bg-base-200 px-4 py-2 text-sm font-semibold text-error hover:bg-base-300 sm:w-auto"
+            >
+              Disconnect Stripe Account
+            </button>
+          </div>
+
+          <p :if={not @is_admin} class="text-sm text-base-content/60 break-words">
+            Ask an account owner or admin to {non_admin_action(@status)}.
+          </p>
+        </section>
+      </main>
     </Layouts.app>
     """
   end
+
+  defp headline_description(:complete) do
+    "Stripe is connected. Subscription payments from your clients route straight to this agency."
+  end
+
+  defp headline_description(:restricted) do
+    "Stripe onboarding started but isn't finished. Payouts stay on hold until you complete it."
+  end
+
+  defp headline_description(:not_connected) do
+    "Connect your Stripe account so subscription payments from your clients land in your bank, not the platform's."
+  end
+
+  defp status_detail(:complete),
+    do: "Subscriptions bill through this Stripe account."
+
+  defp status_detail(:restricted),
+    do: "Stripe needs a few more details before payouts can start."
+
+  defp status_detail(:not_connected),
+    do: "Client subscriptions fall back to the platform's Stripe account until you connect one."
+
+  defp non_admin_action(:complete), do: "manage the Stripe connection"
+  defp non_admin_action(:restricted), do: "finish Stripe onboarding"
+  defp non_admin_action(:not_connected), do: "connect Stripe"
 
   @impl true
   def mount(_params, _session, socket) do
