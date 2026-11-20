@@ -273,20 +273,62 @@ defmodule MetricFlowWeb.DashboardLive.Show do
         <div
           :if={not @has_integrations}
           data-role="onboarding-prompt"
-          class="mx-auto max-w-xl rounded-box border border-base-300 bg-base-100 p-8 text-center"
+          class="mx-auto max-w-xl rounded-box border border-neutral bg-base-200 p-6 text-center"
         >
-          <h2 class="text-xl font-semibold">Connect Your Platforms</h2>
-          <p class="mt-2 text-base-content/60">
-            Your metrics appear here once a platform is connected. One Google sign-in covers Analytics, Ads, Search Console, Business Profile and YouTube; Meta and QuickBooks take one more each.
+          <h2 class="text-xl font-semibold text-base-content">Connect Your Platforms</h2>
+          <p class="mt-2 text-base-content/70">
+            Your numbers show up here once your agency connects your platforms. One Google sign-in covers Analytics, Ads, Search Console, Business Profile and YouTube; Meta and QuickBooks take one more each.
           </p>
-          <.link navigate={~p"/app/onboarding/connect"} class="btn btn-primary mt-6">
+          <.link
+            navigate={~p"/app/onboarding/connect"}
+            class="btn-brand-gradient rounded-box px-4 py-2 mt-6 inline-block w-full sm:w-auto"
+          >
             Set up data sources
           </.link>
         </div>
 
         <.finish_setup_checklist :if={@has_integrations} status={assigns[:setup_status] || []} />
 
-        <div :if={@has_integrations} data-role="metrics-dashboard">
+        <div :if={@has_integrations} data-role="metrics-dashboard" class="overflow-x-hidden">
+          <%!-- Top movers: the few numbers that changed most, and why --%>
+          <section
+            :if={@top_movers != []}
+            data-role="top-movers"
+            class="mb-6"
+          >
+            <div class="mb-3 flex items-baseline justify-between gap-3 flex-wrap">
+              <h2 class="text-lg font-semibold text-base-content">What changed most</h2>
+              <p class="text-xs text-base-content/60 min-w-0 break-words">
+                last {hd(@top_movers).recent_days} days vs. the prior {hd(@top_movers).prior_days}
+              </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <article
+                :for={mover <- @top_movers}
+                data-role="top-mover-card"
+                data-metric-name={mover.metric_name}
+                data-direction={Atom.to_string(mover.direction)}
+                class="mf-card p-4 min-w-0"
+              >
+                <p class="text-sm text-base-content/70 font-medium break-words">
+                  {mover.metric_name}
+                </p>
+                <p class="mt-1 text-3xl font-bold break-words mf-metric">
+                  {format_number(mover.recent_sum)}
+                </p>
+                <p
+                  data-role="top-mover-change"
+                  class={top_mover_change_class(mover.direction)}
+                >
+                  {top_mover_change_label(mover)}
+                </p>
+                <p data-role="top-mover-reason" class="text-xs text-base-content/60 mt-1 break-words">
+                  {top_mover_reason(mover)}
+                </p>
+              </article>
+            </div>
+          </section>
+
           <%!-- Filter controls --%>
           <div class="flex items-center gap-4 mb-4 flex-wrap">
             <%!-- Platform filter --%>
@@ -384,7 +426,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               id="select-all-metrics"
               type="button"
               phx-click="select_all_metrics"
-              class="rounded-md border border-base-content/20 px-3 py-1 text-xs font-medium transition-colors hover:bg-base-200 focus-visible:outline-2"
+              class="rounded-box border border-neutral px-3 py-1 text-xs font-medium transition-colors hover:bg-base-300 focus-visible:outline-2"
             >
               Select all
             </button>
@@ -392,7 +434,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
               id="deselect-all-metrics"
               type="button"
               phx-click="deselect_all_metrics"
-              class="mr-2 rounded-md border border-base-content/20 px-3 py-1 text-xs font-medium transition-colors hover:bg-base-200 focus-visible:outline-2"
+              class="mr-2 rounded-box border border-neutral px-3 py-1 text-xs font-medium transition-colors hover:bg-base-300 focus-visible:outline-2"
             >
               Deselect all
             </button>
@@ -468,8 +510,11 @@ defmodule MetricFlowWeb.DashboardLive.Show do
             </p>
           </div>
 
-          <%!-- Summary stats --%>
-          <div data-role="summary-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+          <%!-- Summary stats: one clear card per metric --%>
+          <div
+            data-role="summary-stats"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4"
+          >
             <div
               :for={stat <- visible_summary_stats(@dashboard_data.summary_stats, @visible_metrics)}
               data-role="stat-card"
@@ -612,6 +657,7 @@ defmodule MetricFlowWeb.DashboardLive.Show do
           |> assign(:chat_panel_open, false)
           |> assign(:page_title, page_title)
           |> assign(:dashboard_view_mode, :legacy)
+          |> assign(:top_movers, [])
 
         {:ok, socket}
 
@@ -1133,8 +1179,92 @@ defmodule MetricFlowWeb.DashboardLive.Show do
     |> assign(:chart_spec, chart_spec)
     |> assign(:table_rows, table_rows)
     |> assign(:visible_metric_names, visible_metric_names)
+    |> assign(:top_movers, compute_top_movers(dashboard_data))
     |> push_chart_update(chart_spec)
   end
+
+  # Top movers: for each metric with enough data, split its daily points
+  # into the earlier and later halves of the period and rank by the size of
+  # the change. Surfaces the handful a non-technical client (Jordan) can
+  # actually act on, with a plain "last N days vs. the prior N" reason line.
+  defp compute_top_movers(dashboard_data) do
+    dashboard_data.time_series
+    |> Enum.flat_map(&mover_entry/1)
+    |> Enum.sort_by(&mover_sort_key/1)
+    |> Enum.take(3)
+  end
+
+  defp mover_entry(%{metric_name: name, data: data}) do
+    points = Enum.sort_by(data, & &1.date, Date)
+    len = length(points)
+
+    if len < 2 do
+      []
+    else
+      half = div(len, 2)
+      {prior, recent} = Enum.split(points, half)
+      prior_sum = Enum.reduce(prior, 0.0, &(&1.value + &2))
+      recent_sum = Enum.reduce(recent, 0.0, &(&1.value + &2))
+      build_mover(name, prior, recent, prior_sum, recent_sum)
+    end
+  end
+
+  defp build_mover(name, prior, recent, prior_sum, recent_sum) do
+    cond do
+      prior_sum == 0 and recent_sum == 0 ->
+        []
+
+      prior_sum == 0 ->
+        [
+          %{
+            metric_name: name,
+            direction: :new,
+            change_pct: nil,
+            prior_sum: prior_sum,
+            recent_sum: recent_sum,
+            prior_days: length(prior),
+            recent_days: length(recent)
+          }
+        ]
+
+      true ->
+        pct = (recent_sum - prior_sum) / prior_sum * 100.0
+        direction = if pct >= 0, do: :up, else: :down
+
+        [
+          %{
+            metric_name: name,
+            direction: direction,
+            change_pct: pct,
+            prior_sum: prior_sum,
+            recent_sum: recent_sum,
+            prior_days: length(prior),
+            recent_days: length(recent)
+          }
+        ]
+    end
+  end
+
+  defp mover_sort_key(%{change_pct: nil}), do: -1.0e12
+  defp mover_sort_key(%{change_pct: pct}), do: -abs(pct)
+
+  defp top_mover_change_class(:up), do: "text-sm font-semibold text-secondary mt-2"
+  defp top_mover_change_class(:down), do: "text-sm font-semibold text-error mt-2"
+  defp top_mover_change_class(:new), do: "text-sm font-semibold text-primary mt-2"
+
+  defp top_mover_change_label(%{direction: :new}), do: "new activity"
+
+  defp top_mover_change_label(%{direction: :up, change_pct: pct}),
+    do: "▲ #{round(pct)}%"
+
+  defp top_mover_change_label(%{direction: :down, change_pct: pct}),
+    do: "▼ #{round(abs(pct))}%"
+
+  defp top_mover_reason(%{direction: :new, recent_days: r}),
+    do: "first signs of activity in the last #{r} days"
+
+  defp top_mover_reason(%{recent_days: r, prior_days: p}),
+    do: "last #{r} days vs. the prior #{p}"
 
   # Splits a canonical metric's aggregate series into one series per platform
   # for the chart, when dashboard_data.platform_breakdown found more than one
