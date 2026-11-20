@@ -38,7 +38,7 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
         {:ok, lv, html} = mount_insights(conn, user)
 
         assert html =~ "AI Insights"
-        assert html =~ "Actionable recommendations generated from your correlation analysis"
+        assert html =~ "Newest first"
         assert has_element?(lv, "[data-role='type-filter']")
       end)
     end
@@ -214,6 +214,79 @@ defmodule MetricFlowWeb.AiLive.InsightsTest do
 
         assert has_element?(lv, "[data-role='ai-personalization-note']")
         assert html =~ "AI suggestions learn from your feedback and improve over time."
+      end)
+    end
+  end
+
+  describe "marks each insight as verified or hypothesis" do
+    test "labels a high-confidence insight as Verified", %{conn: conn} do
+      {user, account_id} = user_with_account()
+
+      insert_insight!(account_id, %{
+        summary: "Increase Google Ads budget",
+        confidence: 0.85
+      })
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_insights(conn, user)
+
+        assert has_element?(
+                 lv,
+                 "[data-role='insight-status-badge'][data-insight-status='verified']",
+                 "Verified"
+               )
+
+        refute has_element?(
+                 lv,
+                 "[data-role='insight-status-badge'][data-insight-status='hypothesis']"
+               )
+      end)
+    end
+
+    test "labels a low-confidence insight as Hypothesis", %{conn: conn} do
+      {user, account_id} = user_with_account()
+
+      insert_insight!(account_id, %{
+        summary: "Watch TikTok Ads spend",
+        confidence: 0.4
+      })
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_insights(conn, user)
+
+        assert has_element?(
+                 lv,
+                 "[data-role='insight-status-badge'][data-insight-status='hypothesis']",
+                 "Hypothesis"
+               )
+
+        refute has_element?(
+                 lv,
+                 "[data-role='insight-status-badge'][data-insight-status='verified']"
+               )
+      end)
+    end
+
+    test "lists insights newest first", %{conn: conn} do
+      {user, account_id} = user_with_account()
+      now = DateTime.utc_now()
+
+      insert_insight!(account_id, %{
+        summary: "Older recommendation",
+        generated_at: DateTime.add(now, -3600, :second)
+      })
+
+      insert_insight!(account_id, %{
+        summary: "Newer recommendation",
+        generated_at: now
+      })
+
+      capture_log(fn ->
+        {:ok, _lv, html} = mount_insights(conn, user)
+
+        newer_index = :binary.match(html, "Newer recommendation") |> elem(0)
+        older_index = :binary.match(html, "Older recommendation") |> elem(0)
+        assert newer_index < older_index
       end)
     end
   end
