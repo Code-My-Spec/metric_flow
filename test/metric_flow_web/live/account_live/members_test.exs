@@ -297,4 +297,45 @@ defmodule MetricFlowWeb.AccountLive.MembersTest do
                live(conn, ~p"/app/accounts/members")
     end
   end
+
+  describe "renders members page with Anderson BI tokens" do
+    test "invite submit is the brand-gradient primary and members-list uses card tokens",
+         %{conn: conn} do
+      owner = user_fixture()
+      account = account_fixture(owner)
+      other_user = user_fixture()
+      insert_member!(account, other_user, :admin)
+      conn = log_in_user(conn, owner)
+
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/members")
+
+      invite_buttons =
+        ~r/<button[^>]*type="submit"[^>]*>\s*Invite\s*<\/button>/
+        |> Regex.scan(html)
+        |> List.flatten()
+
+      assert invite_buttons != [], "expected an Invite submit button"
+
+      assert Enum.any?(invite_buttons, &(&1 =~ "btn-brand-gradient")),
+             "expected the Invite submit to use btn-brand-gradient (the page's primary action), got: #{inspect(invite_buttons)}"
+
+      list_elements =
+        ~r/<[^>]+data-role="members-list"[^>]*>/
+        |> Regex.scan(html)
+        |> List.flatten()
+
+      assert list_elements != [], "expected a data-role=members-list container"
+
+      for el <- list_elements do
+        assert el =~ "rounded-box",
+               "expected members-list to use the Anderson BI rounded-box token, got: #{el}"
+
+        assert el =~ "bg-base-200",
+               "expected members-list to use the Anderson BI bg-base-200 token, got: #{el}"
+
+        assert el =~ ~r/border(\s|-)/,
+               "expected members-list to carry a theme border, got: #{el}"
+      end
+    end
+  end
 end
