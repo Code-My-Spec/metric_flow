@@ -35,6 +35,24 @@ defmodule MetricFlowWeb.UserLive.SettingsTest do
     end
   end
 
+  describe "renders each settings section as an Anderson BI card" do
+    test "email, password, and connected services each sit in a bg-base-200 card panel", %{
+      conn: conn
+    } do
+      {:ok, _lv, html} =
+        conn
+        |> authenticated_conn()
+        |> live(~p"/app/users/settings")
+
+      section_matches = Regex.scan(~r/data-role="settings-section"/, html)
+
+      assert length(section_matches) >= 3,
+             "expected at least three settings-section cards, got #{length(section_matches)}"
+
+      assert html =~ "rounded-box border border-neutral bg-base-200"
+    end
+  end
+
   describe "validates email on change and shows inline errors for invalid email" do
     setup %{conn: conn} do
       {conn, user} = authenticated_conn_with_user(conn)
