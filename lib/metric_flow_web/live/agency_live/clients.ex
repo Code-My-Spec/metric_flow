@@ -2,13 +2,20 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
   @moduledoc """
   Agency client management page.
 
-  Lists all client accounts the agency has access to, showing access level
-  and origination status for each.
+  Lists each client the agency reports to and resells to as one card per
+  client, with the client's name, data-source health and when their data
+  was last synced, linking into that client's workspace. The one primary
+  action on the page is inviting a new client via a referral link.
   """
 
   use MetricFlowWeb, :live_view
 
+  import Ecto.Query
+
+  alias MetricFlow.Accounts
   alias MetricFlow.Agencies
+  alias MetricFlow.Integrations.Integration
+  alias MetricFlow.Repo
 
   @impl true
   def render(assigns) do
@@ -20,84 +27,117 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
+      <div class="mx-auto overflow-x-hidden">
         <.header>
           Clients
-          <:subtitle>Client accounts managed by your agency</:subtitle>
-          <:actions>
-            <.link navigate={~p"/app/help/account-origination"} class="btn btn-ghost btn-sm">
-              How Account Connections Work
-            </.link>
-            <button phx-click="generate_referral_link" class="btn btn-primary btn-sm">
-              Add Client
-            </button>
-          </:actions>
+          <:subtitle>The clients you report to and resell to.</:subtitle>
         </.header>
 
-        <div :if={@referral_url} class="alert mt-4">
-          <div class="w-full">
-            <p class="font-medium mb-2">
-              Share this link with your client — signing up through it connects them to your agency automatically.
-            </p>
-            <input
-              type="text"
-              readonly
-              value={@referral_url}
-              onclick="this.select()"
-              class="input input-bordered w-full font-mono text-sm"
-            />
-          </div>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <p class="min-w-0 text-sm text-base-content/70 break-words">
+            Invite a client to join your agency. When they sign up through your referral link, their account connects to yours automatically.
+          </p>
+          <button
+            type="button"
+            phx-click="generate_referral_link"
+            data-role="invite-client"
+            class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto"
+          >
+            Invite a client
+          </button>
         </div>
 
-        <div class="mt-8 space-y-6">
-          <div class="stats shadow w-full">
-            <div class="stat">
-              <div class="stat-title">Total Clients</div>
-              <div class="stat-value">{length(@grants)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-title">Originated</div>
-              <div class="stat-value">
-                {Enum.count(@grants, &(&1.origination_status == :originator))}
+        <div
+          :if={@referral_url}
+          data-role="referral-link"
+          class="mt-4 rounded-box border border-neutral bg-base-200 p-4"
+        >
+          <p class="mb-2 font-semibold text-base-content">
+            Share this link with your client — signing up through it connects them to your agency automatically.
+          </p>
+          <input
+            type="text"
+            readonly
+            value={@referral_url}
+            onclick="this.select()"
+            class="w-full rounded-box border border-neutral bg-base-100 px-3 py-2 font-mono text-sm text-base-content"
+          />
+          <.link
+            navigate={~p"/app/help/account-origination"}
+            class="mt-3 inline-block text-xs text-base-content/70 underline"
+          >
+            How account connections work
+          </.link>
+        </div>
+
+        <section
+          :if={@grants == []}
+          data-role="clients-empty-state"
+          class="mt-6 rounded-box border border-neutral bg-base-200 p-6 text-center"
+        >
+          <h2 class="text-base font-semibold text-base-content">No clients yet</h2>
+          <p class="mt-2 text-sm text-base-content/70 break-words">
+            Click <span class="font-semibold text-base-content">Invite a client</span>
+            above to copy a referral link and send it to your first client.
+            When they sign up through the link, their account appears here
+            with its data health and last activity.
+          </p>
+        </section>
+
+        <ul :if={@grants != []} class="mt-6 flex flex-col gap-3">
+          <li
+            :for={grant <- @grants}
+            data-role="client-card"
+            data-client-account-id={grant.client_account_id}
+            class="rounded-box border border-neutral bg-base-200"
+          >
+            <button
+              type="button"
+              phx-click="open_client"
+              phx-value-account_id={grant.client_account_id}
+              class="flex w-full min-w-0 flex-col gap-3 rounded-box px-4 py-4 text-left hover:bg-base-300"
+            >
+              <div class="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="font-semibold text-base-content break-words">
+                    {grant.client_account.name}
+                  </div>
+                  <div class="font-mono text-xs text-base-content/60 break-all">
+                    {grant.client_account.slug}
+                  </div>
+                </div>
+                <span class={origination_badge_class(grant.origination_status)}>
+                  {origination_label(grant.origination_status)}
+                </span>
               </div>
-            </div>
-          </div>
 
-          <div :if={@grants == []} class="text-base-content/60 text-sm">
-            No client accounts yet.
-          </div>
-
-          <div class="overflow-x-auto">
-            <table :if={@grants != []} class="table w-full">
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Slug</th>
-                  <th>Access Level</th>
-                  <th>Origination</th>
-                  <th>Since</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr :for={grant <- @grants} class="hover">
-                  <td class="font-medium">{grant.client_account.name}</td>
-                  <td class="font-mono text-sm text-base-content/60">{grant.client_account.slug}</td>
-                  <td>
-                    <span class={access_level_badge_class(grant.access_level)}>
-                      {access_level_label(grant.access_level)}
-                    </span>
-                  </td>
-                  <td>
-                    <span class={origination_badge_class(grant.origination_status)}>
-                      {origination_label(grant.origination_status)}
-                    </span>
-                  </td>
-                  <td class="text-sm text-base-content/60">{format_date(grant.inserted_at)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+              <dl class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div class="min-w-0">
+                  <dt class="text-xs uppercase tracking-wide text-base-content/60">
+                    Data health
+                  </dt>
+                  <dd
+                    data-role="client-data-health"
+                    class="mt-1 text-sm text-base-content break-words"
+                  >
+                    {data_health_label(@stats, grant.client_account_id)}
+                  </dd>
+                </div>
+                <div class="min-w-0">
+                  <dt class="text-xs uppercase tracking-wide text-base-content/60">
+                    Last activity
+                  </dt>
+                  <dd
+                    data-role="client-last-activity"
+                    class="mt-1 text-sm text-base-content break-words"
+                  >
+                    {last_activity_label(@stats, grant.client_account_id)}
+                  </dd>
+                </div>
+              </dl>
+            </button>
+          </li>
+        </ul>
       </div>
     </Layouts.app>
     """
@@ -115,9 +155,12 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
         grants -> grants
       end
 
+    stats = load_client_stats(grants)
+
     socket =
       socket
       |> assign(:grants, grants)
+      |> assign(:stats, stats)
       |> assign(:referral_url, nil)
 
     {:ok, socket}
@@ -142,14 +185,87 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
     end
   end
 
-  defp access_level_label(:read_only), do: "Read Only"
-  defp access_level_label(:account_manager), do: "Account Manager"
-  defp access_level_label(:admin), do: "Admin"
-  defp access_level_label(_), do: "Unknown"
+  def handle_event("open_client", %{"account_id" => id_str}, socket) do
+    scope = socket.assigns.current_scope
+    client_account_id = String.to_integer(id_str)
+    Accounts.touch_membership(scope, client_account_id)
+    {:noreply, push_navigate(socket, to: ~p"/app/dashboard")}
+  end
 
-  defp access_level_badge_class(:admin), do: "badge badge-primary"
-  defp access_level_badge_class(:account_manager), do: "badge badge-secondary"
-  defp access_level_badge_class(_), do: "badge badge-ghost"
+  # ---------------------------------------------------------------------------
+  # Data-source health and last activity
+  # ---------------------------------------------------------------------------
+
+  defp load_client_stats([]), do: %{}
+
+  defp load_client_stats(grants) do
+    account_ids = Enum.map(grants, & &1.client_account_id)
+
+    rows =
+      from(i in Integration,
+        where: i.account_id in ^account_ids,
+        select: {i.account_id, i.expires_at, i.updated_at}
+      )
+      |> Repo.all()
+
+    now = DateTime.utc_now()
+
+    Enum.reduce(rows, %{}, fn {account_id, expires_at, updated_at}, acc ->
+      prev = Map.get(acc, account_id, %{total: 0, connected: 0, last_activity: nil})
+
+      connected_inc =
+        if expires_at && DateTime.compare(expires_at, now) == :gt, do: 1, else: 0
+
+      Map.put(acc, account_id, %{
+        total: prev.total + 1,
+        connected: prev.connected + connected_inc,
+        last_activity: latest(prev.last_activity, updated_at)
+      })
+    end)
+  end
+
+  defp latest(nil, b), do: b
+  defp latest(a, nil), do: a
+  defp latest(a, b), do: if(DateTime.compare(a, b) == :gt, do: a, else: b)
+
+  defp data_health_label(stats, account_id) do
+    case Map.get(stats, account_id) do
+      %{total: total, connected: connected} when total > 0 and connected == total ->
+        "All #{total} sources connected"
+
+      %{total: total, connected: 0} when total > 0 ->
+        "#{total} #{pluralize_source(total)} need reconnecting"
+
+      %{total: total, connected: connected} when total > 0 ->
+        "#{connected} of #{total} connected"
+
+      _ ->
+        "No data sources yet"
+    end
+  end
+
+  defp pluralize_source(1), do: "source"
+  defp pluralize_source(_), do: "sources"
+
+  defp last_activity_label(stats, account_id) do
+    case Map.get(stats, account_id) do
+      %{last_activity: %DateTime{} = dt} -> format_relative(dt)
+      _ -> "No activity yet"
+    end
+  end
+
+  defp format_relative(%DateTime{} = dt) do
+    diff = DateTime.diff(DateTime.utc_now(), dt, :second)
+
+    cond do
+      diff < 60 -> "just now"
+      diff < 3_600 -> "#{div(diff, 60)} min ago"
+      diff < 86_400 -> "#{div(diff, 3_600)} h ago"
+      diff < 2 * 86_400 -> "yesterday"
+      diff < 30 * 86_400 -> "#{div(diff, 86_400)} days ago"
+      true -> Calendar.strftime(dt, "%b %d, %Y")
+    end
+  end
 
   defp origination_label(:originator), do: "Originated"
   defp origination_label(:invited), do: "Invited"
@@ -157,10 +273,4 @@ defmodule MetricFlowWeb.AgencyLive.Clients do
 
   defp origination_badge_class(:originator), do: "badge badge-accent"
   defp origination_badge_class(_), do: "badge badge-ghost"
-
-  defp format_date(%DateTime{} = dt) do
-    Calendar.strftime(dt, "%b %d, %Y")
-  end
-
-  defp format_date(_), do: ""
 end
