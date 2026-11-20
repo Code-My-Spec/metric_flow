@@ -10,6 +10,50 @@ defmodule MetricFlowWeb.UserLive.ConfirmationTest do
     %{unconfirmed_user: unconfirmed_user_fixture(), confirmed_user: user_fixture()}
   end
 
+  describe "renders in Layouts.content as an Anderson BI centred card with the logo" do
+    test "logged-out confirmation with a valid magic-link token renders the Anderson BI card and gradient confirm, not the old daisyUI shell",
+         %{conn: conn, unconfirmed_user: user} do
+      token =
+        extract_user_token(fn url ->
+          Users.deliver_login_instructions(user, url)
+        end)
+
+      {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
+
+      # Public Layouts.content is used (not Layouts.app): its Privacy/Terms
+      # footer is only emitted by the content layout.
+      assert html =~ "Privacy Policy"
+
+      # The confirmation card uses the DESIGN.md Card tokens (bg-base-200
+      # on a neutral border with the theme radius), matching the login card.
+      assert html =~ "rounded-box border border-neutral bg-base-200"
+
+      # The Anderson BI logo is rendered inline above the card (not just in
+      # the layout header), matching the login / forgot-password /
+      # reset-password pages.
+      assert Regex.match?(
+               ~r/<img[^>]*\/images\/anderson-bi-logo\.png[^>]*data-role="default-logo"/,
+               html
+             ) or
+               Regex.match?(
+                 ~r/<img[^>]*data-role="default-logo"[^>]*\/images\/anderson-bi-logo\.png/,
+                 html
+               )
+
+      # The primary confirm action uses the DESIGN.md Primary (brand
+      # gradient) button, not the previous daisyUI `btn btn-primary`.
+      assert html =~ "btn-brand-gradient"
+
+      refute Regex.match?(
+               ~r/class="[^"]*\bbtn btn-primary\b[^"]*"[^>]*>\s*Confirm and stay logged in/,
+               html
+             )
+
+      # The existing ids the tests rely on are still rendered.
+      assert html =~ ~s(id="confirmation_form")
+    end
+  end
+
   describe "Confirm user" do
     test "auto-confirms unconfirmed user and redirects to onboarding", %{
       conn: conn,
