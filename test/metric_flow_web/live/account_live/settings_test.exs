@@ -407,4 +407,26 @@ defmodule MetricFlowWeb.AccountLive.SettingsTest do
       assert html =~ "left the account"
     end
   end
+
+  describe "renders account settings page with Anderson BI tokens" do
+    test "save is the brand-gradient primary, each section is an Anderson BI card, and the danger zone is set apart",
+         %{conn: conn} do
+      user = user_fixture()
+      _account = team_account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, _lv, html} = live(conn, ~p"/app/accounts/settings")
+
+      # Every section is an Anderson BI card -- no pre-pass daisyUI card shell.
+      refute html =~ "card bg-base-100 shadow mf-card"
+
+      # The primary Save action carries the brand-gradient primary.
+      assert html =~ "btn-brand-gradient"
+
+      # Dangerous actions (Delete Account) are visibly separated: own card with
+      # an error border and a labelled "Danger zone" divider above it.
+      assert html =~ "border-error"
+      assert html =~ "Danger zone"
+    end
+  end
 end
