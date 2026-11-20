@@ -198,4 +198,31 @@ defmodule MetricFlowWeb.InvitationLive.SendTest do
       assert html =~ "No pending invitations."
     end
   end
+
+  describe "renders Anderson BI primary submit button and token-driven card panels" do
+    test "submit button uses btn-brand-gradient and sections use Anderson BI tokens", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      _account = account_fixture(user)
+      conn = log_in_user(conn, user)
+
+      {:ok, lv, _html} = live(conn, ~p"/app/accounts/invitations")
+
+      assert has_element?(
+               lv,
+               "[data-role='submit-invite'].btn-brand-gradient.rounded-box"
+             )
+
+      assert has_element?(
+               lv,
+               "[data-role='invite-form-section'].rounded-box.border.border-neutral.bg-base-200"
+             )
+
+      assert has_element?(
+               lv,
+               "[data-role='pending-invitations'].rounded-box.border.border-neutral.bg-base-200"
+             )
+    end
+  end
 end

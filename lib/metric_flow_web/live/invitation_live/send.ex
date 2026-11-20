@@ -27,50 +27,75 @@ defmodule MetricFlowWeb.InvitationLive.Send do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mf-content">
-        <div class="flex items-center gap-4 mb-6">
-          <a href="/app/accounts/members" class="btn btn-ghost btn-sm">Back to Members</a>
-        </div>
-
-        <div class="mb-6">
-          <h1 class="text-2xl font-bold">Invite Members</h1>
-          <p class="text-base-content/60">{@account.name}</p>
-        </div>
+      <div class="mx-auto max-w-3xl space-y-6 overflow-x-hidden">
+        <header class="space-y-1">
+          <h1 class="text-2xl font-semibold text-base-content break-words">Invite Members</h1>
+          <p class="text-sm text-base-content/70 break-words">{@account.name}</p>
+          <a
+            href="/app/accounts/members"
+            class="inline-block text-sm text-primary hover:underline"
+          >
+            Back to Members
+          </a>
+        </header>
 
         <%!-- Send Invitation section --%>
-        <div class="mf-card p-6 mb-6" data-role="invite-form-section">
-          <h2 class="text-lg font-semibold mb-4">Send an Invitation</h2>
-          <p class="text-sm text-base-content/60 mb-4">
-            The recipient will receive an email with a secure link. The link expires in 7 days and can only be used once.
-          </p>
+        <section
+          aria-labelledby="send-invitation-heading"
+          data-role="invite-form-section"
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2
+              id="send-invitation-heading"
+              class="text-lg font-semibold text-base-content"
+            >
+              Send an Invitation
+            </h2>
+            <p class="text-sm text-base-content/70 break-words">
+              The recipient receives an email with a secure link. The link expires in 7 days and can only be used once.
+            </p>
+          </header>
 
           <form
             id="invite_member_form"
             phx-submit="send_invitation"
             phx-change="validate"
+            class="mt-4 space-y-4"
           >
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Email address</span>
+            <div class="space-y-1">
+              <label
+                for="invitation_email"
+                class="block text-sm font-semibold text-base-content"
+              >
+                Email address
               </label>
               <input
+                id="invitation_email"
                 type="email"
-                class="input w-full"
                 name="invitation[email]"
+                class="input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
                 value={@invitation_form.params["email"] || ""}
                 placeholder="colleague@example.com"
                 phx-debounce="500"
               />
-              <p :if={form_has_error?(@invitation_form, :email)} class="text-sm text-error mt-1">
+              <p :if={form_has_error?(@invitation_form, :email)} class="text-sm text-error">
                 {form_first_error(@invitation_form, :email)}
               </p>
             </div>
 
-            <div class="form-control mt-4">
-              <label class="label">
-                <span class="label-text">Access level</span>
+            <div class="space-y-1">
+              <label
+                for="invitation_role"
+                class="block text-sm font-semibold text-base-content"
+              >
+                Access level
               </label>
-              <select class="select w-full" name="invitation[role]">
+              <select
+                id="invitation_role"
+                name="invitation[role]"
+                class="select select-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+              >
                 <option
                   :for={role <- invite_roles(@current_user_role)}
                   value={role}
@@ -82,63 +107,82 @@ defmodule MetricFlowWeb.InvitationLive.Send do
                   {role_label(String.to_existing_atom(role))}
                 </option>
               </select>
-              <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error mt-1">
+              <p :if={form_has_error?(@invitation_form, :role)} class="text-sm text-error">
                 {form_first_error(@invitation_form, :role)}
               </p>
             </div>
 
-            <div class="flex justify-end mt-6">
-              <button type="submit" class="btn btn-primary w-full sm:w-auto" data-role="submit-invite">
-                Send Invitation
-              </button>
-            </div>
+            <button
+              type="submit"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold sm:w-auto"
+              data-role="submit-invite"
+            >
+              Send Invitation
+            </button>
           </form>
-        </div>
+        </section>
 
         <%!-- Pending Invitations section --%>
-        <div class="mf-card p-6" data-role="pending-invitations">
-          <h2 class="text-lg font-semibold mb-4">Pending Invitations</h2>
+        <section
+          aria-labelledby="pending-invitations-heading"
+          data-role="pending-invitations"
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <header class="space-y-1">
+            <h2
+              id="pending-invitations-heading"
+              class="text-lg font-semibold text-base-content"
+            >
+              Pending Invitations
+            </h2>
+            <p class="text-sm text-base-content/70">
+              Links that have been sent and are still awaiting a response.
+            </p>
+          </header>
 
-          <div :if={@pending_invitations == []}>
-            <p class="text-base-content/50 text-center py-4">No pending invitations.</p>
+          <div :if={@pending_invitations == []} class="mt-4 text-sm text-base-content/70">
+            No pending invitations.
           </div>
 
-          <div :if={@pending_invitations != []}>
-            <div
+          <ul :if={@pending_invitations != []} class="mt-4 divide-y divide-neutral">
+            <li
               :for={invitation <- @pending_invitations}
-              class="flex items-center justify-between gap-4 py-3 border-b border-base-300/30 last:border-0"
+              class="flex flex-wrap items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
               data-role="pending-invitation-row"
               data-invitation-id={invitation.id}
             >
-              <div>
-                <div class="font-medium" data-role="invitation-email">{invitation.email}</div>
-                <div class="mt-1">
+              <div class="min-w-0 flex-1 space-y-1">
+                <div
+                  class="text-sm font-medium text-base-content break-all"
+                  data-role="invitation-email"
+                >
+                  {invitation.email}
+                </div>
+                <div>
                   <span class={role_badge_class(invitation.role)}>
                     {role_label(invitation.role)}
                   </span>
                 </div>
-                <div class="text-xs text-base-content/50 mt-1">
-                  Sent {format_relative(invitation.inserted_at)}
-                </div>
-                <div class="text-xs text-base-content/40">
-                  Expires {format_date(invitation.expires_at)}
+                <div class="text-xs text-base-content/60 break-words">
+                  Sent {format_relative(invitation.inserted_at)} · Expires {format_date(
+                    invitation.expires_at
+                  )}
                 </div>
               </div>
 
-              <div>
-                <button
-                  class="btn btn-ghost btn-xs btn-error"
-                  phx-click="cancel_invitation"
-                  phx-value-id={invitation.id}
-                  data-role="cancel-invitation"
-                  data-email={invitation.email}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+              <button
+                type="button"
+                class="rounded-box border border-error bg-base-200 px-3 py-1 text-xs font-semibold text-error hover:bg-base-300"
+                phx-click="cancel_invitation"
+                phx-value-id={invitation.id}
+                data-role="cancel-invitation"
+                data-email={invitation.email}
+              >
+                Cancel
+              </button>
+            </li>
+          </ul>
+        </section>
       </div>
     </Layouts.app>
     """
@@ -296,10 +340,20 @@ defmodule MetricFlowWeb.InvitationLive.Send do
   defp invite_roles(:owner), do: ~w(read_only account_manager admin owner)
   defp invite_roles(_role), do: ~w(read_only account_manager)
 
-  defp role_badge_class(:admin), do: "badge badge-secondary"
-  defp role_badge_class(:account_manager), do: "badge badge-accent"
-  defp role_badge_class(:read_only), do: "badge badge-ghost"
-  defp role_badge_class(:owner), do: "badge badge-primary"
+  defp role_badge_class(:owner),
+    do:
+      "badge rounded-box border border-primary bg-base-100 px-2 py-0.5 font-semibold text-primary"
+
+  defp role_badge_class(:admin),
+    do:
+      "badge rounded-box border border-secondary bg-base-100 px-2 py-0.5 font-semibold text-secondary"
+
+  defp role_badge_class(:account_manager),
+    do: "badge rounded-box border border-accent bg-base-100 px-2 py-0.5 font-semibold text-accent"
+
+  defp role_badge_class(:read_only),
+    do:
+      "badge rounded-box border border-neutral bg-base-100 px-2 py-0.5 font-semibold text-base-content/80"
 
   defp role_label(:admin), do: "Admin"
   defp role_label(:account_manager), do: "Account Manager"
