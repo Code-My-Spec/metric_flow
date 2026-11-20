@@ -14,43 +14,61 @@ defmodule MetricFlowWeb.UserLive.Registration do
       current_scope={@current_scope}
       active_account_name={assigns[:active_account_name]}
     >
-      <div class="mx-auto max-w-sma">
-        <div :if={@registered} class="text-center">
-          <.header>
-            Registration successful
-          </.header>
+      <div class="mx-auto flex w-full max-w-md flex-col items-center gap-6 px-1 py-4 sm:py-8">
+        <div class="flex flex-col items-center gap-3">
+          <img
+            src="/images/anderson-bi-logo.png"
+            alt="Anderson BI"
+            data-role="default-logo"
+            class="h-10 w-auto"
+          />
+          <div class="text-center">
+            <h1 class="text-2xl font-semibold text-base-content">
+              <%= if @registered do %>
+                Registration successful
+              <% else %>
+                Create your account
+              <% end %>
+            </h1>
+            <p :if={!@registered} class="mt-2 text-sm text-base-content/70">
+              Track every dollar your marketing spends against the results it brings in.
+            </p>
+          </div>
+        </div>
 
-          <p :if={@registered_account_name} class="mt-4">
+        <div
+          :if={@registered}
+          class="w-full rounded-box border border-neutral bg-base-200 p-5 text-center sm:p-6"
+        >
+          <p :if={@registered_account_name} class="text-base-content">
             Account "{@registered_account_name}" has been created.
           </p>
-
-          <p class="mt-4">
-            An email was sent to {@registered_email}.
-            Please confirm your account to get started.
+          <p class={["break-words text-base-content/80", @registered_account_name && "mt-3"]}>
+            An email was sent to {@registered_email}. Please confirm your account to get started.
           </p>
         </div>
 
-        <div :if={!@registered}>
-          <div class="text-center">
-            <.header>
-              Register for an account
-              <:subtitle>
-                Already registered?
-                <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
-                  Log in
-                </.link>
-                to your account now.
-              </:subtitle>
-            </.header>
+        <div
+          :if={!@registered}
+          class="w-full rounded-box border border-neutral bg-base-200 p-5 sm:p-6"
+        >
+          <div
+            :if={@referral_token}
+            class="mb-5 rounded-box border border-neutral bg-base-100 p-3 text-sm text-base-content/80"
+            data-role="referral-notice"
+          >
+            You were referred by your agency. We'll link your new
+            <span class="font-medium text-base-content">client</span>
+            account to them so they can keep your reporting running.
           </div>
 
           <.link
             href={~p"/auth/google/login"}
             id="google-register"
             data-login-method="google"
-            class="btn btn-outline w-full gap-3"
+            class="flex w-full items-center justify-center gap-3 rounded-box border border-neutral bg-base-100 px-4 py-2 text-sm text-base-content hover:bg-base-300"
           >
-            <svg class="size-5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="size-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -68,12 +86,24 @@ defmodule MetricFlowWeb.UserLive.Registration do
                 fill="#EA4335"
               />
             </svg>
-            <span>Continue with Google</span>
+            <span class="min-w-0 break-words">Continue with Google</span>
           </.link>
 
-          <div class="divider">or</div>
+          <div class="my-6 flex items-center gap-3" aria-hidden="true">
+            <span class="h-px flex-1 bg-neutral"></span>
+            <span class="text-xs uppercase tracking-wider text-base-content/60">
+              or sign up with your email
+            </span>
+            <span class="h-px flex-1 bg-neutral"></span>
+          </div>
 
-          <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
+          <.form
+            for={@form}
+            id="registration_form"
+            phx-submit="save"
+            phx-change="validate"
+            class="space-y-4"
+          >
             <.input
               field={@form[:email]}
               type="email"
@@ -94,32 +124,57 @@ defmodule MetricFlowWeb.UserLive.Registration do
               field={@form[:account_name]}
               type="text"
               label="Account name"
-              placeholder="Enter your account name"
+              placeholder="Enter your account name, e.g. Anderson Retail Co."
             />
 
-            <.input
-              field={@form[:account_type]}
-              type="select"
-              label="Account type"
-              options={[{"Client", "client"}, {"Agency", "agency"}]}
-              prompt="Select account type"
-              aria-describedby="account-type-help"
-            />
-            <div id="account-type-help" class="mb-5 space-y-2 text-sm text-base-content/70">
-              <p>
-                <strong class="text-base-content">Client:</strong>
-                Choose this to track marketing and business results for your own business.
-              </p>
-              <p>
-                <strong class="text-base-content">Agency:</strong>
-                Choose this if you manage reporting for multiple client businesses.
-              </p>
+            <div>
+              <.input
+                field={@form[:account_type]}
+                type="select"
+                label="Account type"
+                options={[
+                  {"Client — my own business", "client"},
+                  {"Agency — I report on others", "agency"}
+                ]}
+                prompt="Choose how you'll use Anderson BI"
+                aria-describedby="account-type-help"
+              />
+              <div
+                id="account-type-help"
+                class="-mt-1 grid gap-2 text-sm text-base-content/80 sm:grid-cols-2"
+              >
+                <div class="rounded-box border border-neutral bg-base-100 p-3">
+                  <p class="font-semibold text-base-content">Client</p>
+                  <p class="mt-1">
+                    Track marketing and business results for your own business.
+                  </p>
+                </div>
+                <div class="rounded-box border border-neutral bg-base-100 p-3">
+                  <p class="font-semibold text-base-content">Agency</p>
+                  <p class="mt-1">
+                    Manage reporting for multiple client businesses.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
+            <.button
+              phx-disable-with="Creating account..."
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
+            >
               Create an account
             </.button>
           </.form>
+
+          <p class="mt-6 text-center text-sm text-base-content/70">
+            Already registered?
+            <.link
+              navigate={~p"/users/log-in"}
+              class="font-semibold text-primary hover:underline"
+            >
+              Log in
+            </.link>
+          </p>
         </div>
       </div>
     </Layouts.content>
