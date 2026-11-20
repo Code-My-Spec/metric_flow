@@ -107,6 +107,37 @@ body {
 .accent-gold { border-color: var(--accent-gold) !important; background-image: linear-gradient(145deg, rgba(59,49,41,0.47), rgba(26,28,43,0.33)); }
 .accent-purple { border-color: var(--accent-purple) !important; background-image: linear-gradient(145deg, rgba(45,40,70,0.47), rgba(24,21,41,0.33)); }
 
+/* Suggestion card icon tint — matches the border accent */
+.accent-green .suggestion-icon { background-color: var(--accent-green-bg); color: var(--accent-green); }
+.accent-blue .suggestion-icon { background-color: var(--accent-blue-bg); color: var(--accent-blue); }
+.accent-gold .suggestion-icon { background-color: var(--accent-gold-bg); color: var(--accent-gold); }
+.accent-purple .suggestion-icon { background-color: var(--accent-purple-bg); color: var(--accent-purple); }
+
+/* Subtle gradient wave behind the chat hero. Uses only brand tokens. */
+.mf-hero-wave {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 240px;
+  background-image: var(--brand-gradient);
+  opacity: 0.18;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Composer with a brand-gradient border. The gradient sits in a 1.5px
+   wrapper, and the inner surface is bg-base-200 — so the border is the
+   gradient, not a solid colour. */
+.mf-composer {
+  background-image: var(--brand-gradient);
+  border-radius: var(--radius-composer);
+  padding: 1.5px;
+}
+.mf-composer-inner {
+  background-color: var(--brand-sidebar);
+  border-radius: calc(var(--radius-composer) - 1.5px);
+}
+
 /* Expand toggled client-side (see report_live/show.ex) -- #report-chart has
    phx-update="ignore", so the height must change via a JS-toggled class
    rather than a server-patched style attribute. Height is driven entirely

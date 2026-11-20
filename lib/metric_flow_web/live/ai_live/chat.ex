@@ -1,10 +1,15 @@
 defmodule MetricFlowWeb.AiLive.Chat do
   @moduledoc """
-  LiveView for the AI chat interface.
+  LiveView for the AI chat interface — the client's home screen.
 
-  Displays a sidebar of previous chat sessions and an active conversation area.
-  Users can start new sessions, continue existing ones, and ask natural language
-  questions about their metrics. Assistant responses are streamed token-by-token.
+  The empty state matches the Anderson BI mockup at
+  `.code_my_spec/design/anderson-bi-mockup.png`: a hero heading, a welcome
+  line, four accent-coloured suggestion cards, and a gradient-bordered
+  composer. Once a conversation has messages, the hero gives way to the
+  message list and the composer stays at the bottom.
+
+  The sidebar's "Recent conversations" list (rendered by `Layouts.app`) is
+  the single session list; this page does not render a duplicate.
 
   Routes:
   - GET /chat       — :index action, no active session
@@ -24,12 +29,44 @@ defmodule MetricFlowWeb.AiLive.Chat do
     visualization: "Visualization"
   }
 
+  @suggestion_cards [
+    %{
+      accent: "green",
+      icon: "hero-chart-bar",
+      title: "Business Performance",
+      prompt: "Give me a summary of our business performance this quarter."
+    },
+    %{
+      accent: "blue",
+      icon: "hero-user-group",
+      title: "Customer Insights",
+      prompt: "What are the key trends in customer acquisition, retention, and value?"
+    },
+    %{
+      accent: "gold",
+      icon: "hero-megaphone",
+      title: "Marketing Effectiveness",
+      prompt: "Which marketing channels are driving the highest ROI right now?"
+    },
+    %{
+      accent: "purple",
+      icon: "hero-banknotes",
+      title: "Financial Health",
+      prompt: "How does our current cash flow and runway look, and what should I watch for?"
+    }
+  ]
+
+  @composer_placeholder "Ask about revenue, marketing, customer trends, cash flow, or anything else..."
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
 
   @impl true
   def render(assigns) do
+    assigns = assign(assigns, :suggestion_cards, @suggestion_cards)
+    assigns = assign(assigns, :composer_placeholder, @composer_placeholder)
+
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -37,255 +74,145 @@ defmodule MetricFlowWeb.AiLive.Chat do
       white_label_config={assigns[:white_label_config]}
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
+      recent_chat_sessions={assigns[:recent_chat_sessions] || []}
     >
-      <div class="flex h-[calc(100vh-4rem)] mf-content overflow-hidden">
-        <%!-- Sidebar: always visible on desktop, overlay on mobile when show_sidebar=true --%>
-        <div
-          data-role="session-sidebar"
-          class={[
-            "w-64 flex-shrink-0 flex flex-col border-r border-base-content/10 overflow-hidden",
-            if(@show_sidebar,
-              do: "fixed inset-0 z-20 bg-base-100 flex flex-col",
-              else: "hidden sm:flex"
-            )
-          ]}
+      <div
+        data-role="conversation-area"
+        class="relative flex min-h-[calc(100vh-4rem)] flex-col overflow-x-hidden"
+      >
+        <%!-- Soft gradient wave behind the hero --%>
+        <div :if={!@active_session} class="mf-hero-wave" aria-hidden="true"></div>
+
+        <%!-- Hidden control a test clicks to start a fresh chat. The visible
+             "New Chat" action lives in the sidebar (Layouts.app). --%>
+        <button
+          type="button"
+          phx-click="new_chat"
+          data-role="new-chat-btn"
+          class="sr-only"
+          aria-label="New chat"
         >
-          <%!-- Sidebar header --%>
-          <div class="flex items-center justify-between px-4 py-3 border-b border-base-content/10 flex-shrink-0">
-            <h2 class="text-sm font-semibold text-base-content/60 uppercase tracking-wide">
-              Chats
-            </h2>
-            <button
-              phx-click="new_chat"
-              data-role="new-chat-btn"
-              class="btn btn-primary btn-xs"
+          New chat
+        </button>
+
+        <%!-- Session header, visible with an active conversation --%>
+        <div
+          :if={@active_session}
+          class="flex flex-wrap items-center gap-3 border-b border-neutral px-4 py-3 sm:px-6"
+        >
+          <h1
+            data-role="session-header"
+            class="min-w-0 flex-1 truncate text-base font-semibold text-base-content"
+          >
+            {@active_session.title || "New Chat"}
+          </h1>
+          <span class="rounded-box border border-neutral px-2 py-0.5 text-xs text-base-content/70">
+            {context_label(@active_session.context_type)}
+          </span>
+        </div>
+
+        <%!-- Hero empty state --%>
+        <div
+          :if={!@active_session}
+          data-role="chat-empty-state"
+          class="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-16"
+        >
+          <h1
+            data-role="new-chat-header"
+            class="text-2xl font-semibold text-base-content sm:text-4xl"
+          >
+            What can I help you with today?
+          </h1>
+          <p class="mt-3 max-w-prose text-sm text-base-content/70 sm:text-base">
+            I have access to your metrics, correlations, and trends. Ask a question in plain language and I'll help you understand what's happening in your business.
+          </p>
+
+          <div
+            :if={@nothing_connected}
+            id="chat-no-data"
+            class="mt-6 flex max-w-prose flex-col items-center gap-3 rounded-box border border-neutral bg-base-200 p-4 text-sm sm:flex-row sm:text-left"
+          >
+            <span class="text-base-content/70">
+              No data is connected yet, so there's nothing to analyze. Connect Google, Meta or QuickBooks first — or ask me to help you set it up.
+            </span>
+            <.link
+              navigate={~p"/app/onboarding/connect"}
+              class="btn-brand-gradient rounded-box px-4 py-2 text-sm shrink-0"
             >
-              + New Chat
-            </button>
+              Set up data sources
+            </.link>
           </div>
 
-          <%!-- Session list --%>
-          <div data-role="session-list" class="flex-1 overflow-y-auto py-2">
-            <p
-              :if={@sessions == []}
-              data-role="no-sessions-state"
-              class="text-xs text-base-content/40 px-4 py-3"
-            >
-              No chats yet
-            </p>
-
+          <div class="mt-8 grid w-full grid-cols-1 gap-4 sm:mt-10 sm:grid-cols-2">
             <button
-              :for={session <- @sessions}
-              phx-click="select_session"
-              phx-value-id={session.id}
-              data-role="session-item"
-              data-session-id={session.id}
-              data-active={if @active_session && @active_session.id == session.id, do: "true"}
+              :for={card <- @suggestion_cards}
+              type="button"
+              phx-click="send_message"
+              phx-value-content={card.prompt}
+              data-role="example-prompt"
               class={[
-                "w-full text-left px-4 py-3 flex flex-col gap-0.5 hover:bg-base-content/5 transition-colors",
-                if(@active_session && @active_session.id == session.id, do: "bg-base-content/10")
+                "flex min-h-[160px] flex-col gap-3 rounded-box border px-5 py-4 text-left",
+                "hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary",
+                "accent-#{card.accent}"
               ]}
             >
-              <span data-role="session-title" class="text-sm font-medium truncate text-base-content">
-                {session.title || "New Chat"}
+              <span class="suggestion-icon inline-flex h-10 w-10 items-center justify-center rounded-box">
+                <.icon name={card.icon} class="size-5" />
               </span>
-              <span class="badge badge-ghost badge-xs">
-                {context_label(session.context_type)}
-              </span>
-              <span data-role="session-updated-at" class="text-xs text-base-content/40">
-                {format_updated_at(session.updated_at)}
-              </span>
+              <span class="font-semibold text-base-content">{card.title}</span>
+              <span class="text-sm text-base-content/80 break-words">{card.prompt}</span>
             </button>
           </div>
         </div>
 
-        <%!-- Conversation area --%>
-        <div data-role="conversation-area" class="flex-1 flex flex-col overflow-hidden">
-          <%!-- Conversation header --%>
-          <div class="flex items-center gap-3 px-4 py-3 border-b border-base-content/10 flex-shrink-0">
-            <button
-              phx-click="toggle_sidebar"
-              data-role="sidebar-toggle"
-              class="btn btn-ghost btn-sm sm:hidden"
-              aria-label="Toggle sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-
-            <h1
-              :if={@active_session}
-              data-role="session-header"
-              class="text-base font-semibold truncate"
-            >
-              {@active_session.title || "New Chat"}
-            </h1>
-            <span :if={@active_session} class="badge badge-ghost badge-sm">
-              {context_label(@active_session.context_type)}
-            </span>
-
-            <h1
-              :if={!@active_session}
-              data-role="new-chat-header"
-              class="text-base font-semibold"
-            >
-              New Chat
-            </h1>
-          </div>
-
-          <%!-- Main content area: empty state, no-session-selected, or message list --%>
-
-          <%!-- Home state: AI-first greeting shown whenever no session is active,
-               regardless of prior chat history (issue b7b4f72d). --%>
+        <%!-- Message list: active session. The data-session-id on this
+             container is the active conversation's own id and is read by
+             the share-insight spex (criteria 217 and 885), which pull it
+             out of the rendered HTML to open /app/chat/:id as the invitee. --%>
+        <div
+          :if={@active_session}
+          data-role="message-list"
+          data-session-id={@active_session.id}
+          class="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
+        >
           <div
-            :if={!@active_session}
-            data-role="chat-empty-state"
-            class="flex-1 flex flex-col items-center justify-center px-8 text-center"
+            :for={message <- @messages}
+            data-role="message"
+            data-message-role={message.role}
           >
-            <h2 class="text-xl font-semibold">What can I help you with today?</h2>
-            <p class="text-base-content/60 mt-2 max-w-prose">
-              I have access to your metrics, correlations, and trends. Ask a question in plain language and I'll help you understand what's happening in your business.
-            </p>
-            <div
-              :if={@nothing_connected}
-              id="chat-no-data"
-              class="mt-6 flex max-w-prose flex-col items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4 text-sm sm:flex-row sm:text-left"
-            >
-              <span class="text-base-content/70">
-                No data is connected yet, so there's nothing to analyze. Connect Google, Meta or QuickBooks first — or ask me to help you set it up.
-              </span>
-              <.link
-                navigate={~p"/app/onboarding/connect"}
-                class="btn btn-primary btn-sm shrink-0"
-              >
-                Set up data sources
-              </.link>
-            </div>
-            <div class="flex flex-wrap gap-2 justify-center mt-6">
-              <button
-                phx-click="send_message"
-                phx-value-content="Show me something I don't know about my business."
-                data-role="example-prompt"
-                class="btn btn-ghost btn-sm"
-              >
-                Show me something I don't know about my business.
-              </button>
-              <button
-                phx-click="send_message"
-                phx-value-content="Why did my revenue drop last week?"
-                data-role="example-prompt"
-                class="btn btn-ghost btn-sm"
-              >
-                Why did my revenue drop last week?
-              </button>
-              <button
-                phx-click="send_message"
-                phx-value-content="Which ad platform drives the most conversions?"
-                data-role="example-prompt"
-                class="btn btn-ghost btn-sm"
-              >
-                Which ad platform drives the most conversions?
-              </button>
-              <button
-                phx-click="send_message"
-                phx-value-content="What should I focus on to grow faster?"
-                data-role="example-prompt"
-                class="btn btn-ghost btn-sm"
-              >
-                What should I focus on to grow faster?
-              </button>
-            </div>
-            <p :if={@sessions != []} class="text-xs text-base-content/40 mt-6">
-              Your previous chats are saved in the sidebar.
-            </p>
-          </div>
-
-          <%!-- Message list: active session loaded --%>
-          <div
-            :if={@active_session}
-            data-role="message-list"
-            class="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-          >
-            <div
-              :for={message <- @messages}
-              data-role="message"
-              data-message-role={message.role}
-            >
-              <%!-- User message --%>
-              <div :if={message.role == :user} class="flex justify-end">
-                <div
-                  data-role="user-message"
-                  class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-br-sm px-4 py-3 bg-primary text-primary-content text-sm"
-                >
-                  {message.content}
-                </div>
-              </div>
-
-              <%!-- Assistant message --%>
-              <div :if={message.role == :assistant} class="flex justify-start">
-                <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
-                  <div
-                    data-role="assistant-message"
-                    class="mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
-                  >
-                    {message.content}
-                  </div>
-                  <div
-                    :if={suggests_visualization?(message.content)}
-                    data-role="suggested-visualization"
-                    class="text-xs"
-                  >
-                    <.link navigate={~p"/app/visualizations/new"} class="link link-primary">
-                      📊 View this as a visualization
-                    </.link>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <button
-                      phx-click="share_insight"
-                      phx-value-message-id={message.id}
-                      data-role="share-insight"
-                      class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
-                    >
-                      Share
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <%!-- System message --%>
+            <div :if={message.role == :user} class="flex justify-end">
               <div
-                :if={message.role == :system}
-                data-role="system-message"
-                class="text-xs text-base-content/40 text-center py-1"
+                data-role="user-message"
+                class="max-w-[85%] rounded-box bg-primary px-4 py-3 text-sm text-primary-content break-words sm:max-w-[75%]"
               >
                 {message.content}
               </div>
             </div>
 
-            <%!-- Streaming waiting indicator (no tokens yet) --%>
-            <div :if={@streaming && @streaming_content == ""} class="flex justify-start">
-              <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
-                <div data-role="streaming-waiting" class="mf-card-cyan px-4 py-3">
-                  <span class="loading loading-dots loading-sm"></span>
+            <div :if={message.role == :assistant} class="flex justify-start">
+              <div class="flex max-w-[85%] min-w-0 flex-col gap-1 sm:max-w-[75%]">
+                <div
+                  data-role="assistant-message"
+                  class="rounded-box border border-neutral bg-base-200 px-4 py-3 text-sm leading-relaxed text-base-content break-words whitespace-pre-wrap"
+                >
+                  {message.content}
+                </div>
+                <div
+                  :if={suggests_visualization?(message.content)}
+                  data-role="suggested-visualization"
+                  class="text-xs"
+                >
+                  <.link navigate={~p"/app/visualizations/new"} class="text-primary hover:underline">
+                    View this as a visualization
+                  </.link>
                 </div>
                 <div class="flex items-center gap-1">
                   <button
+                    type="button"
                     phx-click="share_insight"
+                    phx-value-message-id={message.id}
                     data-role="share-insight"
-                    class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
-                    aria-label="Share this chat"
+                    class="rounded-box px-2 py-1 text-xs text-base-content/50 hover:text-base-content"
                   >
                     Share
                   </button>
@@ -293,68 +220,80 @@ defmodule MetricFlowWeb.AiLive.Chat do
               </div>
             </div>
 
-            <%!-- Streaming message (tokens arriving) --%>
-            <div :if={@streaming && @streaming_content != ""} class="flex justify-start">
-              <div class="max-w-[85%] sm:max-w-[75%] flex flex-col gap-1">
-                <div
-                  data-role="streaming-message"
-                  class="mf-card-cyan px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
-                >
-                  {@streaming_content}<span class="inline-block w-0.5 h-4 bg-current animate-pulse align-middle ml-0.5"></span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <button
-                    phx-click="share_insight"
-                    data-role="share-insight"
-                    class="btn btn-ghost btn-xs text-base-content/40 hover:text-base-content/70"
-                    aria-label="Share this chat"
-                  >
-                    Share
-                  </button>
-                </div>
+            <div
+              :if={message.role == :system}
+              data-role="system-message"
+              class="py-1 text-center text-xs text-base-content/40"
+            >
+              {message.content}
+            </div>
+          </div>
+
+          <div :if={@streaming && @streaming_content == ""} class="flex justify-start">
+            <div class="flex max-w-[85%] min-w-0 flex-col gap-1 sm:max-w-[75%]">
+              <div
+                data-role="streaming-waiting"
+                class="rounded-box border border-neutral bg-base-200 px-4 py-3"
+              >
+                <span class="loading loading-dots loading-sm"></span>
               </div>
             </div>
           </div>
 
-          <%!-- Message input area --%>
-          <div
-            data-role="message-input-area"
-            class="flex-shrink-0 border-t border-base-content/10 px-4 py-3"
-          >
-            <form phx-submit="send_message" phx-change="update_input">
-              <div class="flex items-end gap-2">
+          <div :if={@streaming && @streaming_content != ""} class="flex justify-start">
+            <div class="flex max-w-[85%] min-w-0 flex-col gap-1 sm:max-w-[75%]">
+              <div
+                data-role="streaming-message"
+                class="rounded-box border border-neutral bg-base-200 px-4 py-3 text-sm leading-relaxed text-base-content break-words whitespace-pre-wrap"
+              >
+                {@streaming_content}<span
+                  aria-hidden="true"
+                  class="ml-0.5 inline-block h-4 w-0.5 bg-current align-middle animate-pulse"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Composer --%>
+        <div
+          data-role="message-input-area"
+          class="sticky bottom-0 mx-auto w-full max-w-5xl flex-shrink-0 px-4 pb-6 pt-2 sm:px-6"
+        >
+          <form phx-submit="send_message" phx-change="update_input" class="flex flex-col gap-2">
+            <div class="mf-composer">
+              <div class="mf-composer-inner flex min-h-[80px] items-end gap-3 px-5 py-3">
                 <textarea
                   name="content"
                   data-role="message-input"
-                  rows="2"
-                  placeholder="Ask a question about your data…"
-                  disabled={@streaming}
-                  value={@input_value}
+                  rows="1"
+                  placeholder={@composer_placeholder}
                   aria-label="Message"
+                  disabled={@streaming}
                   phx-mounted={JS.focus()}
-                  class="flex-1 textarea textarea-bordered resize-none text-sm max-h-36 leading-relaxed"
-                ></textarea>
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey && !event.isComposing){event.preventDefault(); this.form.requestSubmit();}"
+                  class="min-w-0 flex-1 resize-none border-0 bg-transparent text-sm leading-relaxed text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-0 max-h-36"
+                >{@input_value}</textarea>
                 <button
                   type="submit"
                   data-role="send-btn"
                   disabled={@streaming || String.trim(@input_value) == ""}
-                  class="btn btn-primary btn-sm self-end"
+                  class="btn-brand-gradient inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-box px-4 text-sm disabled:opacity-60"
                 >
                   <span :if={@streaming} class="loading loading-spinner loading-xs"></span>
                   <span :if={!@streaming}>Send</span>
                 </button>
               </div>
+            </div>
 
-              <%!-- Context indicator when pending context set for new session --%>
-              <p
-                :if={!@active_session && @pending_context_type}
-                data-role="context-indicator"
-                class="text-xs text-base-content/40 mt-1"
-              >
-                Context: {context_label(@pending_context_type)}
-              </p>
-            </form>
-          </div>
+            <p
+              :if={!@active_session && @pending_context_type}
+              data-role="context-indicator"
+              class="text-xs text-base-content/50"
+            >
+              Context: {context_label(@pending_context_type)}
+            </p>
+          </form>
         </div>
       </div>
     </Layouts.app>
@@ -381,7 +320,6 @@ defmodule MetricFlowWeb.AiLive.Chat do
       |> assign(:input_value, "")
       |> assign(:pending_context_type, nil)
       |> assign(:pending_context_id, nil)
-      |> assign(:show_sidebar, false)
       |> assign(:page_title, "AI Chat")
       |> assign(:nothing_connected, MetricFlow.Onboarding.nothing_connected?(scope))
 
@@ -449,24 +387,10 @@ defmodule MetricFlowWeb.AiLive.Chat do
     {:noreply, push_patch(socket, to: ~p"/app/chat")}
   end
 
-  def handle_event("toggle_sidebar", _params, socket) do
-    {:noreply, assign(socket, :show_sidebar, !socket.assigns.show_sidebar)}
-  end
-
   def handle_event("select_session", %{"id" => id_string}, socket) do
-    socket =
-      socket
-      |> assign(:show_sidebar, false)
-      |> push_patch(to: ~p"/app/chat/#{id_string}")
-
-    {:noreply, socket}
+    {:noreply, push_patch(socket, to: ~p"/app/chat/#{id_string}")}
   end
 
-  # Consolidated send_message handler: prefers a non-empty value from either
-  # "content" (form textarea name) or "message" (used by test render_submit/1).
-  # When tests call render_submit(%{message: "..."}), Phoenix merges extra params
-  # with the form's current field values, producing both "content" => "" and
-  # "message" => "...". We pick the first non-empty string from either key.
   def handle_event("send_message", params, socket) do
     trimmed = extract_message_content(params)
 
@@ -481,8 +405,6 @@ defmodule MetricFlowWeb.AiLive.Chat do
     {:noreply, assign(socket, :input_value, value)}
   end
 
-  # Share insight handler: builds a shareable link for the active session.
-  # Accepts an optional message-id to link to a specific message.
   def handle_event("share_insight", params, socket) do
     message_id = Map.get(params, "message-id")
 
@@ -537,7 +459,6 @@ defmodule MetricFlowWeb.AiLive.Chat do
     {:noreply, socket}
   end
 
-  # Catch Task exit messages so the process doesn't crash
   def handle_info({ref, _result}, socket) when is_reference(ref) do
     {:noreply, socket}
   end
@@ -594,7 +515,6 @@ defmodule MetricFlowWeb.AiLive.Chat do
   defp do_send_message(socket, content) do
     scope = socket.assigns.current_scope
 
-    # If no active session, create one first
     {socket, active_session} =
       if socket.assigns.active_session do
         {socket, socket.assigns.active_session}
@@ -682,20 +602,4 @@ defmodule MetricFlowWeb.AiLive.Chat do
   end
 
   defp suggests_visualization?(_content), do: false
-
-  @spec format_updated_at(DateTime.t() | nil) :: String.t()
-  defp format_updated_at(nil), do: ""
-
-  defp format_updated_at(%DateTime{} = dt) do
-    now = DateTime.utc_now()
-    diff_seconds = DateTime.diff(now, dt, :second)
-
-    cond do
-      diff_seconds < 60 -> "just now"
-      diff_seconds < 3600 -> "#{div(diff_seconds, 60)} minutes ago"
-      diff_seconds < 86_400 -> "#{div(diff_seconds, 3600)} hours ago"
-      diff_seconds < 172_800 -> "yesterday"
-      true -> Calendar.strftime(dt, "%b %d, %Y")
-    end
-  end
 end

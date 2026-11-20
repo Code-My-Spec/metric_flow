@@ -175,7 +175,7 @@ defmodule MetricFlowWeb.Layouts do
         <section
           class="mt-5"
           aria-label="Recent conversations"
-          data-role="recent-chat-sessions"
+          data-role="session-sidebar"
         >
           <h2 class="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-base-content/50">
             Recent conversations
@@ -184,12 +184,18 @@ defmodule MetricFlowWeb.Layouts do
             <li :for={session <- @recent_chat_sessions}>
               <.link
                 navigate={~p"/app/chat/#{session.id}"}
+                data-role="session-item"
+                data-session-id={session.id}
                 class="block truncate rounded-box px-3 py-1.5 text-sm text-base-content/80 hover:bg-base-300"
               >
                 {session.title || "Untitled chat"}
               </.link>
             </li>
-            <li :if={@recent_chat_sessions == []} class="px-3 py-1 text-xs text-base-content/50">
+            <li
+              :if={@recent_chat_sessions == []}
+              data-role="no-sessions-state"
+              class="px-3 py-1 text-xs text-base-content/50"
+            >
               No recent conversations yet.
             </li>
           </ul>
