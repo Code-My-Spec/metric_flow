@@ -335,6 +335,39 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
     end
   end
 
+  describe "design pass: controls and preview are visibly separated" do
+    test "save is the brand-gradient primary and the page splits controls from preview",
+         %{conn: conn} do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, html} = live(conn, ~p"/app/dashboards/new")
+
+        # Save Dashboard is the one main action on this page -- DESIGN.md's
+        # Primary button spec reserves the brand gradient for that role, not
+        # a small daisyUI btn btn-primary.
+        assert has_element?(lv, "[data-role='save-dashboard-btn'].btn-brand-gradient")
+
+        # Controls (what the marketer edits) and Preview (what the dashboard
+        # looks like) are two visibly separate regions so a 390px reader can
+        # tell them apart.
+        assert has_element?(lv, "section[data-role='editor-controls']")
+        assert has_element?(lv, "section[data-role='editor-preview']")
+
+        # The old undefined mf-card panel class (no matching CSS rule, so
+        # nothing drew) is gone in favour of DESIGN.md Card tokens on
+        # every panel this page owns.
+        refute html =~ "mf-card"
+
+        # The outer column carries overflow-x-hidden so nothing can push
+        # the page sideways at 390 even as narrow chat and canvas content
+        # wraps.
+        assert html =~ "overflow-x-hidden"
+      end)
+    end
+  end
+
   describe "refining an existing dashboard through chat replaces it with the model's complete new spec" do
     test "a refine turn's returned spec becomes the dashboard's new components, not an addition",
          %{conn: conn} do
