@@ -1,0 +1,25 @@
+id: "dashboard-show-design-pass"
+kind: "issue"
+title: The All Data dashboard page doesn't follow the Anderson BI design
+text: |-
+  Fault: the "All Data" page at /app/dashboard (lib/metric_flow_web/live/dashboard_live/show.ex) doesn't follow the Anderson BI design that design-system-2 set up.
+
+  Do a design pass on that page file. Follow the "Design pass" section of DESIGN.md: every step, before and after screenshots at 390px and 1440px on the seeded data (priv/repo/seeds.exs) in the evidence folder, and the trailer Design-Pass: lib/metric_flow_web/live/dashboard_live/show.ex.
+
+  Who it is for: the referred client of an agency. Read .code_my_spec/personas/agency-client-referred-customer/summary.md first.
+
+  What the page must do:
+  - Lead with the few numbers that changed most, and say why.
+  - Show one clear card per metric or chart.
+  - When there is no data, show an empty state that points the user to connecting integrations.
+
+  Rules: keep every id and data-* attribute. Grep test/ (including test/spex/) for any you touch, and run those files. Change only this page, plus a shared component if a pattern repeats (dashboard_live/components.ex only if the pass needs it). Nothing scrolls sideways at 390px. Use only theme tokens: no hard-coded colours or radii.
+
+  How it will be checked:
+  - The full suite and mix spex pass.
+  - The page leads with the biggest-changing numbers and their reason, with one card per metric or chart.
+  - With no data, the empty state links to connecting integrations.
+  - Nothing scrolls sideways at 390px.
+  - The evidence folder holds before and after shots at 390 and 1440.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/dashboard_live/show.ex.
+criteria: []
