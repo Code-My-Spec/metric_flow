@@ -368,4 +368,78 @@ defmodule MetricFlowWeb.IntegrationLive.SyncHistoryTest do
       end)
     end
   end
+
+  describe "failed syncs are listed before successful ones" do
+    test "persisted failed row appears before a newer persisted success row", %{conn: conn} do
+      user = user_fixture()
+      integration = insert_integration!(user.id, :google_analytics)
+      sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
+
+      # Older failure, newer success: under the repository's completed_at-desc
+      # ordering the success would come first — the design pass must put the
+      # failure above it regardless of timing.
+      insert_sync_history!(user.id, integration.id, sync_job.id, %{
+        provider: :google_analytics,
+        status: :failed,
+        error_message: "older failure",
+        started_at:
+          DateTime.add(DateTime.utc_now(), -3_600, :second) |> DateTime.truncate(:microsecond),
+        completed_at:
+          DateTime.add(DateTime.utc_now(), -3_500, :second) |> DateTime.truncate(:microsecond)
+      })
+
+      insert_sync_history!(user.id, integration.id, sync_job.id, %{
+        provider: :google_ads,
+        status: :success,
+        records_synced: 7,
+        started_at:
+          DateTime.add(DateTime.utc_now(), -120, :second) |> DateTime.truncate(:microsecond),
+        completed_at:
+          DateTime.add(DateTime.utc_now(), -60, :second) |> DateTime.truncate(:microsecond)
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/sync-history")
+
+        failed_pos = :binary.match(html, "older failure") |> elem(0)
+        success_pos = :binary.match(html, "7 records synced") |> elem(0)
+
+        assert failed_pos < success_pos,
+               "expected the failed sync to render before the newer successful sync"
+      end)
+    end
+
+    test "a live sync_failed event sits above a prior persisted success", %{conn: conn} do
+      user = user_fixture()
+      integration = insert_integration!(user.id, :google_analytics)
+      sync_job = insert_sync_job!(user.id, integration.id, :google_analytics)
+
+      insert_sync_history!(user.id, integration.id, sync_job.id, %{
+        provider: :google_analytics,
+        status: :success,
+        records_synced: 42
+      })
+
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/sync-history")
+
+        send(
+          lv.pid,
+          {:sync_failed,
+           sync_failed_payload(%{provider: :facebook_ads, reason: "boom from live event"})}
+        )
+
+        html = render(lv)
+        failed_pos = :binary.match(html, "boom from live event") |> elem(0)
+        success_pos = :binary.match(html, "42 records synced") |> elem(0)
+
+        assert failed_pos < success_pos,
+               "expected the live failed event to render before the prior persisted success"
+      end)
+    end
+  end
 end
