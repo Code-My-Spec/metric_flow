@@ -39,7 +39,7 @@ defmodule MetricFlowSpex.Story48.Criterion4139Spex do
       then_ "the plan stores the resulting Stripe Product ID and Price ID", context do
         row_html =
           context.view
-          |> element("tr[data-role='plan-row']", "Pro")
+          |> element("[data-role='plan-row']", "Pro")
           |> render()
 
         refute row_html =~ "—"
