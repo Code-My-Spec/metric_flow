@@ -57,14 +57,16 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
+      <div class="overflow-x-hidden">
         <%!-- Page header --%>
-        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 class="text-2xl font-bold">Correlations</h1>
-            <p class="text-base-content/60">Which metrics drive your goal?</p>
+        <div class="flex items-start justify-between mb-4 flex-wrap gap-3">
+          <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-base-content">Correlations</h1>
+            <p class="text-sm text-base-content/60 break-words">
+              Which numbers moved with your goal, strongest first.
+            </p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <%!-- Mode toggle --%>
             <div data-role="mode-toggle" class="flex items-center gap-2">
               <button
@@ -143,11 +145,38 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           </div>
         </div>
 
+        <%!-- Correlation-not-causation notice: this page shows correlations only. --%>
+        <div
+          data-role="correlation-notice"
+          class="bg-base-200 border border-neutral rounded-box p-3 mb-4 text-sm text-base-content/80 break-words"
+        >
+          These are <span class="font-semibold text-base-content">correlations, not causation</span>
+          — two numbers moving together doesn't prove one caused the other. Use them as leads to test, not conclusions.
+        </div>
+
+        <%!-- Always-visible calculation meta: daily schedule + last calculated.
+             Rendered outside the results wrapper so it shows in the empty,
+             job-running, and populated states alike. --%>
+        <div
+          data-role="calculation-meta"
+          class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-xs text-base-content/60"
+        >
+          <span data-role="calculation-schedule" class="break-words">
+            Calculated daily after each data sync completes.
+          </span>
+          <span data-role="last-calculated" class="break-words">
+            Last calculated:
+            <span class="text-base-content">
+              {format_last_calculated(@summary.last_calculated_at)}
+            </span>
+          </span>
+        </div>
+
         <%!-- Job running banner --%>
         <div
           :if={@job_running}
           data-role="job-running-banner"
-          class="mf-card-cyan p-4 mb-6 flex items-center gap-3"
+          class="alert alert-info rounded-box mb-6 flex items-center gap-3"
         >
           <span class="loading loading-spinner loading-sm"></span>
           <p class="text-sm">
@@ -161,15 +190,19 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           <div
             :if={@summary.no_data and not @job_running}
             data-role="no-data-state"
-            class="mf-card p-8 text-center"
+            class="bg-base-200 border border-neutral rounded-box p-6 sm:p-8 text-center"
           >
-            <h2 class="text-xl font-semibold">No Correlations Yet</h2>
-            <p class="text-base-content/60 mt-2 max-w-prose">
-              No correlations found — connect your marketing and financial platforms and sync at least 30 days of data points to get started.
-              The system calculates daily aggregated Pearson correlation coefficients with optimal Lag detection (0–30 days) for each metric.
-              Last calculated: never — need at least 30 days of data before correlations can run.
+            <h2 class="text-xl font-semibold text-base-content">No Correlations Yet</h2>
+            <p class="text-base-content/70 mt-2 mx-auto max-w-prose break-words">
+              You need at least 30 days of synced data points before correlations can run.
+              Connect your marketing and financial platforms to start collecting them.
+              Once ready, we'll rank the strongest correlations first and show
+              the coefficient and optimal lag for each metric.
             </p>
-            <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-6">
+            <.link
+              navigate={~p"/app/integrations"}
+              class="btn-brand-gradient rounded-box px-4 py-2 mt-6 inline-block w-full sm:w-auto"
+            >
               Connect Integrations
             </.link>
             <div
@@ -177,7 +210,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               data-role="insufficient-data-warning"
               class="badge badge-warning mt-4"
             >
-              Insufficient data — 30 days of metrics required
+              Not enough data yet — 30 days of metrics required
             </div>
           </div>
 
@@ -193,9 +226,6 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             >
               <span data-role="goal-metric">
                 Goal: <span class="font-medium text-base-content">{@summary.goal_metric_name}</span>
-              </span>
-              <span :if={@summary.last_calculated_at} data-role="last-calculated">
-                Last calculated {format_datetime(@summary.last_calculated_at)}
               </span>
               <span :if={@summary.data_window != {nil, nil}} data-role="data-window">
                 Data window: {format_data_window(@summary.data_window)}
@@ -330,15 +360,20 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                     data-role="correlation-row"
                     data-metric={result.metric_name}
                   >
-                    <td>
-                      <span class="font-medium">{result.metric_name}</span>
+                    <td class="min-w-0">
+                      <span class="font-medium text-base-content break-words">
+                        {result.metric_name}
+                      </span>
                       <br />
-                      <span class="text-xs text-base-content/50">
-                        {provider_display_name(result.provider)}
+                      <span class="text-xs text-base-content/60 break-words">
+                        {correlation_explanation(result)}
                       </span>
                     </td>
                     <td>
-                      <span class={["mf-metric text-sm", coefficient_color_class(result.coefficient)]}>
+                      <span
+                        data-role="correlation-coefficient"
+                        class={["font-mono text-sm", coefficient_color_class(result.coefficient)]}
+                      >
                         {format_coefficient(result.coefficient)}
                       </span>
                       <span
@@ -348,14 +383,14 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                         {CorrelationResult.strength_label(result)}
                       </span>
                     </td>
-                    <td>
+                    <td data-role="optimal-lag">
                       <span
                         :if={result.optimal_lag == 0}
-                        class="text-base-content/60 mf-metric text-sm"
+                        class="text-base-content/60 font-mono text-sm"
                       >
                         Same day
                       </span>
-                      <span :if={result.optimal_lag != 0} class="mf-metric text-sm">
+                      <span :if={result.optimal_lag != 0} class="font-mono text-sm">
                         {result.optimal_lag} days
                       </span>
                     </td>
@@ -377,16 +412,19 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
         <%!-- Smart mode --%>
         <div :if={@mode == :smart} data-role="smart-mode">
           <%!-- Before AI suggestions enabled --%>
-          <div :if={not @ai_suggestions_enabled} class="mf-card-accent p-8 text-center">
-            <h2 class="text-xl font-semibold">Smart Mode</h2>
-            <p class="text-base-content/60 mt-2 max-w-prose">
-              Smart mode uses AI to surface actionable insights from your
-              correlation data so you can act without digging through raw numbers.
+          <div
+            :if={not @ai_suggestions_enabled}
+            class="bg-base-200 border border-accent rounded-box p-6 sm:p-8 text-center"
+          >
+            <h2 class="text-xl font-semibold text-base-content">Smart Mode</h2>
+            <p class="text-base-content/70 mt-2 mx-auto max-w-prose break-words">
+              Smart mode surfaces the strongest correlations in plain words so you can act
+              without digging through raw numbers. Remember: they are still correlations, not causation.
             </p>
             <button
               phx-click="enable_ai_suggestions"
               data-role="enable-ai-suggestions"
-              class="btn btn-primary btn-sm mt-6"
+              class="btn-brand-gradient rounded-box px-4 py-2 mt-6 w-full sm:w-auto"
             >
               Enable AI Suggestions
             </button>
@@ -395,8 +433,16 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
           <%!-- Top correlations sections (always visible in smart mode) --%>
           <div class="space-y-6 mb-6">
             <%!-- Top 5 Positive Correlations --%>
-            <div data-role="top-positive-correlations" class="mf-card p-5">
-              <h3 class="text-lg font-semibold mb-3 text-success">Top Positive Correlations</h3>
+            <div
+              data-role="top-positive-correlations"
+              class="bg-base-200 border border-neutral rounded-box p-5"
+            >
+              <h3 class="text-lg font-semibold mb-1 text-base-content">
+                Top positive correlations
+              </h3>
+              <p class="text-xs text-base-content/60 mb-3">
+                Moved up when your goal moved up. Correlation, not causation.
+              </p>
               <div
                 :if={top_positive_correlations(@summary.results) == []}
                 class="text-sm text-base-content/60"
@@ -428,7 +474,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                   <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="mf-metric text-sm text-success">
+                  <span class="font-mono text-sm text-success">
                     {format_coefficient(result.coefficient)}
                   </span>
                   <span class={["badge badge-sm", strength_badge_class(result)]}>
@@ -439,8 +485,16 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             </div>
 
             <%!-- Top 5 Negative Correlations --%>
-            <div data-role="top-negative-correlations" class="mf-card p-5">
-              <h3 class="text-lg font-semibold mb-3 text-error">Top Negative Correlations</h3>
+            <div
+              data-role="top-negative-correlations"
+              class="bg-base-200 border border-neutral rounded-box p-5"
+            >
+              <h3 class="text-lg font-semibold mb-1 text-base-content">
+                Top negative correlations
+              </h3>
+              <p class="text-xs text-base-content/60 mb-3">
+                Moved down when your goal moved up. Correlation, not causation.
+              </p>
               <div
                 :if={top_negative_correlations(@summary.results) == []}
                 class="text-sm text-base-content/60"
@@ -472,7 +526,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
                   <p class="text-xs text-base-content/60 mt-1">{correlation_explanation(result)}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="mf-metric text-sm text-error">
+                  <span class="font-mono text-sm text-error">
                     {format_coefficient(result.coefficient)}
                   </span>
                   <span class={["badge badge-sm", strength_badge_class(result)]}>
@@ -492,7 +546,7 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
             <div data-role="ai-recommendations" class="space-y-4">
               <h3 class="text-lg font-semibold">AI Recommendations</h3>
 
-              <div class="mf-card p-6">
+              <div class="bg-base-200 border border-neutral rounded-box p-6">
                 <p class="text-base-content/80 leading-relaxed">
                   Consider running a correlation analysis to generate metric-specific insights.
                   Suggestions are based on correlation strength, revenue trends, and business context
@@ -507,7 +561,10 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
               </div>
 
               <%!-- Feedback section --%>
-              <div data-role="ai-feedback-section" class="mf-card p-5">
+              <div
+                data-role="ai-feedback-section"
+                class="bg-base-200 border border-neutral rounded-box p-5"
+              >
                 <div :if={not @ai_feedback_submitted}>
                   <p data-role="feedback-helper-text" class="text-xs text-base-content/40 mb-2">
                     Was this helpful or not helpful? Your feedback helps improve future suggestions.
@@ -885,6 +942,9 @@ defmodule MetricFlowWeb.CorrelationLive.Index do
   end
 
   defp format_datetime(_), do: ""
+
+  defp format_last_calculated(nil), do: "never"
+  defp format_last_calculated(dt), do: format_datetime(dt)
 
   defp format_data_window({start_date, end_date})
        when not is_nil(start_date) and not is_nil(end_date) do

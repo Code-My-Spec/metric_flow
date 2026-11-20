@@ -20,8 +20,9 @@ defmodule MetricFlowSpex.Criterion859UserAccessesCorrelationAnalysisFromMainNavi
       end
 
       then_ "they are taken to the correlation analysis view", context do
-        html = render(context.view)
-        assert html =~ "Which metrics drive your goal"
+        assert has_element?(context.view, "[data-role='correlation-notice']"),
+               "Expected the correlation analysis view's correlation-not-causation notice"
+
         {:ok, context}
       end
     end
