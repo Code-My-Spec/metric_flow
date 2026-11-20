@@ -24,49 +24,94 @@ defmodule MetricFlowWeb.AccountTransferLive.Accept do
       current_scope={@current_scope}
       active_account_name={assigns[:active_account_name]}
     >
-      <div class="mf-content flex items-center justify-center min-h-[80vh]">
-        <div class="mf-card p-8 w-full max-w-md">
-          <h2 class="text-xl font-semibold text-center">Confirm Ownership Transfer</h2>
+      <div class="mx-auto w-full max-w-md overflow-x-hidden">
+        <section
+          aria-labelledby="transfer-heading"
+          class="rounded-box border border-neutral bg-base-200 p-6 sm:p-8"
+        >
+          <div class="flex items-start gap-4">
+            <div class="avatar placeholder shrink-0">
+              <div class="h-12 w-12 rounded-full bg-primary text-primary-content">
+                <span class="text-lg font-semibold">
+                  {String.upcase(String.first(@transfer.account.name))}
+                </span>
+              </div>
+            </div>
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                Ownership transfer
+              </p>
+              <h1
+                id="transfer-heading"
+                class="text-xl font-semibold text-base-content break-words"
+              >
+                Become the owner of {@transfer.account.name}
+              </h1>
+            </div>
+          </div>
 
-          <p class="text-sm text-base-content/70 text-center mt-2">
-            <strong>{@transfer.initiated_by_email}</strong>
-            {" wants to transfer ownership of "}
-            <strong>{@transfer.account.name}</strong>
-            {" to you."}
+          <p class="mt-4 text-sm text-base-content/80 break-words">
+            <strong class="break-all text-base-content">{@transfer.initiated_by_email}</strong>
+            is handing ownership of
+            <strong class="text-base-content">{@transfer.account.name}</strong>
+            to you.
           </p>
 
-          <div class="divider"></div>
+          <ul class="mt-4 space-y-2 text-sm text-base-content/80">
+            <li class="flex gap-2">
+              <span aria-hidden="true" class="text-primary">&bull;</span>
+              <span>You become the sole owner and control who has access.</span>
+            </li>
+            <li class="flex gap-2">
+              <span aria-hidden="true" class="text-primary">&bull;</span>
+              <span>
+                {@transfer.initiated_by_email} keeps access as
+                <strong class="text-base-content">{previous_owner_role_label(@transfer)}</strong>
+                and can no longer transfer or delete the account.
+              </span>
+            </li>
+            <li class="flex gap-2">
+              <span aria-hidden="true" class="text-primary">&bull;</span>
+              <span>Connected data, dashboards and history stay with the account.</span>
+            </li>
+          </ul>
 
-          <div :if={@current_user}>
+          <div :if={@current_user} class="mt-6 space-y-3">
             <button
-              class="btn btn-primary w-full"
+              type="button"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
               phx-click="accept"
               data-role="accept-transfer-btn"
             >
-              Accept Ownership
+              Accept ownership of {@transfer.account.name}
             </button>
+            <p class="text-xs text-base-content/60">
+              Signed in as <strong class="break-all text-base-content">{@current_user.email}</strong>.
+            </p>
           </div>
 
-          <div :if={is_nil(@current_user)}>
-            <p class="text-sm text-base-content/60 text-center mb-4">
+          <div :if={is_nil(@current_user)} class="mt-6 space-y-3">
+            <p class="text-sm text-base-content/70">
               Sign in or create an account to confirm this transfer.
             </p>
             <button
-              class="btn btn-primary w-full"
+              type="button"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
               phx-click="log_in_to_confirm"
               data-role="log-in-to-confirm-btn"
             >
               Log In to Confirm
             </button>
             <button
-              class="btn btn-ghost btn-sm w-full mt-2"
+              type="button"
+              class="w-full rounded-box border border-neutral bg-base-200 px-4 py-2 text-sm font-semibold text-base-content hover:bg-base-300"
               phx-click="register_to_confirm"
               data-role="register-to-confirm-btn"
             >
               Create an Account
             </button>
           </div>
-        </div>
+        </section>
       </div>
     </Layouts.content>
     """
@@ -160,4 +205,7 @@ defmodule MetricFlowWeb.AccountTransferLive.Accept do
 
   defp current_user_from_scope(nil), do: nil
   defp current_user_from_scope(%{user: user}), do: user
+
+  defp previous_owner_role_label(%{remain_admin: true}), do: "Admin"
+  defp previous_owner_role_label(_transfer), do: "Account Manager"
 end
