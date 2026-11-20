@@ -37,19 +37,26 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto max-w-lg">
+      <div class="mx-auto w-full max-w-lg overflow-x-hidden">
         <div class="mb-6">
-          <h1 class="text-2xl font-bold">{@platform_name} — Edit Accounts</h1>
-          <p class="mt-1 text-base-content/60">
+          <h1 class="break-words text-2xl font-bold">
+            {@platform_name} — Edit Accounts
+          </h1>
+          <p class="mt-1 break-words text-base-content/70">
             Choose which accounts or properties to sync.
           </p>
         </div>
 
-        <div data-role="account-selection" class="mf-card p-6">
-          <div class="space-y-3">
-            <div
+        <form
+          phx-submit="save_account_selection"
+          data-role="account-selection"
+          class="rounded-box border border-neutral bg-base-200 p-6"
+        >
+          <fieldset class="space-y-2">
+            <legend class="sr-only">Accounts to sync</legend>
+            <label
               :for={{account, idx} <- Enum.with_index(@display_accounts)}
-              class="flex items-center gap-3 p-3 bg-base-200 rounded"
+              class="flex items-center gap-3 rounded-box border border-neutral bg-base-100 p-3 hover:bg-base-300"
             >
               <input
                 type="checkbox"
@@ -57,25 +64,31 @@ defmodule MetricFlowWeb.IntegrationLive.AccountEdit do
                 name={"accounts[#{idx}]"}
                 value={account.id}
                 checked={account.selected}
-                class="checkbox checkbox-sm"
+                class="checkbox checkbox-sm checkbox-primary"
               />
-              <span class="text-sm">{account.label}</span>
-            </div>
-          </div>
+              <span class="min-w-0 break-words text-sm text-base-content">
+                {account.label}
+              </span>
+            </label>
+          </fieldset>
 
-          <div class="mt-6 flex flex-col gap-2">
+          <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <.link
+              navigate={~p"/app/integrations"}
+              class="inline-flex w-full items-center justify-center rounded-box border border-neutral bg-base-200 px-4 py-2 text-sm text-base-content hover:bg-base-300 sm:w-auto"
+            >
+              Back to integrations
+            </.link>
             <button
+              type="submit"
               phx-click="save_account_selection"
               data-role="save-account-selection"
-              class="btn btn-primary w-full"
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 font-semibold sm:w-auto"
             >
               Save Selection
             </button>
-            <.link navigate={~p"/app/integrations"} class="btn btn-ghost btn-sm">
-              Back to integrations
-            </.link>
           </div>
-        </div>
+        </form>
       </div>
     </Layouts.app>
     """
