@@ -1,0 +1,24 @@
+id: "design-system-2"
+kind: "issue"
+title: The app still uses the default Phoenix/daisyUI look, not the Anderson BI design
+text: |-
+  Fault: MetricFlow (already named "Anderson BI" in the layout) still has the default Phoenix/daisyUI look. Fix only the design system and the app shell: the sidebar, the top bar, and the public header and footer. Do not redesign page content. Pages get redesigned one at a time later.
+
+  Source for the look: the owner's handoff at /Users/johndavenport/Downloads/anderson_bi_handoff (README.md, index.html, styles.css, app.js, assets/original-mockup.png, assets/anderson-gradient-logo.png). The PNG is the visual source of truth. The HTML/CSS is a reconstruction, and you can read the exact colours from it.
+
+  Wanted:
+  1. Theme. assets/css/app.css has ONE dark daisyUI theme with the handoff tokens: page #090f1d, sidebar #0d1323, text #f5f6fa, muted text #c0c5d4, lines #354055, the brand gradient linear-gradient(105deg,#0baac8 0%,#3dc0aa 35%,#e4b76a 70%,#d53f60 100%), and the four accent families of the suggestion cards (green, blue, gold, purple). No light theme and no theme toggle. The app looks the same whatever the OS setting, and <html> carries data-theme for that theme. Font: Inter, falling back to system sans. Radii: the mockup's soft rounded corners, about 12px for boxes and 24px for the composer.
+  2. Assets. Copy the gradient logo into priv/static/images and serve it from /images, not hotlinked. Copy the mockup PNG to .code_my_spec/design/anderson-bi-mockup.png. When an agency white-label logo is configured, it still replaces the default logo. Keep data-role="agency-logo" and data-role="default-logo".
+  3. Layouts.app follows the mockup. The left sidebar has, in order: the logo; a gradient "New Chat" button that starts a new chat at /app/chat; flat primary nav with AI Chat (/app/chat), All Data (/app/dashboard), Correlations, Integrations and Reports; a quieter secondary group with the other links that exist today (Dashboards, Insights, Goals, the Account pages, and the Agency group only when the active account is an agency); a "Recent conversations" list of the active account's latest 5 chat sessions, each linking to /app/chat/:id; and at the bottom an account picker that shows the active account name (keep data-role="current-account-name") and leads to account switching. A top bar holds help and an avatar menu (user settings, log out). Do NOT add a notification bell, because there is no notifications feature. On a phone the sidebar is a drawer behind a menu button.
+  4. Layouts.content (the public pages: home, login, register) uses the same theme, logo and colours.
+  5. DESIGN.md at the repo root. It names the tokens and sets the rules pages follow: use only theme tokens, never a hard-coded colour or radius in a template; design for 390px first; nothing scrolls sideways; one h1 per page; keep every id and data-*. It describes the sidebar, the top bar, the primary (gradient) and secondary buttons, a card, a suggestion card, the composer, a form, an empty state and alerts. Copy the sections "## Design pass" and "### What a pass must check and say" from /Volumes/X10 Pro/github/fun_fair_auction (git show master:DESIGN.md) and adapt them to this app: sample data comes from priv/repo/seeds.exs; personas live in .code_my_spec/personas/; the page files are lib/metric_flow_web/live/**/*.ex; the trailer is Design-Pass: <path>. AGENTS.md points to DESIGN.md in one line.
+
+  Keep every id and data attribute that tests use, and keep every existing link working.
+
+  How it will be checked:
+  - The full suite passes.
+  - The logo is served from /images.
+  - There is no light theme and no prefers-color-scheme switch, and <html> carries the dark theme's data-theme.
+  - At 390px the shell fits without sideways scrolling, and the sidebar opens as a drawer from the menu button.
+  - The evidence folder holds screenshots of /app/chat at 390 and 1440.
+criteria: []
