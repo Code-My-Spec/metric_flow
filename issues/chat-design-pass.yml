@@ -1,0 +1,26 @@
+id: "chat-design-pass"
+kind: "issue"
+title: The chat landing page doesn't look like the Anderson BI mockup
+text: |-
+  Fault: /app/chat (lib/metric_flow_web/live/ai_live/chat.ex) doesn't look like the owner's Anderson BI mockup. Every client user lands on this page after login, so it is the client's home.
+
+  Do a design pass on it. Follow the "Design pass" section of DESIGN.md: every step, the screenshots into the evidence folder, and the Design-Pass: trailer. This builds on design-system-2 (theme, shell, DESIGN.md) and sample-data-2 (priv/repo/seeds.exs), which are both on main now. Take screenshots logged in as the seeded retail client (Anderson Retail Co.).
+
+  Who it is for: the referred client of an agency, on a phone or a laptop. Read .code_my_spec/personas/agency-client-referred-customer/summary.md first. The look to match is assets/original-mockup.png in the owner's handoff at /Users/johndavenport/Downloads/anderson_bi_handoff (also copied to .code_my_spec/design/anderson-bi-mockup.png).
+
+  Wanted:
+  1. A new or empty chat shows the mockup's hero: "What can I help you with today?" with the welcome line under it and a subtle gradient wave behind the top. It also shows four suggestion cards (Business Performance, Customer Insights, Marketing Effectiveness, Financial Health) with the mockup's prompts and accent colours, and the gradient-bordered composer with the placeholder "Ask about revenue, marketing, customer trends, cash flow, or anything else...". Clicking a card sends that prompt as a real chat message. Enter sends, and Shift+Enter adds a newline.
+  2. Once a conversation has messages, the hero and cards give way to the conversation, and the composer stays at the bottom.
+  3. The page's own session list duplicates the layout's Recent conversations. Reconcile them so there is one list. Before removing markup, grep test/ for data-role="session-sidebar", "no-sessions-state", "sidebar-toggle" and the other ids, and keep whatever the tests drive (fold it in rather than delete it).
+  4. Attachments and the chat-options button in the mockup are not features here. Leave them out rather than adding dead buttons.
+  5. Nothing scrolls sideways at 390px. Use only theme tokens.
+
+  Keep every id and data attribute that tests use. Change only the chat page, plus a shared component if a pattern repeats.
+
+  How it will be checked:
+  - The full suite passes.
+  - The empty state matches the mockup at 1440px and works at 390px with no sideways scrolling.
+  - Clicking a suggestion card produces a user message and an assistant reply.
+  - The evidence folder holds before and after screenshots at both widths.
+  - The commit carries the trailer Design-Pass: lib/metric_flow_web/live/ai_live/chat.ex.
+criteria: []
