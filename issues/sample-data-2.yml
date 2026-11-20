@@ -1,0 +1,28 @@
+id: "sample-data-2"
+kind: "issue"
+title: There is no realistic sample data, so design passes can't screenshot real-looking pages
+text: |-
+  Fault: priv/repo/seeds.exs is empty, so there is no believable data to screenshot or log in with.
+
+  Wanted: priv/repo/seeds.exs creates believable sample data for dev and test only. It is idempotent, so running it again creates no duplicates and no errors. It must never run on UAT or prod. Use the contexts' own functions where they exist rather than raw inserts.
+
+  Data to create:
+  - An agency account "Anderson the Fish", owned by joel@example.com.
+  - A client account "Anderson Retail Co.", owned by a client user and managed by that agency at account_manager. Joel is also a member.
+  - A second client account, a direct one, for a direct marketer.
+  - On Anderson Retail Co.:
+    - connected integrations for Google Analytics, Google Ads, Facebook Ads and QuickBooks, using the app's real schemas and no real tokens;
+    - about 90 days of daily metrics with believable trends;
+    - a couple of dashboards with visualizations;
+    - a few correlation results and goals;
+    - an insight or two;
+    - a saved report;
+    - 5 chat sessions with short, realistic message histories, titled "Q4 revenue outlook and drivers", "Marketing ROI by channel", "Customer retention trends", "Cash flow and runway analysis" and "Top product opportunities".
+  - Seeded users get a dev-only password, recorded in a comment at the top of seeds.exs.
+
+  How it will be checked:
+  - `mix ecto.reset` (or `mix run priv/repo/seeds.exs` on an empty dev db) runs clean twice in a row.
+  - Logging in as each seeded user shows their accounts, with data on the dashboard, integrations, correlations, reports and chat pages.
+  - Seeds do not run in the UAT or prod environment.
+  - The full suite passes.
+criteria: []

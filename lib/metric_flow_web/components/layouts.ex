@@ -130,11 +130,17 @@ defmodule MetricFlowWeb.Layouts do
         </a>
 
         <nav class="mt-6 flex flex-col gap-1" aria-label="Primary">
-          <.sidebar_link href={~p"/app/chat"} icon="hero-chat-bubble-left-right">AI Chat</.sidebar_link>
+          <.sidebar_link href={~p"/app/chat"} icon="hero-chat-bubble-left-right">
+            AI Chat
+          </.sidebar_link>
           <.sidebar_link href={~p"/app/dashboard"} icon="hero-table-cells">All Data</.sidebar_link>
-          <.sidebar_link href={~p"/app/correlations"} icon="hero-arrows-right-left">Correlations</.sidebar_link>
-          <.sidebar_link href={~p"/app/integrations"} icon="hero-squares-2x2">Integrations</.sidebar_link>
-          <.sidebar_link href={~p"/app/reports"} icon="hero-document-text">Reports</.sidebar_link>
+          <.sidebar_link href={~p"/app/correlations"} icon="hero-arrows-right-left">
+            Correlations
+          </.sidebar_link>
+          <.sidebar_link href={~p"/app/integrations"} icon="hero-squares-2x2">
+            Integrations
+          </.sidebar_link>
+          <.sidebar_link href={~p"/app/dashboards"} icon="hero-document-text">Reports</.sidebar_link>
         </nav>
 
         <div class="my-5 border-t border-neutral"></div>
@@ -147,15 +153,22 @@ defmodule MetricFlowWeb.Layouts do
           <.sidebar_secondary href={~p"/app/accounts/members"}>Members</.sidebar_secondary>
           <.sidebar_secondary href={~p"/app/accounts/settings"}>Account settings</.sidebar_secondary>
           <.sidebar_secondary href={~p"/app/accounts/invitations"}>Invitations</.sidebar_secondary>
+          <.sidebar_secondary href={~p"/app/integrations/sync-history"}>
+            Sync history
+          </.sidebar_secondary>
           <%= if @active_account_type == :agency do %>
             <div class="mt-2 text-xs font-semibold uppercase tracking-wider text-base-content/50">
               Agency
             </div>
             <.sidebar_secondary href={~p"/app/agency/clients"}>Clients</.sidebar_secondary>
             <.sidebar_secondary href={~p"/app/agency/plans"}>Plans</.sidebar_secondary>
-            <.sidebar_secondary href={~p"/app/agency/subscriptions"}>Subscriptions</.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/subscriptions"}>
+              Subscriptions
+            </.sidebar_secondary>
             <.sidebar_secondary href={~p"/app/agency/settings"}>Agency settings</.sidebar_secondary>
-            <.sidebar_secondary href={~p"/app/agency/stripe-connect"}>Stripe Connect</.sidebar_secondary>
+            <.sidebar_secondary href={~p"/app/agency/stripe-connect"}>
+              Stripe Connect
+            </.sidebar_secondary>
           <% end %>
         </nav>
 
