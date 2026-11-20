@@ -23,88 +23,116 @@ defmodule MetricFlowWeb.SubscriptionLive.Checkout do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>
-          Choose Your Plan
-          <:subtitle>Unlock AI features with a subscription</:subtitle>
-        </.header>
+      <main
+        data-role="checkout-root"
+        class="mx-auto w-full max-w-3xl space-y-6 overflow-x-hidden"
+      >
+        <header class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            Choose Your Plan
+          </p>
+          <h1 class="text-2xl font-semibold text-base-content break-words">
+            Unlock the AI features with a subscription
+          </h1>
+          <p class="text-sm text-base-content/70 break-words">
+            One flat price, cancel any time from this page.
+          </p>
+        </header>
 
-        <div class="mt-8 space-y-6">
-          <%!-- Active subscription display --%>
-          <div :if={@subscription} class="card bg-base-100 shadow">
-            <div class="card-body">
-              <div class="flex items-center justify-between">
-                <h2 class="card-title text-base">Current Subscription</h2>
-                <span :if={@subscription.status == :active} class="badge badge-success">Active</span>
-                <span :if={@subscription.status == :past_due} class="badge badge-warning">
-                  Past due
-                </span>
-                <span :if={@subscription.status == :cancelled} class="badge badge-ghost">
-                  Cancelled
-                </span>
-              </div>
-              <div class="mt-2 space-y-1 text-sm text-base-content/60">
-                <p :if={@subscription.current_period_end}>
-                  Current period ends: {Calendar.strftime(
-                    @subscription.current_period_end,
-                    "%B %d, %Y"
-                  )}
-                </p>
-              </div>
-              <div :if={@subscription.status == :active} class="card-actions justify-end mt-4">
-                <button
-                  phx-click="cancel_subscription"
-                  data-confirm="Cancel your subscription? You'll retain access until the end of the current billing period."
-                  class="btn btn-error btn-outline btn-sm"
-                >
-                  Cancel Subscription
-                </button>
-              </div>
+        <section
+          :if={@subscription}
+          data-role="current-subscription"
+          class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <h2 class="text-lg font-semibold text-base-content break-words">
+                Current Subscription
+              </h2>
+              <p
+                :if={@subscription.current_period_end}
+                class="text-sm text-base-content/70 break-words"
+              >
+                Current period ends: {Calendar.strftime(
+                  @subscription.current_period_end,
+                  "%B %d, %Y"
+                )}
+              </p>
+            </div>
+            <div class="flex min-w-0 flex-col items-end gap-1">
+              <span :if={@subscription.status == :active} class="badge badge-success">Active</span>
+              <span :if={@subscription.status == :past_due} class="badge badge-warning">
+                Past due
+              </span>
+              <span :if={@subscription.status == :cancelled} class="badge badge-ghost">
+                Cancelled
+              </span>
             </div>
           </div>
-
-          <%!-- Plan cards --%>
-          <div :if={!@subscription} class="grid gap-6 md:grid-cols-2">
-            <div :for={plan <- @plans} class="card bg-base-100 shadow">
-              <div class="card-body text-center">
-                <h2 class="card-title justify-center">{plan.name}</h2>
-                <p class="text-3xl font-bold">
-                  {format_price(plan.price_cents, plan.currency)}
-                  <span class="text-sm font-normal">/{plan.billing_interval}</span>
-                </p>
-                <p :if={plan.description} class="text-base-content/60">{plan.description}</p>
-                <ul class="text-left text-sm space-y-1 mt-2">
-                  <li>Correlations</li>
-                  <li>Intelligence</li>
-                  <li>Visualizations</li>
-                </ul>
-                <div class="card-actions justify-center mt-4">
-                  <button
-                    :if={@billing_available?}
-                    phx-click="subscribe"
-                    phx-value-plan-id={plan.id}
-                    data-role="subscribe-button"
-                    class="btn btn-primary"
-                  >
-                    Subscribe
-                  </button>
-                  <p :if={!@billing_available?} class="text-sm text-base-content/60">
-                    Billing is currently unavailable for this plan. Please contact support.
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div
+            :if={@subscription.status == :active}
+            class="mt-4 flex flex-wrap items-center justify-end gap-2"
+          >
+            <button
+              phx-click="cancel_subscription"
+              data-confirm="Cancel your subscription? You'll retain access until the end of the current billing period."
+              class="rounded-box border border-error bg-base-200 px-3 py-1 text-sm font-semibold text-error hover:bg-base-300"
+            >
+              Cancel Subscription
+            </button>
           </div>
+        </section>
 
-          <%!-- No plans available --%>
-          <div :if={!@subscription && @plans == []} class="card bg-base-100 shadow">
-            <div class="card-body text-center">
-              <h2 class="card-title justify-center">No Plans Available</h2>
-              <p class="text-base-content/60">No plans available. Please contact support.</p>
+        <section
+          :if={!@subscription}
+          data-role="plans"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        >
+          <article
+            :for={plan <- @plans}
+            data-role="plan-card"
+            class="rounded-box border border-neutral bg-base-200 p-4 sm:p-6 space-y-4"
+          >
+            <div class="space-y-1">
+              <h2 class="text-lg font-semibold text-base-content break-words">{plan.name}</h2>
+              <p class="text-3xl font-semibold text-base-content break-words">
+                {format_price(plan.price_cents, plan.currency)}<span class="text-sm font-normal text-base-content/70">/{plan.billing_interval}</span>
+              </p>
+              <p :if={plan.description} class="text-sm text-base-content/70 break-words">
+                {plan.description}
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
+            <ul class="space-y-1 text-sm text-base-content/80">
+              <li>Correlations</li>
+              <li>Intelligence</li>
+              <li>Visualizations</li>
+            </ul>
+            <div>
+              <button
+                :if={@billing_available?}
+                phx-click="subscribe"
+                phx-value-plan-id={plan.id}
+                data-role="subscribe-button"
+                class="btn-brand-gradient rounded-box w-full px-4 py-2 font-semibold text-base-content"
+              >
+                Subscribe for {format_price(plan.price_cents, plan.currency)}/{plan.billing_interval}
+              </button>
+              <p :if={!@billing_available?} class="text-sm text-base-content/70 break-words">
+                Billing is currently unavailable for this plan. Please contact support.
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <section
+          :if={!@subscription && @plans == []}
+          data-role="no-plans"
+          class="rounded-box border border-neutral bg-base-200 p-6 text-center"
+        >
+          <p class="text-base font-semibold text-base-content">No plans available</p>
+          <p class="mt-1 text-sm text-base-content/70">Please contact support.</p>
+        </section>
+      </main>
     </Layouts.app>
     """
   end
