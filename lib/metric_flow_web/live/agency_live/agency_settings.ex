@@ -18,26 +18,34 @@ defmodule MetricFlowWeb.AgencyLive.AgencySettings do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>
-          Agency Settings
-          <:subtitle>Configure branding and enrollment for your agency</:subtitle>
-        </.header>
+      <main
+        data-role="agency-settings-root"
+        class="mx-auto w-full max-w-3xl space-y-6 overflow-x-hidden"
+      >
+        <header class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            Agency settings
+          </p>
+          <h1 class="text-2xl font-semibold text-base-content break-words">
+            Set who joins your agency and what your clients see
+          </h1>
+          <p class="text-sm text-base-content/70 break-words">
+            Two cards below. The first adds new teammates to this agency when they register with your email domain. The second puts your logo, colours and domain on the pages your clients see.
+          </p>
+        </header>
 
-        <div class="mt-8 space-y-8">
-          <AgencyLive.Settings.auto_enrollment_section
-            auto_enrollment_rule={@auto_enrollment_rule}
-            auto_enrollment_form={@auto_enrollment_form}
-          />
+        <AgencyLive.Settings.auto_enrollment_section
+          auto_enrollment_rule={@auto_enrollment_rule}
+          auto_enrollment_form={@auto_enrollment_form}
+        />
 
-          <AgencyLive.Settings.white_label_section
-            white_label_config={@agency_white_label_config}
-            white_label_form={@white_label_form}
-            logo_upload={@uploads.logo}
-            pending_logo={@pending_logo}
-          />
-        </div>
-      </div>
+        <AgencyLive.Settings.white_label_section
+          white_label_config={@agency_white_label_config}
+          white_label_form={@white_label_form}
+          logo_upload={@uploads.logo}
+          pending_logo={@pending_logo}
+        />
+      </main>
     </Layouts.app>
     """
   end
