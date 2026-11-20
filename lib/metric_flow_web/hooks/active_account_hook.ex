@@ -8,12 +8,18 @@ defmodule MetricFlowWeb.Hooks.ActiveAccountHook do
   can display which account is currently active. The active account is
   `active_account/2`: the most recently switched-to account, else the most
   recently updated membership (the first of `Accounts.list_accounts/1`).
+
+  Also assigns `recent_chat_sessions` — the five most recent chat sessions
+  for the active account — so the sidebar can list them.
   """
 
   import Phoenix.Component, only: [assign: 3]
 
   alias MetricFlow.Accounts
+  alias MetricFlow.Ai
   alias MetricFlow.Users.Scope
+
+  @recent_chat_limit 5
 
   def on_mount(:load_active_account, _params, _session, socket) do
     scope = socket.assigns[:current_scope]
@@ -33,8 +39,21 @@ defmodule MetricFlowWeb.Hooks.ActiveAccountHook do
       |> assign(:active_account_id, active_account_id)
       |> assign(:active_account_name, active_account_name)
       |> assign(:active_account_type, active_account_type)
+      |> assign(:recent_chat_sessions, load_recent_chat_sessions(scope, active_account_id))
 
     {:cont, socket}
+  end
+
+  defp load_recent_chat_sessions(nil, _account_id), do: []
+  defp load_recent_chat_sessions(_scope, nil), do: []
+
+  defp load_recent_chat_sessions(%Scope{user: nil}, _account_id), do: []
+
+  defp load_recent_chat_sessions(%Scope{} = scope, account_id) do
+    scope
+    |> Scope.put_account_id(account_id)
+    |> Ai.list_chat_sessions()
+    |> Enum.take(@recent_chat_limit)
   end
 
   # Every LiveView reads account-owned data (integrations, metrics,

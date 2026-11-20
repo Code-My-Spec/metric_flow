@@ -1,5 +1,7 @@
 This is a web application written using the Phoenix web framework.
 
+The design system and the rules every page follows live in [DESIGN.md](DESIGN.md).
+
 ## Project guidelines
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
