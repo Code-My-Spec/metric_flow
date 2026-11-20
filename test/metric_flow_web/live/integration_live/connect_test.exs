@@ -395,4 +395,95 @@ defmodule MetricFlowWeb.IntegrationLive.ConnectTest do
                live(conn, ~p"/app/integrations/connect")
     end
   end
+
+  describe "design pass: provider -> accounts -> locations reads as one ordered path" do
+    test "provider detail view shows a connection stepper with Provider as the current step", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect/stub")
+
+        assert has_element?(lv, "[data-role='connect-stepper']")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='connect-stepper'] [data-step='provider'][data-current='true']",
+                 "Choose provider"
+               )
+
+        assert has_element?(
+                 lv,
+                 "[data-role='connect-stepper'] [data-step='accounts']",
+                 "Choose accounts"
+               )
+      end)
+    end
+
+    test "accounts step view shows Provider as done and Accounts as current", %{conn: conn} do
+      user = user_fixture()
+      insert_integration!(user.id, :stub)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect/stub/accounts")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='connect-stepper'] [data-step='provider'][data-done='true']"
+               )
+
+        assert has_element?(
+                 lv,
+                 "[data-role='connect-stepper'] [data-step='accounts'][data-current='true']"
+               )
+      end)
+    end
+
+    test "primary save action on the accounts step uses the Anderson BI gradient", %{
+      conn: conn
+    } do
+      user = user_fixture()
+      insert_integration!(user.id, :stub)
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/integrations/connect/stub/accounts")
+
+        assert has_element?(lv, "[data-role='save-selection'].btn-brand-gradient")
+      end)
+    end
+
+    test "templates use only theme tokens: no hard-coded amber / red colours or non-token radii",
+         %{conn: conn} do
+      source = File.read!("lib/metric_flow_web/live/integration_live/connect.ex")
+
+      for forbidden <- [
+            "bg-amber-50",
+            "border-amber-300",
+            "text-amber-950",
+            "hover:bg-amber-100",
+            "text-red-600",
+            "rounded-xl",
+            "rounded-lg",
+            "rounded-md",
+            "mf-card"
+          ] do
+        refute source =~ forbidden,
+               "connect.ex still contains the non-theme token #{inspect(forbidden)}"
+      end
+
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, _lv, html} = live(conn, ~p"/app/integrations/connect/stub")
+
+        refute html =~ "mf-card"
+        refute html =~ "bg-amber-50"
+      end)
+    end
+  end
 end
