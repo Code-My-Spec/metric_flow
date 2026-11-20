@@ -6,16 +6,33 @@ defmodule MetricFlowWeb.UserLive.ResetPassword do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto flex min-h-[70vh] max-w-md items-center px-4 py-10">
-        <div class="w-full rounded-2xl border border-base-300 bg-base-100 p-6 shadow-xl sm:p-9">
-          <h1 class="text-3xl font-semibold tracking-tight">Reset password</h1>
-          <p class="mt-3 text-sm text-base-content/70">Choose a new password for your account.</p>
+    <Layouts.content
+      flash={@flash}
+      current_scope={@current_scope}
+      active_account_name={assigns[:active_account_name]}
+    >
+      <div class="mx-auto flex w-full max-w-md flex-col items-center gap-6 px-1 py-4 sm:py-8">
+        <div class="flex flex-col items-center gap-3">
+          <img
+            src="/images/anderson-bi-logo.png"
+            alt="Anderson BI"
+            data-role="default-logo"
+            class="h-10 w-auto"
+          />
+          <div class="text-center">
+            <h1 class="text-2xl font-semibold text-base-content">Reset password</h1>
+            <p class="mt-2 text-sm text-base-content/70">
+              Choose a new password for your account.
+            </p>
+          </div>
+        </div>
+
+        <div class="w-full rounded-box border border-neutral bg-base-200 p-5 sm:p-6">
           <.form
             for={@form}
             id="reset-password-form"
             phx-submit="reset_password"
-            class="mt-7 space-y-5"
+            class="space-y-4"
           >
             <.input
               field={@form[:password]}
@@ -23,6 +40,7 @@ defmodule MetricFlowWeb.UserLive.ResetPassword do
               label="New password"
               autocomplete="new-password"
               required
+              phx-mounted={JS.focus()}
             />
             <.input
               field={@form[:password_confirmation]}
@@ -31,20 +49,27 @@ defmodule MetricFlowWeb.UserLive.ResetPassword do
               autocomplete="new-password"
               required
             />
-            <.button class="btn btn-primary w-full" phx-disable-with="Saving...">
+            <.button
+              class="btn-brand-gradient w-full rounded-box px-4 py-2 text-sm font-semibold"
+              phx-disable-with="Saving..."
+            >
               Reset password
             </.button>
           </.form>
-          <.link
-            navigate={~p"/users/log-in"}
-            id="back-to-login"
-            class="mt-6 inline-block text-sm font-medium text-primary hover:underline"
-          >
-            Back to log in
-          </.link>
+
+          <p class="mt-6 text-center text-sm text-base-content/70">
+            Remembered it?
+            <.link
+              navigate={~p"/users/log-in"}
+              id="back-to-login"
+              class="font-semibold text-primary hover:underline"
+            >
+              Back to log in
+            </.link>
+          </p>
         </div>
       </div>
-    </Layouts.app>
+    </Layouts.content>
     """
   end
 
