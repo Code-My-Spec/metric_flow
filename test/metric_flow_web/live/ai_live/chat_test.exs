@@ -68,6 +68,29 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
     end
   end
 
+  describe "renders the Anderson BI mockup hero on the empty state" do
+    test "shows the four suggestion cards and the composer placeholder", %{conn: conn} do
+      {user, _account_id, _scope} = user_with_account()
+
+      capture_log(fn ->
+        {:ok, lv, html} = mount_chat(conn, user)
+
+        assert html =~ "What can I help you with today?"
+        assert html =~ "Business Performance"
+        assert html =~ "Customer Insights"
+        assert html =~ "Marketing Effectiveness"
+        assert html =~ "Financial Health"
+
+        assert html =~ "business performance this quarter"
+
+        assert has_element?(
+                 lv,
+                 "textarea[data-role='message-input'][placeholder='Ask about revenue, marketing, customer trends, cash flow, or anything else...']"
+               )
+      end)
+    end
+  end
+
   describe "shows the AI greeting when sessions exist but none is active" do
     test "shows the AI greeting when sessions exist but none is active", %{conn: conn} do
       {user, account_id, _scope} = user_with_account()
@@ -91,13 +114,13 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         {:ok, lv, _html} = mount_chat(conn, user)
 
         lv
-        |> element("[data-role='example-prompt']", "Why did my revenue drop last week?")
+        |> element("[data-role='example-prompt']", "business performance this quarter")
         |> render_click()
 
         assert has_element?(
                  lv,
                  "[data-role='user-message']",
-                 "Why did my revenue drop last week?"
+                 "business performance this quarter"
                )
 
         refute has_element?(lv, "[data-role='chat-empty-state']")
@@ -114,7 +137,7 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
         {:ok, lv, _html} = mount_chat(conn, user)
 
         lv
-        |> element("[data-role='example-prompt']", "Why did my revenue drop last week?")
+        |> element("[data-role='example-prompt']", "business performance this quarter")
         |> render_click()
 
         assert render(lv) =~ "Could not start chat session."
