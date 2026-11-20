@@ -41,6 +41,16 @@ defmodule MetricFlowWeb.OnboardingLive.IndexTest do
       assert_redirect(view, ~p"/app/onboarding/connect")
     end
 
+    test "renders the onboarding stepper with the next step marked", %{conn: conn} do
+      conn = log_in_user(conn, user_fixture())
+      {:ok, view, _html} = live(conn, ~p"/onboarding")
+
+      assert has_element?(view, "#wizard-stepper")
+      assert has_element?(view, "#wizard-step-welcome[data-done='true']")
+      assert has_element?(view, "#wizard-step-connect[data-current='true']")
+      assert has_element?(view, "#wizard-step-dashboard")
+    end
+
     test "redirects unauthenticated user to login", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/users/log-in"}}} =
                live(conn, ~p"/onboarding")
