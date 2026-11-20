@@ -246,4 +246,37 @@ defmodule MetricFlowWeb.CorrelationLive.GoalsTest do
       end)
     end
   end
+
+  describe "presents the add-goal form and the goals list as separate sections" do
+    test "renders the add-goal form inside its own labelled section", %{conn: conn} do
+      {user, _account} = user_with_personal_account()
+      insert_metric!(user, %{metric_name: "revenue"})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
+
+        assert has_element?(lv, "[data-role='add-goal-section'] #goal-metric-form")
+        assert has_element?(lv, "[data-role='add-goal-section'] [data-role='save-goal']")
+      end)
+    end
+
+    test "renders the goals list inside its own labelled section", %{conn: conn} do
+      {user, _account} = user_with_personal_account()
+      insert_metric!(user, %{metric_name: "revenue"})
+      insert_metric!(user, %{metric_name: "clicks"})
+      conn = log_in_user(conn, user)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = live(conn, ~p"/app/correlations/goals")
+
+        assert has_element?(
+                 lv,
+                 "[data-role='goals-list-section'] input[type='checkbox'][name='goal_metric_names[]']"
+               )
+
+        assert has_element?(lv, "[data-role='goals-list-section'] [data-role='queue-goals']")
+      end)
+    end
+  end
 end

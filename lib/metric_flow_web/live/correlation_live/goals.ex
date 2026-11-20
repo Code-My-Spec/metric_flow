@@ -13,6 +13,8 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   alias MetricFlow.Metrics
   alias MetricFlow.Users.Scope
 
+  @card "bg-base-200 border border-neutral rounded-box"
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -23,6 +25,8 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
   end
 
   def render(assigns) do
+    assigns = assign(assigns, :card, @card)
+
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -31,34 +35,54 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div>
+      <div class="max-w-5xl mx-auto overflow-x-hidden">
         <%!-- Page header --%>
-        <div class="mb-6">
-          <h1 class="text-2xl font-bold">Goal Metric</h1>
-          <p class="text-base-content/60">Choose the metric the correlation engine targets.</p>
-        </div>
-
-        <%!-- Empty state (shown above form when no metrics available) --%>
-        <div :if={@metric_names == []} class="mf-card p-6 mb-6">
-          <p class="text-base-content/60">
-            No metrics available. Connect your integrations and sync data before configuring a goal.
+        <header class="mb-6">
+          <h1 class="text-2xl font-bold text-base-content">Goal Metric</h1>
+          <p class="text-base-content/70 mt-1">
+            Pick the metric the correlation engine targets. Start one now, or queue several to run back-to-back.
           </p>
-          <.link navigate={~p"/app/integrations"} class="btn btn-primary mt-4">
+        </header>
+
+        <%!-- Empty state (shown above the form when no metrics are available) --%>
+        <div :if={@metric_names == []} class={[@card, "p-6 mb-6 text-center"]}>
+          <h2 class="font-semibold text-base-content">No metrics available</h2>
+          <p class="text-base-content/70 mt-1">
+            Connect your integrations and sync data before configuring a goal.
+          </p>
+          <.link
+            navigate={~p"/app/integrations"}
+            class="btn-brand-gradient rounded-box px-4 py-2 inline-block mt-4 w-full sm:w-auto"
+          >
             Connect Integrations
           </.link>
         </div>
 
-        <%!-- Goal metric form --%>
-        <.form for={%{}} id="goal-metric-form" phx-submit="save_goal">
-          <div class="mf-card p-6">
+        <%!-- Add-goal form: the primary action on this page --%>
+        <section
+          data-role="add-goal-section"
+          aria-labelledby="add-goal-heading"
+          class={[@card, "p-6 mb-6"]}
+        >
+          <header class="mb-4">
+            <h2 id="add-goal-heading" class="text-lg font-semibold text-base-content">
+              Add a goal
+            </h2>
+            <p class="text-sm text-base-content/70 mt-1">
+              Pick one metric and start analysis now.
+            </p>
+          </header>
+
+          <.form for={%{}} id="goal-metric-form" phx-submit="save_goal">
             <div class="form-control">
-              <label class="label">
-                <span class="label-text font-medium">Goal Metric</span>
+              <label class="label" for="goal-metric-select">
+                <span class="label-text font-semibold text-base-content">Goal metric</span>
               </label>
               <select
+                id="goal-metric-select"
                 name="goal_metric_name"
                 phx-change="select_goal"
-                class="select select-bordered w-full"
+                class="select w-full bg-base-100 border border-neutral rounded-box text-base-content"
                 disabled={@metric_names == []}
               >
                 <option :if={@metric_names == []} value="" disabled>
@@ -74,12 +98,12 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
               </select>
             </div>
 
-            <div class="flex gap-2 mt-6">
+            <div class="flex flex-wrap gap-2 mt-6">
               <button
                 type="submit"
                 data-role="save-goal"
                 disabled={@metric_names == []}
-                class="btn btn-primary"
+                class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto disabled:opacity-60"
               >
                 Save Goal
               </button>
@@ -87,40 +111,57 @@ defmodule MetricFlowWeb.CorrelationLive.Goals do
                 type="button"
                 phx-click="cancel"
                 data-role="cancel"
-                class="btn btn-ghost"
+                class="rounded-box border border-neutral bg-base-200 px-4 py-2 text-base-content hover:bg-base-300 w-full sm:w-auto"
               >
                 Cancel
               </button>
             </div>
-          </div>
-        </.form>
+          </.form>
+        </section>
 
-        <%!-- Queue multiple goals: runs the first immediately, queues the rest
-           to run automatically as each prior analysis finishes, since only
-           one correlation job can be in flight per account at a time. --%>
-        <div :if={@metric_names != []} class="mf-card p-6 mt-6">
-          <h2 class="text-lg font-semibold mb-1">Queue Multiple Goals</h2>
-          <p class="text-sm text-base-content/60 mb-4">
-            Select several metrics to analyze one after another. The first starts
-            immediately; the rest run automatically once each prior analysis finishes.
-          </p>
+        <%!-- Goals list: the metrics that can be queued as goals. The first
+           runs immediately; the rest run automatically as each prior
+           analysis finishes, since only one correlation job can be in
+           flight per account at a time. --%>
+        <section
+          :if={@metric_names != []}
+          data-role="goals-list-section"
+          aria-labelledby="goals-list-heading"
+          class={[@card, "p-6"]}
+        >
+          <header class="mb-4">
+            <h2 id="goals-list-heading" class="text-lg font-semibold text-base-content">
+              Goals list
+            </h2>
+            <p class="text-sm text-base-content/70 mt-1">
+              Pick several metrics to analyse one after another. The first starts
+              immediately; the rest run as each prior analysis finishes.
+            </p>
+          </header>
+
           <.form for={%{}} phx-submit="queue_goals">
-            <div class="flex flex-col gap-2 mb-4">
-              <label :for={name <- @metric_names} class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="goal_metric_names[]"
-                  value={name}
-                  class="checkbox checkbox-sm"
-                />
-                <span>{name}</span>
-              </label>
-            </div>
-            <button type="submit" data-role="queue-goals" class="btn btn-secondary">
+            <ul class="flex flex-col gap-2 mb-4 list-none">
+              <li :for={name <- @metric_names} class="min-w-0">
+                <label class="flex items-center gap-2 cursor-pointer min-w-0">
+                  <input
+                    type="checkbox"
+                    name="goal_metric_names[]"
+                    value={name}
+                    class="checkbox checkbox-sm"
+                  />
+                  <span class="break-words min-w-0 text-base-content">{name}</span>
+                </label>
+              </li>
+            </ul>
+            <button
+              type="submit"
+              data-role="queue-goals"
+              class="btn-brand-gradient rounded-box px-4 py-2 w-full sm:w-auto"
+            >
               Queue Selected Goals
             </button>
           </.form>
-        </div>
+        </section>
       </div>
     </Layouts.app>
     """
