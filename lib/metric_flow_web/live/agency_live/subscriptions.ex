@@ -13,6 +13,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
   alias MetricFlow.Billing.BillingRepository
 
   @per_page 20
+  @problem_statuses [:past_due, :incomplete]
 
   @impl true
   def render(assigns) do
@@ -24,117 +25,172 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto">
-        <.header>
-          Customer Subscriptions
-          <:subtitle>Manage your agency's subscriber accounts</:subtitle>
-        </.header>
+      <main
+        data-role="agency-subscriptions-root"
+        class="mx-auto w-full max-w-3xl space-y-6 overflow-x-hidden"
+      >
+        <header class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+            Customer Subscriptions
+          </p>
+          <h1 class="text-2xl font-semibold text-base-content break-words">
+            Watch your clients' subscriptions
+          </h1>
+          <p class="text-sm text-base-content/70 break-words">
+            Problem subscriptions lead the list; healthy ones follow. Cancel an active subscription from its card, or search by customer ID or email.
+          </p>
+        </header>
 
-        <div class="mt-8 space-y-6">
-          <%!-- Summary stats --%>
-          <div class="stats shadow w-full">
-            <div class="stat">
-              <div class="stat-title">Active Subscribers</div>
-              <div class="stat-value">{@active_count}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-title">MRR</div>
-              <div class="stat-value">{format_mrr(@mrr)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-title">Past Due</div>
-              <div class="stat-value text-warning">{@past_due_count}</div>
-            </div>
+        <section
+          data-role="subscriptions-summary"
+          class="grid grid-cols-1 gap-3 sm:grid-cols-3"
+        >
+          <div
+            data-role="summary-active"
+            class="rounded-box border border-neutral bg-base-200 p-4"
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+              Active Subscribers
+            </p>
+            <p class="mt-1 text-2xl font-semibold text-base-content">{@active_count}</p>
+          </div>
+          <div
+            data-role="summary-mrr"
+            class="rounded-box border border-neutral bg-base-200 p-4"
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">MRR</p>
+            <p class="mt-1 text-2xl font-semibold text-base-content">{format_mrr(@mrr)}</p>
+          </div>
+          <div
+            data-role="summary-past-due"
+            class={[
+              "rounded-box border bg-base-200 p-4",
+              if(@past_due_count > 0, do: "border-error", else: "border-neutral")
+            ]}
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+              Past Due
+            </p>
+            <p class={[
+              "mt-1 text-2xl font-semibold",
+              if(@past_due_count > 0, do: "text-error", else: "text-base-content")
+            ]}>
+              {@past_due_count}
+            </p>
+          </div>
+        </section>
+
+        <section class="rounded-box border border-neutral bg-base-200 p-4">
+          <form phx-change="search" phx-submit="search" class="space-y-1">
+            <label
+              for="subscription-search-input"
+              class="block text-sm font-semibold text-base-content"
+            >
+              Search customers
+            </label>
+            <input
+              id="subscription-search-input"
+              type="text"
+              name="query"
+              value={@search}
+              placeholder="Search by customer ID or email..."
+              class="input input-bordered w-full bg-base-100 border-neutral rounded-box text-base-content"
+              phx-debounce="300"
+            />
+          </form>
+        </section>
+
+        <section data-role="subscriptions-list" class="space-y-3">
+          <div
+            :if={@subscriptions == []}
+            class="rounded-box border border-neutral bg-base-200 p-6 text-center"
+          >
+            <p class="text-base font-semibold text-base-content">
+              No customer subscriptions yet
+            </p>
+            <p class="mt-1 text-sm text-base-content/70">
+              Client subscriptions appear here as soon as a customer signs up to one of your plans.
+            </p>
           </div>
 
-          <%!-- Search --%>
-          <div class="form-control">
-            <form phx-change="search" phx-submit="search">
-              <input
-                type="text"
-                name="query"
-                value={@search}
-                placeholder="Search by customer ID or email..."
-                class="input w-full"
-                phx-debounce="300"
-              />
-            </form>
-          </div>
-
-          <%!-- Subscriptions table --%>
-          <div class="card bg-base-100 shadow">
-            <div class="card-body p-0">
-              <div :if={@subscriptions == []} class="p-6 text-center text-base-content/60">
-                No customer subscriptions yet
+          <article
+            :for={sub <- @subscriptions}
+            data-role="subscription-row"
+            data-status={sub.status}
+            class={[
+              "rounded-box border bg-base-200 p-4 sm:p-6",
+              if(sub.status in @problem_statuses, do: "border-error", else: "border-neutral")
+            ]}
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0 space-y-1">
+                <p class="font-mono text-sm text-base-content break-all">
+                  {sub.stripe_customer_id}
+                </p>
+                <p class="text-sm text-base-content/70 break-words">
+                  {if sub.plan, do: sub.plan.name, else: "—"}
+                </p>
               </div>
-              <div :if={@subscriptions != []} class="overflow-x-auto">
-                <table class="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Customer</th>
-                      <th>Plan</th>
-                      <th>Status</th>
-                      <th>Start Date</th>
-                      <th>Period End</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr :for={sub <- @subscriptions} data-role="subscription-row">
-                      <td class="font-mono text-xs">{sub.stripe_customer_id}</td>
-                      <td>{if sub.plan, do: sub.plan.name, else: "—"}</td>
-                      <td>
-                        <span :if={sub.status == :active} class="badge badge-success">Active</span>
-                        <span :if={sub.status == :past_due} class="badge badge-warning">
-                          Past due
-                        </span>
-                        <span :if={sub.status == :cancelled} class="badge badge-ghost">
-                          Cancelled
-                        </span>
-                        <span :if={sub.status == :trialing} class="badge badge-info">Trialing</span>
-                      </td>
-                      <td>{format_date(sub.inserted_at)}</td>
-                      <td>{format_date(sub.current_period_end)}</td>
-                      <td>
-                        <button
-                          :if={sub.status == :active and @is_admin}
-                          phx-click="cancel_customer_subscription"
-                          phx-value-id={sub.id}
-                          data-confirm="Cancel this customer's subscription at period end?"
-                          class="btn btn-xs btn-ghost text-error"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <%!-- Pagination --%>
-              <div :if={@subscriptions != []} class="flex justify-center gap-2 p-4">
-                <button
-                  :if={@page > 0}
-                  phx-click="prev_page"
-                  class="btn btn-sm btn-ghost"
-                >
-                  Previous
-                </button>
-                <span class="btn btn-sm btn-disabled">
-                  Page {@page + 1}
-                </span>
-                <button
-                  :if={length(@subscriptions) == @per_page}
-                  phx-click="next_page"
-                  class="btn btn-sm btn-ghost"
-                >
-                  Next
-                </button>
+              <div class="flex min-w-0 flex-col items-end gap-1">
+                <span :if={sub.status == :active} class="badge badge-success">Active</span>
+                <span :if={sub.status == :past_due} class="badge badge-warning">Past due</span>
+                <span :if={sub.status == :cancelled} class="badge badge-ghost">Cancelled</span>
+                <span :if={sub.status == :trialing} class="badge badge-info">Trialing</span>
+                <span :if={sub.status == :incomplete} class="badge badge-warning">Incomplete</span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+
+            <dl class="mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+              <div class="min-w-0">
+                <dt class="text-xs uppercase tracking-wide text-base-content/60">Start Date</dt>
+                <dd class="text-base-content break-words">{format_date(sub.inserted_at)}</dd>
+              </div>
+              <div class="min-w-0">
+                <dt class="text-xs uppercase tracking-wide text-base-content/60">Period End</dt>
+                <dd class="text-base-content break-words">{format_date(sub.current_period_end)}</dd>
+              </div>
+            </dl>
+
+            <div
+              :if={sub.status == :active and @is_admin}
+              class="mt-4 flex flex-wrap items-center justify-end gap-2"
+            >
+              <button
+                phx-click="cancel_customer_subscription"
+                phx-value-id={sub.id}
+                data-confirm="Cancel this customer's subscription at period end?"
+                class="rounded-box border border-error bg-base-200 px-3 py-1 text-xs font-semibold text-error hover:bg-base-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </article>
+
+          <nav
+            :if={@subscriptions != []}
+            aria-label="Pagination"
+            class="flex flex-wrap items-center justify-center gap-2 pt-2"
+          >
+            <button
+              :if={@page > 0}
+              phx-click="prev_page"
+              class="rounded-box border border-neutral bg-base-200 px-3 py-1 text-sm text-base-content hover:bg-base-300"
+            >
+              Previous
+            </button>
+            <span class="rounded-box border border-neutral bg-base-200 px-3 py-1 text-sm text-base-content/70">
+              Page {@page + 1}
+            </span>
+            <button
+              :if={length(@subscriptions) == @per_page}
+              phx-click="next_page"
+              class="rounded-box border border-neutral bg-base-200 px-3 py-1 text-sm text-base-content hover:bg-base-300"
+            >
+              Next
+            </button>
+          </nav>
+        </section>
+      </main>
     </Layouts.app>
     """
   end
@@ -150,6 +206,7 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
       |> assign(:search, "")
       |> assign(:page, 0)
       |> assign(:per_page, @per_page)
+      |> assign(:problem_statuses, @problem_statuses)
       |> assign(:is_admin, is_admin)
       |> load_data(account_id)
 
@@ -228,11 +285,13 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
     page = socket.assigns[:page] || 0
 
     subscriptions =
-      BillingRepository.list_agency_subscriptions(account_id,
+      account_id
+      |> BillingRepository.list_agency_subscriptions(
         search: search,
         limit: @per_page,
         offset: page * @per_page
       )
+      |> sort_problems_first()
 
     active_count = BillingRepository.count_active_agency_subscriptions(account_id)
     mrr = BillingRepository.calculate_mrr(account_id)
@@ -244,6 +303,16 @@ defmodule MetricFlowWeb.AgencyLive.Subscriptions do
     |> assign(:mrr, mrr)
     |> assign(:past_due_count, past_due_count)
   end
+
+  defp sort_problems_first(subscriptions) do
+    Enum.sort_by(subscriptions, &status_rank(&1.status))
+  end
+
+  defp status_rank(status) when status in @problem_statuses, do: 0
+  defp status_rank(:active), do: 1
+  defp status_rank(:trialing), do: 1
+  defp status_rank(:cancelled), do: 2
+  defp status_rank(_), do: 3
 
   defp format_mrr(cents) do
     dollars = cents / 100
