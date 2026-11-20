@@ -4,12 +4,16 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
   Search Console, Business Profile — one integration), YouTube, Meta and
   QuickBooks.
 
-  Each product shows its `MetricFlow.Onboarding` status, what it syncs, when
-  it last synced, and one primary action — sync, choose what to sync, or
-  reconnect. Connecting and picking happen in the setup wizard
-  (`/app/onboarding/connect`); this page links into the wizard step that
-  owns each connection. Manual sync, disconnect and live sync status stay
-  here.
+  One card per provider with a provider-level status (connected or needs
+  attention) and a single next action; providers that need attention come
+  before connected ones. The per-product controls (sync, change, disconnect)
+  live inside each card's closed `<details>` so a client doesn't see them
+  until they ask.
+
+  Connecting and picking happen in the setup wizard
+  (`/app/onboarding/connect`); the next-action button on each card links
+  into the wizard step that owns that connection. Manual sync, disconnect
+  and live sync status stay here.
   """
 
   use MetricFlowWeb, :live_view
@@ -64,15 +68,15 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       active_account_name={assigns[:active_account_name]}
       active_account_type={assigns[:active_account_type]}
     >
-      <div class="mx-auto max-w-4xl" data-role="integrations-index">
+      <div class="mx-auto max-w-4xl overflow-x-hidden" data-role="integrations-index">
         <div class="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
           <div class="min-w-0">
-            <h1 class="text-2xl font-bold">Integrations</h1>
-            <p class="mt-1 text-base-content/60">
+            <h1 class="text-2xl font-bold text-base-content">Integrations</h1>
+            <p class="mt-1 text-sm text-base-content/70 break-words">
               <%= if @nothing_connected do %>
                 No platforms connected yet. Connect one to start seeing your metrics.
               <% else %>
-                Where your metrics come from, and what each platform syncs.
+                Where your metrics come from. Anything that needs your attention is listed first.
               <% end %>
             </p>
           </div>
@@ -90,98 +94,127 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
           </div>
         </div>
 
-        <div class="space-y-6">
-          <section
+        <ul class="flex flex-col gap-4">
+          <li
             :for={conn <- @groups}
             id={"connection-group-#{conn.key}"}
             data-state={conn.state}
-            class="rounded-box border border-base-300 bg-base-100"
+            data-role="provider-card"
+            data-provider-status={if conn.state == :done, do: "connected", else: "needs-attention"}
+            class="rounded-box border border-neutral bg-base-200 p-4"
           >
-            <header class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-4 py-3 sm:px-5">
-              <div class="min-w-0">
-                <h2 class="text-lg font-semibold">{conn.name}</h2>
-                <p class="text-sm text-base-content/60">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0 flex-1 basis-60">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 class="text-lg font-semibold text-base-content break-words">
+                    {conn.name}
+                  </h2>
+                  <span
+                    data-role="provider-status-badge"
+                    class={[
+                      "badge badge-sm shrink-0 whitespace-nowrap",
+                      provider_badge_class(conn.state)
+                    ]}
+                  >
+                    {provider_status_label(conn.state)}
+                  </span>
+                </div>
+                <p class="mt-1 text-sm text-base-content/70 break-words">
                   {group_subtitle(conn)}
                 </p>
               </div>
-              <.link
-                :if={conn.state == :not_connected}
-                id={"group-action-#{conn.key}"}
-                data-role="reconnect-integration"
-                navigate={wizard_path(conn.key)}
-                class="btn btn-primary btn-sm shrink-0"
-              >
-                {group_action_label(conn)}
-              </.link>
-              <button
-                :if={conn.key == :google and conn.state != :not_connected and @can_modify}
-                id="disconnect-google"
-                data-role="disconnect-integration"
-                phx-click="confirm_disconnect"
-                phx-value-provider="google"
-                class="btn btn-ghost btn-sm shrink-0 text-error"
-              >
-                Disconnect Google
-              </button>
-            </header>
 
-            <div
-              :if={Enum.any?(conn.products, & &1.integration)}
-              data-role="integrations-list"
-              class="divide-y divide-base-300"
-            >
-              <.product_row
-                :for={product <- conn.products}
-                :if={product.integration}
-                product={product}
-                connection={conn.key}
-                syncing={MapSet.member?(@syncing, product.key)}
-                sync_result={Map.get(@sync_results, product.key)}
-                last_synced_at={@last_synced_at[product.key]}
-                next_sync_at={@next_sync_at}
-                can_sync={@can_sync}
-                can_modify={@can_modify}
-                account_name={@active_account_name}
-              />
+              <div
+                data-role="provider-next-action"
+                class="w-full shrink-0 sm:w-auto"
+              >
+                <.provider_action
+                  conn={conn}
+                  can_modify={@can_modify}
+                />
+              </div>
             </div>
 
-            <ul
-              :if={Enum.any?(conn.products, &is_nil(&1.integration))}
-              data-role="available-platforms-list"
-              class={[
-                "px-4 py-3 sm:px-5",
-                Enum.any?(conn.products, & &1.integration) && "border-t border-base-300"
-              ]}
-            >
-              <li
-                :for={product <- conn.products}
-                :if={is_nil(product.integration)}
-                data-role="integration-card"
-                data-platform={Atom.to_string(product.key)}
-                data-status="available"
-                class="flex flex-wrap items-center justify-between gap-2 py-1.5"
-              >
-                <div class="min-w-0">
-                  <span data-role="integration-platform-name" class="font-medium">
-                    {product.name}
-                  </span>
-                  <span class="text-sm text-base-content/60">— {product.gives}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <.status_badge status={product.status} data-role="integration-sync-status" />
-                  <.link
-                    :if={product.status == :not_granted}
-                    data-role="reconnect-integration"
-                    navigate={wizard_path(conn.key)}
-                    class="btn btn-ghost btn-xs"
+            <details class="mt-4" data-role="provider-details">
+              <summary class="cursor-pointer text-sm text-base-content/70 hover:text-base-content">
+                Manage individual products
+              </summary>
+
+              <div class="mt-3 rounded-box border border-neutral bg-base-100">
+                <header class="flex flex-wrap items-center justify-end gap-3 border-b border-neutral px-4 py-3 sm:px-5">
+                  <button
+                    :if={conn.key == :google and conn.state != :not_connected and @can_modify}
+                    id="disconnect-google"
+                    data-role="disconnect-integration"
+                    phx-click="confirm_disconnect"
+                    phx-value-provider="google"
+                    class="btn btn-ghost btn-sm shrink-0 text-error"
                   >
-                    Grant access
-                  </.link>
+                    Disconnect Google
+                  </button>
+                </header>
+
+                <div
+                  :if={Enum.any?(conn.products, & &1.integration)}
+                  data-role="integrations-list"
+                  class="divide-y divide-neutral"
+                >
+                  <.product_row
+                    :for={product <- conn.products}
+                    :if={product.integration}
+                    product={product}
+                    connection={conn.key}
+                    syncing={MapSet.member?(@syncing, product.key)}
+                    sync_result={Map.get(@sync_results, product.key)}
+                    last_synced_at={@last_synced_at[product.key]}
+                    next_sync_at={@next_sync_at}
+                    can_sync={@can_sync}
+                    can_modify={@can_modify}
+                    account_name={@active_account_name}
+                  />
                 </div>
-              </li>
-            </ul>
-          </section>
-        </div>
+
+                <ul
+                  :if={Enum.any?(conn.products, &is_nil(&1.integration))}
+                  data-role="available-platforms-list"
+                  class={[
+                    "px-4 py-3 sm:px-5",
+                    Enum.any?(conn.products, & &1.integration) && "border-t border-neutral"
+                  ]}
+                >
+                  <li
+                    :for={product <- conn.products}
+                    :if={is_nil(product.integration)}
+                    data-role="integration-card"
+                    data-platform={Atom.to_string(product.key)}
+                    data-status="available"
+                    class="flex flex-wrap items-center justify-between gap-2 py-1.5"
+                  >
+                    <div class="min-w-0">
+                      <span data-role="integration-platform-name" class="font-medium break-words">
+                        {product.name}
+                      </span>
+                      <span class="text-sm text-base-content/70 break-words">
+                        — {product.gives}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <.status_badge status={product.status} data-role="integration-sync-status" />
+                      <.link
+                        :if={product.status == :not_granted}
+                        data-role="reconnect-integration"
+                        navigate={wizard_path(conn.key)}
+                        class="btn btn-ghost btn-xs"
+                      >
+                        Grant access
+                      </.link>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </details>
+          </li>
+        </ul>
 
         <%= if @disconnecting do %>
           <% disc_provider_name = provider_display_name(@disconnecting) %>
@@ -228,6 +261,72 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
     """
   end
 
+  attr :conn, :map, required: true
+  attr :can_modify, :boolean, default: false
+
+  # One next action per provider card. Keeps `id="group-action-<key>"` and
+  # `data-role="reconnect-integration"` so existing tests still find them.
+  defp provider_action(%{conn: %{state: :not_connected}} = assigns) do
+    ~H"""
+    <.link
+      id={"group-action-#{@conn.key}"}
+      data-role="reconnect-integration"
+      navigate={wizard_path(@conn.key)}
+      class="btn btn-primary btn-sm w-full sm:w-auto"
+    >
+      {group_action_label(@conn)}
+    </.link>
+    """
+  end
+
+  defp provider_action(%{conn: %{state: :reconnect}} = assigns) do
+    ~H"""
+    <.link
+      id={"group-action-#{@conn.key}"}
+      data-role="reconnect-integration"
+      navigate={wizard_path(@conn.key)}
+      class="btn btn-warning btn-sm w-full sm:w-auto"
+    >
+      Reconnect {@conn.name}
+    </.link>
+    """
+  end
+
+  defp provider_action(%{conn: %{state: :needs_selection}} = assigns) do
+    ~H"""
+    <.link
+      id={"group-action-#{@conn.key}"}
+      data-role="reconnect-integration"
+      navigate={wizard_path(@conn.key)}
+      class="btn btn-primary btn-sm w-full sm:w-auto"
+    >
+      Choose what to sync
+    </.link>
+    """
+  end
+
+  defp provider_action(%{conn: %{state: :done}} = assigns) do
+    ~H"""
+    <.link
+      id={"group-action-#{@conn.key}"}
+      navigate={wizard_path(@conn.key)}
+      class="btn btn-ghost btn-sm w-full sm:w-auto"
+    >
+      Manage {@conn.name}
+    </.link>
+    """
+  end
+
+  defp provider_status_label(:done), do: "Connected"
+  defp provider_status_label(:reconnect), do: "Reconnect needed"
+  defp provider_status_label(:needs_selection), do: "Choose what to sync"
+  defp provider_status_label(_), do: "Not connected"
+
+  defp provider_badge_class(:done), do: "badge-success"
+  defp provider_badge_class(:reconnect), do: "badge-error"
+  defp provider_badge_class(:needs_selection), do: "badge-info"
+  defp provider_badge_class(_), do: "badge-ghost"
+
   attr :product, :map, required: true
   attr :connection, :atom, required: true
   attr :syncing, :boolean, default: false
@@ -249,34 +348,36 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
       <div data-role="integration-row" class="flex flex-wrap items-start justify-between gap-3">
         <div class="min-w-0 flex-1 basis-60">
           <div class="flex flex-wrap items-center gap-2">
-            <h3 data-role="integration-platform-name" class="font-semibold">{@product.name}</h3>
+            <h3 data-role="integration-platform-name" class="font-semibold break-words">
+              {@product.name}
+            </h3>
             <.status_badge
               status={@product.status}
               data-status={if @product.status == :reconnect, do: "error", else: "connected"}
             />
           </div>
 
-          <p data-role="integration-selected-accounts" class="mt-1 text-sm">
+          <p data-role="integration-selected-accounts" class="mt-1 text-sm break-words">
             <%= cond do %>
               <% @product.status == :reconnect -> %>
                 <span class="text-error">
                   The sign-in expired — reconnect to resume syncing.
                 </span>
               <% @product.key == :youtube -> %>
-                <span class="text-base-content/60">
+                <span class="text-base-content/70">
                   Owned by {@account_name} · {channel_count(@product.selected)}
                 </span>
               <% @product.selected != [] -> %>
-                <span class="text-base-content/60">Selected:</span>
+                <span class="text-base-content/70">Selected:</span>
                 <span class="break-all">{Enum.join(@product.selected, ", ")}</span>
               <% true -> %>
-                <span class="text-base-content/60">
+                <span class="text-base-content/70">
                   Nothing selected yet — choose the {@product.noun} to sync.
                 </span>
             <% end %>
           </p>
 
-          <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-base-content/60">
+          <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-base-content/70">
             <span data-role="last-sync-at">
               <%= if @last_synced_at do %>
                 Last synced {format_datetime(@last_synced_at)}
@@ -447,12 +548,24 @@ defmodule MetricFlowWeb.IntegrationLive.Index do
 
         %{conn | products: products, state: group_state(products)}
       end)
+      |> sort_groups()
 
     socket
     |> assign(:integrations, integrations)
     |> assign(:groups, groups)
     |> assign(:nothing_connected, Enum.all?(groups, &(&1.state == :not_connected)))
   end
+
+  # Problems first: the Jordan persona comes here when something stopped
+  # working, so anything that needs their (or their agency's) attention
+  # must render before anything that is already connected and happy.
+  defp sort_groups(groups), do: Enum.sort_by(groups, &state_priority(&1.state))
+
+  defp state_priority(:reconnect), do: 0
+  defp state_priority(:needs_selection), do: 1
+  defp state_priority(:not_connected), do: 2
+  defp state_priority(:done), do: 3
+  defp state_priority(_), do: 4
 
   defp group_state(products) do
     statuses = Enum.map(products, & &1.status)
