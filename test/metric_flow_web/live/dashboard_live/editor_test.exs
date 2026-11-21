@@ -178,7 +178,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
           "message" => "Show me impressions over time as a line chart"
         })
 
-        Process.sleep(100)
+        # The agent replies from a task and autosaves a draft (patching to
+        # /edit); wait for both before saving, so the patch isn't mistaken
+        # for the save's redirect.
+        render_until(lv, "I&#39;ll create a line chart showing impressions over time.")
+        assert_patch(lv)
         Application.delete_env(:metric_flow, :command_runner)
 
         render_change(lv, "validate_name", %{"dashboard" => %{"name" => "My New Dashboard"}})
