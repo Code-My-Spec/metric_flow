@@ -165,3 +165,13 @@ certify dir: test-env
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/compiler.sarif" -- mix compile --warnings-as-errors
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex
+
+# The loop runs this once in a work copy it has just cut, before any step.
+copy-setup: test-env
+    mix deps.get
+
+# The loop runs this in a work copy before removing it. The test database is
+# named for the checkout's path (config/test.exs), so this drops only its own.
+copy-teardown:
+    env MIX_ENV=test mix ecto.drop --quiet || true
+    rm -f .env.test
