@@ -772,7 +772,9 @@ defmodule MetricFlow.Integrations do
   end
 
   # Token endpoints per provider for OAuth2 refresh (not discoverable via OIDC at refresh time)
-  defp token_url_for(:google), do: "https://oauth2.googleapis.com/token"
+  defp token_url_for(provider) when provider in [:google, :youtube],
+    do: "https://oauth2.googleapis.com/token"
+
   defp token_url_for(:facebook_ads), do: "https://graph.facebook.com/v21.0/oauth/access_token"
   defp token_url_for(:quickbooks), do: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
   defp token_url_for(_), do: "/oauth/token"
