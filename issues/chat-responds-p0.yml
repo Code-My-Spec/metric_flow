@@ -1,0 +1,22 @@
+id: "chat-responds-p0"
+kind: "issue"
+title: AI chat errors or hangs instead of answering (main chat and Correlations contextual chat)
+text: |-
+  Fault (P0, from Joel's Nov 20 screen recordings):
+  1. On the main AI chat (/app/chat, lib/metric_flow_web/live/ai_live/chat.ex), sending "How did we do this month?" shows a red "AI encountered an error" toast instead of an answer.
+  2. On the Correlations page, the contextual chat silently hangs on "Are there any correlations to revenue?" and never responds.
+
+  Wanted:
+  - Every chat submission ends in either an answer or a meaningful message. When there isn't enough data, say so plainly (what is missing, e.g. connect an integration or wait for a sync) instead of erroring.
+  - While a reply is pending, show a visible loading state. If the AI call really fails, show a clear error in the conversation with a Retry action that resends the same prompt. No generic red toast.
+  - The contextual chat opened from Correlations carries the window's context (the page and its correlation results) and answers from the active account's authorized data only. It never hangs: a timeout or failure shows the error-with-retry state.
+
+  Find the root cause of both failures. Test with the seeded data (priv/repo/seeds.exs, Anderson Retail Co.) and a mocked LLM; do not call real AI providers in tests. Keep every id and data-* attribute that tests use. Integrations stay read-only: nothing here may call a create, update or delete endpoint of a third-party API.
+
+  How it will be checked:
+  - As the seeded retail client, sending "How did we do this month?" on /app/chat produces an assistant reply, and no "AI encountered an error" toast.
+  - On an account with no metrics, the same prompt produces an insufficient-data message that names what is missing.
+  - While a reply is pending, a loading indicator shows. When the AI call fails, the conversation shows an error with a Retry action, and Retry resends the prompt.
+  - On Correlations, "Are there any correlations to revenue?" gets a reply that refers to the account's correlation results. A user cannot get another account's data through it. A failed or timed-out call shows the error-with-retry state instead of hanging.
+  - The full suite and mix spex pass.
+criteria: []
