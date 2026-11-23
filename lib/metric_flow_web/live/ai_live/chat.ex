@@ -58,6 +58,11 @@ defmodule MetricFlowWeb.AiLive.Chat do
 
   @composer_placeholder "Ask about revenue, marketing, customer trends, cash flow, or anything else..."
 
+  # Safety net so a stream that never calls back (provider wedged, network
+  # black-hole) still surfaces an inline error with Retry instead of leaving
+  # the user staring at a spinner forever.
+  @chat_timeout_ms 60_000
+
   # ---------------------------------------------------------------------------
   # Render
   # ---------------------------------------------------------------------------
@@ -253,6 +258,28 @@ defmodule MetricFlowWeb.AiLive.Chat do
               </div>
             </div>
           </div>
+
+          <%!-- Inline error with Retry. Replaces the old generic flash toast
+               so a failed or timed-out call stays in the conversation and
+               the user can resend the same prompt without retyping. --%>
+          <div :if={@chat_error} class="flex justify-start">
+            <div
+              data-role="chat-error"
+              class="flex max-w-[85%] min-w-0 flex-col gap-2 rounded-box border border-error bg-error/10 px-4 py-3 text-sm text-base-content sm:max-w-[75%]"
+            >
+              <span class="text-error">{@chat_error}</span>
+              <div :if={@last_prompt}>
+                <button
+                  type="button"
+                  phx-click="retry_message"
+                  data-role="retry-btn"
+                  class="btn btn-sm btn-ghost"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <%!-- Composer --%>
@@ -320,6 +347,9 @@ defmodule MetricFlowWeb.AiLive.Chat do
       |> assign(:input_value, "")
       |> assign(:pending_context_type, nil)
       |> assign(:pending_context_id, nil)
+      |> assign(:chat_error, nil)
+      |> assign(:last_prompt, nil)
+      |> assign(:stream_seq, 0)
       |> assign(:page_title, "AI Chat")
       |> assign(:nothing_connected, MetricFlow.Onboarding.nothing_connected?(scope))
 
@@ -355,6 +385,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
     |> assign(:streaming, false)
     |> assign(:pending_context_type, pending_context_type)
     |> assign(:pending_context_id, pending_context_id)
+    |> assign(:chat_error, nil)
+    |> assign(:last_prompt, nil)
   end
 
   defp apply_action(socket, :show, %{"id" => id_string}) do
@@ -375,6 +407,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
         |> assign(:streaming, false)
         |> assign(:pending_context_type, nil)
         |> assign(:pending_context_id, nil)
+        |> assign(:chat_error, nil)
+        |> assign(:last_prompt, nil)
     end
   end
 
@@ -398,6 +432,20 @@ defmodule MetricFlowWeb.AiLive.Chat do
       {:noreply, socket}
     else
       do_send_message(socket, trimmed)
+    end
+  end
+
+  def handle_event("retry_message", _params, socket) do
+    case socket.assigns.last_prompt do
+      nil ->
+        {:noreply, socket}
+
+      content ->
+        if socket.assigns.streaming do
+          {:noreply, socket}
+        else
+          do_send_message(assign(socket, :chat_error, nil), content)
+        end
     end
   end
 
@@ -445,6 +493,8 @@ defmodule MetricFlowWeb.AiLive.Chat do
       |> apply_refreshed_session(scope, active_session.id)
       |> assign(:streaming, false)
       |> assign(:streaming_content, "")
+      |> assign(:chat_error, nil)
+      |> assign(:last_prompt, nil)
 
     {:noreply, socket}
   end
@@ -454,9 +504,26 @@ defmodule MetricFlowWeb.AiLive.Chat do
       socket
       |> assign(:streaming, false)
       |> assign(:streaming_content, "")
-      |> put_flash(:error, "The AI encountered an error. Please try again.")
+      |> assign(
+        :chat_error,
+        "The AI couldn't respond. Check your connection or try again."
+      )
 
     {:noreply, socket}
+  end
+
+  def handle_info({:chat_timeout, seq}, socket) do
+    if socket.assigns.streaming and socket.assigns.stream_seq == seq do
+      socket =
+        socket
+        |> assign(:streaming, false)
+        |> assign(:streaming_content, "")
+        |> assign(:chat_error, "The AI took too long to respond. Please retry.")
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_info({ref, _result}, socket) when is_reference(ref) do
@@ -558,12 +625,19 @@ defmodule MetricFlowWeb.AiLive.Chat do
       inserted_at: DateTime.utc_now()
     }
 
+    seq = socket.assigns.stream_seq + 1
+
     socket =
       socket
       |> assign(:messages, socket.assigns.messages ++ [optimistic_message])
       |> assign(:input_value, "")
       |> assign(:streaming, true)
       |> assign(:streaming_content, "")
+      |> assign(:chat_error, nil)
+      |> assign(:last_prompt, content)
+      |> assign(:stream_seq, seq)
+
+    Process.send_after(self(), {:chat_timeout, seq}, @chat_timeout_ms)
 
     llm_opts = Application.get_env(:metric_flow, :test_llm_options, [])
 

@@ -306,4 +306,95 @@ defmodule MetricFlowWeb.AiLive.ChatTest do
       end)
     end
   end
+
+  describe "renders inline error with Retry when the AI call fails" do
+    # P0 regression (chat-responds-p0): the main chat used to flash a generic
+    # "AI encountered an error" toast on failure, and the Correlations
+    # contextual chat (same LV, context_type=correlation) hung silently when
+    # the stream task raised. The fix keeps the user in the conversation with
+    # an inline error + Retry, and makes the task tolerant of crashes.
+    test "chat_error renders inline, replaces the toast, and Retry resends the prompt",
+         %{conn: conn} do
+      {user, account_id, _scope} = user_with_account()
+      session = insert_chat_session!(user.id, account_id)
+
+      test_pid = self()
+
+      {:ok, agent} =
+        Agent.start_link(fn ->
+          [
+            fn _sys, _msgs, _on_chunk, _opts ->
+              send(test_pid, :first_called)
+              {:error, :api_error}
+            end,
+            fn _sys, _msgs, on_chunk, _opts ->
+              on_chunk.("retry worked")
+              send(test_pid, :second_called)
+              {:ok, "retry worked"}
+            end
+          ]
+        end)
+
+      stream_fn = fn sys, msgs, on_chunk, opts ->
+        fun = Agent.get_and_update(agent, fn [h | t] -> {h, t} end)
+        fun.(sys, msgs, on_chunk, opts)
+      end
+
+      Application.put_env(:metric_flow, :test_llm_options, stream_chat_fn: stream_fn)
+      on_exit(fn -> Application.delete_env(:metric_flow, :test_llm_options) end)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_chat_session(conn, user, session.id)
+
+        render_change(lv, "update_input", %{"content" => "How did we do this month?"})
+        render_submit(lv, "send_message", %{"content" => "How did we do this month?"})
+
+        assert_receive :first_called, 2_000
+        # Flush the LV's mailbox so the :chat_error handle_info has run
+        # before we inspect the DOM.
+        _ = :sys.get_state(lv.pid)
+
+        html = render(lv)
+        assert has_element?(lv, "[data-role='chat-error']")
+        assert has_element?(lv, "[data-role='retry-btn']")
+        refute html =~ "AI encountered an error"
+
+        lv |> element("[data-role='retry-btn']") |> render_click()
+
+        assert_receive :second_called, 2_000
+      end)
+    end
+
+    test "a crash in the stream task does not hang: inline error still surfaces",
+         %{conn: conn} do
+      {user, account_id, _scope} = user_with_account()
+      session = insert_chat_session!(user.id, account_id)
+
+      test_pid = self()
+
+      crashing_stream_fn = fn _sys, _msgs, _on_chunk, _opts ->
+        send(test_pid, :crashing_called)
+        raise "provider wedged"
+      end
+
+      Application.put_env(:metric_flow, :test_llm_options, stream_chat_fn: crashing_stream_fn)
+      on_exit(fn -> Application.delete_env(:metric_flow, :test_llm_options) end)
+
+      capture_log(fn ->
+        {:ok, lv, _html} = mount_chat_session(conn, user, session.id)
+
+        render_change(lv, "update_input", %{"content" => "Are there any correlations to revenue?"})
+
+        render_submit(lv, "send_message", %{
+          "content" => "Are there any correlations to revenue?"
+        })
+
+        assert_receive :crashing_called, 2_000
+        _ = :sys.get_state(lv.pid)
+
+        assert has_element?(lv, "[data-role='chat-error']")
+        assert has_element?(lv, "[data-role='retry-btn']")
+      end)
+    end
+  end
 end
