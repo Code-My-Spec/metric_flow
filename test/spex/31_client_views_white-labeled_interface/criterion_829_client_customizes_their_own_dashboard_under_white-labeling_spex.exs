@@ -36,7 +36,7 @@ defmodule MetricFlowSpex.Criterion829ClientCustomizesDashboardUnderWhiteLabeling
         )
 
         render_submit(new_view, "send_dashboard_chat", %{"message" => "Show me impressions"})
-        Process.sleep(100)
+        await_dashboard_chat_completion(new_view)
         Application.delete_env(:metric_flow, :command_runner)
 
         new_view
