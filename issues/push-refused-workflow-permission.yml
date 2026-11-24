@@ -1,0 +1,20 @@
+id: "push-refused-workflow-permission"
+kind: "issue"
+title: "Push to origin main refused: GitHub App lacks `workflows` permission for ci.yml"
+text: |-
+  Fault: after ci-report-proves-its-repository landed (it changes .github/workflows/ci.yml), the push to origin main was refused. Exact text:
+
+  To https://github.com/Code-My-Spec/metric_flow.git
+   ! [remote rejected]   HEAD -> main (refusing to allow a GitHub App to create or update workflow `.github/workflows/ci.yml` without `workflows` permission)
+  error: failed to push some refs to 'https://github.com/Code-My-Spec/metric_flow.git'
+
+  The token the push used is minted on the server for the code-my-spec GitHub App. It can push ordinary commits, but GitHub refuses any commit that touches a workflow file unless the token has the `workflows` permission.
+
+  Wanted: find out whether anything in this repository can or should change. Do not revert or weaken the top-level `permissions: contents: read / id-token: write` block in ci.yml, because the CI report needs it. If nothing in the repo is the cause (expected), change no code and commit a note under .code_my_spec/ that records the error text, that the fix is granting the App's token the `workflows` permission outside the repo, and that every push of main stays refused until then because main now holds the ci.yml change.
+
+  Constraints: print no token. Don't touch ci_report.sh, the runner, CMS_DEPLOY_KEY or CMS_PROJECT_ID.
+
+  Check: the committed note exists with the exact error text, and ci.yml's permissions block is unchanged.
+criteria:
+  - "A committed note under .code_my_spec/ records the exact refusal text and says the fix is granting the GitHub App's token the `workflows` permission outside the repo."
+  - ".github/workflows/ci.yml still has its top-level `permissions:` block with `contents: read` and `id-token: write`."
