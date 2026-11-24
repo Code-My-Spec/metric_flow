@@ -1,0 +1,23 @@
+id: "ci-runs-without-the-age-key"
+kind: "issue"
+title: CI fails in test-env because the CI box has no age key
+text: |-
+  Fault: the first CI run on our self-hosted runner (commit e8cd7680, GitHub Actions run 45484216326) failed in `just ci` at the test-env step. `sops -d envs/test.enc.env` exited with "no master key was able to decrypt the file". The CI box has no MetricFlow age key, and it should not get one.
+
+  Wanted: tests replay their recorded cassettes, so they can run on placeholder values. Real keys are needed only to record a new cassette. Change test-env (justfile and any env-loading it relies on) to do this:
+  - If no sops/age key is available, fall back to placeholder values for every variable the test env needs, so the full `just ci` run passes.
+  - If a key is available locally, keep decrypting envs/test.enc.env as now.
+
+  Constraints:
+  - Commit no real secret in plain text. Placeholders must be obvious dummy values.
+  - Leave .github/workflows/ci.yml's report step and $CODEMYSPEC_PLUGIN/bin/ci_report.sh alone. The 403 that step got in the same run is a server bug and is being handled on the server side.
+  - Don't touch the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID, .sops.yaml or the age keys.
+
+  How it will be checked:
+  1. With no sops key available (e.g. SOPS_AGE_KEY_FILE pointing at a nonexistent file and no SOPS_AGE_KEY or default key file), `just ci` passes.
+  2. With the key present locally, test-env still decrypts envs/test.enc.env and uses its values.
+  3. No real secret appears in plain text anywhere in the committed tree.
+criteria:
+  - "`just ci` passes on a machine with no sops/age key: test-env falls back to placeholder values and the tests replay their cassettes."
+  - "When an age key is present locally, test-env still decrypts envs/test.enc.env and uses its values."
+  - "No real secret is committed in plain text: the fallback values are dummy placeholders."
