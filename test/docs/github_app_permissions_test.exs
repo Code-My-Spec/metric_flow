@@ -50,4 +50,14 @@ defmodule MetricFlow.Docs.GithubAppPermissionsTest do
     assert body =~ ~r/not fixed|still blocked|does not claim to fix/i,
            "docs must explicitly state the push is still blocked and awaiting the GitHub-side grant"
   end
+
+  test "records that three successive landings have all left the push refused", %{body: body} do
+    for id <- ["push-origin-dev-403", "push-origin-dev-403-2", "push-origin-dev-403-3"] do
+      assert body =~ id,
+             "docs must name #{id} among the landings that did not move the GitHub-side state"
+    end
+
+    assert body =~ ~r/no change in this repo will make the push succeed/i,
+           "docs must state plainly that no in-repo change will unblock the push, so a future landing cannot quietly pretend otherwise"
+  end
 end

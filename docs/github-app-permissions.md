@@ -12,20 +12,27 @@ its repository selection, its permissions, and any branch protection on
 
 ## Status: still blocked (not fixed in-repo)
 
-`push-origin-dev-403` landed as a docs-only change (`d450452d`) and the next
-landed work (`push-origin-dev-403-2`) saw the push still refused with the
-same verbatim message:
+Three issues in a row — `push-origin-dev-403` (`d450452d`),
+`push-origin-dev-403-2` (`394ea3f8`), and now `push-origin-dev-403-3` —
+have landed on `main`, and after each one the harness's `git push origin
+dev` was still refused with the same verbatim message:
 
     remote: Permission to Code-My-Spec/metric_flow.git denied to code-my-spec[bot].
     fatal: unable to access 'https://github.com/Code-My-Spec/metric_flow.git/': The requested URL returned error: 403
 
-Everything this repository can decide is already right (see *What this
-repository already has right* below). The refusal is a GitHub-side grant
-that only a human admin on the `Code-My-Spec` organization can make, and
-until that grant happens no change in this repo will make the push succeed.
-This commit does not claim to fix the push; it narrows the diagnosis to the
-one permission that is actually missing and names the page on which it is
-granted.
+That pattern — three landings, same wire error — is itself the evidence
+that the cause is not in this repository. Everything this repository can
+decide is already right (see *What this repository already has right*
+below): the remote URL in the 403 matches `origin`, no credential helper /
+`url.*.insteadOf` / `http.extraHeader` is set here that could swap the
+token out at push time, and the commits in `origin/dev..main` touch no
+`.github/workflows/*` paths, so the push does not need `Workflows: Write`.
+The refusal is a GitHub-side grant that only a human admin on the
+`Code-My-Spec` organization can make, and
+**no change in this repo will make the push succeed** until that grant
+is made. This commit does not claim to fix the push; like the two
+before it, it pins the diagnosis to the one permission that is actually
+missing and names the page on which it is granted.
 
 ### Exactly one permission is missing
 
