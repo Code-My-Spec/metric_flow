@@ -21,7 +21,7 @@ servers:
         path: /up
 
 registry:
-  server: 10.1.0.2:5000
+  server: <%= ENV["CMS_REGISTRY_SERVER"] || "10.2.0.2:5000" %>
   username:
     - KAMAL_REGISTRY_USERNAME
   password:
