@@ -187,12 +187,25 @@ defmodule MetricFlow.Ai do
          {:ok, _user_msg} <- persist_user_message(scope, session, content) do
       caller = self()
 
-      task =
-        Task.async(fn ->
-          stream_assistant_response(scope, session, caller, opts)
+      # Wrap the whole streaming body in try/rescue/catch so any
+      # raise/throw/exit still surfaces as a `{:chat_error, reason}` the LV
+      # already handles, instead of a silent hang (the original P0: the
+      # Correlations chat never responded). Linked to the caller so the task
+      # dies with it when the LV disconnects.
+      {:ok, pid} =
+        Task.start_link(fn ->
+          try do
+            stream_assistant_response(scope, session, caller, opts)
+          rescue
+            error ->
+              send(caller, {:chat_error, {:crash, Exception.message(error)}})
+          catch
+            kind, value ->
+              send(caller, {:chat_error, {kind, value}})
+          end
         end)
 
-      {:ok, task.pid}
+      {:ok, pid}
     end
   end
 
