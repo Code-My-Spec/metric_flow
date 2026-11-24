@@ -31,7 +31,11 @@ defmodule MetricFlow.CiWorkflowForkGuardTest do
     for guard <- guards do
       assert guard_value(guard, @repo), "guard is false in #{@repo} itself"
 
-      for other <- ["someone-else/metric_flow", "Code-My-Spec/metric_flow_fork", "Code-My-Spec/other"] do
+      for other <- [
+            "someone-else/metric_flow",
+            "Code-My-Spec/metric_flow_fork",
+            "Code-My-Spec/other"
+          ] do
         refute guard_value(guard, other), "guard is true in #{other}, so CI would run there"
       end
     end
