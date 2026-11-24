@@ -1,0 +1,28 @@
+# CI on Code My Spec's runner (cms-ci-1-mf). Runs only in the CI copy,
+# Code-My-Spec/metric_flow; the loop's origin pushes there too.
+name: ci
+on:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  ci:
+    if: github.repository == 'Code-My-Spec/metric_flow'
+    runs-on: [self-hosted, cms-ci]
+    timeout-minutes: 60
+    env:
+      MIX_ENV: test
+      EVIDENCE_CONTEXT: ci/${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: true
+      - run: just ci
+      - if: always()
+        run: "$CODEMYSPEC_PLUGIN/bin/ci_report.sh"
+        env:
+          CMS_SERVER: https://codemyspec.com
+          CMS_PROJECT_ID: ${{ vars.CMS_PROJECT_ID }}
+          CMS_DEPLOY_KEY: ${{ secrets.CMS_DEPLOY_KEY }}

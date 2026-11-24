@@ -166,6 +166,27 @@ certify dir: test-env
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/exunit.sarif" -- mix test
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex
 
+# GitHub Actions calls this on every push to main. Sets up a fresh Linux
+# runner, then certifies with evidence written under ci/.
+ci: ci-setup (certify "ci")
+
+# ci's setup: test deps, the npm packages phoenix_test_playwright needs
+# (`npm ci`: from assets/package-lock.json, without rewriting it) and the test
+# asset build the browser journeys load.
+[private]
+ci-setup:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "→ deps"
+    MIX_ENV=test elixir -S mix deps.get
+
+    echo "→ npm packages"
+    npm ci --prefix assets
+
+    echo "→ test assets"
+    MIX_ENV=test elixir -S mix assets.build
+
 # The loop runs this once in a work copy it has just cut, before any step.
 copy-setup: test-env
     mix deps.get
