@@ -1,0 +1,16 @@
+id: "push-origin-dev-403-3"
+kind: "issue"
+title: Push to origin dev is still refused with 403 for code-my-spec[bot] after two fixes
+text: |-
+  Fault: push-origin-dev-403 (0548690b) and push-origin-dev-403-2 both landed in the main copy, and the push to origin dev still fails. The latest failure, after a landing, word for word:
+
+  remote: Permission to Code-My-Spec/metric_flow.git denied to code-my-spec[bot].
+  fatal: unable to access 'https://github.com/Code-My-Spec/metric_flow.git/': The requested URL returned error: 403
+
+  Two fixes made in this repository haven't changed the result. Start by reading what both of them changed. Then establish which of these is the cause: the remote URL, the credential or token the push actually uses at push time, or the bot's write access to Code-My-Spec/metric_flow or its dev branch (app installation permissions, branch protection). Fix it only if the cause is something this repository controls. If it is a GitHub permission only a person can grant, don't change code to look fixed: state exactly which permission is missing and where (repository, branch, app installation), so a person can grant it.
+
+  How it will be checked:
+  - A push of main's current head to origin dev succeeds, with no 403 and no permission-denied message; or the work states the exact missing GitHub permission and changes no code.
+  - The next work that lands pushes to origin dev without being refused.
+  - The full suite and mix spex pass.
+criteria: []
