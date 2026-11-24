@@ -1,0 +1,19 @@
+id: "push-origin-main-403"
+kind: "issue"
+title: Push of landed work to origin main is refused with 403 for code-my-spec[bot]
+text: |-
+  Fault: work landed in the main copy, but the push to origin main failed. Exact text:
+
+  remote: Permission to Code-My-Spec/metric_flow.git denied to code-my-spec[bot].
+  fatal: unable to access 'https://github.com/Code-My-Spec/metric_flow.git/': The requested URL returned error: 403
+
+  The push used the code-my-spec[bot] credential, a GitHub App installation token, over HTTPS. Earlier diagnoses that blamed the App's permission were wrong. Don't repeat that conclusion unless you have evidence for it.
+
+  Wanted: find out whether anything in this repository causes the refusal, for example a remote URL, credential helper or git config committed in the repo, or a workflow or branch-protection file the repo controls. If something does, fix it. If nothing in the repo is the cause, change no code and say so plainly in a committed note under .code_my_spec/ that records the error text and what was checked, so a person can fix the credential outside the repo.
+
+  Constraints: print no token, and don't touch .github/workflows/ci.yml's report step, ci_report.sh, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the runner.
+
+  Check: either a repo change that removes a repo-side cause of the 403, with the reason stated, or the committed note showing that no repo-side cause exists.
+criteria:
+  - "Any repository-side cause of the 403 on pushing to origin main is removed, and the change states what the cause was."
+  - "If no repository-side cause exists, a committed note under .code_my_spec/ records the exact error text, that the push used code-my-spec[bot], and what was checked, and no code changes."
