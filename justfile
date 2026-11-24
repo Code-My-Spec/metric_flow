@@ -150,9 +150,56 @@ deploy-uat:
 # === WORKFLOW LOOP ===========================================================
 
 # The workflow loop calls these with a folder to write SARIF results into.
-# Its work copies skip init-worktree, so decrypt the test env here or ~34 spex fail.
+# Its work copies skip init-worktree, so prepare the test env here or ~34 spex fail.
+#
+# When an age key is present locally (developer box, release build), sops
+# decrypts envs/test.enc.env and the tests run against real values — the
+# shape needed to re-record a cassette. When no key is available (the
+# self-hosted CI runner was deliberately not given one), fall back to a
+# .env.test populated with obvious dummy placeholders: the suite replays
+# recorded cassettes, so no real credential is ever hit.
 test-env:
-    @[ -f .env.test ] || sops -d --input-type dotenv --output-type dotenv envs/test.enc.env > .env.test
+    #!/usr/bin/env bash
+    set -uo pipefail
+    if [ -f .env.test ]; then exit 0; fi
+    if sops -d --input-type dotenv --output-type dotenv envs/test.enc.env > .env.test 2>/dev/null; then
+        exit 0
+    fi
+    rm -f .env.test
+    cat > .env.test <<'PLACEHOLDER_ENV'
+    # Placeholder test env — written by `just test-env` when no sops/age key
+    # is available. Not real secrets; cassettes replay against these values.
+    GOOGLE_CLIENT_ID=placeholder-google-client-id.apps.googleusercontent.com
+    GOOGLE_CLIENT_SECRET=placeholder-google-client-secret
+    GOOGLE_ADS_DEVELOPER_TOKEN=placeholder-google-ads-developer-token
+    GOOGLE_ADS_LOGIN_CUSTOMER_ID=1234567890
+    FACEBOOK_APP_ID=placeholder-facebook-app-id
+    FACEBOOK_APP_SECRET=placeholder-facebook-app-secret
+    QUICKBOOKS_CLIENT_ID=placeholder-quickbooks-client-id
+    QUICKBOOKS_CLIENT_SECRET=placeholder-quickbooks-client-secret
+    ANTHROPIC_API_KEY=placeholder-anthropic-api-key
+    RESEND_API_KEY=placeholder-resend-api-key
+    CODEMYSPEC_URL=https://codemyspec.example.test
+    CODEMYSPEC_CLIENT_ID=placeholder-codemyspec-client-id
+    CODEMYSPEC_CLIENT_SECRET=placeholder-codemyspec-client-secret
+    CODEMYSPEC_PROJECT_ID=placeholder-codemyspec-project-id
+    GOOGLE_ADS_TEST_CUSTOMER_ID=8952788948
+    GA4_TEST_PROPERTY_ID=properties/508773792
+    FACEBOOK_TEST_AD_ACCOUNT_ID=act_135910517
+    FACEBOOK_TEST_ACCESS_TOKEN=placeholder-facebook-test-access-token
+    QUICKBOOKS_TEST_REALM_ID=9130355098863166
+    QUICKBOOKS_TEST_INCOME_ACCOUNT_ID=177
+    QUICKBOOKS_API_URL=https://quickbooks.api.intuit.com/v3/company
+    QUICKBOOKS_TEST_ACCESS_TOKEN=placeholder-quickbooks-test-access-token
+    GOOGLE_TEST_ACCESS_TOKEN=placeholder-google-test-access-token
+    GOOGLE_TEST_REFRESH_TOKEN=placeholder-google-test-refresh-token
+    MAILGUN_API_KEY=placeholder-mailgun-api-key
+    MAILGUN_DOMAIN=mg.example.test
+    STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
+    STRIPE_SECRET_KEY=sk_test_placeholder
+    STRIPE_WEBHOOK_SECRET=whsec_placeholder
+    PLACEHOLDER_ENV
+    echo "→ no sops/age key found; wrote placeholder .env.test for cassette replay"
 
 run dir: test-env
     mix deps.get
