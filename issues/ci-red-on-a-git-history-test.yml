@@ -1,0 +1,17 @@
+id: "ci-red-on-a-git-history-test"
+kind: "issue"
+title: "CI red: a test asserts on the checkout's git history"
+text: |-
+  Fault: CI on origin/main 610c5fa5 (GitHub Actions run 45489266769, our self-hosted runner) fails one test: test/metric_flow/landing_fast_forward_test.exs, "criterion 1 - main contains origin/main unchanged, so a landing is a fast-forward". The failure was "origin/main commit c8526c95 is not an ancestor of main". The test checks the git state of whatever checkout it runs in, not MetricFlow's code. It passes or fails depending on how CI checked the repo out, and it will break again every time origin moves.
+
+  Wanted:
+  1. No test in the suite reads the checkout's git history or remotes (git log, merge-base, rev-parse, origin refs and so on). Delete landing_fast_forward_test.exs, because its criterion is a property of the loop and not of the app, or replace it with a test of app code. Search the rest of test/ for other tests that do the same and remove or rewrite them too.
+  2. Dependency audit: `mix deps.audit` flags ssl_verify_fun 1.1.7 (CRITICAL, CVE-2026-117666), postgrex (MEDIUM/LOW) and swoosh 1.21.0 (LOW). Bump each one to a fixed version if one exists. If no fixed version exists for one of them, leave it and record in the commit message which advisory is still open and why.
+
+  Constraints: don't touch .github/workflows/ci.yml's report step, ci_report.sh, the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the sops/age setup.
+
+  How it will be checked: grep the test suite for git-history or remote reads and find none; `just ci` passes, including after origin/main moves; `mix deps.audit` no longer flags any advisory that has a fixed version available.
+criteria:
+  - "No test in the suite reads the checkout's git history or remotes, so the suite's result does not depend on how the repo was checked out or where origin/main points."
+  - "`just ci` passes on a fresh checkout of main whose origin/main differs from the local main's history."
+  - "`mix deps.audit` reports none of the ssl_verify_fun, postgrex or swoosh advisories that have a fixed version available."
