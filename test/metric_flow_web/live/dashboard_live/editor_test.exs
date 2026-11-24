@@ -297,7 +297,11 @@ defmodule MetricFlowWeb.DashboardLive.EditorTest do
           "message" => "Show me impressions over time as a line chart"
         })
 
-        Process.sleep(100)
+        # The agent replies from a task and autosaves a draft (patching to
+        # /edit); wait for both before asserting the dashboard exists, or
+        # the 100ms sleep can land before the autosave has committed.
+        render_until(lv, "I&#39;ll create a line chart showing impressions over time.")
+        assert_patch(lv)
         Application.delete_env(:metric_flow, :command_runner)
 
         assert [dashboard] = Dashboards.list_dashboards(scope)
