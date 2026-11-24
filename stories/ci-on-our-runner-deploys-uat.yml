@@ -1,0 +1,38 @@
+id: yja4a93b
+title: CI runs on our runner and reports to CodeMySpec, so UAT deploys on its own
+workflow: Delivery pipeline
+story: |-
+  As John, I want MetricFlow configured the same way as Smart AI Books, so that every push to main runs CI on our own runner, reports the result to CodeMySpec, and UAT deploys automatically.
+
+  Where:
+  - Merge origin/main into main. origin/main has 7 commits this copy lacks: c8526c95 "UAT deploys to cms-uat: host and registry come from the linked server", plus six "Set DATABASE_URL / CMS_RESTORE_ADMIN_URL in uat/prod secrets". Keep them exactly as they are, so that the next landing pushes to origin main as a fast-forward.
+  - Add .github/workflows/ci.yml, copied from Smart AI Books' file at /Volumes/X10 Pro/github/smart-ai-books-loop/.github/workflows/ci.yml. It runs on every push to main, with `runs-on: [self-hosted, cms-ci]`, and is guarded by `if: github.repository == 'Code-My-Spec/metric_flow'`. It runs `just ci`, then always runs `$CODEMYSPEC_PLUGIN/bin/ci_report.sh` with CMS_SERVER=https://codemyspec.com, CMS_PROJECT_ID=${{ vars.CMS_PROJECT_ID }} and CMS_DEPLOY_KEY=${{ secrets.CMS_DEPLOY_KEY }}.
+  - In the justfile, add `ci: ci-setup (certify "ci")`. ci-setup installs the test deps and npm packages and builds the test assets on a fresh Linux box, like ci-setup in Smart AI Books' justfile.
+  - Don't touch the runner (cms-ci-1-mf), the CMS_DEPLOY_KEY secret or the CMS_PROJECT_ID variable. They are already set on the repo.
+
+  After this lands, John turns on push to origin main.
+rules:
+  - rule: main contains origin/main unchanged, so a landing pushes to origin main as a fast-forward
+    id: sa8q7pnm
+    scenarios:
+      - happy: After the merge, all 7 commits from origin/main (c8526c95 and the six "Set DATABASE_URL / CMS_RESTORE_ADMIN_URL in uat/prod secrets" commits) are ancestors of main with their content unchanged, and origin/main is an ancestor of main.
+        id: pkjyyvnj
+  - rule: CI runs on every push to main, only on our self-hosted runner and only in Code-My-Spec/metric_flow
+    id: "9accmrzx"
+    scenarios:
+      - happy: ".github/workflows/ci.yml triggers on push to main, uses runs-on: [self-hosted, cms-ci], is guarded by if: github.repository == 'Code-My-Spec/metric_flow', and runs `just ci`."
+        id: zze3rke8
+      - fails: In a fork or any repository other than Code-My-Spec/metric_flow, the job's guard is false, so it does not run.
+        id: anrpg63v
+  - rule: CI always reports its result to CodeMySpec, pass or fail
+    id: "5ga9fjur"
+    scenarios:
+      - happy: After `just ci`, the workflow runs $CODEMYSPEC_PLUGIN/bin/ci_report.sh with CMS_SERVER=https://codemyspec.com, CMS_PROJECT_ID from vars.CMS_PROJECT_ID and CMS_DEPLOY_KEY from secrets.CMS_DEPLOY_KEY.
+        id: pa9h7jg7
+      - fails: When `just ci` fails, the report step still runs (it is marked to always run).
+        id: "29q33e2e"
+  - rule: just ci sets up a fresh Linux box, then certifies
+    id: ydd8wbgt
+    scenarios:
+      - happy: "The justfile defines `ci: ci-setup (certify \"ci\")`, and ci-setup installs the test deps and npm packages and builds the test assets, so that `just ci` can run on a clean Linux runner."
+        id: km65ccer
