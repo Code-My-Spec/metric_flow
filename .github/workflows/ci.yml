@@ -4,6 +4,9 @@ name: ci
 on:
   push:
     branches: [main]
+permissions:
+  contents: read
+  id-token: write
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: false
