@@ -1,0 +1,16 @@
+id: "push-origin-dev-403"
+kind: "issue"
+title: Push to origin dev is refused with 403 for code-my-spec[bot]
+text: |-
+  Fault: after chat-responds-p0 landed on main in /Users/johndavenport/cms-dogfood/metric_flow-prod, the push to origin dev failed. Failure text, verbatim:
+
+  remote: Permission to Code-My-Spec/metric_flow.git denied to code-my-spec[bot].
+  fatal: unable to access 'https://github.com/Code-My-Spec/metric_flow.git/': The requested URL returned error: 403
+
+  Wanted: landed work pushes to origin dev (https://github.com/Code-My-Spec/metric_flow.git) without being refused. Find why code-my-spec[bot] is denied (the remote URL, the credential or token the push uses, or the bot's write access to that repository or branch) and fix whatever this repository controls. If the cause is a permission only a person can grant on GitHub, say exactly which permission is missing and on what.
+
+  How it will be checked:
+  - A push of main's current head to origin dev succeeds, with no 403 and no permission-denied message.
+  - The next work that lands pushes to origin dev without being refused.
+  - The full suite and mix spex pass.
+criteria: []
