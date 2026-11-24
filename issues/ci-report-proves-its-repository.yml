@@ -1,0 +1,18 @@
+id: "ci-report-proves-its-repository"
+kind: "issue"
+title: CI report is refused because the job has no GitHub OIDC token
+text: |-
+  Fault: the CI report to CodeMySpec is refused or never reaches the loop, so landed works sit at the ci step forever. The shared CI box now proves which repository a job runs for with GitHub Actions OIDC. The last refusal was: "This project is in another account and the job's GitHub OIDC token did not prove its repository: no x-github-oidc-token".
+
+  Wanted: in .github/workflows/ci.yml, grant the job an OIDC token by adding this block at the top level, beside `on:`:
+
+  permissions:
+    contents: read
+    id-token: write
+
+  Constraints: change nothing else in ci.yml. Leave runs-on, the repository guard, `just ci` and the report step's env as they are. Don't touch $CODEMYSPEC_PLUGIN/bin/ci_report.sh, the runner, CMS_DEPLOY_KEY or CMS_PROJECT_ID.
+
+  How it will be checked: ci.yml parses as valid YAML and has the top-level permissions block above. On the next push's CI run, ci_report.sh gets a verdict back ({"job_id":…,"verdict":"green"} or red, never an HTTP 403), and the loop receives that ci event for the work.
+criteria:
+  - ".github/workflows/ci.yml grants the job an OIDC token through a top-level `permissions:` block with `contents: read` and `id-token: write`, and the rest of the workflow is unchanged."
+  - "On the next push's CI run, ci_report.sh gets a verdict back ({\"job_id\":…,\"verdict\":\"green\"} or red) instead of an HTTP 403, and the loop receives that ci event for the work."
