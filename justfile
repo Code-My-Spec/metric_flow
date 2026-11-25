@@ -214,8 +214,16 @@ certify dir: test-env
     env MIX_ENV=test mix client_utils.sarif "{{dir}}/spex.sarif" -- mix spex
 
 # GitHub Actions calls this on every push to main. Sets up a fresh Linux
-# runner, then certifies with evidence written under ci/.
-ci: ci-setup (certify "ci")
+# runner, wipes last run's evidence, then certifies into
+# .code_my_spec/evidence/ — the flat directory ci_report.sh uploads from.
+ci: ci-setup ci-clean-evidence (certify ".code_my_spec/evidence")
+
+# Remove any SARIF from an earlier run so stale files can't stand in for
+# this one. Only `ci` uses this; local `just certify <dir>` is unaffected.
+[private]
+ci-clean-evidence:
+    mkdir -p .code_my_spec/evidence
+    rm -f .code_my_spec/evidence/*.sarif
 
 # ci's setup: test deps, the npm packages phoenix_test_playwright needs
 # (`npm ci`: from assets/package-lock.json, without rewriting it) and the test

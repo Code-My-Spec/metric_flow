@@ -53,6 +53,9 @@ client_secret_1022678032295-ck6461teh0olk03iaa2aoqnonta71fbd.apps.googleusercont
 .code_my_spec/internal/agent_test_events.json
 /.code_my_spec/hex_docs/
 
+# Per-run SARIF evidence that `just ci` writes and ci_report.sh uploads.
+/.code_my_spec/evidence/*.sarif
+
 # Kamal runtime state — locks and per-host app state
 /.kamal/locks/
 /.kamal/apps/
