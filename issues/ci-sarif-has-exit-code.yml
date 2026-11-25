@@ -1,0 +1,15 @@
+id: "ci-sarif-has-exit-code"
+kind: "issue"
+title: "CI evidence is refused: SARIF lacks invocations[0].exitCode (stale client_utils)"
+text: |-
+  Fault: on CI run for 54f7e91a, ci_report.sh found the 4 SARIF files in .code_my_spec/evidence/, but the server refused every one of them with "lacks its exit code (invocations[0].exitCode)", so the run was reported as failed. mix.lock pins a client_utils older than commit 4e275d9, the commit where client_utils.sarif started writing `invocations` with the exit code.
+
+  Wanted: bump client_utils to 4e275d9 or later with `mix deps.update client_utils`. Commit the updated mix.lock and any small adaptations the new version requires. Bump no other dependency unless the update forces it, and if one is forced, say which in the commit message.
+
+  Constraints: don't touch $CODEMYSPEC_PLUGIN/bin/ci_report.sh, the report step or permissions block in .github/workflows/ci.yml, the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the sops/age setup. Keep the `just ci` evidence location (.code_my_spec/evidence/, cleared first) as it is.
+
+  How it will be checked: mix.lock pins client_utils at 4e275d9 or a later commit; after `just ci`, every SARIF file in .code_my_spec/evidence/ has invocations[0].exitCode; on the next CI run on main, ci_report.sh prints a non-empty list of stored files and the server returns a green or red verdict.
+criteria:
+  - "mix.lock pins client_utils at commit 4e275d9 or later, and `just ci` still passes."
+  - "After `just ci`, every SARIF file in .code_my_spec/evidence/ includes invocations[0].exitCode."
+  - "On the next CI run on main, ci_report.sh prints a non-empty list of stored evidence files and the server returns a green or red verdict."
