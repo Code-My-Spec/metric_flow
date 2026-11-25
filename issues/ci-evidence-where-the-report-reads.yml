@@ -1,0 +1,15 @@
+id: "ci-evidence-where-the-report-reads"
+kind: "issue"
+title: CI report gets verdict null because `just ci` writes SARIF where ci_report.sh doesn't read
+text: |-
+  Fault: GitHub CI on e6fe2984 passed at 04:08Z and ci_report.sh posted to /api/ci/ran, but the server answered verdict null because no evidence was uploaded. The justfile's `ci: ci-setup (certify "ci")` writes its SARIF files into ./ci/. ci_report.sh uploads only .code_my_spec/evidence/*.sarif, a flat glob with no subdirectories.
+
+  Wanted: change the justfile's `ci` recipe (and certify, if that's where the output path is set) so that a CI run writes every SARIF file flat into .code_my_spec/evidence/. Clear that directory's *.sarif files first, so stale files from an earlier run can't stand in for this one. Follow the pattern of the fun_fair_auction project's justfile `ci` recipe, which does exactly this. Local `just certify` runs that aren't `ci` may keep their current output location.
+
+  Constraints: don't touch $CODEMYSPEC_PLUGIN/bin/ci_report.sh, the report step or permissions block in .github/workflows/ci.yml, the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the sops/age setup. Commit no generated SARIF files; make sure .code_my_spec/evidence/*.sarif is ignored by git if it isn't already.
+
+  How it will be checked: after `just ci`, .code_my_spec/evidence/ holds this run's SARIF files flat and no older ones. On the next CI run on main, ci_report.sh prints the files it stored, and the server returns a green or red verdict, not null.
+criteria:
+  - "After `just ci`, .code_my_spec/evidence/ holds this run's SARIF files directly (no subdirectories), and no SARIF file from an earlier run remains there."
+  - "Generated SARIF files under .code_my_spec/evidence/ are not committed."
+  - "On the next CI run on main, ci_report.sh prints the evidence files it stored and the server returns a green or red verdict, not null."
