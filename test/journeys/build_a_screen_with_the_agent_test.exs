@@ -100,15 +100,20 @@ defmodule MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest do
   # The chat handler resolves via a plain `Task.async` + `handle_info`, not
   # LiveView's `assign_async`/`start_async`, so `render_async/1` can't track
   # it -- poll instead of a fixed sleep so this doesn't flake under load.
+  #
+  # `render/1` and `has_element?/2` are each their own sync roundtrip to the
+  # LiveView process, so rendering first and then checking lets the task's
+  # result message slip in between the two: has_element? returns true on the
+  # post-result state while the html we return was captured before it,
+  # yielding zero visualization-cards under a loaded CI box. Capture html
+  # after has_element? succeeds so both see the same post-result state.
   defp wait_for_chart(view, deadline \\ System.monotonic_time(:millisecond) + 2000) do
-    html = render(view)
-
     cond do
       has_element?(view, "[data-role='echarts-chart']") ->
-        html
+        render(view)
 
       System.monotonic_time(:millisecond) >= deadline ->
-        html
+        render(view)
 
       true ->
         Process.sleep(20)
