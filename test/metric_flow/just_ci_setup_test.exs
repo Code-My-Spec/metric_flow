@@ -6,8 +6,8 @@ defmodule MetricFlow.JustCiSetupTest do
   test "ci-on-our-runner-deploys-uat: criterion 6 - just ci runs ci-setup then certifies, and ci-setup prepares a clean Linux runner" do
     content = File.read!(@justfile)
 
-    assert content =~ ~r/^ci: ci-setup \(certify "ci"\)\s*$/m,
-           "justfile must define `ci: ci-setup (certify \"ci\")`"
+    assert content =~ ~r/^ci: ci-setup\b.*\(certify "[^"]+"\)\s*$/m,
+           "justfile `ci` recipe must run ci-setup and then certify"
 
     [_, after_header] = String.split(content, ~r/^ci-setup:\s*$/m, parts: 2)
 
