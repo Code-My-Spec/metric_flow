@@ -1,0 +1,16 @@
+id: "ci-red-on-rerun-2"
+kind: "issue"
+title: "CI red: a chat message naming two widget types produces 0 widget cards, expected 2"
+text: |-
+  Fault: CI on 8ddbb917 was green, but a rerun (GitHub Actions run 45504001502, shared CI box, Elixir 1.20.5) fails in `just ci`. ci/exunit.sarif has one result: the test "a single chat message naming two distinct widget types produces two widgets" (MetricFlowWeb.Journeys.BuildAScreenWithTheAgentTest, test/journeys/build_a_screen_with_the_agent_test.exs:386) fails on `assert length(cards) == 2`, left 0. Compiler and format are clean. The full log is at /tmp/mf-ci-45504001502.log.
+
+  Reproduce it with `just test-file test/journeys/build_a_screen_with_the_agent_test.exs`. The same commit passed before, so check for a timing, ordering or shared-state cause, such as an async render the test reads before the widgets arrive, or a cassette or test seed difference.
+
+  Wanted: fix the behaviour, or the test if the test is what's wrong, so that the test passes reliably. Don't delete, skip or tag out the test.
+
+  Constraints: don't touch ci_report.sh, the report step in .github/workflows/ci.yml, ci.yml's permissions block, the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the sops/age setup. The CI report's verdict null is CodeMySpec's to fix.
+
+  How it will be checked: the test at build_a_screen_with_the_agent_test.exs:386 passes under repeated runs with different seeds, and `just ci` is green on the CI box for the push of this fix.
+criteria:
+  - "A single chat message naming two distinct widget types produces two widget cards, and the test at build_a_screen_with_the_agent_test.exs:386 passes under repeated runs with different seeds."
+  - "`just ci` is green on the shared CI box (Elixir 1.20.5) for the push of this fix."
