@@ -1,0 +1,14 @@
+id: "ci-red-on-rerun"
+kind: "issue"
+title: "`just ci` fails on the shared CI box when CI is rerun on 8ddbb917"
+text: |-
+  Fault: CI on 8ddbb917 was green, but a rerun (GitHub Actions run 45504001502) now fails in `just ci` on the shared CI box, which runs Elixir 1.20.5. The full failed log is at /tmp/mf-ci-45504001502.log. Read it there to find the actual failure. The same commit passed before, so look for causes that vary between runs, such as test order or seed, timing, shared state, the date or time, or a dependency or toolchain resolving differently on Elixir 1.20.5. Don't assume a plain code bug.
+
+  Wanted: fix the cause in the app or its tests so `just ci` passes reliably. Don't skip, tag out or delete the failing test unless it checks something outside the app, such as the checkout's git state, and if you do that, say why in the commit message.
+
+  Constraints: don't touch ci_report.sh, the report step in .github/workflows/ci.yml, ci.yml's permissions block, the runner, CMS_DEPLOY_KEY, CMS_PROJECT_ID or the sops/age setup. The report answering verdict null for this red run is CodeMySpec's to fix, not this work's.
+
+  How it will be checked: the failure named in /tmp/mf-ci-45504001502.log no longer happens; `just ci` passes repeatedly, including under different test seeds; and `just ci` is green on the CI box for the push of this fix.
+criteria:
+  - "The failure recorded in /tmp/mf-ci-45504001502.log no longer happens, and `just ci` passes under repeated runs with different test seeds."
+  - "`just ci` is green on the shared CI box (Elixir 1.20.5) for the push of this fix."
